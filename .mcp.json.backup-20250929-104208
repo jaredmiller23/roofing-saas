@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "supabase-archon": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=pcduofjokergeakxgjpp"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_316a707ce3b1abdf40ca707c92c558cc06192d98"
+      }
+    },
+    "supabase-roofing": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=ibdajxguadfapmcxnogd"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_af41de7a9b0a203312bbe8d727c0f223d05bd50f"
+      }
+    },
+    "archon": {
+      "uri": "http://localhost:8051/mcp",
+      "transport": "sse"
+    }
+  }
+}

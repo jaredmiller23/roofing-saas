@@ -1,0 +1,9 @@
+Checking MCP server health...
+
+supabase: npx -y @supabase/mcp-server-supabase@latest --project-ref=pcduofjokergeakxgjpp - ✓ Connected
+archon: http://localhost:8051/mcp (HTTP) - ✓ Connected
+n8n-cloud: node /Users/ccai/n8n-mcp-server/build/index.js - ✓ Connected
+supabase-roofing: npx -y @supabase/mcp-server-supabase@latest --project-ref=ibdajxguadfapmcxnogd - ✓ Connected
+filesystem: npx -y @modelcontextprotocol/server-filesystem@latest /Users/ccai - ✓ Connected
+git: npx -y @modelcontextprotocol/server-git@latest - ✗ Failed to connect
+time: npx -y @modelcontextprotocol/server-time@latest - ✗ Failed to connect
