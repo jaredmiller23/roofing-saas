@@ -37,7 +37,7 @@ As of September 29, 2025, these MCP servers are configured for the project:
 
 | Server | Purpose | Issue | Action Required |
 |--------|---------|-------|-----------------|
-| **supabase-roofing** | App database | Need access token | Get Supabase personal access token from dashboard |
+| **supabase-roofing** | App database | Database not initialized | Initialize database in Supabase dashboard |
 | **postgres-local** | Local database | No credentials | Set DATABASE_URL when needed |
 | **google-sheets** | Reporting | No credentials | Add Google service account |
 
