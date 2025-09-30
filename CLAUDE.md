@@ -38,8 +38,8 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 ## 📋 ESSENTIAL DOCUMENTS
 
 1. **PRD.md** - Product requirements and phased roadmap
-2. **knowledge_base_roofing_platform.md** - Technical implementation details
-3. **roofing_industry_apis.md** - Industry-specific integrations
+2. **START_HERE.md** - Step-by-step setup instructions and database schema
+3. **Integration Guides** - Twilio, E-signing, Voice Assistant implementation docs
 
 ## 🚀 CURRENT STATUS
 
