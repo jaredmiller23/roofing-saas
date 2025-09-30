@@ -165,12 +165,12 @@ activities (all interactions)
 
 ## 🔌 SUPABASE CONNECTION
 
-**Project URL**: https://ibdajxguadfapmcxnogd.supabase.co
-**Project ID**: ibdajxguadfapmcxnogd
+**Project URL**: https://wfifizczqvogbcqamnmw.supabase.co
+**Project ID**: wfifizczqvogbcqamnmw
 
-Get API keys from Supabase Dashboard:
-- Settings > API > anon key → NEXT_PUBLIC_SUPABASE_ANON_KEY
-- Settings > API > service_role key → SUPABASE_SERVICE_ROLE_KEY
+✅ **API keys already configured in .env.local**
+- Anon key and service role key are ready
+- Database connection strings need to be added from Dashboard > Settings > Database
 
 ## 🎯 QUALITY CHECKLIST
 

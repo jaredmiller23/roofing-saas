@@ -6,13 +6,14 @@
 
 ## ⚡ IMMEDIATE NEXT STEPS
 
-### 1️⃣ Get Supabase API Keys (5 mins)
+### 1️⃣ Supabase Setup ✅ (Keys Ready!)
 ```bash
-# Go to: https://supabase.com/dashboard/project/ibdajxguadfapmcxnogd
-# Navigate to: Settings > API
-# Copy these keys:
-- anon (public) key → NEXT_PUBLIC_SUPABASE_ANON_KEY
-- service_role key → SUPABASE_SERVICE_ROLE_KEY
+# API keys are already in .env.local!
+# Dashboard: https://supabase.com/dashboard/project/wfifizczqvogbcqamnmw
+
+# Still need to get from Dashboard > Settings > Database:
+- Pooled connection string → DATABASE_URL
+- Direct connection string → DIRECT_URL
 ```
 
 ### 2️⃣ Initialize Next.js Project (10 mins)
@@ -38,15 +39,12 @@ npx shadcn-ui@latest init
 # Choose: Default style, Slate base color, CSS variables
 ```
 
-### 3️⃣ Set Up Environment (2 mins)
+### 3️⃣ Environment Setup ✅ (Already Done!)
 ```bash
-# Copy environment template
-cp ../.env.example .env.local
+# .env.local is already created with your Supabase keys!
+# Just need to add database connection strings from Dashboard
 
-# Edit .env.local and add:
-# - Supabase anon key
-# - Supabase service role key
-# (Other keys can wait for later phases)
+# No action needed - ready to use
 ```
 
 ### 4️⃣ Create Database Schema (15 mins)
@@ -263,7 +261,7 @@ By end of Phase 1, we should have:
 
 ## 🔗 RESOURCES
 
-- [Supabase Dashboard](https://supabase.com/dashboard/project/ibdajxguadfapmcxnogd)
+- [Supabase Dashboard](https://supabase.com/dashboard/project/wfifizczqvogbcqamnmw)
 - [Next.js Docs](https://nextjs.org/docs)
 - [shadcn/ui](https://ui.shadcn.com)
 - [Tailwind CSS](https://tailwindcss.com/docs)
