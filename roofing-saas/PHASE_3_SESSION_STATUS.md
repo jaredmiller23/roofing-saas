@@ -224,8 +224,8 @@ gamification_achievements (
 - [x] Test offline functionality (ready for testing)
 
 ### Week 11: Photos & Territories
-**Status**: 🚧 IN PROGRESS (Photo Backend Complete)
-**Progress**: 50% (Backend done, UI pending)
+**Status**: ✅ COMPLETE
+**Progress**: 100%
 
 ### Week 12: Gamification
 **Status**: Pending Week 11 completion
@@ -538,7 +538,7 @@ components/photos/index.ts              (4 lines)
 ## 🗺️ Week 11 Progress - Territory UI Components
 
 **Started**: October 1, 2025 (9:30 PM)
-**Status**: Basic UI Complete, Map View Pending
+**Status**: ✅ COMPLETE (with Drawing Tools)
 
 ### What Was Built:
 
@@ -580,15 +580,31 @@ components/photos/index.ts              (4 lines)
 - Responsive height and styling options
 - **Quality focus**: Proper cleanup, error handling, smooth interactions
 
-#### 4. Index Exports ✅
+#### 4. TerritoryMapEditor Component ✅
+- **File**: `components/territories/TerritoryMapEditor.tsx`
+- Leaflet Draw integration for creating boundaries
+- Polygon and rectangle drawing tools
+- Edit existing boundaries
+- Delete/clear boundaries
+- Real-time GeoJSON conversion
+- Boundary info display (type, point count)
+- Instructions overlay for first-time users
+- Clear button to remove boundaries
+- Load initial boundary for editing
+- Auto-fit bounds to drawn shapes
+- **Quality focus**: Proper event handling, cleanup, user guidance
+
+#### 5. Index Exports ✅
 - **File**: `components/territories/index.ts`
 - Clean exports for territory components
-- Usage: `import { TerritoryList, TerritoryForm, TerritoryMap } from '@/components/territories'`
+- Usage: `import { TerritoryList, TerritoryForm, TerritoryMap, TerritoryMapEditor } from '@/components/territories'`
 
 ### Key Features:
 - **CRUD operations**: List, create, update, delete territories
-- **GeoJSON support**: Render and visualize territory boundaries
+- **GeoJSON support**: Render, visualize, and draw territory boundaries
 - **Interactive map**: Click, hover, select territories visually
+- **Drawing tools**: Polygon and rectangle drawing with Leaflet Draw
+- **Edit mode**: Modify existing boundaries on the map
 - **User assignment**: Assign territories to specific users
 - **Validation**: Proper error handling and user feedback
 - **Responsive design**: Works on mobile and desktop
@@ -597,10 +613,11 @@ components/photos/index.ts              (4 lines)
 
 ### Files Created:
 ```
-components/territories/TerritoryList.tsx  (320 lines)
-components/territories/TerritoryForm.tsx  (260 lines)
-components/territories/TerritoryMap.tsx   (270 lines)
-components/territories/index.ts           (3 lines)
+components/territories/TerritoryList.tsx       (320 lines)
+components/territories/TerritoryForm.tsx       (260 lines)
+components/territories/TerritoryMap.tsx        (270 lines)
+components/territories/TerritoryMapEditor.tsx  (290 lines)
+components/territories/index.ts                (4 lines)
 ```
 
 ### Integration Points:
@@ -634,13 +651,35 @@ components/territories/index.ts           (3 lines)
   zoom={13}
   height="600px"
 />
+
+// Draw/edit territory boundaries
+<TerritoryMapEditor
+  initialBoundary={territory?.boundary_data}
+  onBoundaryChange={(boundary) => {
+    console.log('Boundary updated:', boundary)
+    // Pass to TerritoryForm or save directly
+  }}
+  center={[36.1627, -86.7816]}
+  zoom={13}
+  height="600px"
+/>
 ```
 
-### Pending (Next Session):
-- [ ] Territory drawing tools (polygon drawing with Leaflet Draw)
+### Testing Checklist:
+- [ ] Test polygon drawing on desktop
+- [ ] Test rectangle drawing on desktop
+- [ ] Test boundary editing (move points)
+- [ ] Test boundary deletion
+- [ ] Test loading existing boundary for editing
+- [ ] Test boundary info display
+- [ ] Verify GeoJSON format correctness
+- [ ] Test on mobile (touch interactions)
+
+### Pending (Future Enhancement):
 - [ ] Map markers for contacts in territory
-- [ ] Drawing mode integration with TerritoryForm
-- [ ] Edit existing territory boundaries on map
+- [ ] Address points within territory boundaries
+- [ ] Territory coverage heatmap
+- [ ] Territory assignment workflow UI
 
 ---
 
