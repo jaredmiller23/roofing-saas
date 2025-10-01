@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const filters = {
+    const rawFilters = {
       search: searchParams.get('search') || undefined,
-      type: searchParams.get('type') || undefined,
+      type: searchParams.get('search') || undefined,
       stage: searchParams.get('stage') || undefined,
       assigned_to: searchParams.get('assigned_to') || undefined,
       priority: searchParams.get('priority') || undefined,
@@ -48,11 +48,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate filters
-    const validatedFilters = contactFiltersSchema.safeParse(filters)
+    const validatedFilters = contactFiltersSchema.safeParse(rawFilters)
     if (!validatedFilters.success) {
       throw mapZodError(validatedFilters.error)
     }
 
+    const filters = validatedFilters.data
     const supabase = await createClient()
 
     // Build query
@@ -61,8 +62,6 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
-
-    const filters = validatedFilters.data
 
     // Apply filters
     if (filters.type) {
