@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TerritoryList } from '@/components/territories'
+import { TerritoryList } from '@/components/territories/TerritoryList'
 
 /**
  * Territories list page

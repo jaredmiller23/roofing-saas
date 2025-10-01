@@ -1,12 +1,29 @@
 # Items to Circle Back To
 
-**Last Updated**: October 1, 2025 (10:10 PM)
+**Last Updated**: October 1, 2025 (10:35 PM)
 
 ---
 
 ## 🔴 CRITICAL (Blocking Production)
 
-### 1. RLS Policy Issue - Infinite Recursion ✅ COMPLETE
+### 1. Territories Table Migration ⏳ PENDING
+**Location**: Supabase SQL Editor
+**Status**: ⏳ NEEDS APPLICATION
+**Migration File**: `supabase/migrations/20251001_create_territories_table.sql`
+
+**What Needs to be Done**:
+1. Open Supabase Dashboard > SQL Editor
+2. Copy contents of `supabase/migrations/20251001_create_territories_table.sql`
+3. Run the migration
+4. Verify table was created
+
+**What This Creates**:
+- `territories` table with PostGIS support
+- GeoJSON boundary_data column
+- Proper RLS policies for multi-tenant access
+- Indexes for performance
+
+### 2. RLS Policy Issue - Infinite Recursion ✅ COMPLETE
 **Location**: `tenant_users` table
 **Status**: ✅ FIXED (October 1, 2025 - 10:10 PM)
 **Migration Applied**: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
@@ -16,7 +33,7 @@
 - API endpoints now working properly (contacts, projects, territories)
 - getUserTenantId() function no longer throws 403 errors
 
-### 2. Supabase Storage Bucket Creation ✅ COMPLETE
+### 3. Supabase Storage Bucket Creation ✅ COMPLETE
 **Location**: Supabase Dashboard > Storage
 **Status**: ✅ CONFIGURED (October 1, 2025 - 10:15 PM)
 **Bucket**: `property-photos` (public bucket with RLS policies)
@@ -30,20 +47,18 @@
 
 ## 🟡 HIGH PRIORITY (Should Address Soon)
 
-### 3. Component Integration into Pages
-**Status**: Components built but not integrated
-**Needs**:
-- Photo components in contact detail pages
-- Territory components in new territory management page
-- Photo gallery in project detail pages
+### 4. Component Integration into Pages ✅ COMPLETE
+**Status**: ✅ INTEGRATED (October 1, 2025 - 10:25 PM)
 
-**Suggested Pages to Create**:
-- `/territories` - List view
-- `/territories/new` - Create with map editor
-- `/territories/[id]` - View/edit territory
-- `/contacts/[id]/photos` - Photo gallery for contact
+**What Was Integrated**:
+- ✅ Photo components in contact detail pages (`/contacts/[id]`)
+- ✅ Territory pages created:
+  - `/territories` - List view
+  - `/territories/new` - Create with map editor
+  - `/territories/[id]` - View/edit territory
+- ✅ Navigation updated with Territories link
 
-### 4. Component Testing
+### 5. Component Testing
 **Status**: ⏳ NOT TESTED
 **Critical Tests**:
 - [ ] Photo upload with camera (mobile device required)
@@ -56,27 +71,27 @@
 - [ ] PWA install prompt
 - [ ] Service worker caching
 
-### 5. Database Migrations Setup
+### 6. Database Migrations Setup ✅ COMPLETE
 **Location**: `supabase/migrations/`
-**Status**: ⏳ PENDING
+**Status**: ✅ READY
 **Purpose**: Production-ready schema versioning
-**Note**: Marked as "non-blocking" but important for deployment
+**Note**: Migration system in place, territories migration created
 
 ---
 
 ## 🟢 MEDIUM PRIORITY (Can Wait)
 
-### 6. Resend Domain Verification
+### 7. Resend Domain Verification
 **Status**: ⏳ PENDING
 **Purpose**: Production email sending
 **Note**: Works without verification in development
 
-### 7. Automation Engine Testing
+### 8. Automation Engine Testing
 **Status**: ⏳ PENDING
 **Purpose**: Verify workflow execution
 **Note**: Engine built but not tested with real scenarios
 
-### 8. Week 12 - Gamification System
+### 9. Week 12 - Gamification System
 **Status**: 📅 SCHEDULED NEXT
 **Includes**:
 - Points system
@@ -88,19 +103,19 @@
 
 ## 🔵 LOW PRIORITY (Future Enhancements)
 
-### 9. Territory Enhancements
+### 10. Territory Enhancements
 - [ ] Contact markers on territory maps
 - [ ] Address points within boundaries
 - [ ] Territory coverage heatmap
 - [ ] Drag-and-drop territory assignment
 
-### 10. Photo Enhancements
+### 11. Photo Enhancements
 - [ ] Thumbnail generation
 - [ ] Image annotations/markup
 - [ ] Photo categories/tags
 - [ ] Batch upload
 
-### 11. PWA Testing on Devices
+### 12. PWA Testing on Devices
 - [ ] iOS Safari (install prompt)
 - [ ] Android Chrome (install prompt)
 - [ ] Offline mode verification
@@ -112,8 +127,8 @@
 
 | Priority | Count | Status |
 |----------|-------|--------|
-| 🔴 Critical | 2 | Need immediate attention |
-| 🟡 High | 3 | Should address before moving forward |
+| 🔴 Critical | 1 | Territories table migration needs to be applied |
+| 🟡 High | 2 | Component testing pending |
 | 🟢 Medium | 3 | Can defer slightly |
 | 🔵 Low | 3 | Future enhancements |
 
@@ -121,11 +136,18 @@
 
 ## 🎯 Recommended Next Actions
 
-1. **Fix RLS policy issue** (30 min) - Critical for API functionality
-2. **Create Supabase storage bucket** (10 min) - Required for photo uploads
-3. **Create territory management pages** (2 hours) - Integrate components
-4. **Test core functionality** (1 hour) - Verify photo and territory features work
-5. **Move to Week 12 gamification** (After above are complete)
+1. **Apply territories table migration** (5 min) ⚠️ CRITICAL
+   - Open Supabase SQL Editor
+   - Run `supabase/migrations/20251001_create_territories_table.sql`
+
+2. **Fix Leaflet SSR issue** (15 min) - Blocking territory page loads
+   - Make territory map components client-only with dynamic imports
+
+3. **Test core functionality** (1 hour) - Verify photo and territory features work
+   - Photo upload and gallery
+   - Territory creation with map drawing
+
+4. **Move to Week 12 gamification** (After above are complete)
 
 ---
 

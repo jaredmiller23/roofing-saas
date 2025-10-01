@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TerritoryForm, TerritoryMapEditor } from '@/components/territories'
+import { TerritoryForm } from '@/components/territories/TerritoryForm'
+import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'
 
 /**
  * Create new territory page

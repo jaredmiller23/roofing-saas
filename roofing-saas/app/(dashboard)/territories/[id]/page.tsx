@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { TerritoryMap } from '@/components/territories'
+import { TerritoryMap } from '@/components/territories/TerritoryMap'
 
 interface Territory {
   id: string
