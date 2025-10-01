@@ -56,6 +56,14 @@ export async function middleware(request: NextRequest) {
     '/reset-password',
     '/auth/callback',
     '/auth/update-password',
+    // Test endpoints (development only)
+    '/api/sms/test',
+    // Webhooks (called by external services)
+    '/api/sms/webhook',
+    '/api/email/webhook',
+    '/api/voice/webhook',
+    '/api/voice/twiml',
+    '/api/voice/recording',
   ]
 
   const isPublicRoute = publicRoutes.some(route =>
