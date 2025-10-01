@@ -55,11 +55,8 @@ export function TerritoryList({
       }
 
       const result = await response.json()
-      console.log('[TerritoryList] Received data:', result)
       // API wraps response in {success, data} format
       const territories = result.data?.territories || result.territories || []
-      console.log('[TerritoryList] Territories array:', territories)
-      console.log('[TerritoryList] Territories count:', territories.length)
       setTerritories(territories)
     } catch (err) {
       console.error('Territory fetch error:', err)
