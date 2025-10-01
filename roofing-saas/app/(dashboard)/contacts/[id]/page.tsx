@@ -2,6 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { PhotoManager } from '@/components/photos'
 
 /**
  * Contact detail page
@@ -165,7 +166,7 @@ export default async function ContactDetailPage({
 
         {/* Insurance */}
         {(contact.insurance_carrier || contact.policy_number) && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Insurance Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.insurance_carrier && (
@@ -183,6 +184,18 @@ export default async function ContactDetailPage({
             </div>
           </div>
         )}
+
+        {/* Photos */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Photos</h2>
+          <PhotoManager
+            contactId={contact.id}
+            tenantId={tenantId}
+            uploadMode="immediate"
+            showUpload={true}
+            showGallery={true}
+          />
+        </div>
       </div>
     </div>
   )

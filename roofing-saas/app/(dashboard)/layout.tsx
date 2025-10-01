@@ -59,6 +59,12 @@ export default async function DashboardLayout({
                   Projects
                 </Link>
                 <Link
+                  href="/territories"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                >
+                  Territories
+                </Link>
+                <Link
                   href="/settings"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                 >
