@@ -224,7 +224,8 @@ gamification_achievements (
 - [x] Test offline functionality (ready for testing)
 
 ### Week 11: Photos & Territories
-**Status**: Pending Week 10 completion
+**Status**: 🚧 IN PROGRESS (Photo Backend Complete)
+**Progress**: 50% (Backend done, UI pending)
 
 ### Week 12: Gamification
 **Status**: Pending Week 11 completion
@@ -357,4 +358,63 @@ sharp (dev dependency for icon generation)
 
 ---
 
-**Next Steps**: Week 11 - Photos & Territory Management
+## 🚧 Week 11 Progress - Photo System Backend
+
+**Started**: October 1, 2025 (7:45 PM)
+**Status**: Backend Complete, UI Pending
+
+### What Was Built:
+
+#### 1. Dependencies Installed ✅
+- `browser-image-compression` - Client-side image compression
+- `leaflet` + `react-leaflet` - Map library for territories
+- `@types/leaflet` - TypeScript types
+
+#### 2. Storage Configuration ✅
+- **File**: `SUPABASE_STORAGE_SETUP.md`
+- Complete setup guide for creating `property-photos` bucket
+- RLS policies for secure access
+- Folder structure: `{user_id}/{year}/{month}/IMG_{timestamp}_{random}.{ext}`
+
+#### 3. Storage Helper Library ✅
+- **File**: `lib/storage/photos.ts`
+- Image compression (max 1920px, 0.8 quality, 10MB limit)
+- Unique filename generation
+- Upload to Supabase Storage
+- Delete and list operations
+- Signed URLs for temporary access
+
+#### 4. Photo Upload API ✅
+- **File**: `app/api/photos/upload/route.ts`
+- Server-side upload handling
+- File validation (type, size)
+- Automatic compression on server
+- Metadata storage in database
+- Rollback on failure (deletes uploaded file if DB insert fails)
+
+#### 5. Photo List/Delete API ✅
+- **File**: `app/api/photos/route.ts`
+- GET: List photos with filtering (contact_id, project_id)
+- Pagination support (limit, offset)
+- DELETE: Soft delete photos
+
+### Files Created:
+```
+SUPABASE_STORAGE_SETUP.md
+lib/storage/photos.ts
+app/api/photos/upload/route.ts
+app/api/photos/route.ts
+```
+
+### Pending (Next Session):
+- [ ] Photo upload UI component with compression
+- [ ] Photo gallery component
+- [ ] Photo viewer with swipe
+- [ ] Offline photo queue (using IndexedDB)
+- [ ] Territory management API
+- [ ] Territory map view (Leaflet)
+- [ ] Territory assignment UI
+
+---
+
+**Next Steps**: Continue Week 11 - Photo UI Components & Territory Management
