@@ -1,6 +1,6 @@
 # Items to Circle Back To
 
-**Last Updated**: October 1, 2025 (11:45 PM)
+**Last Updated**: October 1, 2025 (11:55 PM)
 
 ---
 
@@ -69,17 +69,26 @@
 - ✅ Territory detail view
 - ✅ Territory map visualization (Kingsport centered)
 
-### 6. Component Testing
-**Status**: ⏳ PARTIALLY TESTED
+### 6. Photo API Authentication Fix ✅ COMPLETE
+**Status**: ✅ FIXED (October 1, 2025 - 11:55 PM)
+**Issue**: Photo API routes calling non-existent `getUserFromRequest()` function
+**Solution**: Changed to `getCurrentUser()` (correct export from session.ts)
+
+**Files Fixed**:
+- app/api/photos/route.ts
+- app/api/photos/upload/route.ts
+
+### 7. Component Testing
+**Status**: ⏳ READY TO TEST
 **Completed Tests**:
 - ✅ Territory polygon drawing
 - ✅ Territory list view
 - ✅ Territory detail view
 - ✅ Territory map visualization
 
-**Remaining Tests**:
+**Ready to Test**:
 - [ ] Photo upload with camera (mobile device required)
-- [ ] Photo upload with file picker (desktop)
+- [ ] Photo upload with file picker (desktop) 🎯 TEST NOW
 - [ ] Photo compression validation
 - [ ] Offline photo queue (disable network)
 - [ ] Territory boundary editing
