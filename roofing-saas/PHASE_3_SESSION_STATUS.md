@@ -411,10 +411,58 @@ app/api/photos/route.ts
 - [ ] Photo gallery component
 - [ ] Photo viewer with swipe
 - [ ] Offline photo queue (using IndexedDB)
-- [ ] Territory management API
 - [ ] Territory map view (Leaflet)
 - [ ] Territory assignment UI
 
 ---
 
-**Next Steps**: Continue Week 11 - Photo UI Components & Territory Management
+## 🗺️ Week 11 Progress - Territory Management Backend
+
+**Started**: October 1, 2025 (8:30 PM)
+**Status**: Backend Complete, UI Pending
+
+### What Was Built:
+
+#### 1. Territory CRUD API ✅
+- **Files**: `app/api/territories/route.ts`, `app/api/territories/[id]/route.ts`
+- GET /api/territories: List territories with filtering
+- POST /api/territories: Create territory with GeoJSON boundaries
+- GET /api/territories/[id]: Get single territory
+- PATCH /api/territories/[id]: Update territory (name, description, boundaries, assignment)
+- DELETE /api/territories/[id]: Soft delete territory
+
+#### 2. Territory Statistics API ✅
+- **File**: `app/api/territories/[id]/stats/route.ts`
+- Total contacts, projects, photos, activities
+- Breakdown by pipeline stage and project status
+- Recent activity feed
+- Performance metrics
+
+#### 3. GeoJSON Utilities ✅
+- **File**: `lib/geo/territory.ts`
+- GeoJSON Polygon and MultiPolygon validation
+- Coordinate validation (lon/lat ranges)
+- Bounding box calculation
+- Center point calculation
+- Point-in-polygon detection (ray casting algorithm)
+- Rectangle territory generator for testing
+- Coordinate formatting for display
+
+### Key Features:
+- Full GeoJSON support (Polygon and MultiPolygon)
+- Territory assignment validation (verifies user belongs to tenant)
+- Tenant isolation for security
+- Comprehensive error handling
+- Soft delete with `is_deleted` flag
+
+### Files Created:
+```
+app/api/territories/route.ts
+app/api/territories/[id]/route.ts
+app/api/territories/[id]/stats/route.ts
+lib/geo/territory.ts
+```
+
+---
+
+**Next Steps**: Week 11 UI Components (Photos & Territory Map)
