@@ -37,10 +37,12 @@ export function ContactsTable({ params }: ContactsTableProps) {
           throw new Error('Failed to fetch contacts')
         }
 
-        const data = await response.json()
-        setContacts(data.contacts)
-        setTotal(data.total)
-        setPage(data.page)
+        const result = await response.json()
+        // Handle new response format: { success, data: { contacts, total, page, ... } }
+        const data = result.data || result
+        setContacts(data.contacts || [])
+        setTotal(data.total || 0)
+        setPage(data.page || 1)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
