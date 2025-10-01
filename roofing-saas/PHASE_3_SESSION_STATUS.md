@@ -533,10 +533,88 @@ components/photos/index.ts              (4 lines)
 - [ ] Test pagination with 50+ photos
 - [ ] Verify integration with Supabase storage bucket
 
+---
+
+## 🗺️ Week 11 Progress - Territory UI Components
+
+**Started**: October 1, 2025 (9:30 PM)
+**Status**: Basic UI Complete, Map View Pending
+
+### What Was Built:
+
+#### 1. TerritoryList Component ✅
+- **File**: `components/territories/TerritoryList.tsx`
+- Responsive list view of territories
+- Territory card with name, description, metadata
+- Boundary info display (type, point count)
+- Creation date display
+- Delete with confirmation
+- Edit and select actions
+- Filtering by assigned_to
+- Empty and loading states
+- Refresh button
+- **Quality focus**: Careful UX with confirm before delete
+
+#### 2. TerritoryForm Component ✅
+- **File**: `components/territories/TerritoryForm.tsx`
+- Create and edit modes
+- Name, description, assigned_to fields
+- Boundary data integration (accepts GeoJSON from map)
+- Boundary info display (type, point count)
+- Remove boundary option
+- Validation (name required)
+- Error handling with user-friendly messages
+- Success callbacks for integration
+- **Quality focus**: Proper validation, clear feedback
+
+#### 3. Index Exports ✅
+- **File**: `components/territories/index.ts`
+- Clean exports for territory components
+- Usage: `import { TerritoryList, TerritoryForm } from '@/components/territories'`
+
+### Key Features:
+- **CRUD operations**: List, create, update, delete territories
+- **GeoJSON support**: Ready to integrate with map drawing
+- **User assignment**: Assign territories to specific users
+- **Validation**: Proper error handling and user feedback
+- **Responsive design**: Works on mobile and desktop
+- **Integration ready**: Callbacks for parent component coordination
+
+### Files Created:
+```
+components/territories/TerritoryList.tsx  (320 lines)
+components/territories/TerritoryForm.tsx  (260 lines)
+components/territories/index.ts           (2 lines)
+```
+
+### Integration Points:
+- Uses `app/api/territories/route.ts` for CRUD operations
+- Ready to integrate with Leaflet map for boundary drawing
+- Works with territory backend validation
+- Uses shadcn/ui Card components
+
+### Usage Example:
+```tsx
+// List territories
+<TerritoryList
+  onTerritorySelect={(territory) => console.log('Selected:', territory)}
+  onTerritoryEdit={(id) => router.push(`/territories/${id}/edit`)}
+  onTerritoryDelete={(id) => console.log('Deleted:', id)}
+/>
+
+// Create/edit territory
+<TerritoryForm
+  mode="create"
+  boundaryData={geoJsonFromMap}
+  onSuccess={(territory) => console.log('Saved:', territory)}
+/>
+```
+
 ### Pending (Next Session):
 - [ ] Territory map view with Leaflet
-- [ ] Territory assignment UI
-- [ ] Territory drawing tools
+- [ ] Territory drawing tools (polygon drawing)
+- [ ] Map markers for contacts in territory
+- [ ] Territory visualization on map
 
 ---
 
