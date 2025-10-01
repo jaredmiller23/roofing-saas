@@ -567,24 +567,40 @@ components/photos/index.ts              (4 lines)
 - Success callbacks for integration
 - **Quality focus**: Proper validation, clear feedback
 
-#### 3. Index Exports ✅
+#### 3. TerritoryMap Component ✅
+- **File**: `components/territories/TerritoryMap.tsx`
+- Interactive Leaflet map with OpenStreetMap tiles
+- Renders territory boundaries from GeoJSON
+- Territory selection with click handlers
+- Popup information on hover/click
+- Visual highlighting for selected territory
+- Auto-fit bounds to show all territories
+- Interactive legend showing territories
+- Hover effects for better UX
+- Responsive height and styling options
+- **Quality focus**: Proper cleanup, error handling, smooth interactions
+
+#### 4. Index Exports ✅
 - **File**: `components/territories/index.ts`
 - Clean exports for territory components
-- Usage: `import { TerritoryList, TerritoryForm } from '@/components/territories'`
+- Usage: `import { TerritoryList, TerritoryForm, TerritoryMap } from '@/components/territories'`
 
 ### Key Features:
 - **CRUD operations**: List, create, update, delete territories
-- **GeoJSON support**: Ready to integrate with map drawing
+- **GeoJSON support**: Render and visualize territory boundaries
+- **Interactive map**: Click, hover, select territories visually
 - **User assignment**: Assign territories to specific users
 - **Validation**: Proper error handling and user feedback
 - **Responsive design**: Works on mobile and desktop
 - **Integration ready**: Callbacks for parent component coordination
+- **Map integration**: Leaflet with OpenStreetMap tiles
 
 ### Files Created:
 ```
 components/territories/TerritoryList.tsx  (320 lines)
 components/territories/TerritoryForm.tsx  (260 lines)
-components/territories/index.ts           (2 lines)
+components/territories/TerritoryMap.tsx   (270 lines)
+components/territories/index.ts           (3 lines)
 ```
 
 ### Integration Points:
@@ -608,13 +624,23 @@ components/territories/index.ts           (2 lines)
   boundaryData={geoJsonFromMap}
   onSuccess={(territory) => console.log('Saved:', territory)}
 />
+
+// Visualize territories on map
+<TerritoryMap
+  territories={territories}
+  selectedTerritory={selected}
+  onTerritoryClick={(territory) => setSelected(territory)}
+  center={[36.1627, -86.7816]}
+  zoom={13}
+  height="600px"
+/>
 ```
 
 ### Pending (Next Session):
-- [ ] Territory map view with Leaflet
-- [ ] Territory drawing tools (polygon drawing)
+- [ ] Territory drawing tools (polygon drawing with Leaflet Draw)
 - [ ] Map markers for contacts in territory
-- [ ] Territory visualization on map
+- [ ] Drawing mode integration with TerritoryForm
+- [ ] Edit existing territory boundaries on map
 
 ---
 
