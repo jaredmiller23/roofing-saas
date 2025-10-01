@@ -6,14 +6,20 @@
 
 ## 🔴 CRITICAL (Blocking Production)
 
-### 1. RLS Policy Issue - Infinite Recursion
+### 1. RLS Policy Issue - Infinite Recursion ✅ SOLUTION READY
 **Location**: `tenant_users` table
 **Error**: `infinite recursion detected in policy for relation "tenant_users"`
 **Impact**: API calls failing (contacts, projects returning 403)
-**Status**: ⚠️ NEEDS IMMEDIATE FIX
-**Files Affected**:
-- Any query using `getUserTenantId()`
-- `lib/tenant.ts`
+**Status**: ⚠️ NEEDS TO BE APPLIED IN SUPABASE
+**Migration Ready**: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
+**Documentation**: `docs/RLS_FIX_SUMMARY.md`
+
+**How to Fix**:
+1. Open Supabase Dashboard → SQL Editor
+2. Open the migration file: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
+3. Copy and paste the SQL into the SQL Editor
+4. Run the migration
+5. Verify: Should see "tenant_users now has 1 policies"
 
 **Dev Server Shows**:
 ```
@@ -22,6 +28,11 @@
   message: 'infinite recursion detected in policy for relation "tenant_users"'
 }
 ```
+
+**What It Does**:
+- Removes the recursive policy causing infinite loop
+- Keeps the simple policy that allows users to see their own membership
+- Fixes getUserTenantId() so all API calls work
 
 ### 2. Supabase Storage Bucket Creation
 **Location**: Supabase Dashboard > Storage
