@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { getUserFromRequest } from '@/lib/auth/session'
-import { getUserTenantId } from '@/lib/tenant'
+import { getUserFromRequest, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 
 /**
