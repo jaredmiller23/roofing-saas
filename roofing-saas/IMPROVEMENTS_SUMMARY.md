@@ -142,6 +142,7 @@ supabase/migrations/20251001_enable_pgsodium_encryption.sql
 ✅ Migrates existing tokens automatically
 ✅ Creates secure encryption keys
 ✅ No breaking changes
+✅ **FIXED**: Wrapped RAISE statements in DO block (syntax error resolved)
 
 ### Step 2: Verify Deployment
 
