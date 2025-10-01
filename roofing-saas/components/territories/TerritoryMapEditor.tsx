@@ -31,7 +31,7 @@ interface TerritoryMapEditorProps {
 export function TerritoryMapEditor({
   initialBoundary,
   onBoundaryChange,
-  center = [36.1627, -86.7816], // Nashville, TN
+  center = [36.5484, -82.5618], // Kingsport, TN
   zoom = 13,
   height = '500px',
   className = '',

@@ -40,7 +40,7 @@ export function TerritoryMap({
   territories = [],
   selectedTerritory,
   onTerritoryClick,
-  center = [36.1627, -86.7816], // Default to Nashville, TN
+  center = [36.5484, -82.5618], // Default to Kingsport, TN
   zoom = 13,
   height = '500px',
   className = '',
