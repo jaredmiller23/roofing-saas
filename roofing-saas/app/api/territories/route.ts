@@ -72,6 +72,25 @@ export async function GET(request: NextRequest) {
       throw new Error(`Failed to fetch territories: ${error.message}`)
     }
 
+    // ENHANCED DEBUG LOGGING
+    const debugInfo = {
+      resultCount: data?.length || 0,
+      totalCount: count || 0,
+      tenantId,
+      userId: user.id,
+      hasData: !!data,
+      firstTerritory: data && data.length > 0 ? {
+        id: data[0].id,
+        name: data[0].name,
+        tenant_id: data[0].tenant_id,
+      } : null,
+    }
+
+    logger.info('TERRITORIES DEBUG', debugInfo)
+    console.log('=== TERRITORIES DEBUG ===')
+    console.log(JSON.stringify(debugInfo, null, 2))
+    console.log('=========================')
+
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/territories', 200, duration)
 

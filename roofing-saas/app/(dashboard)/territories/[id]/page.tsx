@@ -47,8 +47,10 @@ export default function TerritoryDetailPage() {
           throw new Error('Failed to load territory')
         }
 
-        const data = await response.json()
-        setTerritory(data)
+        const result = await response.json()
+        // API wraps response in {success, data} format
+        const territory = result.data?.territory || result.territory || result.data || result
+        setTerritory(territory)
       } catch (err: any) {
         setError(err.message || 'Failed to load territory')
       } finally {
@@ -162,12 +164,14 @@ export default function TerritoryDetailPage() {
               </div>
             )}
 
-            <div>
-              <dt className="text-sm font-medium text-gray-600">Created</dt>
-              <dd className="text-base text-gray-900 mt-1">
-                {new Date(territory.created_at).toLocaleDateString()}
-              </dd>
-            </div>
+            {territory.created_at && (
+              <div>
+                <dt className="text-sm font-medium text-gray-600">Created</dt>
+                <dd className="text-base text-gray-900 mt-1">
+                  {new Date(territory.created_at).toLocaleDateString()}
+                </dd>
+              </div>
+            )}
           </dl>
 
           {/* Actions */}
