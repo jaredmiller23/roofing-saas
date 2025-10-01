@@ -45,8 +45,10 @@ export function PipelineBoard() {
     try {
       const response = await fetch('/api/contacts?limit=100')
       if (response.ok) {
-        const data = await response.json()
-        setContacts(data.contacts)
+        const result = await response.json()
+        // Handle new response format: { success, data: { contacts, ... } }
+        const data = result.data || result
+        setContacts(data.contacts || [])
       }
     } catch (error) {
       console.error('Failed to fetch contacts:', error)
