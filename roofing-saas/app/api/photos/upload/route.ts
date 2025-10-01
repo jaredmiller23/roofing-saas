@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { getUserFromRequest, getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Authenticate user
-    const user = await getUserFromRequest(request)
+    const user = await getCurrentUser()
     if (!user) {
       return errorResponse(new Error('User not authenticated'), 401)
     }
