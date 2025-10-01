@@ -51,6 +51,17 @@ export async function POST(request: NextRequest) {
     const { to, body: messageBody, contactId, templateId, templateVariables } = validatedData.data
     const supabase = await createClient()
 
+    // Check SMS compliance before sending
+    const { canSendSMS } = await import('@/lib/twilio/compliance')
+    const permission = await canSendSMS(to)
+
+    if (!permission.allowed) {
+      throw ValidationError('Cannot send SMS', {
+        reason: permission.reason,
+        to,
+      })
+    }
+
     // If using a template, fetch and process it
     let finalBody = messageBody
     if (templateId) {

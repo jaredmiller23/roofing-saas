@@ -70,19 +70,38 @@ export async function POST(request: NextRequest) {
       logger.error('Failed to log incoming SMS activity', { error: activityError })
     }
 
-    // TODO: Add auto-response logic here
-    // - Check for opt-out keywords ("STOP", "UNSUBSCRIBE")
-    // - Trigger automation workflows
-    // - Notify users of new messages
+    // Handle opt-out/opt-in keywords
+    const { isOptOutMessage, isOptInMessage, optOutContact, optInContact } = await import('@/lib/twilio/compliance')
+
+    const twiml = new twilio.twiml.MessagingResponse()
+
+    if (isOptOutMessage(body)) {
+      // Process opt-out request
+      const result = await optOutContact(from, `User sent: ${body}`)
+
+      if (result.success) {
+        twiml.message('You have been unsubscribed from SMS messages. Reply START to opt back in.')
+        logger.info('Contact opted out via SMS', { from, contactId: result.contactId })
+      } else {
+        logger.error('Failed to process opt-out', { from, error: result.error })
+      }
+    } else if (isOptInMessage(body)) {
+      // Process opt-in request
+      const result = await optInContact(from)
+
+      if (result.success) {
+        twiml.message('You are now subscribed to receive SMS messages. Reply STOP to opt out.')
+        logger.info('Contact opted in via SMS', { from, contactId: result.contactId })
+      } else {
+        logger.error('Failed to process opt-in', { from, error: result.error })
+      }
+    }
+
+    // TODO: Trigger automation workflows for other messages
+    // TODO: Notify users of new inbound messages
 
     const duration = Date.now() - startTime
     logger.info('SMS webhook processed', { duration })
-
-    // Respond to Twilio (empty TwiML response = no reply)
-    const twiml = new twilio.twiml.MessagingResponse()
-
-    // Optionally send an auto-response:
-    // twiml.message('Thanks for your message! We'll get back to you soon.')
 
     return new NextResponse(twiml.toString(), {
       status: 200,
