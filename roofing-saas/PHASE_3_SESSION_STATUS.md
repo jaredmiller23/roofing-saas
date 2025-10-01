@@ -406,13 +406,137 @@ app/api/photos/upload/route.ts
 app/api/photos/route.ts
 ```
 
+---
+
+## 📸 Week 11 Progress - Photo UI Components
+
+**Started**: October 1, 2025 (9:00 PM)
+**Status**: Complete
+
+### What Was Built:
+
+#### 1. PhotoUpload Component ✅
+- **File**: `components/photos/PhotoUpload.tsx`
+- Camera capture with `getUserMedia` API (uses back camera on mobile)
+- File picker for gallery selection
+- Client-side image compression preview
+- Online/offline mode support
+- Automatic queueing when offline (IndexedDB)
+- Real-time upload progress with percentage
+- File validation (type, size limits: 20MB before compression)
+- Error handling with user-friendly messages
+- Two modes: `immediate` (upload now) or `queue` (save for later)
+- **Quality focus**: Comprehensive validation, proper error states
+
+#### 2. PhotoGallery Component ✅
+- **File**: `components/photos/PhotoGallery.tsx`
+- Responsive grid layout (2/3/4 columns based on screen size)
+- Lazy loading for images
+- Hover effects for desktop interaction
+- Delete with confirmation (prevent accidental deletion)
+- Displays photo metadata (date, compression ratio)
+- Pagination support via API
+- Filtering by contact_id or project_id
+- Empty state and loading states
+- Refresh button for manual updates
+- **Quality focus**: Careful UX with confirm before delete
+
+#### 3. PhotoViewer Component ✅
+- **File**: `components/photos/PhotoViewer.tsx`
+- Full-screen overlay viewer
+- Swipe navigation on mobile (left/right gestures)
+- Keyboard navigation (arrow keys, Escape to close)
+- Touch gesture support with minimum swipe distance
+- Loading spinner during image load
+- Photo counter (e.g., "3 / 12")
+- Info panel with metadata (upload date, file size, compression stats)
+- Delete functionality with confirmation
+- Navigation buttons for desktop
+- Circular navigation (loops from last to first)
+- **Quality focus**: Multiple input methods, smooth UX
+
+#### 4. PhotoManager Component ✅
+- **File**: `components/photos/PhotoManager.tsx`
+- Integrated component combining Upload + Gallery + Viewer
+- Manages state coordination between components
+- Auto-refresh gallery after uploads
+- Passes photo arrays to viewer for navigation
+- Configurable: can show/hide upload or gallery sections
+- Props for contact_id, project_id filtering
+- Upload mode selection (immediate vs queue)
+- **Quality focus**: Clean integration layer, single import for full functionality
+
+#### 5. Index Exports ✅
+- **File**: `components/photos/index.ts`
+- Clean exports for all photo components
+- Usage: `import { PhotoManager, PhotoUpload, PhotoGallery, PhotoViewer } from '@/components/photos'`
+
+### Key Features:
+- **Mobile-first**: Camera access, touch gestures, responsive layout
+- **Offline support**: Automatic queueing via IndexedDB when offline
+- **Image compression**: Integrated with `lib/storage/photos.ts` compression utilities
+- **Validation**: File type, size limits, proper error messages
+- **Quality UX**: Confirmation dialogs, loading states, error states, success feedback
+- **Accessibility**: Keyboard navigation, proper ARIA labels
+- **Performance**: Lazy loading, thumbnail support, efficient re-renders
+
+### Files Created:
+```
+components/photos/PhotoUpload.tsx       (360 lines)
+components/photos/PhotoGallery.tsx      (230 lines)
+components/photos/PhotoViewer.tsx       (280 lines)
+components/photos/PhotoManager.tsx      (120 lines)
+components/photos/index.ts              (4 lines)
+```
+
+### Integration Points:
+- Uses `lib/storage/photos.ts` for compression
+- Uses `lib/db/indexeddb.ts` for offline queue
+- Uses `app/api/photos/upload/route.ts` for uploads
+- Uses `app/api/photos/route.ts` for listing/deletion
+- Uses shadcn/ui Card components for consistent styling
+
+### Usage Example:
+```tsx
+// Simple usage - full photo management
+<PhotoManager
+  contactId="uuid"
+  tenantId="uuid"
+  uploadMode="immediate"
+/>
+
+// Or individual components
+<PhotoUpload
+  contactId="uuid"
+  tenantId="uuid"
+  mode="queue"
+  onUploadSuccess={(id) => console.log('Uploaded:', id)}
+/>
+
+<PhotoGallery
+  contactId="uuid"
+  onPhotoClick={(photo, index, allPhotos) => {
+    // Open viewer
+  }}
+/>
+```
+
+### Testing Checklist:
+- [ ] Test camera capture on mobile device
+- [ ] Test file picker on desktop
+- [ ] Test image compression (check console for compression ratio)
+- [ ] Test offline queueing (disable network, upload photo)
+- [ ] Test swipe navigation in viewer (mobile)
+- [ ] Test keyboard navigation in viewer (desktop)
+- [ ] Test delete with confirmation
+- [ ] Test gallery filtering by contact/project
+- [ ] Test pagination with 50+ photos
+- [ ] Verify integration with Supabase storage bucket
+
 ### Pending (Next Session):
-- [ ] Photo upload UI component with compression
-- [ ] Photo gallery component
-- [ ] Photo viewer with swipe
-- [ ] Offline photo queue (using IndexedDB)
-- [ ] Territory map view (Leaflet)
+- [ ] Territory map view with Leaflet
 - [ ] Territory assignment UI
+- [ ] Territory drawing tools
 
 ---
 
