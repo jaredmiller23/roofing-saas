@@ -1,6 +1,6 @@
 # Items to Circle Back To
 
-**Last Updated**: October 1, 2025 (10:35 PM)
+**Last Updated**: October 1, 2025 (11:45 PM)
 
 ---
 
@@ -53,16 +53,36 @@
   - `/territories/[id]` - View/edit territory
 - ✅ Navigation updated with Territories link
 
-### 5. Component Testing
-**Status**: ⏳ NOT TESTED
-**Critical Tests**:
+### 5. Territory Functionality ✅ COMPLETE
+**Status**: ✅ WORKING (October 1, 2025 - 11:40 PM)
+
+**What Was Fixed**:
+- ✅ Missing tenant membership (created via SQL)
+- ✅ Territory list data parsing (API response format)
+- ✅ Territory detail page data parsing
+- ✅ Invalid date handling
+- ✅ Map default location set to Kingsport, TN
+
+**Verified Working**:
+- ✅ Territory creation with map drawing
+- ✅ Territory list display
+- ✅ Territory detail view
+- ✅ Territory map visualization (Kingsport centered)
+
+### 6. Component Testing
+**Status**: ⏳ PARTIALLY TESTED
+**Completed Tests**:
+- ✅ Territory polygon drawing
+- ✅ Territory list view
+- ✅ Territory detail view
+- ✅ Territory map visualization
+
+**Remaining Tests**:
 - [ ] Photo upload with camera (mobile device required)
 - [ ] Photo upload with file picker (desktop)
 - [ ] Photo compression validation
 - [ ] Offline photo queue (disable network)
-- [ ] Territory polygon drawing
 - [ ] Territory boundary editing
-- [ ] Territory map visualization
 - [ ] PWA install prompt
 - [ ] Service worker caching
 
