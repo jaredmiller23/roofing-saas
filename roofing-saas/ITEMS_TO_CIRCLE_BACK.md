@@ -1,49 +1,30 @@
 # Items to Circle Back To
 
-**Last Updated**: October 1, 2025 (10:00 PM)
+**Last Updated**: October 1, 2025 (10:10 PM)
 
 ---
 
 ## 🔴 CRITICAL (Blocking Production)
 
-### 1. RLS Policy Issue - Infinite Recursion ✅ SOLUTION READY
+### 1. RLS Policy Issue - Infinite Recursion ✅ COMPLETE
 **Location**: `tenant_users` table
-**Error**: `infinite recursion detected in policy for relation "tenant_users"`
-**Impact**: API calls failing (contacts, projects returning 403)
-**Status**: ⚠️ NEEDS TO BE APPLIED IN SUPABASE
-**Migration Ready**: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
-**Documentation**: `docs/RLS_FIX_SUMMARY.md`
+**Status**: ✅ FIXED (October 1, 2025 - 10:10 PM)
+**Migration Applied**: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
 
-**How to Fix**:
-1. Open Supabase Dashboard → SQL Editor
-2. Open the migration file: `supabase/migrations/20251001_fix_tenant_users_recursion.sql`
-3. Copy and paste the SQL into the SQL Editor
-4. Run the migration
-5. Verify: Should see "tenant_users now has 1 policies"
+**What Was Fixed**:
+- Removed the recursive policy causing infinite loop
+- API endpoints now working properly (contacts, projects, territories)
+- getUserTenantId() function no longer throws 403 errors
 
-**Dev Server Shows**:
-```
-[getUserTenantId] Error: {
-  code: '42P17',
-  message: 'infinite recursion detected in policy for relation "tenant_users"'
-}
-```
-
-**What It Does**:
-- Removes the recursive policy causing infinite loop
-- Keeps the simple policy that allows users to see their own membership
-- Fixes getUserTenantId() so all API calls work
-
-### 2. Supabase Storage Bucket Creation
+### 2. Supabase Storage Bucket Creation ✅ COMPLETE
 **Location**: Supabase Dashboard > Storage
-**Required For**: Photo upload functionality
-**Status**: ⏳ MANUAL SETUP REQUIRED
-**Documentation**: `SUPABASE_STORAGE_SETUP.md`
-**Steps**:
-1. Create bucket: `property-photos`
-2. Set to public
-3. Configure RLS policies
-4. Test upload
+**Status**: ✅ CONFIGURED (October 1, 2025 - 10:15 PM)
+**Bucket**: `property-photos` (public bucket with RLS policies)
+
+**What's Configured**:
+- Storage bucket created and set to public
+- RLS policies already in place (public read, authenticated upload/update/delete)
+- Photo upload functionality ready to test
 
 ---
 
