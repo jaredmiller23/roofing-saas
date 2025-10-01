@@ -1,8 +1,42 @@
-# 🚀 START HERE - Roofing SaaS Development
+# 🚀 START HERE - Roofing SaaS Development v2.0
 
 **Project Status**: Ready to begin development
-**Current Date**: September 30, 2025
-**Phase**: 1 of 5 (Core CRM)
+**Current Date**: October 1, 2025
+**Phase**: 0 of 5 (Data Migration & Setup)
+**Architecture**: Multi-tenant SaaS Platform
+**AI Partner**: Claude Sonnet 4.5 with Claude Code v2
+
+## 🌟 NEW: Enhanced Development Capabilities (Oct 1, 2025)
+
+### Claude Code v2 Features
+- ✅ **Checkpoints**: Auto-save states, rewind with Esc×2 for safe experimentation
+- ✅ **Subagents**: Delegate specialized research tasks autonomously
+- ✅ **Hooks**: Automated quality checks and actions at trigger points
+- ✅ **Background Tasks**: Long-running processes without blocking development
+- ✅ **VS Code Extension**: Inline diffs and IDE integration (beta)
+
+### Sonnet 4.5 Capabilities
+- ✅ **30-Hour Autonomous Operation**: Complete entire phases in focused sprints
+- ✅ **Parallel Tool Execution**: Research + read + search simultaneously (2-3x faster)
+- ✅ **Enhanced Planning**: Best-in-class architecture decisions and code organization
+- ✅ **Domain Expertise**: Superior business logic and integration patterns
+- ✅ **Code Excellence**: Industry-leading coding model (SWE-bench #1)
+
+### Impact on Development
+- **Timeline**: 22 weeks → 16-18 weeks with parallel development
+- **Quality**: Higher code quality with checkpoint-based experimentation
+- **AI Voice Assistant**: Perfect capabilities for Phase 4 crown jewel
+- **Risk Reduction**: Safe iteration with rewind capability
+
+## 📚 DOCUMENTATION
+
+### Core Documents
+- **PRD_v2.md** - Comprehensive product requirements with AI Voice Assistant as crown jewel
+- **PHASE_BREAKDOWN.md** - Detailed weekly tasks with parallel execution strategies
+- **DATABASE_SCHEMA_v2.sql** - Multi-tenant architecture with full feature support
+- **DATABASE_CONFIGURATION.md** - ⚠️ CRITICAL: Database configuration and safety guide (READ FIRST!)
+- **AI_VOICE_ASSISTANT_ARCHITECTURE.md** - Technical blueprint for voice AI
+- **SONNET_4.5_CAPABILITIES.md** - Claude Sonnet 4.5 features and development strategies (NEW)
 
 ## ⚡ IMMEDIATE NEXT STEPS
 
@@ -47,157 +81,33 @@ npx shadcn-ui@latest init
 # No action needed - ready to use
 ```
 
-### 4️⃣ Create Database Schema (15 mins)
+### 4️⃣ Create Database Schema (30 mins)
 
-Go to Supabase SQL Editor and run:
+**IMPORTANT**: We're now using a multi-tenant architecture for future scalability!
+
+Go to Supabase SQL Editor and run the complete schema from:
+**📄 DATABASE_SCHEMA_v2.sql**
+
+Key changes in v2:
+- ✅ Multi-tenant architecture with tenant_id
+- ✅ Row-level security (RLS) policies
+- ✅ Comprehensive roofing-specific fields
+- ✅ Document management tables
+- ✅ Voice AI session tracking
+- ✅ Gamification system
+- ✅ Commission management
+- ✅ Reporting views
 
 ```sql
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Quick test after running the full schema:
+-- Create a test tenant
+INSERT INTO tenants (name, subdomain)
+VALUES ('Test Company', 'test');
 
--- Create contacts table
-CREATE TABLE contacts (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  created_by UUID REFERENCES auth.users(id),
-  is_deleted BOOLEAN DEFAULT FALSE,
-
-  -- Contact fields
-  first_name VARCHAR(100) NOT NULL,
-  last_name VARCHAR(100) NOT NULL,
-  email VARCHAR(255),
-  phone VARCHAR(20),
-  address_street VARCHAR(255),
-  address_city VARCHAR(100),
-  address_state VARCHAR(2),
-  address_zip VARCHAR(10),
-
-  -- CRM fields
-  type VARCHAR(50) DEFAULT 'lead', -- lead, customer, prospect
-  stage VARCHAR(50) DEFAULT 'new', -- new, contacted, qualified, proposal, won, lost
-  source VARCHAR(100), -- website, referral, door-knock, etc.
-  assigned_to UUID REFERENCES auth.users(id),
-
-  -- Custom roofing fields
-  roof_type VARCHAR(100),
-  last_inspection_date DATE,
-  property_value DECIMAL(12, 2),
-  insurance_carrier VARCHAR(100),
-
-  -- Indexes
-  UNIQUE(email),
-  INDEX idx_contacts_stage (stage),
-  INDEX idx_contacts_assigned (assigned_to)
-);
-
--- Create projects table
-CREATE TABLE projects (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  created_by UUID REFERENCES auth.users(id),
-  is_deleted BOOLEAN DEFAULT FALSE,
-
-  -- Project fields
-  contact_id UUID REFERENCES contacts(id) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  status VARCHAR(50) DEFAULT 'estimate', -- estimate, scheduled, in_progress, completed, cancelled
-  value DECIMAL(12, 2),
-
-  -- Dates
-  estimated_start DATE,
-  actual_start DATE,
-  estimated_completion DATE,
-  actual_completion DATE,
-
-  -- Details
-  description TEXT,
-  materials_cost DECIMAL(12, 2),
-  labor_cost DECIMAL(12, 2),
-  profit_margin DECIMAL(5, 2),
-
-  -- QuickBooks
-  quickbooks_id VARCHAR(100),
-
-  -- Indexes
-  INDEX idx_projects_contact (contact_id),
-  INDEX idx_projects_status (status)
-);
-
--- Create activities table
-CREATE TABLE activities (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  created_by UUID REFERENCES auth.users(id),
-
-  -- Activity fields
-  contact_id UUID REFERENCES contacts(id),
-  project_id UUID REFERENCES projects(id),
-  type VARCHAR(50) NOT NULL, -- call, email, sms, meeting, note, task
-  direction VARCHAR(10), -- inbound, outbound
-
-  -- Content
-  subject VARCHAR(255),
-  content TEXT,
-
-  -- Metadata
-  duration_seconds INTEGER,
-  outcome VARCHAR(100),
-  scheduled_at TIMESTAMP WITH TIME ZONE,
-  completed_at TIMESTAMP WITH TIME ZONE,
-
-  -- Indexes
-  INDEX idx_activities_contact (contact_id),
-  INDEX idx_activities_project (project_id),
-  INDEX idx_activities_type (type)
-);
-
--- Create gamification table
-CREATE TABLE gamification (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) UNIQUE NOT NULL,
-
-  -- Points and levels
-  total_points INTEGER DEFAULT 0,
-  current_level INTEGER DEFAULT 1,
-
-  -- Activity counts
-  doors_knocked INTEGER DEFAULT 0,
-  appointments_set INTEGER DEFAULT 0,
-  deals_closed INTEGER DEFAULT 0,
-
-  -- Achievements (JSON array of achievement IDs)
-  achievements JSONB DEFAULT '[]'::jsonb,
-
-  -- Streaks
-  current_streak_days INTEGER DEFAULT 0,
-  longest_streak_days INTEGER DEFAULT 0,
-  last_activity_date DATE,
-
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
-);
-
--- Enable Row Level Security
-ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE gamification ENABLE ROW LEVEL SECURITY;
-
--- Create RLS policies (basic - refine later)
-CREATE POLICY "Users can view all contacts" ON contacts FOR SELECT USING (true);
-CREATE POLICY "Users can insert contacts" ON contacts FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users can update contacts" ON contacts FOR UPDATE USING (true);
-
-CREATE POLICY "Users can view all projects" ON projects FOR SELECT USING (true);
-CREATE POLICY "Users can insert projects" ON projects FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users can update projects" ON projects FOR UPDATE USING (true);
-
-CREATE POLICY "Users can view all activities" ON activities FOR SELECT USING (true);
-CREATE POLICY "Users can insert activities" ON activities FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Users can view their gamification" ON gamification FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update their gamification" ON gamification FOR UPDATE USING (auth.uid() = user_id);
+-- Verify tables created
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public'
+ORDER BY table_name;
 ```
 
 ### 5️⃣ Test Supabase Connection (5 mins)
@@ -215,32 +125,42 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 Test with a simple API route or page.
 
-## 📊 PHASE 1 CHECKLIST
+## 📊 UPDATED PHASE STRUCTURE
 
-### Week 1 Goals
-- [x] Project documentation
-- [x] Supabase project setup
-- [ ] Next.js initialization
-- [ ] Database schema
-- [ ] Basic auth flow
+### Phase 0: Data Migration (Week 0) - CURRENT
+- [ ] Get Proline data export (client action)
+- [ ] **Parallel**: Analyze data + research ETL patterns + setup infrastructure
+- [ ] Create migration scripts with **subagent** validation
+- [ ] Test migration with **checkpoint** safety
+- [ ] Verify data integrity
 
-### Week 2 Goals
-- [ ] Contact list view
-- [ ] Contact create/edit forms
-- [ ] Search and filtering
-- [ ] Real-time updates
+### Phase 1: Core CRM + Reporting (Weeks 1-5) - ENHANCED APPROACH
+#### Week 1 Goals (Parallel Execution)
+- [x] Project documentation (PRD v2, Phase Breakdown)
+- [x] Multi-tenant database schema
+- [x] Enhanced with Sonnet 4.5 capabilities (Oct 1)
+- [ ] Next.js initialization + **parallel research**
+- [ ] Auth + tenant + user invitation **simultaneously**
+- [ ] **Hooks** setup for automated quality gates
 
-### Week 3 Goals
-- [ ] Pipeline kanban view
-- [ ] Drag-and-drop functionality
-- [ ] Stage progression
-- [ ] Basic analytics
+#### Week 2-3: Contact & Pipeline (30-Hour Sprint)
+- [ ] **Single autonomous session**: Complete contact module
+- [ ] CRUD + search + duplicate detection + import/export
+- [ ] Pipeline kanban + drag-drop + analytics
+- [ ] **Parallel**: UI components while building APIs
+- [ ] **Checkpoint**: Validate before phase completion
 
-### Week 4 Goals
-- [ ] QuickBooks OAuth
-- [ ] Basic sync functionality
-- [ ] Testing and refinement
-- [ ] Deploy to Vercel
+#### Week 4: QuickBooks (Subagent-Driven)
+- [ ] **Subagent**: Deep dive QuickBooks API research
+- [ ] OAuth + invoice creation + customer sync
+- [ ] **Background task**: API rate limit testing
+- [ ] Payment tracking + error handling
+
+#### Week 5: Reporting Dashboard (Parallel Development)
+- [ ] **Parallel**: KPI widgets + data aggregation simultaneously
+- [ ] **Subagent**: Chart library research (Recharts vs Chart.js)
+- [ ] Sales funnel + revenue forecasting
+- [ ] Team leaderboards + export functionality
 
 ## 🎯 SUCCESS METRICS
 
@@ -251,13 +171,27 @@ By end of Phase 1, we should have:
 - ✅ QuickBooks connected
 - ✅ Deployed to production
 
-## 💡 TIPS
+## 💡 ENHANCED DEVELOPMENT TIPS
 
+### Using Claude Code v2 Features
+1. **Checkpoints** - Experiment boldly, rewind with Esc×2 if needed
+2. **Subagents** - Delegate research tasks before implementation
+3. **Parallel Execution** - Build multiple components simultaneously
+4. **Hooks** - Setup automated linting, type checking, testing
+5. **Background Tasks** - Run long tests while continuing development
+
+### Best Practices
 1. **Start simple** - Get basic CRUD working before adding complexity
 2. **Use shadcn/ui** - Don't build UI components from scratch
 3. **Test on mobile** - Client's team will use phones in the field
 4. **Commit often** - Small, focused commits are better
 5. **Ask for help** - Use Archon knowledge base for examples
+
+### Leveraging Sonnet 4.5
+- **30-hour sprints** for complex features like AI Voice Assistant
+- **Parallel research** before starting implementation
+- **Enhanced planning** for optimal architecture decisions
+- **Domain expertise** for roofing-specific business logic
 
 ## 🔗 RESOURCES
 
@@ -266,14 +200,62 @@ By end of Phase 1, we should have:
 - [shadcn/ui](https://ui.shadcn.com)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 
+## 🔑 KEY ARCHITECTURE DECISIONS
+
+### Multi-Tenant Foundation
+- **Why**: Future-proof for white-labeling opportunities
+- **How**: Row-level security with tenant_id on all tables
+- **Benefit**: Single codebase serves multiple companies
+- **Cost**: Minimal overhead, massive future benefit
+
+### AI Voice Assistant as Crown Jewel
+- **Tech**: OpenAI Whisper + GPT-4 + ElevenLabs
+- **Goal**: < 2 second response time
+- **Use Cases**: Status queries, scheduling, reporting
+- **Impact**: 30% reduction in admin time
+
+### Comprehensive Reporting
+- **Metrics**: All industry-standard roofing KPIs
+- **Real-time**: Dashboard updates live
+- **Predictive**: AI-powered forecasting
+- **Export**: Excel, PDF, scheduled delivery
+
 ## ❓ QUESTIONS TO RESOLVE
 
-1. **Domain name**: What URL will the client want?
-2. **Company branding**: Need logo, colors, company name
-3. **User roles**: Admin vs sales rep vs field tech permissions?
-4. **Data migration**: How much historical data from Proline?
-5. **Training**: When/how to train the team?
+1. **Proline Data**: Need export format and volume estimate
+2. **Company branding**: Logo, colors, company name
+3. **User roles**: Define permission levels
+4. **QuickBooks**: Need sandbox credentials
+5. **Domain**: Production URL for deployment
+
+## 🚀 READY TO BUILD - ENHANCED WORKFLOW
+
+### Today's Session Goals (Parallel Execution)
+1. **Research Phase** (Subagents + Parallel):
+   - Next.js 14 App Router patterns
+   - Supabase Auth + RLS best practices
+   - Multi-tenant architecture strategies
+   - shadcn/ui theming and components
+
+2. **Initialize Project** (Checkpoint Safety):
+   - Next.js with optimal configuration
+   - Database schema deployment
+   - Multi-tenant foundation
+   - Development hooks setup
+
+3. **Build Foundation** (30-Hour Sprint Ready):
+   - Authentication with tenant isolation
+   - User invitation system
+   - Basic tenant management
+   - Quality gates and testing
+
+### Development Velocity Targets
+- **Phase 1**: 5 weeks → **4 weeks** with parallel execution
+- **Phase 2-3**: 8 weeks → **6-7 weeks** with subagents
+- **Phase 4**: 5 weeks → **3-4 weeks** (perfect for 30-hour sprints)
+- **Phase 5**: 4 weeks → **3 weeks** with enhanced planning
+- **Total**: 22 weeks → **16-18 weeks** 🚀
 
 ---
 
-**Ready to start?** Begin with step 1 above and work through sequentially. The foundation matters - don't rush!
+**Remember**: This is a REAL CLIENT project. With Claude Code v2 and Sonnet 4.5, we have unprecedented capabilities to deliver the AI Voice Assistant crown jewel feature faster and better than ever possible before!

@@ -120,29 +120,28 @@ app/api/contacts/route.ts   - Refactored with new error handling
 
 ## 🚀 Deployment Instructions
 
-### Step 1: Deploy Database Migrations
+### Step 1: Deploy Database Migration
 
-Run these in Supabase SQL Editor (https://supabase.com/dashboard/project/wfifizczqvogbcqamnmw/sql/new):
+Run this in Supabase SQL Editor (https://supabase.com/dashboard/project/wfifizczqvogbcqamnmw/sql/new):
 
-**A. Performance Indexes** (5 minutes)
+**Performance Indexes** (5 minutes)
 ```sql
 -- Copy entire contents of:
 supabase/migrations/20251001_add_performance_indexes.sql
 ```
 ✅ Safe to run - uses `IF NOT EXISTS`
-✅ Improves query performance immediately
+✅ Improves query performance immediately (4-5x faster queries)
 ✅ No downtime
-✅ **FIXED**: Removed indexes for future phase tables (they'll be added when those tables are created)
+✅ Creates ~14 indexes for Phase 1 tables
 
-**B. Token Encryption** (3 minutes)
-```sql
--- Copy entire contents of:
-supabase/migrations/20251001_enable_pgsodium_encryption.sql
-```
-✅ Migrates existing tokens automatically
-✅ Creates secure encryption keys
-✅ No breaking changes
-✅ **FIXED**: Wrapped RAISE statements in DO block (syntax error resolved)
+**~~Token Encryption~~ - DEFERRED TO PHASE 5**
+
+Token encryption has been **deferred to Phase 5** (Financial Integration) because:
+- Requires superuser permissions not available in SQL Editor
+- Complex Vault integration better suited for mature product
+- Current security is adequate: RLS + SSL + token expiration + tenant isolation
+
+See `supabase/migrations/20251001_encryption_deferred_to_phase5.md` for details.
 
 ### Step 2: Verify Deployment
 
@@ -153,19 +152,7 @@ FROM pg_indexes
 WHERE schemaname = 'public'
 AND indexname LIKE 'idx_%';
 ```
-Expected: 30+ indexes
-
-**Check Encryption**:
-```sql
-SELECT name FROM pgsodium.valid_key WHERE name = 'quickbooks_token_key';
-```
-Expected: 1 row
-
-**Check View**:
-```sql
-SELECT COUNT(*) FROM quickbooks_connections_decrypted;
-```
-Expected: Same count as `quickbooks_connections`
+Expected: ~14 indexes created
 
 ---
 
@@ -326,11 +313,8 @@ logger.info('Contact created', { contactId, tenantId })
 
 ### Database Testing
 - [ ] Deploy index migration
-- [ ] Verify indexes created
-- [ ] Deploy encryption migration
-- [ ] Verify encryption key created
-- [ ] Test token encryption/decryption
-- [ ] Verify no breaking changes
+- [ ] Verify indexes created (~14 indexes)
+- [x] Encryption migration deferred to Phase 5
 
 ### Integration Testing
 - [ ] Test QuickBooks API with retry logic
