@@ -78,7 +78,7 @@ supabase/migrations/ 3 files  (SMS, Email, Automation)
 # Twilio (SMS + Voice)
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_PHONE_NUMBER=\+1XXXXXXXXXX
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 
 # Resend (Email)
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx

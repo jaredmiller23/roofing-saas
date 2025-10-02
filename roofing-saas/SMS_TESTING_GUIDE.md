@@ -1,7 +1,7 @@
 # SMS Testing Guide
 
 **Status**: ✅ Working (tested October 1, 2025)
-**Test Phone**: \+1XXXXXXXXXX
+**Test Phone**: +1XXXXXXXXXX
 
 ---
 
@@ -25,7 +25,7 @@ The `middleware.ts` file blocks ALL routes except those in the `publicRoutes` ar
 curl -X POST http://localhost:3000/api/sms/test \
   -H "Content-Type: application/json" \
   -d '{
-    "to": "\+1XXXXXXXXXX",
+    "to": "+1XXXXXXXXXX",
     "body": "Your test message here"
   }'
 ```
@@ -38,8 +38,8 @@ curl -X POST http://localhost:3000/api/sms/test \
     "message": "Test SMS sent successfully",
     "sms": {
       "sid": "SM...",
-      "to": "\+1XXXXXXXXXX",
-      "from": "\+1XXXXXXXXXX",
+      "to": "+1XXXXXXXXXX",
+      "from": "+1XXXXXXXXXX",
       "status": "queued"
     }
   }
@@ -89,8 +89,8 @@ Webhooks are called by external services (Twilio, Resend) that don't have auth t
 
 **Check Twilio Logs**:
 ```bash
-curl -X GET "https://api.twilio.com/2010-04-01/Accounts/ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/Messages.json?PageSize=5" \
-  -u "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+curl -X GET "https://api.twilio.com/2010-04-01/Accounts/YOUR_ACCOUNT_SID/Messages.json?PageSize=5" \
+  -u "YOUR_ACCOUNT_SID:YOUR_AUTH_TOKEN"
 ```
 
 Look for:
@@ -135,7 +135,7 @@ cat .env.local | grep TWILIO
 # Expected:
 # TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# TWILIO_PHONE_NUMBER=\+1XXXXXXXXXX
+# TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 ```
 
 ---

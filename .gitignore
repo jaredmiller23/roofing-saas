@@ -63,3 +63,5 @@ logs/
 
 # OS Files
 Thumbs.db
+# Archive secrets
+archive/**/.env*
