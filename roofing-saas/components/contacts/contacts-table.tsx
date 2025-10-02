@@ -22,6 +22,8 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const [page, setPage] = useState(parseInt((params.page as string) || '1'))
   const [sortField, setSortField] = useState<SortField>((params.sort as SortField) || 'name')
   const [sortDirection, setSortDirection] = useState<SortDirection>((params.sort_order as SortDirection) || 'asc')
+  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
+  const [bulkActionLoading, setBulkActionLoading] = useState(false)
 
   useEffect(() => {
     async function fetchContacts() {
@@ -105,6 +107,63 @@ export function ContactsTable({ params }: ContactsTableProps) {
     }
   }
 
+  const toggleSelectAll = () => {
+    if (selectedContacts.size === contacts.length) {
+      setSelectedContacts(new Set())
+    } else {
+      setSelectedContacts(new Set(contacts.map(c => c.id)))
+    }
+  }
+
+  const toggleSelectContact = (id: string) => {
+    const newSelected = new Set(selectedContacts)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedContacts(newSelected)
+  }
+
+  const handleBulkAction = async (action: string, value?: string) => {
+    if (selectedContacts.size === 0) return
+
+    setBulkActionLoading(true)
+
+    try {
+      const updates: Promise<Response>[] = []
+
+      for (const contactId of selectedContacts) {
+        let body = {}
+
+        if (action === 'stage') body = { stage: value }
+        else if (action === 'priority') body = { priority: value }
+        else if (action === 'delete') {
+          updates.push(fetch(`/api/contacts/${contactId}`, { method: 'DELETE' }))
+          continue
+        }
+
+        updates.push(
+          fetch(`/api/contacts/${contactId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+        )
+      }
+
+      await Promise.all(updates)
+
+      // Refresh the list
+      window.location.reload()
+    } catch (error) {
+      console.error('Bulk action failed:', error)
+      alert('Failed to apply bulk action')
+    } finally {
+      setBulkActionLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -153,11 +212,73 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Bulk Actions Bar */}
+      {selectedContacts.size > 0 && (
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-blue-900">
+              {selectedContacts.size} contact{selectedContacts.size > 1 ? 's' : ''} selected
+            </span>
+            <button
+              onClick={() => setSelectedContacts(new Set())}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              onChange={(e) => handleBulkAction('stage', e.target.value)}
+              disabled={bulkActionLoading}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              defaultValue=""
+            >
+              <option value="" disabled>Change Stage</option>
+              <option value="lead">Lead</option>
+              <option value="active">Active</option>
+              <option value="customer">Customer</option>
+              <option value="lost">Lost</option>
+            </select>
+            <select
+              onChange={(e) => handleBulkAction('priority', e.target.value)}
+              disabled={bulkActionLoading}
+              className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              defaultValue=""
+            >
+              <option value="" disabled>Change Priority</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </select>
+            <button
+              onClick={() => {
+                if (confirm(`Delete ${selectedContacts.size} contact(s)?`)) {
+                  handleBulkAction('delete')
+                }
+              }}
+              disabled={bulkActionLoading}
+              className="text-sm px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left">
+                <input
+                  type="checkbox"
+                  checked={contacts.length > 0 && selectedContacts.size === contacts.length}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+              </th>
               <SortableHeader field="name">Name</SortableHeader>
               <SortableHeader field="email">Email</SortableHeader>
               <SortableHeader field="phone">Phone</SortableHeader>
@@ -170,7 +291,15 @@ export function ContactsTable({ params }: ContactsTableProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {contacts.map((contact) => (
-              <tr key={contact.id} className="hover:bg-gray-50">
+              <tr key={contact.id} className={`hover:bg-gray-50 ${selectedContacts.has(contact.id) ? 'bg-blue-50' : ''}`}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectedContacts.has(contact.id)}
+                    onChange={() => toggleSelectContact(contact.id)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Link
                     href={`/contacts/${contact.id}`}
