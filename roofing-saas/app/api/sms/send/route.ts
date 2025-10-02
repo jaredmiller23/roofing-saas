@@ -17,7 +17,7 @@ const sendSMSSchema = z.object({
   body: z.string().min(1, 'Message body is required').max(1600, 'SMS body too long'),
   contactId: z.string().uuid().optional(),
   templateId: z.string().uuid().optional(),
-  templateVariables: z.record(z.string()).optional(),
+  templateVariables: z.record(z.string(), z.string()).optional(),
 })
 
 /**

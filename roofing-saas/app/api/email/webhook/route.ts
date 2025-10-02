@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update activity metadata based on event type
-    const updatedMetadata = {
-      ...(activity.metadata as Record<string, any>),
+    const updatedMetadata: Record<string, unknown> = {
+      ...(activity.metadata as Record<string, unknown>),
       last_event: type,
       last_event_timestamp: new Date().toISOString(),
     }

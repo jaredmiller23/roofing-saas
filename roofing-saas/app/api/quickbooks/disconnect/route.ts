@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
  * Disconnect QuickBooks integration
  * POST /api/quickbooks/disconnect
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(request: NextRequest) {
   try {
     // Verify user is authenticated

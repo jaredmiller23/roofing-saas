@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createTerritorySchema.safeParse(body)
 
     if (!validatedData.success) {
-      const errors = validatedData.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      const errors = validatedData.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
       throw new Error(errors)
     }
 

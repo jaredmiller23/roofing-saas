@@ -14,7 +14,7 @@ import { z } from 'zod'
 
 const triggerWorkflowSchema = z.object({
   trigger_type: z.string(),
-  trigger_data: z.record(z.any()),
+  trigger_data: z.record(z.string(), z.any()),
 })
 
 /**

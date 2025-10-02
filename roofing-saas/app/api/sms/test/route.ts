@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validatedData = testSMSSchema.safeParse(body)
     if (!validatedData.success) {
-      const errors = validatedData.error.errors.map(e => e.message).join(', ')
+      const errors = validatedData.error.issues.map(e => e.message).join(', ')
       throw new Error(errors)
     }
 

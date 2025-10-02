@@ -17,7 +17,7 @@ import { createClient } from '@/lib/supabase/server'
  * - Activities in territory
  * - Recent activity
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
@@ -33,8 +33,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return errorResponse(new Error('No tenant found for user'), 403)
     }
 
+    const { id } = await params
     const supabase = await createClient()
-    const territoryId = params.id
+    const territoryId = id
 
     // Verify territory exists and belongs to tenant
     const { data: territory, error: territoryError } = await supabase
@@ -54,55 +55,55 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // or use PostGIS to query contacts within the territory boundary
 
     // Count contacts (simplified - would need territory assignment field)
-    const { count: contactCount, error: contactError } = await supabase
+    const { count: contactCount } = await supabase
       .from('contacts')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
     // Count projects (simplified)
-    const { count: projectCount, error: projectError } = await supabase
+    const { count: projectCount } = await supabase
       .from('projects')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
     // Count photos (simplified)
-    const { count: photoCount, error: photoError } = await supabase
+    const { count: photoCount } = await supabase
       .from('photos')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
     // Count activities (simplified)
-    const { count: activityCount, error: activityError } = await supabase
+    const { count: activityCount } = await supabase
       .from('activities')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
     // Get pipeline stage breakdown
-    const { data: stageBreakdown, error: stageError } = await supabase
+    const { data: stageBreakdown } = await supabase
       .from('contacts')
       .select('pipeline_stage')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
-    const stageStats = stageBreakdown?.reduce((acc: Record<string, number>, contact: any) => {
-      const stage = contact.pipeline_stage || 'unassigned'
+    const stageStats = stageBreakdown?.reduce((acc: Record<string, number>, contact: Record<string, unknown>) => {
+      const stage = (contact.pipeline_stage as string) || 'unassigned'
       acc[stage] = (acc[stage] || 0) + 1
       return acc
     }, {}) || {}
 
     // Get project status breakdown
-    const { data: projectStatusData, error: statusError } = await supabase
+    const { data: projectStatusData } = await supabase
       .from('projects')
       .select('status')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
-    const projectStatusStats = projectStatusData?.reduce((acc: Record<string, number>, project: any) => {
-      const status = project.status || 'unknown'
+    const projectStatusStats = projectStatusData?.reduce((acc: Record<string, number>, project: Record<string, unknown>) => {
+      const status = (project.status as string) || 'unknown'
       acc[status] = (acc[status] || 0) + 1
       return acc
     }, {}) || {}

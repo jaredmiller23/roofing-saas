@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     if (metadataStr) {
       try {
         metadata = JSON.parse(metadataStr)
-      } catch (error) {
+      } catch {
         throw new Error('Invalid metadata JSON')
       }
     }
@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
       })
 
     if (storageError) {
-      logger.error('Storage upload error', { error: storageError })
+      logger.error('Storage upload error', {
+        error: storageError,
+        message: storageError.message
+      })
       throw new Error(`Failed to upload photo: ${storageError.message}`)
     }
 

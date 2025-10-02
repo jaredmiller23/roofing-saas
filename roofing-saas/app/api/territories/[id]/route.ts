@@ -22,7 +22,7 @@ const updateTerritorySchema = z.object({
  * GET /api/territories/[id]
  * Get a single territory by ID
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
@@ -38,8 +38,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return errorResponse(new Error('No tenant found for user'), 403)
     }
 
+    const { id } = await params
     const supabase = await createClient()
-    const territoryId = params.id
+    const territoryId = id
 
     // Fetch territory
     const { data, error } = await supabase
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  * PATCH /api/territories/[id]
  * Update a territory
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
@@ -88,14 +89,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return errorResponse(new Error('No tenant found for user'), 403)
     }
 
-    const territoryId = params.id
+    const { id } = await params
+    const territoryId = id
 
     // Parse and validate request body
     const body = await request.json()
     const validatedData = updateTerritorySchema.safeParse(body)
 
     if (!validatedData.success) {
-      const errors = validatedData.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      const errors = validatedData.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
       throw new Error(errors)
     }
 
@@ -129,7 +131,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     // Build update object with only provided fields
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     }
 
@@ -178,7 +180,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
  * DELETE /api/territories/[id]
  * Soft delete a territory
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
@@ -194,8 +196,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return errorResponse(new Error('No tenant found for user'), 403)
     }
 
+    const { id } = await params
     const supabase = await createClient()
-    const territoryId = params.id
+    const territoryId = id
 
     // Verify territory exists and belongs to tenant
     const { data: existingTerritory, error: fetchError } = await supabase

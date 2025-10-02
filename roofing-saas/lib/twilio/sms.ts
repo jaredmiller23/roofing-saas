@@ -4,7 +4,7 @@
  */
 
 import { twilioClient, getTwilioPhoneNumber, isTwilioConfigured } from './client'
-import { withRetry, RetryOptions } from '@/lib/quickbooks/retry'
+import { withRetry, RetryOptions } from '@/lib/api/retry'
 import { logger } from '@/lib/logger'
 import { TwilioError } from './errors'
 
@@ -50,7 +50,7 @@ export async function sendSMS(params: SendSMSParams): Promise<SMSResponse> {
 
   const retryOptions: RetryOptions = {
     maxAttempts: 3,
-    baseDelay: 1000,
+    initialDelay: 1000,
     maxDelay: 5000,
   }
 

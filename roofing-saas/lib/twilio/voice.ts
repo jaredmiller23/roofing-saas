@@ -47,7 +47,7 @@ export async function makeCall(params: MakeCallParams): Promise<CallResponse> {
 
   const retryOptions: RetryOptions = {
     maxAttempts: 3,
-    baseDelay: 1000,
+    initialDelay: 1000,
     maxDelay: 5000,
   }
 

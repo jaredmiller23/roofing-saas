@@ -7,6 +7,7 @@ import {
   getActivitySummary,
   getCallVolumeByDay,
   type AnalyticsPeriod,
+  type ActivitySummary,
 } from '@/lib/twilio/analytics'
 
 /**
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'summary'
     const days = parseInt(searchParams.get('days') || '30')
 
-    let data: any
+    let data: ActivitySummary | Array<{ date: string; inbound: number; outbound: number }>
 
     if (type === 'call_volume') {
       // Get call volume by day for charting

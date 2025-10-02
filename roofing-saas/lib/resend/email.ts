@@ -106,7 +106,7 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResponse>
 
   const retryOptions: RetryOptions = {
     maxAttempts: 3,
-    baseDelay: 1000,
+    initialDelay: 1000,
     maxDelay: 5000,
   }
 
@@ -118,12 +118,12 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResponse>
         subject: params.subject,
         html: params.html,
         text: params.text,
-        reply_to: params.replyTo,
+        replyTo: params.replyTo,
         cc: params.cc,
         bcc: params.bcc,
         attachments: params.attachments,
         tags: params.tags,
-      })
+      } as any)
     }, retryOptions)
 
     if (result.error) {

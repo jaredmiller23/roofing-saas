@@ -7,6 +7,7 @@ import { randomBytes } from 'crypto'
  * Initiate QuickBooks OAuth flow
  * GET /api/quickbooks/auth
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
   try {
     // Verify user is authenticated

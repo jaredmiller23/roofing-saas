@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
  * Refresh QuickBooks OAuth tokens
  * POST /api/quickbooks/refresh
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(request: NextRequest) {
   try {
     // Verify user is authenticated
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
       success: true,
       expiresAt: tokenExpiresAt.toISOString(),
     })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Token refresh error:', error)
 

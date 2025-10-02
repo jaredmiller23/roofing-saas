@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { compressImage } from '@/lib/storage/photos'
-import { addPendingUpload } from '@/lib/db/indexeddb'
+import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface PhotoUploadProps {
@@ -115,19 +115,37 @@ export function PhotoUpload({
             message: isOnline ? 'Queueing for upload...' : 'Offline - queueing for later...',
           })
 
-          await addPendingUpload({
-            tenant_id: tenantId,
-            contact_id: contactId,
-            project_id: projectId,
-            file: compressed.file,
-            file_name: file.name,
-            file_type: compressed.file.type,
-            metadata: {
-              originalSize: compressed.originalSize,
-              compressedSize: compressed.compressedSize,
-              compressionRatio: compressed.compressionRatio,
+          // Get geolocation if available
+          let latitude: number | undefined
+          let longitude: number | undefined
+
+          if ('geolocation' in navigator) {
+            try {
+              const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  timeout: 5000,
+                  enableHighAccuracy: false
+                })
+              })
+              latitude = position.coords.latitude
+              longitude = position.coords.longitude
+            } catch (error) {
+              console.log('Geolocation not available, continuing without coordinates')
+            }
+          }
+
+          await addPhotoToQueue(
+            compressed.file,
+            contactId || '',
+            {
+              capturedAt: new Date().toISOString(),
+              latitude,
+              longitude,
+              notes: `Original: ${(compressed.originalSize / 1024 / 1024).toFixed(1)}MB, Compressed: ${(compressed.compressedSize / 1024 / 1024).toFixed(1)}MB (${compressed.compressionRatio}% reduction)`,
             },
-          })
+            tenantId,
+            projectId
+          )
 
           setUploadState({
             status: 'success',
@@ -419,7 +437,7 @@ export function PhotoUpload({
           {/* Mode indicator */}
           {mode === 'queue' && uploadState.status === 'idle' && (
             <p className="text-xs text-gray-500">
-              Photos will be queued and uploaded when you're back online.
+              Photos will be queued and uploaded when you&apos;re back online.
             </p>
           )}
         </div>

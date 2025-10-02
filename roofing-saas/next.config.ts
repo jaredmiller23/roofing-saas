@@ -5,7 +5,12 @@ const withPWA = withPWAInit({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === 'development', // Disable PWA in development to avoid Turbopack conflicts
+  // Background sync for offline photo queue
+  workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
+  },
   // Caching strategies
   runtimeCaching: [
     {
@@ -132,7 +137,7 @@ const withPWA = withPWAInit({
       },
     },
     {
-      urlPattern: ({ url }) => {
+      urlPattern: ({ url }: { url: URL }) => {
         const isSameOrigin = self.origin === url.origin;
         if (!isSameOrigin) return false;
         const pathname = url.pathname;
@@ -151,7 +156,7 @@ const withPWA = withPWAInit({
       },
     },
     {
-      urlPattern: ({ url }) => {
+      urlPattern: ({ url }: { url: URL }) => {
         const isSameOrigin = self.origin === url.origin;
         return isSameOrigin && url.pathname.startsWith("/api/");
       },
@@ -170,7 +175,16 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'wfifizczqvogbcqamnmw.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
 };
 
 export default withPWA(nextConfig);

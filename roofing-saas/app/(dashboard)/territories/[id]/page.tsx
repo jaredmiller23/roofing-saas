@@ -51,8 +51,8 @@ export default function TerritoryDetailPage() {
         // API wraps response in {success, data} format
         const territory = result.data?.territory || result.territory || result.data || result
         setTerritory(territory)
-      } catch (err: any) {
-        setError(err.message || 'Failed to load territory')
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load territory')
       } finally {
         setLoading(false)
       }
@@ -75,8 +75,8 @@ export default function TerritoryDetailPage() {
       }
 
       router.push('/territories')
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete territory')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete territory')
       setDeleteConfirm(false)
     }
   }
@@ -215,7 +215,7 @@ export default function TerritoryDetailPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Territory Map</h2>
             <TerritoryMap
               territories={[territory]}
-              selectedTerritoryId={territory.id}
+              selectedTerritory={territory}
               height="600px"
             />
           </div>

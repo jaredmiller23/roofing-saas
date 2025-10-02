@@ -23,7 +23,7 @@ const sendEmailSchema = z.object({
   text: z.string().optional(),
   contactId: z.string().uuid().optional(),
   templateId: z.string().uuid().optional(),
-  templateVariables: z.record(z.string()).optional(),
+  templateVariables: z.record(z.string(), z.string()).optional(),
   replyTo: z.string().email().optional(),
   cc: z.union([z.string().email(), z.array(z.string().email())]).optional(),
   bcc: z.union([z.string().email(), z.array(z.string().email())]).optional(),
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // If using a template, fetch and process it
     let finalHtml = html
-    let finalText = text
+    const finalText = text
     let finalSubject = subject
 
     if (templateId) {

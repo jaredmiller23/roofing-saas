@@ -127,8 +127,10 @@ export function TerritoryMap({
             fillOpacity: isSelected ? 0.3 : 0.15,
           },
           onEachFeature: (feature, layer) => {
+            const pathLayer = layer as L.Path
+
             // Add click handler
-            layer.on('click', () => {
+            pathLayer.on('click', () => {
               onTerritoryClick?.(territory)
             })
 
@@ -139,18 +141,18 @@ export function TerritoryMap({
                 ${territory.description ? `<p class="text-xs text-gray-600 mt-1">${territory.description}</p>` : ''}
               </div>
             `
-            layer.bindPopup(popupContent)
+            pathLayer.bindPopup(popupContent)
 
             // Add hover effect
-            layer.on('mouseover', () => {
-              layer.setStyle({
+            pathLayer.on('mouseover', () => {
+              pathLayer.setStyle({
                 fillOpacity: 0.4,
                 weight: 3,
               })
             })
 
-            layer.on('mouseout', () => {
-              layer.setStyle({
+            pathLayer.on('mouseout', () => {
+              pathLayer.setStyle({
                 fillOpacity: isSelected ? 0.3 : 0.15,
                 weight: isSelected ? 3 : 2,
               })

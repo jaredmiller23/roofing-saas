@@ -35,7 +35,6 @@ export function PhotoGallery({
   const [photos, setPhotos] = useState<Photo[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   // Fetch photos
   const fetchPhotos = useCallback(async () => {
@@ -52,7 +51,9 @@ export function PhotoGallery({
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to load photos')
+        // API returns {error: {message: "..."}}
+        const errorMessage = errorData.error?.message || errorData.error || 'Failed to load photos'
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -76,6 +77,10 @@ export function PhotoGallery({
   // Handle photo deletion
   const handleDelete = useCallback(
     async (photoId: string) => {
+      if (!confirm('Are you sure you want to delete this photo?')) {
+        return
+      }
+
       try {
         const response = await fetch(`/api/photos?id=${photoId}`, {
           method: 'DELETE',
@@ -83,18 +88,21 @@ export function PhotoGallery({
 
         if (!response.ok) {
           const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to delete photo')
+          // API returns {error: {message: "..."}}
+          const errorMessage = errorData.error?.message || errorData.error || 'Failed to delete photo'
+          throw new Error(errorMessage)
         }
 
         // Remove from local state
         setPhotos(prev => prev.filter(p => p.id !== photoId))
-        setDeleteConfirm(null)
 
         // Notify parent
         onPhotoDelete?.(photoId)
-      } catch (err) {
+      } catch (err: any) {
         console.error('Photo delete error:', err)
-        alert(err instanceof Error ? err.message : 'Failed to delete photo')
+        // Extract error message properly
+        const errorMessage = err?.message || err?.error || 'Failed to delete photo'
+        alert(errorMessage)
       }
     },
     [onPhotoDelete]
@@ -107,16 +115,7 @@ export function PhotoGallery({
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
     }).format(date)
-  }
-
-  // Format file size
-  const formatSize = (bytes?: number) => {
-    if (!bytes) return 'Unknown'
-    const mb = bytes / 1024 / 1024
-    return `${mb.toFixed(1)} MB`
   }
 
   return (
@@ -175,81 +174,77 @@ export function PhotoGallery({
           </div>
         )}
 
-        {/* Photo grid */}
+        {/* SIMPLE Photo grid that WORKS */}
         {photos.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '16px'
+          }}>
             {photos.map((photo, index) => (
-              <div key={photo.id} className="relative group">
-                {/* Photo thumbnail */}
-                <div
-                  className="aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+              <div key={photo.id} style={{position: 'relative'}}>
+                {/* Just the image, no wrappers */}
+                <img
+                  src={photo.file_url}
+                  alt={`Photo ${index + 1}`}
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'block'
+                  }}
                   onClick={() => onPhotoClick?.(photo, index, photos)}
+                />
+
+                {/* Simple delete button - always visible */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(photo.id)
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    padding: '6px 12px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.95)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.95)'}
                 >
-                  <img
-                    src={photo.thumbnail_url || photo.file_url}
-                    alt={`Photo ${index + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    loading="lazy"
-                  />
-                </div>
+                  Delete
+                </button>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity rounded-lg flex items-end">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 w-full">
-                    {/* Delete button */}
-                    {deleteConfirm === photo.id ? (
-                      <div className="flex gap-1">
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleDelete(photo.id)
-                          }}
-                          className="flex-1 px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            setDeleteConfirm(null)
-                          }}
-                          className="flex-1 px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          setDeleteConfirm(photo.id)
-                        }}
-                        className="w-full px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Photo info */}
-                <div className="mt-1 text-xs text-gray-500 truncate">
+                {/* Photo date */}
+                <div style={{
+                  marginTop: '4px',
+                  fontSize: '12px',
+                  color: '#6b7280'
+                }}>
                   {formatDate(photo.created_at)}
                 </div>
-
-                {/* Compression info (if available) */}
-                {photo.metadata?.compressionRatio && (
-                  <div className="text-xs text-gray-400 truncate">
-                    {formatSize(photo.metadata.compressedSize)}
-                    <span className="text-green-600 ml-1">
-                      (-{photo.metadata.compressionRatio}%)
-                    </span>
-                  </div>
-                )}
               </div>
             ))}
           </div>
         )}
+
+        {/* Add CSS for hover effect */}
+        <style jsx>{`
+          .delete-btn:hover {
+            opacity: 1 !important;
+          }
+          div:hover .delete-btn {
+            opacity: 1;
+          }
+        `}</style>
       </CardContent>
     </Card>
   )

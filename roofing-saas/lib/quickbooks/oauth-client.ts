@@ -36,8 +36,8 @@ export function getQuickBooksApiUrl(): string {
  * OAuth scopes required for the application
  */
 export const QUICKBOOKS_SCOPES = [
-  OAuthClient.scopes.Accounting, // com.intuit.quickbooks.accounting
-  OAuthClient.scopes.OpenId,     // openid
-  OAuthClient.scopes.Profile,    // profile
-  OAuthClient.scopes.Email,      // email
+  ...OAuthClient.scopes.Accounting, // com.intuit.quickbooks.accounting
+  ...OAuthClient.scopes.OpenId,     // openid
+  ...OAuthClient.scopes.Profile,    // profile
+  ...OAuthClient.scopes.Email,      // email
 ]

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { TerritoryForm } from '@/components/territories/TerritoryForm'
 import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'
+import type { TerritoryBoundary } from '@/lib/geo/territory'
 
 /**
  * Create new territory page
@@ -17,9 +18,9 @@ import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'
  */
 export default function NewTerritoryPage() {
   const router = useRouter()
-  const [boundaryData, setBoundaryData] = useState<any>(null)
+  const [boundaryData, setBoundaryData] = useState<TerritoryBoundary | null>(null)
 
-  const handleBoundaryChange = (boundary: any) => {
+  const handleBoundaryChange = (boundary: TerritoryBoundary | null) => {
     setBoundaryData(boundary)
   }
 

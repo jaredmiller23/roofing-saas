@@ -14,14 +14,14 @@ const createWorkflowSchema = z.object({
   name: z.string().min(1, 'Workflow name is required').max(200),
   description: z.string().optional(),
   trigger_type: z.string(),
-  trigger_config: z.record(z.any()).optional().default({}),
+  trigger_config: z.record(z.string(), z.any()).optional().default({}),
   is_active: z.boolean().optional().default(true),
   steps: z
     .array(
       z.object({
         step_order: z.number(),
         step_type: z.string(),
-        step_config: z.record(z.any()),
+        step_config: z.record(z.string(), z.any()),
         delay_minutes: z.number().optional().default(0),
       })
     )
