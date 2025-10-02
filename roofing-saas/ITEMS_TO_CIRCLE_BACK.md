@@ -90,18 +90,29 @@
 - ✅ Foreign keys to contacts/projects/tenants
 - ✅ JSONB metadata for compression info
 
-### 8. Component Testing
+### 8. Photo Gallery Display Fix ✅ COMPLETE
+**Status**: ✅ FIXED (October 2, 2025 - 12:10 AM)
+**Issue**: Uploaded photos not displaying in gallery
+**Root Cause**: PhotoGallery component parsing unwrapped response (`result.photos`) instead of wrapped format (`result.data.photos`)
+**Fix**: Updated PhotoGallery.tsx line 60 to handle wrapped API response format
+
+**Files Fixed**:
+- components/photos/PhotoGallery.tsx
+
+### 9. Component Testing
 **Status**: ⏳ READY TO TEST
 **Completed Tests**:
 - ✅ Territory polygon drawing
 - ✅ Territory list view
 - ✅ Territory detail view
 - ✅ Territory map visualization
+- ✅ Photo upload with file picker (desktop)
+- ✅ Photo compression validation
+- ✅ Photo gallery display
 
 **Ready to Test**:
 - [ ] Photo upload with camera (mobile device required)
-- [ ] Photo upload with file picker (desktop) 🎯 TEST NOW
-- [ ] Photo compression validation
+- [ ] Photo deletion
 - [ ] Offline photo queue (disable network)
 - [ ] Territory boundary editing
 - [ ] PWA install prompt

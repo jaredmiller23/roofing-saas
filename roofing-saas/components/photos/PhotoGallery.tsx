@@ -56,7 +56,8 @@ export function PhotoGallery({
       }
 
       const result = await response.json()
-      setPhotos(result.photos || [])
+      // API wraps response in {success, data} format
+      setPhotos(result.data?.photos || result.photos || [])
     } catch (err) {
       console.error('Photo fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to load photos')
