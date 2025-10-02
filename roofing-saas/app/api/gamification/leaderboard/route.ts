@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
     // Get leaderboard
     const { data: leaderboard, error } = await supabase
-      .from('gamification_points')
+      .from('gamification_scores')
       .select(`
         user_id,
         total_points,
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     let userRank = null
     if (user) {
       const { data: userStats } = await supabase
-        .from('gamification_points')
+        .from('gamification_scores')
         .select('*')
         .eq('user_id', user.id)
         .single()
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       if (userStats) {
         // Count how many users have more points
         const { count } = await supabase
-          .from('gamification_points')
+          .from('gamification_scores')
           .select('*', { count: 'exact', head: true })
           .gt(orderColumn, userStats[orderColumn])
 

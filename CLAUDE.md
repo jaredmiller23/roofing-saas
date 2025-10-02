@@ -36,6 +36,86 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 - Solo developer + Claude Code building together
 - Client has explicitly requested all features in PRD.md
 
+### Development Environment
+- **OS**: macOS (Apple Silicon ARM64)
+- **Primary Browser**: Safari/WebKit (not Chrome)
+- **Important**: Claude Code may assume Windows/Chrome - always verify Mac/Safari compatibility
+- **Playwright Browsers**: Chromium (1179), WebKit (2182), Firefox (1490) installed
+- **Testing Priority**: Safari (WebKit) first, then Chromium, then Firefox
+
+## 🎯 ARCHON MCP WORKFLOW - CRITICAL
+
+**⚠️ ARCHON IS FIRST & LAST STOP FOR EVERY SESSION ⚠️**
+
+### MANDATORY Workflow (NO EXCEPTIONS):
+
+**1. START OF SESSION - ALWAYS:**
+```
+mcp__archon__find_tasks(filter_by="status", filter_value="todo")
+```
+- Get current TODO tasks from Archon
+- Review what needs to be done
+- Ask user which task to work on OR suggest priority based on task_order
+
+**2. START OF WORK - MARK IN PROGRESS:**
+```
+mcp__archon__manage_task("update", task_id="...", status="doing")
+```
+- Mark task as "doing" before starting work
+- ONLY ONE task should be "doing" at a time
+
+**3. DURING WORK - USE LOCAL TODO FOR GRANULAR TRACKING:**
+- Use TodoWrite for step-by-step progress within the task
+- First local todo: Update Archon task status
+- Keep local todos aligned with Archon task
+
+**4. AFTER COMPLETING WORK - UPDATE STATUS:**
+```
+mcp__archon__manage_task("update", task_id="...", status="done")
+OR
+mcp__archon__manage_task("update", task_id="...", status="review")
+```
+- Mark "done" if fully complete
+- Mark "review" if needs user verification
+
+**5. END OF SESSION - DOCUMENT WORK:**
+```
+mcp__archon__manage_task("create",
+  project_id="...",
+  title="Clear descriptive title",
+  description="Detailed description of what was accomplished",
+  status="done",
+  feature="Phase X or Infrastructure or Component"
+)
+```
+- Create tasks for ALL work completed during session
+- Include file paths, key decisions, status
+- Create follow-up tasks if verification needed
+
+**6. CREATE FOLLOW-UP TASKS:**
+```
+mcp__archon__manage_task("create",
+  project_id="...",
+  title="Verify [thing] after [time/condition]",
+  description="What needs verification and how to verify it",
+  status="todo",
+  assignee="User" or "AI IDE Agent",
+  task_order=100  // Higher priority
+)
+```
+
+### NEVER:
+- ❌ Start work without checking Archon tasks
+- ❌ Complete work without updating Archon
+- ❌ Make assumptions about status without verification
+- ❌ Say "you're all set" or "up and running" without actual checks
+- ❌ End session without documenting work in Archon
+
+### Project ID:
+```
+Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
+```
+
 ## 🛠 TECH STACK (DECIDED - DO NOT CHANGE)
 
 ```javascript
@@ -166,12 +246,14 @@ Create tables in Supabase SQL Editor:
 
 ## ⚠️ CRITICAL RULES
 
-### Development Workflow (NEW - Oct 1)
-1. **Use Subagents Proactively** - Research before implementing
-2. **Leverage Checkpoints** - Experiment boldly, rewind if needed
-3. **Execute in Parallel** - Build multiple components simultaneously
-4. **30-Hour Sprints** - Use for complex features (contacts, voice AI)
-5. **Background Tasks** - Run tests while continuing development
+### Development Workflow (UPDATED - Oct 2)
+1. **ARCHON FIRST & LAST** - Check tasks before starting, update after finishing
+2. **Use Subagents Proactively** - Research before implementing
+3. **Leverage Checkpoints** - Experiment boldly, rewind if needed
+4. **Execute in Parallel** - Build multiple components simultaneously
+5. **30-Hour Sprints** - Use for complex features (contacts, voice AI)
+6. **Background Tasks** - Run tests while continuing development
+7. **NO ASSUMPTIONS** - Verify status, don't assume "all set" or "working"
 
 ### Project Standards
 1. **Follow PRD_v2.md phases** - Enhanced with parallel strategies

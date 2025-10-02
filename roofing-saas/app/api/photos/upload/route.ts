@@ -3,6 +3,7 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
+import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 
 /**
  * POST /api/photos/upload
@@ -116,6 +117,35 @@ export async function POST(request: NextRequest) {
       await supabase.storage.from('property-photos').remove([storageData.path])
       logger.error('Database insert error', { error })
       throw new Error(`Failed to save photo metadata: ${error.message}`)
+    }
+
+    // Award points for photo upload (non-blocking)
+    awardPointsSafe(
+      user.id,
+      POINT_VALUES.PHOTO_UPLOADED,
+      'Uploaded property photo',
+      data.id
+    )
+
+    // Check if this is part of a photo set (5+ photos for a property)
+    // and award bonus if applicable
+    if (contactId || projectId) {
+      const { count: photoCount } = await supabase
+        .from('photos')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .or(`contact_id.eq.${contactId},project_id.eq.${projectId}`)
+
+      if (photoCount && photoCount >= 5 && photoCount % 5 === 0) {
+        // Award bonus for every 5 photos
+        awardPointsSafe(
+          user.id,
+          POINT_VALUES.PHOTO_SET_COMPLETED,
+          `Completed photo set (${photoCount} photos)`,
+          data.id
+        )
+      }
     }
 
     const duration = Date.now() - startTime

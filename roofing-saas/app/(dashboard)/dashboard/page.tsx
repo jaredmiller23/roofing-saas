@@ -1,14 +1,18 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
+import { PointsDisplay } from '@/components/gamification/PointsDisplay'
+import { Leaderboard } from '@/components/gamification/Leaderboard'
+import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
 
 /**
  * Dashboard page - main landing page after authentication
  *
- * This is a placeholder that will be enhanced with:
- * - KPI widgets
+ * Features comprehensive KPI metrics and visualizations:
+ * - Revenue tracking and trends
  * - Pipeline overview
- * - Recent activities
- * - Quick actions
+ * - Activity metrics (door knocking, calls, emails)
+ * - Sales performance (conversion rate, avg deal size, sales cycle)
+ * - Team gamification (points & leaderboard)
  */
 export default async function DashboardPage() {
   const user = await getCurrentUser()
@@ -19,35 +23,26 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back!
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Signed in as {user.email}
-        </p>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back!
+          </h1>
           <p className="text-gray-600">
-            Your CRM dashboard will be built here in the next phase.
+            Signed in as {user.email}
           </p>
+        </div>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase">Total Contacts</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">0</p>
-            </div>
+        {/* Comprehensive KPI Dashboard */}
+        <DashboardMetrics />
 
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase">Active Projects</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">0</p>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase">This Month Revenue</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-2">$0</p>
-            </div>
+        {/* Gamification - Points & Leaderboard */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Performance</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PointsDisplay />
+            <Leaderboard period="daily" limit={5} />
           </div>
         </div>
       </div>

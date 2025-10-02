@@ -3,16 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import type { TerritoryBoundary } from '@/lib/geo/territory'
 
 interface Territory {
   id: string
   tenant_id: string
   name: string
   description?: string
-  boundary_data?: {
-    type: 'Polygon' | 'MultiPolygon'
-    coordinates: number[][][] | number[][][][]
-  }
+  boundary_data?: TerritoryBoundary
   assigned_to?: string
   created_at: string
   updated_at: string
@@ -23,10 +21,7 @@ interface TerritoryFormProps {
   mode?: 'create' | 'edit'
   onSuccess?: (territory: Territory) => void
   onCancel?: () => void
-  boundaryData?: {
-    type: 'Polygon' | 'MultiPolygon'
-    coordinates: number[][][] | number[][][][]
-  }
+  boundaryData?: TerritoryBoundary | null
 }
 
 export function TerritoryForm({

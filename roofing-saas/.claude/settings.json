@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "description": "TypeScript type check before code changes",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${workspaceFolder}/.claude/hooks/typecheck.sh",
+            "timeout": 30000,
+            "continueOnError": false
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "description": "ESLint validation before code changes",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${workspaceFolder}/.claude/hooks/lint.sh",
+            "timeout": 30000,
+            "continueOnError": false
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "description": "Build validation after session completion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${workspaceFolder}/.claude/hooks/build-check.sh",
+            "timeout": 120000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  }
+}

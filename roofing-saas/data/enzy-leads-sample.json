@@ -1,0 +1,185 @@
+{
+  "totalLeads": 20,
+  "leads": [
+    {
+      "customerName": "Beau Joyner",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "244 Stone Edge Cir, Kingsport, TN 37660, USA",
+      "appointment": "Wed, Oct 01 04:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Mark Lee",
+      "setter": "Dillan Weeks",
+      "closer": "Dillan Weeks",
+      "address": "120 Monte Vista Dr, Kingsport, TN 37660, USA",
+      "appointment": "Wed, Oct 01 12:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection No Damage"
+    },
+    {
+      "customerName": "Asha Martin",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "301 Glen Ave, Kingsport, TN 37665, USA",
+      "appointment": "Fri, Oct 03 01:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "Appointment Schedule..."
+    },
+    {
+      "customerName": "Arlene Carr",
+      "setter": "Dillan Weeks",
+      "closer": "Dillan Weeks",
+      "address": "500 Northcott Dr, Kingsport, TN 37660, USA",
+      "appointment": "Tue, Sep 30 02:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Tim Lewis",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "2224 Hall St, Kingsport, TN 37660, USA",
+      "appointment": "Fri, Oct 31 08:00AM",
+      "team": "Team Tri City",
+      "leadStatus": "Appointment Schedule..."
+    },
+    {
+      "customerName": "Frenchie Page",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "813 Terry Dr, Kingsport, TN 37660, USA",
+      "appointment": "Tue, Sep 30 12:45PM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection No Damage"
+    },
+    {
+      "customerName": "David Carter",
+      "setter": "Dillan Weeks",
+      "closer": "Dillan Weeks",
+      "address": "233 Edward St, Kingsport, TN 37665, USA",
+      "appointment": "Mon, Sep 29 02:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Steve Addington",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "722 Hollis St, Kingsport, TN 37660, USA",
+      "appointment": "Fri, Sep 26 05:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Amanda Ingram",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "2105 Sheffield St, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 06:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Beverly Howell",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "188 Aurawood Dr, Kingsport, TN 37660, USA",
+      "appointment": "Tue, Sep 30 11:00AM",
+      "team": "Team Tri City",
+      "leadStatus": "Appointment Schedule..."
+    },
+    {
+      "customerName": "Steve Vaughn",
+      "setter": "Steven Myers",
+      "closer": "Unassigned",
+      "address": "1904 Hutchinson Dr, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 03:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "Appointment Schedule..."
+    },
+    {
+      "customerName": "Barbara Hawkins",
+      "setter": "Dillan Weeks",
+      "closer": "Dillan Weeks",
+      "address": "3436 Adaline St, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 03:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection No Damage"
+    },
+    {
+      "customerName": "Keli Vaughn",
+      "setter": "Steven Myers",
+      "closer": "Unassigned",
+      "address": "1904 Hutchinson Dr, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 03:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "Appointment Schedule..."
+    },
+    {
+      "customerName": "Sue Hall",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "1908 Holly St, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 02:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection No Damage"
+    },
+    {
+      "customerName": "Mike Kolar",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "1541 Rustic Dr, Newport, TN 37821, USA",
+      "appointment": "Sat, Sep 20 09:00AM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    },
+    {
+      "customerName": "Teresa don  Zimmer",
+      "setter": "Steven Myers",
+      "closer": "Steven Myers",
+      "address": "206 Galway Ct, Greeneville, TN 37745, USA",
+      "appointment": "Fri, Sep 19 02:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "Following Up"
+    },
+    {
+      "customerName": "Bryon Trantham",
+      "setter": "Steven Myers",
+      "closer": "Steven Myers",
+      "address": "104 Emerald Dr, Greeneville, TN 37745, USA",
+      "appointment": "Fri, Sep 19 12:30PM",
+      "team": "Team Tri City",
+      "leadStatus": "Following Up"
+    },
+    {
+      "customerName": "David Jennings",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "1061 Velma St, Kingsport, TN 37665, USA",
+      "appointment": "Thu, Sep 18 06:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection Damage"
+    },
+    {
+      "customerName": "Blake Brown",
+      "setter": "Lee Hunt",
+      "closer": "Lee Hunt",
+      "address": "3336 Grandview Dr, Kingsport, TN 37660, USA",
+      "appointment": "Mon, Sep 22 11:00AM",
+      "team": "Team Tri City",
+      "leadStatus": "Inspection Damage"
+    },
+    {
+      "customerName": "Carolyn Gilreath",
+      "setter": "Lee Hunt",
+      "closer": "Damien Weeks",
+      "address": "3332 Grandview Dr, Kingsport, TN 37660, USA",
+      "appointment": "Thu, Sep 18 04:00PM",
+      "team": "Team Tri City",
+      "leadStatus": "IRA Signed"
+    }
+  ]
+}

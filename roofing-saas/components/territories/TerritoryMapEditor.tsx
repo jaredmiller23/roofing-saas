@@ -5,6 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
+import type { TerritoryBoundary } from '@/lib/geo/territory'
 
 // Fix for default marker icons in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -13,11 +14,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
-
-interface TerritoryBoundary {
-  type: 'Polygon' | 'MultiPolygon'
-  coordinates: number[][][] | number[][][][]
-}
 
 interface TerritoryMapEditorProps {
   initialBoundary?: TerritoryBoundary | null

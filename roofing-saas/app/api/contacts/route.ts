@@ -12,6 +12,7 @@ import {
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type { ContactListResponse } from '@/lib/types/api'
+import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 
 /**
  * GET /api/contacts
@@ -171,6 +172,14 @@ export async function POST(request: NextRequest) {
       }
       throw mapSupabaseError(error)
     }
+
+    // Award points for creating a contact (non-blocking)
+    awardPointsSafe(
+      user.id,
+      POINT_VALUES.CONTACT_CREATED,
+      'Created new contact',
+      contact.id
+    )
 
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/contacts', 201, duration)

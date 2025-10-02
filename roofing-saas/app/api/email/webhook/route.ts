@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       case 'email.opened':
         updatedMetadata.opened_at = data.created_at
         updatedMetadata.opened = true
-        updatedMetadata.open_count = (updatedMetadata.open_count || 0) + 1
+        updatedMetadata.open_count = ((updatedMetadata.open_count as number) || 0) + 1
         // Store user agent and IP for analytics
         updatedMetadata.last_open_user_agent = data.user_agent
         updatedMetadata.last_open_ip = data.ip_address
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       case 'email.clicked':
         updatedMetadata.clicked_at = data.created_at
         updatedMetadata.clicked = true
-        updatedMetadata.click_count = (updatedMetadata.click_count || 0) + 1
+        updatedMetadata.click_count = ((updatedMetadata.click_count as number) || 0) + 1
         updatedMetadata.last_clicked_link = data.link
         break
 

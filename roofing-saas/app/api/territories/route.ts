@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 
 // GeoJSON validation schema
 const geoJSONSchema = z.object({
@@ -152,6 +153,14 @@ export async function POST(request: NextRequest) {
       logger.error('Territory create error', { error })
       throw new Error(`Failed to create territory: ${error.message}`)
     }
+
+    // Award points for creating a territory (non-blocking)
+    awardPointsSafe(
+      user.id,
+      POINT_VALUES.TERRITORY_CREATED,
+      'Created new territory',
+      data.id
+    )
 
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/territories', 201, duration)

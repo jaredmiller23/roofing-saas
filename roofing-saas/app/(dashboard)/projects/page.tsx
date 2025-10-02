@@ -1,18 +1,26 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
+import { ProjectsSearch } from '@/components/projects/projects-search'
+import { ProjectsTable } from '@/components/projects/projects-table'
+import Link from 'next/link'
 
 /**
  * Projects Page
  *
- * Displays all roofing projects/jobs for the tenant
- * This will be expanded in Phase 1 to include:
- * - Project list view
- * - Project details
- * - Job tracking
- * - Status updates
+ * Displays all roofing projects/jobs for the tenant with filtering and search
+ * Features:
+ * - Project list view with pagination
+ * - Search by name/number
+ * - Filter by status, pipeline, stage, assigned to
+ * - Quick access to project details
  */
-export default async function ProjectsPage() {
+
+interface ProjectsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const user = await getCurrentUser()
 
   if (!user) {
@@ -24,43 +32,32 @@ export default async function ProjectsPage() {
     redirect('/register')
   }
 
+  const params = await searchParams
+
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Manage your roofing projects and jobs
-        </p>
-      </div>
-
-      {/* Placeholder content */}
-      <div className="bg-white shadow rounded-lg p-8 text-center">
-        <div className="max-w-md mx-auto">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Manage your roofing projects and jobs
+            </p>
+          </div>
+          <Link
+            href="/projects/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">No projects yet</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Projects page is coming soon. This will display all your roofing jobs and their status.
-          </p>
+            New Project
+          </Link>
         </div>
-      </div>
 
-      {/* Debug info */}
-      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p className="text-sm text-gray-600">Debug: Tenant ID = {tenantId}</p>
-        <p className="text-sm text-gray-600">Debug: User = {user.email}</p>
+        {/* Search and Filters */}
+        <ProjectsSearch />
+
+        {/* Projects Table */}
+        <ProjectsTable params={params} />
       </div>
     </div>
   )

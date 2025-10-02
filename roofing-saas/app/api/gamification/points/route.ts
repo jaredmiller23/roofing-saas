@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     // Get user points and level
     const { data: points, error } = await supabase
-      .from('gamification_points')
+      .from('gamification_scores')
       .select('*')
       .eq('user_id', user.id)
       .single()
