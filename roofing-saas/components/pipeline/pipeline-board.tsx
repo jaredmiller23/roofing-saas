@@ -43,7 +43,8 @@ export function PipelineBoard() {
 
   async function fetchContacts() {
     try {
-      const response = await fetch('/api/contacts?limit=100')
+      // Fetch all contacts for pipeline view (increased limit to 2000)
+      const response = await fetch('/api/contacts?limit=2000')
       if (response.ok) {
         const result = await response.json()
         // Handle new response format: { success, data: { contacts, ... } }

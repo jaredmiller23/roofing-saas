@@ -42,7 +42,19 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
       actual_start,
       actual_completion,
       custom_fields,
-      contact:contact_id (
+      contact_id
+    `)
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+    .eq('is_deleted', false)
+    .single()
+
+  // Fetch contact details separately
+  let contact = null
+  if (project?.contact_id) {
+    const { data: contactData } = await supabase
+      .from('contacts')
+      .select(`
         id,
         first_name,
         last_name,
@@ -52,12 +64,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         address_city,
         address_state,
         address_zip
-      )
-    `)
-    .eq('id', id)
-    .eq('tenant_id', tenantId)
-    .eq('is_deleted', false)
-    .single()
+      `)
+      .eq('id', project.contact_id)
+      .single()
+    
+    contact = contactData
+  }
 
   if (error || !project) {
     notFound()
@@ -68,6 +80,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const pipeline = customFields?.proline_pipeline || null
   const stage = customFields?.proline_stage || null
   const assignedTo = customFields?.assigned_to || null
+
   const leadSource = customFields?.lead_source || null
   const tags = customFields?.tags || []
   const statusDates = customFields?.status_dates || {}
@@ -142,36 +155,34 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           {/* Left Column - Main Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Information */}
-            {project.contact && (
+            {contact && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">Name</label>
                     <p className="text-gray-900">
-                      {project.contact.first_name} {project.contact.last_name}
+                      {contact.first_name} {contact.last_name}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Phone</label>
-                    <p className="text-gray-900">{project.contact.phone || '—'}</p>
+                    <p className="text-gray-900">{contact.phone || '—'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-gray-900">{project.contact.email || '—'}</p>
+                    <p className="text-gray-900">{contact.email || '—'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Address</label>
                     <p className="text-gray-900">
-                      {project.contact.address_street ? (
+                      {contact.address_street ? (
                         <>
-                          {project.contact.address_street}
+                          {contact.address_street}
                           <br />
-                          {project.contact.address_city}, {project.contact.address_state} {project.contact.address_zip}
+                          {contact.address_city}, {contact.address_state} {contact.address_zip}
                         </>
-                      ) : (
-                        '—'
-                      )}
+                      ) : '—'}
                     </p>
                   </div>
                 </div>

@@ -9,6 +9,9 @@ interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
 }
 
+type SortField = 'name' | 'email' | 'phone' | 'stage' | 'type'
+type SortDirection = 'asc' | 'desc'
+
 export function ContactsTable({ params }: ContactsTableProps) {
   const router = useRouter()
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -16,6 +19,8 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(parseInt((params.page as string) || '1'))
+  const [sortField, setSortField] = useState<SortField>((params.sort as SortField) || 'name')
+  const [sortDirection, setSortDirection] = useState<SortDirection>((params.sort_order as SortDirection) || 'asc')
 
   useEffect(() => {
     async function fetchContacts() {
@@ -52,6 +57,30 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
     fetchContacts()
   }, [params])
+
+  const handleSort = (field: SortField) => {
+    const newDirection =
+      sortField === field && sortDirection === 'asc' ? 'desc' : 'asc'
+
+    setSortField(field)
+    setSortDirection(newDirection)
+
+    // Map frontend field names to database column names
+    const fieldMap: Record<SortField, string> = {
+      name: 'first_name',
+      email: 'email',
+      phone: 'phone',
+      stage: 'stage',
+      type: 'type',
+    }
+
+    const newParams = new URLSearchParams(params as Record<string, string>)
+    newParams.set('sort_by', fieldMap[field])
+    newParams.set('sort_order', newDirection)
+    newParams.set('page', '1') // Reset to first page when sorting
+
+    router.push(`/contacts?${newParams.toString()}`)
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this contact?')) {
@@ -105,6 +134,22 @@ export function ContactsTable({ params }: ContactsTableProps) {
     )
   }
 
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-blue-600">
+            {sortDirection === 'asc' ? '↑' : '↓'}
+          </span>
+        )}
+      </div>
+    </th>
+  )
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {/* Table */}
@@ -112,21 +157,11 @@ export function ContactsTable({ params }: ContactsTableProps) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Phone
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Stage
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
+              <SortableHeader field="name">Name</SortableHeader>
+              <SortableHeader field="email">Email</SortableHeader>
+              <SortableHeader field="phone">Phone</SortableHeader>
+              <SortableHeader field="stage">Stage</SortableHeader>
+              <SortableHeader field="type">Type</SortableHeader>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
