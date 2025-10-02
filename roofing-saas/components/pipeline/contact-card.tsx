@@ -3,6 +3,7 @@
 import { useDraggable } from '@dnd-kit/core'
 import { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
+import { Phone, MessageSquare, Mail } from 'lucide-react'
 
 interface ContactCardProps {
   contact: Contact
@@ -127,6 +128,43 @@ export function ContactCard({ contact, isDragging = false }: ContactCardProps) {
           >
             {contact.priority}
           </span>
+        )}
+      </div>
+
+      {/* Quick Actions - Mobile Friendly */}
+      <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+        {(contact.phone || contact.mobile_phone) && (
+          <a
+            href={`tel:${contact.phone || contact.mobile_phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-xs font-medium transition-colors"
+            title="Call"
+          >
+            <Phone className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Call</span>
+          </a>
+        )}
+        {(contact.phone || contact.mobile_phone) && (
+          <a
+            href={`sms:${contact.phone || contact.mobile_phone}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-xs font-medium transition-colors"
+            title="Text"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Text</span>
+          </a>
+        )}
+        {contact.email && (
+          <a
+            href={`mailto:${contact.email}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md text-xs font-medium transition-colors"
+            title="Email"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Email</span>
+          </a>
         )}
       </div>
     </div>

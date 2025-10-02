@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Phone, MessageSquare, Mail } from 'lucide-react'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -192,19 +193,55 @@ export function ContactsTable({ params }: ContactsTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
                   {contact.type}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <Link
-                    href={`/contacts/${contact.id}/edit`}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(contact.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center justify-end gap-2">
+                    {/* Quick Actions */}
+                    {(contact.phone || contact.mobile_phone) && (
+                      <a
+                        href={`tel:${contact.phone || contact.mobile_phone}`}
+                        className="inline-flex items-center justify-center w-8 h-8 bg-green-50 hover:bg-green-100 text-green-700 rounded-md transition-colors"
+                        title="Call"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Phone className="h-4 w-4" />
+                      </a>
+                    )}
+                    {(contact.phone || contact.mobile_phone) && (
+                      <a
+                        href={`sms:${contact.phone || contact.mobile_phone}`}
+                        className="inline-flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
+                        title="Text"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </a>
+                    )}
+                    {contact.email && (
+                      <a
+                        href={`mailto:${contact.email}`}
+                        className="inline-flex items-center justify-center w-8 h-8 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md transition-colors"
+                        title="Email"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </a>
+                    )}
+                    {/* Divider */}
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    {/* Edit/Delete */}
+                    <Link
+                      href={`/contacts/${contact.id}/edit`}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(contact.id)}
+                      className="text-red-600 hover:text-red-900 ml-2"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
