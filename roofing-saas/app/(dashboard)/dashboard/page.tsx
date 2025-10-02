@@ -4,6 +4,7 @@ import { PointsDisplay } from '@/components/gamification/PointsDisplay'
 import { Leaderboard } from '@/components/gamification/Leaderboard'
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
+import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 
 /**
  * Dashboard page - main landing page after authentication
@@ -38,13 +39,18 @@ export default async function DashboardPage() {
         {/* Comprehensive KPI Dashboard */}
         <DashboardMetrics />
 
+        {/* Weekly Challenge */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <WeeklyChallengeWidget />
+          <PointsDisplay />
+          <ActivityFeed />
+        </div>
+
         {/* Gamification & Activity */}
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Performance</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <PointsDisplay />
-            <Leaderboard period="daily" limit={5} />
-            <ActivityFeed />
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+            <Leaderboard period="daily" limit={10} />
           </div>
         </div>
       </div>
