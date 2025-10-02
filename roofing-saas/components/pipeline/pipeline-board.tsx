@@ -15,12 +15,9 @@ import { PipelineColumn } from './pipeline-column'
 import { ContactCard } from './contact-card'
 
 const STAGES = [
-  { id: 'new', name: 'New', color: 'bg-blue-500' },
-  { id: 'contacted', name: 'Contacted', color: 'bg-yellow-500' },
-  { id: 'qualified', name: 'Qualified', color: 'bg-purple-500' },
-  { id: 'proposal', name: 'Proposal', color: 'bg-indigo-500' },
-  { id: 'negotiation', name: 'Negotiation', color: 'bg-orange-500' },
-  { id: 'won', name: 'Won', color: 'bg-green-500' },
+  { id: 'lead', name: 'New Leads', color: 'bg-blue-500' },
+  { id: 'active', name: 'Active', color: 'bg-yellow-500' },
+  { id: 'customer', name: 'Won', color: 'bg-green-500' },
   { id: 'lost', name: 'Lost', color: 'bg-gray-500' },
 ]
 

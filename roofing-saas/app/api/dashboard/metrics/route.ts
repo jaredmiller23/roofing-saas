@@ -57,18 +57,20 @@ export async function GET() {
     // === Won Projects (this month) ===
     const { data: wonProjectsThisMonth } = await supabase
       .from('projects')
-      .select('value')
+      .select('final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
       .gte('updated_at', startOfMonth.toISOString())
 
-    const monthlyRevenue = wonProjectsThisMonth?.reduce((sum, p) => sum + (p.value || 0), 0) || 0
+    const monthlyRevenue = wonProjectsThisMonth?.reduce((sum, p) =>
+      sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
+    ) || 0
 
     // === Revenue Trend (last 6 months) ===
     const { data: revenueData } = await supabase
       .from('projects')
-      .select('value, updated_at')
+      .select('final_value, approved_value, estimated_value, updated_at')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
@@ -86,8 +88,9 @@ export async function GET() {
     revenueData?.forEach(project => {
       const projectDate = new Date(project.updated_at)
       const monthKey = projectDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      const projectValue = project.final_value || project.approved_value || project.estimated_value || 0
       if (revenueByMonth[monthKey] !== undefined) {
-        revenueByMonth[monthKey] += project.value || 0
+        revenueByMonth[monthKey] += projectValue
       }
     })
 
@@ -110,13 +113,15 @@ export async function GET() {
     // === Average Job Value ===
     const { data: wonProjects } = await supabase
       .from('projects')
-      .select('value')
+      .select('final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
 
     const avgJobValue = wonProjects && wonProjects.length > 0
-      ? wonProjects.reduce((sum, p) => sum + (p.value || 0), 0) / wonProjects.length
+      ? wonProjects.reduce((sum, p) =>
+          sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
+        ) / wonProjects.length
       : 0
 
     // === Sales Cycle Length ===
@@ -138,27 +143,25 @@ export async function GET() {
     // === Activities (Doors Knocked) ===
     const { data: activities30Days } = await supabase
       .from('activities')
-      .select('activity_type, created_at')
+      .select('type, created_at')
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
       .gte('created_at', last30Days.toISOString())
 
     const { data: activities7Days } = await supabase
       .from('activities')
-      .select('activity_type, created_at')
+      .select('type, created_at')
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
       .gte('created_at', last7Days.toISOString())
 
-    const doorsKnocked30Days = activities30Days?.filter(a => a.activity_type === 'door_knock').length || 0
+    const doorsKnocked30Days = activities30Days?.filter(a => a.type === 'door_knock').length || 0
     const doorsKnockedPerDay = doorsKnocked30Days / 30
 
-    const doorsKnocked7Days = activities7Days?.filter(a => a.activity_type === 'door_knock').length || 0
+    const doorsKnocked7Days = activities7Days?.filter(a => a.type === 'door_knock').length || 0
 
     // === Pipeline by Status ===
     const { data: pipelineData } = await supabase
       .from('projects')
-      .select('status, value')
+      .select('status, final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .neq('status', 'won')
@@ -169,8 +172,9 @@ export async function GET() {
       if (!pipelineByStatus[project.status]) {
         pipelineByStatus[project.status] = { count: 0, value: 0 }
       }
+      const projectValue = project.final_value || project.approved_value || project.estimated_value || 0
       pipelineByStatus[project.status].count++
-      pipelineByStatus[project.status].value += project.value || 0
+      pipelineByStatus[project.status].value += projectValue
     })
 
     const pipelineStatus = Object.entries(pipelineByStatus).map(([status, data]) => ({
@@ -192,9 +196,9 @@ export async function GET() {
       return {
         date: dateStr,
         count: dayActivities.length,
-        doorKnocks: dayActivities.filter(a => a.activity_type === 'door_knock').length,
-        calls: dayActivities.filter(a => a.activity_type === 'call').length,
-        emails: dayActivities.filter(a => a.activity_type === 'email').length,
+        doorKnocks: dayActivities.filter(a => a.type === 'door_knock').length,
+        calls: dayActivities.filter(a => a.type === 'call').length,
+        emails: dayActivities.filter(a => a.type === 'email').length,
       }
     })
 

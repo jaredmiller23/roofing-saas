@@ -200,16 +200,16 @@ export function ProjectsTable({ params }: ProjectsTableProps) {
                   {getStatusBadge(project.status)}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex flex-col max-w-xs">
+                  <div className="flex flex-col gap-1 max-w-xs">
                     {project.pipeline && (
-                      <div className="text-xs font-medium text-gray-700">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white truncate">
                         {project.pipeline}
-                      </div>
+                      </span>
                     )}
                     {project.stage && (
-                      <div className="text-xs text-gray-500 truncate">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 truncate">
                         {project.stage}
-                      </div>
+                      </span>
                     )}
                   </div>
                 </td>

@@ -80,10 +80,22 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const pipeline = customFields?.proline_pipeline || null
   const stage = customFields?.proline_stage || null
   const assignedTo = customFields?.assigned_to || null
+  const location = customFields?.location || null
+  const category = customFields?.category || null
+  const services = customFields?.services || null
 
   const leadSource = customFields?.lead_source || null
   const tags = customFields?.tags || []
   const statusDates = customFields?.status_dates || {}
+
+  // Extract financial data from raw_import_data (Proline import)
+  const rawData = customFields?.raw_import_data || {}
+  const grossRevenue = rawData?.['Gross Revenue'] ? parseFloat(rawData['Gross Revenue']) : customFields?.gross_revenue
+  const netRevenue = rawData?.['Net Revenue'] ? parseFloat(rawData['Net Revenue']) : customFields?.net_revenue
+  const grossProfit = rawData?.['Gross Profit'] ? parseFloat(rawData['Gross Profit']) : null
+  const grossMargin = rawData?.['Gross Margin'] ? parseFloat(rawData['Gross Margin']) : null
+  const projectCosts = rawData?.['Project Costs'] ? parseFloat(rawData['Project Costs']) : customFields?.project_costs
+  const quotedValue = rawData?.['Quoted Value'] ? parseFloat(rawData['Quoted Value']) : null
 
   const formatCurrency = (value: number | null) => {
     if (!value) return '—'
@@ -208,8 +220,22 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Lead Source</label>
-                    <p className="text-gray-900">{leadSource || '—'}</p>
+                    <p className="text-gray-900">{leadSource || rawData?.['Lead Source'] || '—'}</p>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Location</label>
+                    <p className="text-gray-900">{location || '—'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Category</label>
+                    <p className="text-gray-900">{category || '—'}</p>
+                  </div>
+                  {services && (
+                    <div className="col-span-2">
+                      <label className="text-sm font-medium text-gray-500">Services</label>
+                      <p className="text-gray-900">{services}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -222,6 +248,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   <label className="text-sm font-medium text-gray-500">Estimated Value</label>
                   <p className="text-lg font-semibold text-gray-900">{formatCurrency(project.estimated_value)}</p>
                 </div>
+                {quotedValue && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Quoted Value</label>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(quotedValue)}</p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium text-gray-500">Approved Value</label>
                   <p className="text-lg font-semibold text-gray-900">{formatCurrency(project.approved_value)}</p>
@@ -230,28 +262,46 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   <label className="text-sm font-medium text-gray-500">Final Value</label>
                   <p className="text-lg font-semibold text-green-600">{formatCurrency(project.final_value)}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Profit Margin</label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {project.profit_margin ? `${(project.profit_margin * 100).toFixed(1)}%` : '—'}
-                  </p>
-                </div>
-                {customFields?.gross_revenue && (
+                {grossRevenue && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Gross Revenue</label>
-                    <p className="text-gray-900">{formatCurrency(customFields.gross_revenue)}</p>
+                    <p className="text-lg font-semibold text-blue-600">{formatCurrency(grossRevenue)}</p>
                   </div>
                 )}
-                {customFields?.net_revenue && (
+                {netRevenue && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Net Revenue</label>
-                    <p className="text-gray-900">{formatCurrency(customFields.net_revenue)}</p>
+                    <p className="text-lg font-semibold text-blue-700">{formatCurrency(netRevenue)}</p>
                   </div>
                 )}
-                {customFields?.project_costs && (
+                {projectCosts && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Project Costs</label>
-                    <p className="text-gray-900">{formatCurrency(customFields.project_costs)}</p>
+                    <p className="text-lg font-semibold text-red-600">{formatCurrency(projectCosts)}</p>
+                  </div>
+                )}
+                {grossProfit && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Gross Profit</label>
+                    <p className={`text-lg font-semibold ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(grossProfit)}
+                    </p>
+                  </div>
+                )}
+                {grossMargin !== null && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Gross Margin</label>
+                    <p className={`text-lg font-semibold ${grossMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {(grossMargin * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                )}
+                {project.profit_margin && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Profit Margin</label>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {(project.profit_margin * 100).toFixed(1)}%
+                    </p>
                   </div>
                 )}
               </div>
@@ -263,19 +313,40 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {/* Pipeline & Stage */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Pipeline Status</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Pipeline</label>
-                  <p className="text-gray-900 font-medium">{pipeline || '—'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Stage</label>
-                  <p className="text-gray-900">{stage || '—'}</p>
-                </div>
+              <div className="space-y-4">
+                {/* Pipeline Badge */}
+                {pipeline && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 mb-2 block">Pipeline</label>
+                    <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                      {pipeline}
+                    </div>
+                  </div>
+                )}
+
+                {/* Stage Badge */}
+                {stage && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 mb-2 block">Stage</label>
+                    <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                      {stage}
+                    </div>
+                  </div>
+                )}
+
+                {/* Assigned To */}
                 <div>
                   <label className="text-sm font-medium text-gray-500">Assigned To</label>
-                  <p className="text-gray-900">{assignedTo || '—'}</p>
+                  <p className="text-gray-900 font-medium mt-1">{assignedTo || '—'}</p>
                 </div>
+
+                {/* Project Number */}
+                {rawData?.['Project Number'] && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Project Number</label>
+                    <p className="text-gray-900 font-medium mt-1">#{rawData['Project Number']}</p>
+                  </div>
+                )}
               </div>
             </div>
 
