@@ -3,7 +3,7 @@
 import { useDraggable } from '@dnd-kit/core'
 import { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
-import { Phone, MessageSquare, Mail } from 'lucide-react'
+import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock } from 'lucide-react'
 
 interface ContactCardProps {
   contact: Contact
@@ -21,6 +21,36 @@ export function ContactCard({ contact, isDragging = false }: ContactCardProps) {
       }
     : undefined
 
+  const formatCurrency = (value: number | null) => {
+    if (!value) return null
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const getTimeSince = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+
+    if (diffInHours < 1) return 'Just now'
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) return `${diffInDays}d ago`
+    const diffInWeeks = Math.floor(diffInDays / 7)
+    return `${diffInWeeks}w ago`
+  }
+
+  const getLeadScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600 bg-green-50'
+    if (score >= 60) return 'text-blue-600 bg-blue-50'
+    if (score >= 40) return 'text-yellow-600 bg-yellow-50'
+    return 'text-gray-600 bg-gray-50'
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -33,14 +63,30 @@ export function ContactCard({ contact, isDragging = false }: ContactCardProps) {
         ${isDragging ? 'opacity-50 rotate-3 shadow-lg' : ''}
       `}
     >
-      {/* Contact Name */}
-      <Link
-        href={`/contacts/${contact.id}`}
-        className="font-semibold text-gray-900 hover:text-blue-600 block mb-2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {contact.first_name} {contact.last_name}
-      </Link>
+      {/* Header: Name + Value + Score */}
+      <div className="flex items-start justify-between mb-3">
+        <Link
+          href={`/contacts/${contact.id}`}
+          className="font-semibold text-gray-900 hover:text-blue-600 flex-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {contact.first_name} {contact.last_name}
+        </Link>
+        {contact.lead_score > 0 && (
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${getLeadScoreColor(contact.lead_score)}`}>
+            <TrendingUp className="h-3 w-3" />
+            {contact.lead_score}
+          </div>
+        )}
+      </div>
+
+      {/* Property Value */}
+      {contact.property_value && (
+        <div className="flex items-center gap-1.5 mb-2 text-lg font-bold text-green-700">
+          <DollarSign className="h-4 w-4" />
+          {formatCurrency(contact.property_value)}
+        </div>
+      )}
 
       {/* Contact Details */}
       <div className="space-y-1 text-sm text-gray-600">
@@ -111,24 +157,30 @@ export function ContactCard({ contact, isDragging = false }: ContactCardProps) {
         )}
       </div>
 
-      {/* Type Badge */}
-      <div className="mt-3 flex items-center gap-2">
-        <span className="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded capitalize">
-          {contact.type}
-        </span>
-        {contact.priority !== 'normal' && (
-          <span
-            className={`inline-block px-2 py-1 text-xs font-semibold rounded capitalize ${
-              contact.priority === 'urgent'
-                ? 'bg-red-100 text-red-800'
-                : contact.priority === 'high'
-                  ? 'bg-orange-100 text-orange-800'
-                  : 'bg-gray-100 text-gray-800'
-            }`}
-          >
-            {contact.priority}
+      {/* Type Badge + Last Updated */}
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded capitalize">
+            {contact.type}
           </span>
-        )}
+          {contact.priority !== 'normal' && (
+            <span
+              className={`inline-block px-2 py-1 text-xs font-semibold rounded capitalize ${
+                contact.priority === 'urgent'
+                  ? 'bg-red-100 text-red-800'
+                  : contact.priority === 'high'
+                    ? 'bg-orange-100 text-orange-800'
+                    : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {contact.priority}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <Clock className="h-3 w-3" />
+          {getTimeSince(contact.updated_at)}
+        </div>
       </div>
 
       {/* Quick Actions - Mobile Friendly */}
