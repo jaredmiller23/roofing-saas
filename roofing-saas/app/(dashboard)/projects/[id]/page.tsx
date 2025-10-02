@@ -2,6 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import { CheckCircle2, Clock, TrendingUp, Trophy, XCircle, User } from 'lucide-react'
 
 interface ProjectDetailPageProps {
   params: Promise<{ id: string }>
@@ -48,6 +49,28 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     .eq('tenant_id', tenantId)
     .eq('is_deleted', false)
     .single()
+
+  // Fetch project activities/notes
+  const { data: activities } = await supabase
+    .from('activities')
+    .select(`
+      id,
+      type,
+      subject,
+      notes,
+      created_at,
+      created_by,
+      users:created_by (
+        id,
+        email,
+        raw_user_meta_data
+      )
+    `)
+    .eq('project_id', id)
+    .eq('tenant_id', tenantId)
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+    .limit(20)
 
   // Fetch contact details separately
   let contact = null
@@ -130,6 +153,46 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
+  }
+
+  const getStageIcon = (stage: string) => {
+    const icons = {
+      lead: <User className="h-5 w-5" />,
+      active: <Clock className="h-5 w-5" />,
+      proposal: <TrendingUp className="h-5 w-5" />,
+      won: <Trophy className="h-5 w-5" />,
+      customer: <CheckCircle2 className="h-5 w-5" />,
+      lost: <XCircle className="h-5 w-5" />,
+    }
+    return icons[stage as keyof typeof icons] || <Clock className="h-5 w-5" />
+  }
+
+  const getStageColor = (stage: string) => {
+    const colors = {
+      lead: { bg: 'bg-blue-100', border: 'border-blue-400', icon: 'text-blue-600' },
+      active: { bg: 'bg-yellow-100', border: 'border-yellow-400', icon: 'text-yellow-600' },
+      proposal: { bg: 'bg-purple-100', border: 'border-purple-400', icon: 'text-purple-600' },
+      won: { bg: 'bg-green-100', border: 'border-green-400', icon: 'text-green-600' },
+      customer: { bg: 'bg-green-100', border: 'border-green-400', icon: 'text-green-600' },
+      lost: { bg: 'bg-red-100', border: 'border-red-400', icon: 'text-red-600' },
+    }
+    return colors[stage as keyof typeof colors] || { bg: 'bg-gray-100', border: 'border-gray-400', icon: 'text-gray-600' }
+  }
+
+  const calculateDuration = (startDate: string, endDate: string | null) => {
+    const start = new Date(startDate)
+    const end = endDate ? new Date(endDate) : new Date()
+    const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+
+    if (days === 0) return 'Same day'
+    if (days === 1) return '1 day'
+    if (days < 30) return `${days} days`
+    if (days < 365) {
+      const months = Math.floor(days / 30)
+      return months === 1 ? '1 month' : `${months} months`
+    }
+    const years = Math.floor(days / 365)
+    return years === 1 ? '1 year' : `${years} years`
   }
 
   return (
@@ -237,6 +300,66 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Project Notes & Activities */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Notes & Activity</h2>
+
+              {/* Activities list */}
+              {activities && activities.length > 0 ? (
+                <div className="space-y-3 mb-4">
+                  {activities.map((activity: any) => {
+                    const userName = activity.users?.raw_user_meta_data?.full_name ||
+                                   activity.users?.raw_user_meta_data?.name ||
+                                   activity.users?.email?.split('@')[0] ||
+                                   'Unknown User'
+
+                    return (
+                      <div key={activity.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
+                              <span className="text-xs font-medium text-blue-700">
+                                {userName.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{userName}</p>
+                              <p className="text-xs text-gray-500">{formatDate(activity.created_at)}</p>
+                            </div>
+                          </div>
+                          {activity.type && (
+                            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded capitalize">
+                              {activity.type.replace('_', ' ')}
+                            </span>
+                          )}
+                        </div>
+                        {activity.subject && (
+                          <p className="text-sm font-medium text-gray-800 mb-1">{activity.subject}</p>
+                        )}
+                        {activity.notes && (
+                          <p className="text-sm text-gray-600">{activity.notes}</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No activities yet. Add a note to track progress.
+                </div>
+              )}
+
+              {/* Add note form - would need client component for interactivity */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <Link
+                  href={`/projects/${id}/add-note`}
+                  className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                >
+                  + Add Note
+                </Link>
               </div>
             </div>
 
@@ -394,21 +517,76 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               </div>
             )}
 
-            {/* Status History */}
+            {/* Status History Timeline */}
             {Object.keys(statusDates).length > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Status History</h2>
-                <div className="space-y-2">
-                  {Object.entries(statusDates).map(([status, date]) => {
-                    if (!date) return null
-                    return (
-                      <div key={status} className="flex justify-between text-sm">
-                        <span className="text-gray-600 capitalize">{status}</span>
-                        <span className="text-gray-900">{formatDate(date as string)}</span>
-                      </div>
-                    )
-                  })}
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Stage History</h2>
+                <div className="space-y-1">
+                  {Object.entries(statusDates)
+                    .filter(([_, date]) => date)
+                    .sort(([_, dateA], [__, dateB]) => new Date(dateA as string).getTime() - new Date(dateB as string).getTime())
+                    .map(([stage, date], index, array) => {
+                      const colors = getStageColor(stage)
+                      const isLast = index === array.length - 1
+                      const isCurrent = stage === project.status
+                      const nextDate = !isLast ? array[index + 1][1] as string : null
+                      const duration = calculateDuration(date as string, nextDate)
+
+                      return (
+                        <div key={stage} className="relative">
+                          {/* Timeline connector line */}
+                          {!isLast && (
+                            <div className="absolute left-[19px] top-10 bottom-0 w-0.5 bg-gray-200" style={{ height: '24px' }} />
+                          )}
+
+                          {/* Stage entry */}
+                          <div className={`flex items-start gap-3 p-2 rounded-lg transition-all ${isCurrent ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-gray-50'}`}>
+                            {/* Icon */}
+                            <div className={`flex-shrink-0 w-10 h-10 rounded-full ${colors.bg} border-2 ${colors.border} flex items-center justify-center ${colors.icon}`}>
+                              {getStageIcon(stage)}
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0 pt-1">
+                              <div className="flex items-center justify-between mb-0.5">
+                                <span className={`text-sm font-semibold ${isCurrent ? 'text-blue-900' : 'text-gray-900'} capitalize`}>
+                                  {stage}
+                                  {isCurrent && (
+                                    <span className="ml-2 text-xs font-medium px-2 py-0.5 bg-blue-600 text-white rounded-full">
+                                      Current
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {formatDate(date as string)}
+                              </div>
+                              {!isLast && (
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  Duration: {duration}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                 </div>
+
+                {/* Summary */}
+                {Object.keys(statusDates).length > 1 && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="text-xs text-gray-600">
+                      <span className="font-medium">Total Journey:</span>{' '}
+                      {calculateDuration(
+                        Object.values(statusDates).filter(Boolean).sort((a, b) =>
+                          new Date(a as string).getTime() - new Date(b as string).getTime()
+                        )[0] as string,
+                        null
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
