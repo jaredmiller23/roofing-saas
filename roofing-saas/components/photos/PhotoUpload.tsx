@@ -173,13 +173,18 @@ export function PhotoUpload({
 
           const result = await response.json()
 
+          // API wraps response in {success, data} format
+          const photo = result.data?.photo || result.photo
+
           setUploadState({
             status: 'success',
             progress: 100,
             message: 'Photo uploaded successfully!',
           })
 
-          onUploadSuccess?.(result.photo.id)
+          if (photo?.id) {
+            onUploadSuccess?.(photo.id)
+          }
 
           // Clear preview after delay
           setTimeout(() => {
