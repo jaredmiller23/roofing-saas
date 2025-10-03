@@ -15,6 +15,8 @@ interface ActivityItem {
     contact_name?: string
     old_status?: string
     new_status?: string
+    project_id?: string
+    contact_id?: string
   }
 }
 
@@ -76,7 +78,9 @@ export async function GET() {
             metadata: {
               project_name: project.name,
               contact_name: contactName,
-              value: project.final_value || project.approved_value || project.estimated_value || 0
+              value: project.final_value || project.approved_value || project.estimated_value || 0,
+              project_id: project.id,
+              contact_id: project.contact_id || undefined
             }
           })
         } else if (project.status === 'lost') {
@@ -88,7 +92,9 @@ export async function GET() {
             timestamp: project.updated_at,
             metadata: {
               project_name: project.name,
-              contact_name: contactName
+              contact_name: contactName,
+              project_id: project.id,
+              contact_id: project.contact_id || undefined
             }
           })
         } else if (project.created_at === project.updated_at) {
@@ -101,7 +107,9 @@ export async function GET() {
             timestamp: project.created_at,
             metadata: {
               project_name: project.name,
-              value: project.estimated_value || 0
+              value: project.estimated_value || 0,
+              project_id: project.id,
+              contact_id: project.contact_id || undefined
             }
           })
         }
@@ -128,7 +136,8 @@ export async function GET() {
           description: `${contactName} added to ${contact.stage || 'pipeline'}`,
           timestamp: contact.created_at,
           metadata: {
-            contact_name: contactName
+            contact_name: contactName,
+            contact_id: contact.id
           }
         })
       }
@@ -137,8 +146,8 @@ export async function GET() {
     // Sort all activities by timestamp
     activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
-    // Limit to most recent 15
-    const limitedActivities = activities.slice(0, 15)
+    // Limit to most recent 3
+    const limitedActivities = activities.slice(0, 3)
 
     return NextResponse.json({
       success: true,
