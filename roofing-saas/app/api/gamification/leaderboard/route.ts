@@ -7,34 +7,17 @@ export async function GET(request: Request) {
 
     // Get query parameters
     const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || 'all' // all, daily, weekly, monthly
+    const period = searchParams.get('period') || 'all'
     const limit = parseInt(searchParams.get('limit') || '10')
 
     // Get current user for comparison
     const { data: { user } } = await supabase.auth.getUser()
 
-    let orderColumn = 'total_points'
-    if (period === 'daily') orderColumn = 'daily_points'
-    if (period === 'weekly') orderColumn = 'weekly_points'
-    if (period === 'monthly') orderColumn = 'monthly_points'
-
-    // Get leaderboard
+    // Get leaderboard from view
     const { data: leaderboard, error } = await supabase
-      .from('gamification_scores')
-      .select(`
-        user_id,
-        total_points,
-        current_level,
-        daily_points,
-        weekly_points,
-        monthly_points,
-        profiles!inner(
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
-      .order(orderColumn, { ascending: false })
+      .from('leaderboard')
+      .select('*')
+      .order('total_points', { ascending: false })
       .limit(limit)
 
     if (error) {
@@ -49,7 +32,7 @@ export async function GET(request: Request) {
     let userRank = null
     if (user) {
       const { data: userStats } = await supabase
-        .from('gamification_scores')
+        .from('leaderboard')
         .select('*')
         .eq('user_id', user.id)
         .single()
@@ -57,9 +40,9 @@ export async function GET(request: Request) {
       if (userStats) {
         // Count how many users have more points
         const { count } = await supabase
-          .from('gamification_scores')
+          .from('leaderboard')
           .select('*', { count: 'exact', head: true })
-          .gt(orderColumn, userStats[orderColumn])
+          .gt('total_points', userStats.total_points)
 
         userRank = (count || 0) + 1
       }
@@ -67,16 +50,14 @@ export async function GET(request: Request) {
 
     // Format leaderboard data
     const formattedLeaderboard = leaderboard?.map((entry, index) => {
-      const profile = Array.isArray(entry.profiles) ? entry.profiles[0] : entry.profiles
-      const points = (entry as Record<string, unknown>)[orderColumn] as number
       return {
         rank: index + 1,
         user_id: entry.user_id,
-        name: profile?.full_name || 'Unknown User',
-        avatar_url: profile?.avatar_url,
-        role: profile?.role,
-        points,
-        level: entry.current_level,
+        name: entry.user_name || 'Unknown User',
+        avatar_url: entry.avatar_url,
+        role: null,
+        points: entry.total_points || 0,
+        level: Math.floor((entry.total_points || 0) / 100) + 1, // Calculate level from points
         isCurrentUser: entry.user_id === user?.id
       }
     }) || []
