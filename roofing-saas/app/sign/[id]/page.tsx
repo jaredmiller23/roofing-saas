@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { SignatureCapture } from '@/components/signature/SignatureCapture'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ export default function SignDocumentPage() {
 
   const [document, setDocument] = useState<SignatureDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSigning, setIsSigning] = useState(false)
+  // const [isSigning, setIsSigning] = useState(false) // TODO: Use for signing state
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [showSignature, setShowSignature] = useState(false)
@@ -40,11 +40,7 @@ export default function SignDocumentPage() {
   const [signerEmail, setSignerEmail] = useState('')
   const [signerType, setSignerType] = useState<'customer' | 'company'>('customer')
 
-  useEffect(() => {
-    loadDocument()
-  }, [documentId])
-
-  const loadDocument = async () => {
+  const loadDocument = useCallback(async () => {
     try {
       setIsLoading(true)
       const res = await fetch(`/api/signature-documents/${documentId}/sign`)
@@ -60,7 +56,11 @@ export default function SignDocumentPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [documentId])
+
+  useEffect(() => {
+    loadDocument()
+  }, [loadDocument])
 
   const handleSignatureCapture = async (signatureData: string, method: 'draw' | 'type' | 'upload') => {
     if (!signerName || !signerEmail) {

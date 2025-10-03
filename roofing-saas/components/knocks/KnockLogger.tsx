@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { MapPin, Home, ThumbsUp, ThumbsDown, Calendar, Phone, Camera, Loader2, Check } from 'lucide-react'
+import { MapPin, Home, ThumbsUp, ThumbsDown, Calendar, Phone, Loader2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +17,7 @@ interface KnockLoggerProps {
 
 export function KnockLogger({ onSuccess }: KnockLoggerProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false) // TODO: Use for general loading state
   const [gettingLocation, setGettingLocation] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 

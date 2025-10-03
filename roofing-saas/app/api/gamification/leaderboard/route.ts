@@ -1,6 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+
+interface LeaderboardEntry {
+  user_id: string
+  user_name: string
+  knock_count?: number
+  sales_count?: number
+  total_points?: number
+  avatar_url: string | null
+}
 
 function getDateByPeriod(period: string): string {
   const now = new Date()
@@ -31,7 +39,7 @@ export async function GET(request: Request) {
     // Get current user for comparison
     const { data: { user } } = await supabase.auth.getUser()
 
-    let leaderboard: any[] = []
+    let leaderboard: LeaderboardEntry[] = []
     let userRank: number | null = null
     let userCount = 0
 
@@ -53,7 +61,7 @@ export async function GET(request: Request) {
 
       // Aggregate counts by user
       const countsByUser = new Map<string, number>()
-      knockCounts?.forEach((activity: any) => {
+      knockCounts?.forEach((activity) => {
         const userId = activity.created_by
         if (userId) {
           countsByUser.set(userId, (countsByUser.get(userId) || 0) + 1)
@@ -61,7 +69,6 @@ export async function GET(request: Request) {
       })
 
       // Get user names from auth.users
-      const userIds = Array.from(countsByUser.keys())
       const { data: users } = await supabase.auth.admin.listUsers()
       const userMap = new Map(users.users.map(u => [u.id, u.user_metadata?.full_name || u.email || 'Unknown']))
 
@@ -99,7 +106,7 @@ export async function GET(request: Request) {
 
       // Aggregate counts by user
       const countsByUser = new Map<string, number>()
-      salesCounts?.forEach((project: any) => {
+      salesCounts?.forEach((project) => {
         const userId = project.created_by
         if (userId) {
           countsByUser.set(userId, (countsByUser.get(userId) || 0) + 1)
@@ -107,7 +114,6 @@ export async function GET(request: Request) {
       })
 
       // Get user names from auth.users
-      const userIds = Array.from(countsByUser.keys())
       const { data: users } = await supabase.auth.admin.listUsers()
       const userMap = new Map(users.users.map(u => [u.id, u.user_metadata?.full_name || u.email || 'Unknown']))
 

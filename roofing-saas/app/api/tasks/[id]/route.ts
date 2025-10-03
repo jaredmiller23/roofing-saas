@@ -26,10 +26,21 @@ export async function GET(
 
     const { data: task, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(`
+        *,
+        project:projects(id, name),
+        contact:contacts(id, first_name, last_name, phone, email),
+        assigned_user:auth.users!assigned_to(id, email, raw_user_meta_data),
+        assigned_by_user:auth.users!assigned_by(id, email, raw_user_meta_data),
+        parent_task:tasks!parent_task_id(id, title, status),
+        subtasks:tasks!parent_task_id(id, title, status, priority),
+        comments:task_comments(id, comment, user_id, created_at, is_edited, user:auth.users(email, raw_user_meta_data)),
+        attachments:task_attachments(id, file_name, file_url, file_type, file_size, uploaded_at),
+        activity:task_activity(id, action, changes, created_at, user:auth.users(email, raw_user_meta_data))
+      `)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .is('is_deleted', null)
       .single()
 
     if (error || !task) {
@@ -73,6 +84,15 @@ export async function PATCH(
 
     const supabase = await createClient()
 
+    // Get current task to track changes
+    const { data: currentTask } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    // Update task
     const { data: task, error } = await supabase
       .from('tasks')
       .update(body)
@@ -86,6 +106,30 @@ export async function PATCH(
         { error: 'Failed to update task' },
         { status: 400 }
       )
+    }
+
+    // Log activity
+    const changes: Record<string, { from: unknown; to: unknown }> = {}
+    if (currentTask) {
+      Object.keys(body).forEach(key => {
+        if (currentTask[key] !== body[key]) {
+          changes[key] = {
+            from: currentTask[key],
+            to: body[key]
+          }
+        }
+      })
+    }
+
+    if (Object.keys(changes).length > 0) {
+      await supabase
+        .from('task_activity')
+        .insert({
+          task_id: id,
+          user_id: user.id,
+          action: 'updated',
+          changes
+        })
     }
 
     return NextResponse.json({ task })
