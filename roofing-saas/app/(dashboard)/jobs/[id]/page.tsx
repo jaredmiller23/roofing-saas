@@ -69,6 +69,16 @@ export default async function JobDetailPage({
     }).format(amount)
   }
 
+  const formatTime = (time: string | null) => {
+    if (!time) return null
+    // Convert "14:30:00" to "2:30 PM"
+    const [hours, minutes] = time.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
+  }
+
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
@@ -155,7 +165,7 @@ export default async function JobDetailPage({
               <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
               <p className="text-gray-900">
                 {job.scheduled_start_time && job.scheduled_end_time
-                  ? `${job.scheduled_start_time} - ${job.scheduled_end_time}`
+                  ? `${formatTime(job.scheduled_start_time)} - ${formatTime(job.scheduled_end_time)}`
                   : 'Not set'}
               </p>
             </div>

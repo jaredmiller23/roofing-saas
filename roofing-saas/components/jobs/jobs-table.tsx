@@ -115,6 +115,16 @@ export function JobsTable({ params }: JobsTableProps) {
     }).format(amount)
   }
 
+  const formatTime = (time: string | null) => {
+    if (!time) return null
+    // Convert "14:30:00" to "2:30 PM"
+    const [hours, minutes] = time.split(':')
+    const hour = parseInt(hours)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    const displayHour = hour % 12 || 12
+    return `${displayHour}:${minutes} ${ampm}`
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -208,7 +218,7 @@ export function JobsTable({ params }: JobsTableProps) {
                   </div>
                   {job.scheduled_start_time && (
                     <div className="text-sm text-gray-500">
-                      {job.scheduled_start_time}
+                      {formatTime(job.scheduled_start_time)}
                     </div>
                   )}
                 </td>
