@@ -68,6 +68,13 @@ export async function POST(request: NextRequest) {
     }
 
     const tokenData = await tokenResponse.json()
+    logger.info('OpenAI token response structure', {
+      hasId: !!tokenData.id,
+      hasClientSecret: !!tokenData.client_secret,
+      clientSecretType: typeof tokenData.client_secret,
+      clientSecretStructure: tokenData.client_secret ? Object.keys(tokenData.client_secret) : null
+    })
+
     const { id: openai_session_id, client_secret } = tokenData
 
     if (!openai_session_id || !client_secret) {
@@ -109,11 +116,22 @@ export async function POST(request: NextRequest) {
       tenantId
     })
 
+    // Extract token value - client_secret might be string or object
+    const tokenValue = typeof client_secret === 'string'
+      ? client_secret
+      : client_secret.value
+
+    logger.info('Sending token to frontend', {
+      tokenType: typeof tokenValue,
+      tokenLength: tokenValue?.length,
+      tokenStart: tokenValue?.substring(0, 20) + '...'
+    })
+
     return createdResponse({
       session_id: openai_session_id,
-      ephemeral_token: client_secret.value,
+      ephemeral_token: tokenValue,
       database_session_id: session.id,
-      expires_at: client_secret.expires_at,
+      expires_at: typeof client_secret === 'object' ? client_secret.expires_at : undefined,
     })
   } catch (error) {
     const duration = Date.now() - startTime

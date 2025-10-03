@@ -59,8 +59,15 @@ export function VoiceSession({
     try {
       setStatus('connecting')
 
-      // Step 1: Get microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // Step 1: Get microphone access with OpenAI-optimized constraints
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1, // mono
+          sampleRate: 24000, // 24kHz for OpenAI
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      })
       audioStreamRef.current = stream
 
       // Step 2: Create session and get ephemeral token
@@ -80,14 +87,36 @@ export function VoiceSession({
         throw new Error('Failed to create voice session')
       }
 
-      const { session_id, ephemeral_token } = await sessionResponse.json()
+      const responseData = await sessionResponse.json()
+      const { session_id, ephemeral_token } = responseData.data
+      console.log('Received session from backend:', {
+        session_id,
+        tokenType: typeof ephemeral_token,
+        tokenLength: ephemeral_token?.length,
+        tokenStart: ephemeral_token?.substring(0, 30) + '...',
+        fullToken: ephemeral_token // DEBUG: show full token
+      })
       setSessionId(session_id)
 
-      // Step 3: Create RTCPeerConnection
-      const pc = new RTCPeerConnection()
+      // Step 3: Create RTCPeerConnection with STUN server
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      })
       peerConnectionRef.current = pc
 
-      // Step 4: Create data channel for events
+      // Step 4: Add remote audio track handler (before other setup)
+      pc.addEventListener('track', (event) => {
+        const remoteAudio = new Audio()
+        remoteAudio.srcObject = event.streams[0]
+        remoteAudio.play()
+      })
+
+      // Step 5: Add microphone track to peer connection (BEFORE data channel!)
+      stream.getTracks().forEach(track => {
+        pc.addTrack(track, stream)
+      })
+
+      // Step 6: Create data channel for events
       const dc = pc.createDataChannel('oai-events')
       dataChannelRef.current = dc
 
@@ -104,8 +133,11 @@ Your role is to help roofing sales representatives and field workers with CRM ta
 You can:
 - Create new contacts (leads/customers)
 - Add notes to contacts or projects
-- Search for existing contacts
-- Log field activities (door knocks, appointments, inspections)
+- Search for existing contacts by name or address
+- Log door knock activities with disposition (interested, not_interested, not_home, callback, appointment)
+- Update contact pipeline stage (new, contacted, qualified, proposal, negotiation, won, lost)
+
+IMPORTANT: When reading phone numbers, read each digit individually (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three...").
 
 Be concise and professional. Ask for clarification when needed. Always confirm actions before executing them.`,
           voice: 'alloy',
@@ -155,6 +187,40 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
                 },
                 required: ['query']
               }
+            },
+            {
+              type: 'function',
+              name: 'log_knock',
+              description: 'Log a door knock activity at an address',
+              parameters: {
+                type: 'object',
+                properties: {
+                  address: { type: 'string' },
+                  disposition: {
+                    type: 'string',
+                    enum: ['interested', 'not_interested', 'not_home', 'callback', 'appointment']
+                  },
+                  notes: { type: 'string' },
+                  contact_id: { type: 'string', description: 'Optional contact ID if known' }
+                },
+                required: ['address', 'disposition']
+              }
+            },
+            {
+              type: 'function',
+              name: 'update_contact_stage',
+              description: 'Update the pipeline stage of a contact',
+              parameters: {
+                type: 'object',
+                properties: {
+                  contact_id: { type: 'string' },
+                  stage: {
+                    type: 'string',
+                    enum: ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost']
+                  }
+                },
+                required: ['contact_id', 'stage']
+              }
             }
           ]
         }
@@ -163,6 +229,26 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
           type: 'session.update',
           session: config
         }))
+
+        // Send initial greeting trigger
+        setTimeout(() => {
+          dc.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+              type: 'message',
+              role: 'user',
+              content: [{
+                type: 'input_text',
+                text: 'Hello'
+              }]
+            }
+          }))
+
+          // Trigger response
+          dc.send(JSON.stringify({
+            type: 'response.create'
+          }))
+        }, 100) // Small delay to ensure session is ready
       })
 
       dc.addEventListener('message', handleDataChannelMessage)
@@ -171,34 +257,33 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
         setStatus('disconnected')
       })
 
-      // Step 5: Add microphone track to peer connection
-      stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream)
-      })
-
-      // Step 6: Add remote audio track handler
-      pc.addEventListener('track', (event) => {
-        const remoteAudio = new Audio()
-        remoteAudio.srcObject = event.streams[0]
-        remoteAudio.play()
-      })
-
-      // Step 7: Create offer
-      const offer = await pc.createOffer()
-      await pc.setLocalDescription(offer)
+      // Step 7: Create offer and set local description
+      await pc.setLocalDescription()
 
       // Step 8: Send offer to OpenAI Realtime API
-      const sdpResponse = await fetch('https://api.openai.com/v1/realtime', {
+      console.log('Connecting to OpenAI Realtime API...', {
+        endpoint: 'https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
+        hasToken: !!ephemeral_token,
+        hasSdp: !!pc.localDescription?.sdp
+      })
+
+      const sdpResponse = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${ephemeral_token}`,
           'Content-Type': 'application/sdp'
         },
-        body: offer.sdp
+        body: pc.localDescription?.sdp
       })
 
       if (!sdpResponse.ok) {
-        throw new Error('Failed to connect to OpenAI Realtime API')
+        const errorText = await sdpResponse.text()
+        console.error('OpenAI Realtime API error:', {
+          status: sdpResponse.status,
+          statusText: sdpResponse.statusText,
+          body: errorText
+        })
+        throw new Error(`Failed to connect to OpenAI Realtime API: ${sdpResponse.status} ${errorText}`)
       }
 
       // Step 9: Set remote description from answer
@@ -271,8 +356,35 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
           break
 
         case 'search_contact':
-          result = await fetch(`/api/contacts/search?q=${parameters.query}`)
+          result = await fetch(`/api/contacts?search=${encodeURIComponent(parameters.query as string)}`)
             .then(r => r.json())
+          break
+
+        case 'log_knock':
+          result = await fetch('/api/knocks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: parameters.address,
+              disposition: parameters.disposition,
+              notes: parameters.notes,
+              contact_id: parameters.contact_id,
+              // Use approximate coordinates if address geocoding not available
+              // In production, you'd geocode the address
+              latitude: 0,
+              longitude: 0
+            })
+          }).then(r => r.json())
+          break
+
+        case 'update_contact_stage':
+          result = await fetch(`/api/contacts/${parameters.contact_id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              stage: parameters.stage
+            })
+          }).then(r => r.json())
           break
 
         default:
@@ -289,6 +401,11 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
             output: JSON.stringify(result)
           }
         }))
+
+        // Trigger OpenAI to generate response based on function result
+        dataChannelRef.current.send(JSON.stringify({
+          type: 'response.create'
+        }))
       }
     } catch (error) {
       console.error(`Error executing ${functionName}:`, error)
@@ -302,6 +419,11 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
             call_id: callId,
             output: JSON.stringify({ error: (error as Error).message })
           }
+        }))
+
+        // Trigger OpenAI to generate response even for errors
+        dataChannelRef.current.send(JSON.stringify({
+          type: 'response.create'
         }))
       }
     }
@@ -425,14 +547,14 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
       {status === 'idle' && (
         <div className="text-center text-sm text-gray-600 max-w-md">
           <p>Click &quot;Start Voice Assistant&quot; to begin speaking with your AI assistant.</p>
-          <p className="mt-2">You can create contacts, add notes, and search your CRM using voice commands.</p>
+          <p className="mt-2">You can create contacts, add notes, search your CRM, log door knocks, and update pipeline stages using voice commands.</p>
         </div>
       )}
 
       {status === 'connected' && (
         <div className="text-center text-sm text-gray-600 max-w-md">
           <p>Listening... You can now speak to your assistant.</p>
-          <p className="mt-2">Try: &quot;Create a new contact named John Smith&quot;</p>
+          <p className="mt-2">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
         </div>
       )}
     </div>
