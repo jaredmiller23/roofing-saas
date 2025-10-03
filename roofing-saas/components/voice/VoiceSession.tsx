@@ -139,6 +139,12 @@ You can:
 
 IMPORTANT: When reading phone numbers, read each digit individually (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three...").
 
+**Communication Features:**
+- You can send SMS messages using send_sms (e.g., "Send a text to 5551234567 saying 'Running 10 minutes late'")
+- You can initiate phone calls using make_call (e.g., "Call Sarah Johnson at 5559876543")
+- Always confirm SMS content before sending
+- Confirm phone calls before initiating
+
 Be concise and professional. Ask for clarification when needed. Always confirm actions before executing them.`,
           voice: 'alloy',
           temperature: 0.7,
@@ -220,6 +226,52 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
                   }
                 },
                 required: ['contact_id', 'stage']
+              }
+            },
+            {
+              type: 'function',
+              name: 'send_sms',
+              description: 'Send a text message (SMS) to a contact or phone number',
+              parameters: {
+                type: 'object',
+                properties: {
+                  to: {
+                    type: 'string',
+                    description: 'Phone number to send to (10 digits, e.g., 5551234567)'
+                  },
+                  body: {
+                    type: 'string',
+                    description: 'The text message to send (max 1600 characters)'
+                  },
+                  contact_id: {
+                    type: 'string',
+                    description: 'Optional contact ID to associate this SMS with'
+                  }
+                },
+                required: ['to', 'body']
+              }
+            },
+            {
+              type: 'function',
+              name: 'make_call',
+              description: 'Initiate a phone call to a contact or phone number',
+              parameters: {
+                type: 'object',
+                properties: {
+                  to: {
+                    type: 'string',
+                    description: 'Phone number to call (10 digits, e.g., 5551234567)'
+                  },
+                  contact_id: {
+                    type: 'string',
+                    description: 'Optional contact ID to associate this call with'
+                  },
+                  record: {
+                    type: 'boolean',
+                    description: 'Whether to record the call (default: true)'
+                  }
+                },
+                required: ['to']
               }
             }
           ]
@@ -383,6 +435,30 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               stage: parameters.stage
+            })
+          }).then(r => r.json())
+          break
+
+        case 'send_sms':
+          result = await fetch('/api/sms/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: parameters.to,
+              body: parameters.body,
+              contactId: parameters.contact_id
+            })
+          }).then(r => r.json())
+          break
+
+        case 'make_call':
+          result = await fetch('/api/voice/call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: parameters.to,
+              contactId: parameters.contact_id,
+              record: parameters.record !== false // Default to true
             })
           }).then(r => r.json())
           break

@@ -103,7 +103,8 @@ export default function VoicePage() {
                 <li>Click &ldquo;Start Voice Assistant&rdquo; and allow microphone access</li>
                 <li>Try: &ldquo;Create a new contact named Sarah Johnson with phone 555-9876&rdquo;</li>
                 <li>Try: &ldquo;Log a door knock at 456 Oak Street, disposition interested&rdquo;</li>
-                <li>Try: &ldquo;Search for contacts on Main Street&rdquo;</li>
+                <li>Try: &ldquo;Send a text to 555-1234 saying Running 10 minutes late&rdquo;</li>
+                <li>Try: &ldquo;Call Sarah Johnson&rdquo;</li>
                 <li>The assistant will confirm actions before executing them</li>
               </ul>
             </div>
@@ -213,13 +214,13 @@ export default function VoicePage() {
             </div>
             <div>
               <p className="text-gray-600 font-medium">Functions Available</p>
-              <p className="text-gray-900">5 CRM tools</p>
+              <p className="text-gray-900">7 CRM + Communication</p>
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage
+              <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call
             </p>
           </div>
         </div>
