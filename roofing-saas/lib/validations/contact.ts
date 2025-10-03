@@ -61,7 +61,7 @@ export const contactFiltersSchema = z.object({
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   tags: z.array(z.string()).optional(),
   page: z.number().int().positive().optional(),
-  limit: z.number().int().positive().max(100).optional(),
+  limit: z.number().int().positive().max(5000).optional(),
   sort_by: z.string().optional(),
   sort_order: z.enum(['asc', 'desc']).optional(),
 })

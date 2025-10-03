@@ -33,40 +33,82 @@ export default async function DashboardLayout({
                 Roofing CRM
               </Link>
 
-              <div className="hidden md:ml-10 md:flex md:space-x-8">
+              <div className="hidden md:ml-10 md:flex md:space-x-8 overflow-x-auto flex-1 max-w-4xl scrollbar-thin">
                 <Link
                   href="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/contacts"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Contacts
                 </Link>
                 <Link
                   href="/pipeline"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Pipeline
                 </Link>
                 <Link
+                  href="/organizations"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Organizations
+                </Link>
+                <Link
+                  href="/tasks"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Tasks
+                </Link>
+                <Link
+                  href="/project-files"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Files
+                </Link>
+                <Link
+                  href="/call-logs"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Call Logs
+                </Link>
+                <Link
+                  href="/jobs"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Jobs
+                </Link>
+                <Link
+                  href="/events"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Events
+                </Link>
+                <Link
+                  href="/surveys"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  Surveys
+                </Link>
+                <Link
                   href="/projects"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Projects
                 </Link>
                 <Link
                   href="/territories"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Territories
                 </Link>
                 <Link
                   href="/settings"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Settings
                 </Link>
