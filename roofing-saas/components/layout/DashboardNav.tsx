@@ -23,6 +23,7 @@ const navLinks: NavLink[] = [
   { href: '/tasks', label: 'Tasks' },
   { href: '/contacts', label: 'Contacts' },
   { href: '/call-logs', label: 'Call Logs' },
+  { href: '/voice', label: 'AI Voice' },
   // { href: '/messaging', label: 'Messaging' }, // TODO: Create messaging page
   { href: '/settings', label: 'Settings' },
 
