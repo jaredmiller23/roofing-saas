@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const rawFilters = {
       search: searchParams.get('search') || undefined,
-      type: searchParams.get('search') || undefined,
+      type: searchParams.get('type') || undefined,
       stage: searchParams.get('stage') || undefined,
       assigned_to: searchParams.get('assigned_to') || undefined,
       priority: searchParams.get('priority') || undefined,

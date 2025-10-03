@@ -190,6 +190,18 @@ export function PipelineBoard() {
                 {stage.name}
               </button>
             ))}
+            {/* Reset filters button */}
+            {(searchQuery || selectedStages.length !== STAGES.length) && (
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedStages(STAGES.map(s => s.id))
+                }}
+                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 font-medium underline ml-2"
+              >
+                Reset
+              </button>
+            )}
           </div>
         </div>
 
