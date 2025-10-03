@@ -1,35 +1,29 @@
 /**
- * Import Enzy Leads into Contacts
+ * Enzy Leads Import Script
  *
- * This script imports lead data from Enzy (door-knocking app) into the contacts table.
- * Uses name matching to update existing contacts or create new ones.
- *
- * Usage:
- *   npx tsx scripts/import-enzy-leads.ts <json-file-path>
- *
- * Example:
- *   npx tsx scripts/import-enzy-leads.ts data/enzy-leads.json
+ * Imports lead data from Enzy JSON files into Supabase database
+ * Creates contacts, projects, and events from Enzy lead data
  */
 
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
-import * as fs from 'fs'
-import * as path from 'path'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 // Load environment variables
-config({ path: path.resolve(process.cwd(), '.env.local') })
+config({ path: join(process.cwd(), '.env.local') })
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const DEFAULT_TENANT_ID = process.env.DEFAULT_TENANT_ID || '478d279b-5b8a-4040-a805-75d595d59702'
+// Initialize Supabase client with service role (bypasses RLS)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('❌ Missing Supabase credentials')
-  process.exit(1)
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase credentials')
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+// Define types
 interface EnzyLead {
   customerName: string
   setter: string
@@ -40,259 +34,281 @@ interface EnzyLead {
   leadStatus: string
 }
 
-interface ImportStats {
-  processed: number
-  created: number
-  updated: number
-  skipped: number
-  errors: number
-  errorDetails: Array<{ lead: string; error: string }>
-}
-
-/**
- * Parse full name into first and last name
- */
-function parseName(fullName: string): { firstName: string; lastName: string } {
-  const trimmed = fullName.trim()
-  const parts = trimmed.split(/\s+/)
-
-  if (parts.length === 0) {
-    return { firstName: '', lastName: '' }
-  } else if (parts.length === 1) {
-    return { firstName: parts[0], lastName: '' }
-  } else {
-    const firstName = parts[0]
-    const lastName = parts.slice(1).join(' ')
-    return { firstName, lastName }
-  }
-}
-
-/**
- * Parse address into components
- */
-function parseAddress(fullAddress: string): {
+interface ParsedAddress {
   street: string
   city: string
   state: string
   zip: string
-} {
-  // Example: "244 Stone Edge Cir, Kingsport, TN 37660, USA"
-  const parts = fullAddress.split(',').map(p => p.trim())
+}
 
-  if (parts.length < 3) {
-    return {
-      street: fullAddress,
-      city: '',
-      state: '',
-      zip: '',
-    }
+interface ImportStats {
+  totalLeads: number
+  contactsCreated: number
+  projectsCreated: number
+  eventsCreated: number
+  errors: Array<{ lead: string; error: string }>
+}
+
+// Tenant ID for Appalachian Storm Restoration
+const TENANT_ID = '00000000-0000-0000-0000-000000000000'
+
+/**
+ * Parse full address string into components
+ */
+function parseAddress(address: string): ParsedAddress {
+  // Format: "244 Stone Edge Cir, Kingsport, TN 37660, USA"
+  const parts = address.split(',').map((p) => p.trim())
+
+  return {
+    street: parts[0] || '',
+    city: parts[1] || '',
+    state: parts[2]?.split(' ')[0] || '',
+    zip: parts[2]?.split(' ')[1] || '',
   }
-
-  const street = parts[0] || ''
-  const city = parts[1] || ''
-
-  // Extract state and zip from "TN 37660"
-  const stateZip = parts[2]?.split(/\s+/) || []
-  const state = stateZip[0] || ''
-  const zip = stateZip[1] || ''
-
-  return { street, city, state, zip }
 }
 
 /**
- * Check if contact exists by name matching
+ * Parse Enzy appointment format to ISO timestamp
+ * Format: "Wed, Oct 01 04:30PM"
  */
-async function findContactByName(
-  firstName: string,
-  lastName: string
-): Promise<{ id: string } | null> {
-  const { data, error } = await supabase
-    .from('contacts')
-    .select('id')
-    .eq('tenant_id', DEFAULT_TENANT_ID)
-    .eq('first_name', firstName)
-    .eq('last_name', lastName)
-    .eq('is_deleted', false)
-    .maybeSingle()
+function parseAppointmentDate(appointmentStr: string): string {
+  try {
+    // Extract components
+    const parts = appointmentStr.replace(',', '').split(' ')
+    const month = parts[1]
+    const day = parts[2]
+    const timeStr = parts[3]
 
-  if (error) {
-    console.error(`Error checking contact:`, error)
+    // Parse time
+    const isPM = timeStr.includes('PM')
+    const timeOnly = timeStr.replace('AM', '').replace('PM', '')
+    const [hours, minutes] = timeOnly.split(':').map((n) => parseInt(n))
+    const hour24 = isPM && hours !== 12 ? hours + 12 : hours === 12 && !isPM ? 0 : hours
+
+    // Map month names to numbers
+    const monthMap: Record<string, string> = {
+      Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+      Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+    }
+
+    const monthNum = monthMap[month] || '01'
+    const year = '2025'
+
+    // Construct ISO string
+    const isoDate = `${year}-${monthNum}-${day.padStart(2, '0')}T${hour24
+      .toString()
+      .padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00-04:00`
+
+    return isoDate
+  } catch (error) {
+    console.error('Error parsing appointment date:', appointmentStr, error)
+    return new Date().toISOString()
+  }
+}
+
+/**
+ * Map Enzy lead status to project stage
+ */
+function mapLeadStatus(status: string): string {
+  const statusMap: Record<string, string> = {
+    'IRA Signed': 'customer',
+    'Inspection No Damage': 'lost',
+    'Appointment Schedule...': 'active',
+    'Following Up': 'active',
+    'Sold': 'customer',
+    'Lost': 'lost',
+  }
+
+  return statusMap[status] || 'lead'
+}
+
+/**
+ * Find user by name
+ */
+async function findUserByName(name: string): Promise<string | null> {
+  if (name === 'Unassigned' || !name) {
     return null
   }
 
-  return data
+  const { data: users } = await supabase.auth.admin.listUsers()
+
+  const existingUser = users.users.find((u) => {
+    const fullName = u.user_metadata?.full_name || ''
+    return fullName.toLowerCase() === name.toLowerCase()
+  })
+
+  if (existingUser) {
+    return existingUser.id
+  }
+
+  console.log(`User not found: ${name}`)
+  return null
 }
 
 /**
- * Import a single Enzy lead
+ * Import a single lead
  */
 async function importLead(lead: EnzyLead, stats: ImportStats): Promise<void> {
   try {
-    const { firstName, lastName } = parseName(lead.customerName)
+    console.log(`\nImporting: ${lead.customerName}`)
 
-    if (!firstName) {
-      stats.skipped++
-      console.log(`⏭️  Skipped: Empty name`)
-      return
-    }
+    const parsedAddr = parseAddress(lead.address)
+    const setterId = await findUserByName(lead.setter)
+    const closerId = await findUserByName(lead.closer)
 
-    // Parse address
-    const address = parseAddress(lead.address)
+    // 1. Create/find contact
+    // Split name into first and last
+    const nameParts = lead.customerName.trim().split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
 
-    // Check if contact exists
-    const existing = await findContactByName(firstName, lastName)
+    // Check for existing contact by address (more reliable than name)
+    const { data: existingContact } = await supabase
+      .from('contacts')
+      .select('id')
+      .eq('tenant_id', TENANT_ID)
+      .eq('address_street', parsedAddr.street)
+      .eq('address_city', parsedAddr.city)
+      .single()
 
-    const contactData = {
-      tenant_id: DEFAULT_TENANT_ID,
-      first_name: firstName,
-      last_name: lastName,
-      address_street: address.street,
-      address_city: address.city,
-      address_state: address.state,
-      address_zip: address.zip,
-      type: 'lead',
-      stage: 'lead',
-      source: 'enzy',
-      custom_fields: {
-        enzy_lead_status: lead.leadStatus,
-        enzy_setter: lead.setter,
-        enzy_closer: lead.closer,
-        enzy_appointment: lead.appointment,
-        enzy_team: lead.team,
-        imported_at: new Date().toISOString(),
-      },
-    }
+    let contactId: string
 
-    if (existing) {
-      // UPDATE existing contact
-      const { error: updateError } = await supabase
-        .from('contacts')
-        .update({
-          ...contactData,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id)
-
-      if (updateError) {
-        throw updateError
-      }
-
-      stats.updated++
-      console.log(`♻️  Updated: ${firstName} ${lastName}`)
+    if (existingContact) {
+      console.log('  - Contact already exists')
+      contactId = existingContact.id
     } else {
-      // CREATE new contact
-      const { error: createError } = await supabase
+      const { data: newContact, error: contactError } = await supabase
         .from('contacts')
-        .insert(contactData)
+        .insert({
+          tenant_id: TENANT_ID,
+          first_name: firstName,
+          last_name: lastName,
+          address_street: parsedAddr.street,
+          address_city: parsedAddr.city,
+          address_state: parsedAddr.state,
+          address_zip: parsedAddr.zip,
+          type: 'lead',
+          source: 'enzy_import',
+          tags: [lead.team],
+        })
+        .select()
+        .single()
 
-      if (createError) {
-        throw createError
-      }
+      if (contactError) throw contactError
 
-      stats.created++
-      console.log(`🆕 Created: ${firstName} ${lastName}`)
+      contactId = newContact.id
+      stats.contactsCreated++
+      console.log('  ✅ Contact created')
     }
 
-    stats.processed++
-  } catch (error: any) {
-    stats.errors++
-    stats.errorDetails.push({
-      lead: lead.customerName,
-      error: error.message,
+    // 2. Create project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        tenant_id: TENANT_ID,
+        contact_id: contactId,
+        name: `${lead.customerName} - ${parsedAddr.street}`,
+        type: 'residential',
+        status: mapLeadStatus(lead.leadStatus),
+        custom_fields: {
+          setter: lead.setter,
+          closer: lead.closer,
+          setterId: setterId,
+          closerId: closerId,
+          original_status: lead.leadStatus,
+          team: lead.team,
+          source: 'enzy_import',
+        },
+      })
+      .select()
+      .single()
+
+    if (projectError) throw projectError
+
+    stats.projectsCreated++
+    console.log('  ✅ Project created')
+
+    // 3. Create event
+    const appointmentDate = parseAppointmentDate(lead.appointment)
+    const startDate = new Date(appointmentDate)
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1 hour later
+
+    const { error: eventError } = await supabase.from('events').insert({
+      tenant_id: TENANT_ID,
+      contact_id: contactId,
+      project_id: project.id,
+      title: `Appointment - ${lead.customerName}`,
+      description: `Enzy appointment\nSetter: ${lead.setter}\nCloser: ${lead.closer}\nStatus: ${lead.leadStatus}`,
+      event_type: 'appointment',
+      start_at: appointmentDate,
+      end_at: endDate.toISOString(),
+      organizer: closerId || setterId,
+      location: lead.address,
     })
-    console.error(`❌ Error importing ${lead.customerName}:`, error.message)
+
+    if (eventError) throw eventError
+
+    stats.eventsCreated++
+    console.log('  ✅ Event created')
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error)
+    console.error(`  ❌ Error:`, errorMessage)
+    stats.errors.push({
+      lead: lead.customerName,
+      error: errorMessage,
+    })
   }
 }
 
 /**
  * Main import function
  */
-async function importEnzyLeads(jsonFilePath: string): Promise<void> {
-  console.log('🚀 Importing Enzy Leads\n')
-  console.log('='.repeat(60))
-  console.log(`File: ${jsonFilePath}`)
-  console.log(`Tenant: ${DEFAULT_TENANT_ID}\n`)
-  console.log('='.repeat(60) + '\n')
+async function main() {
+  console.log('🚀 Starting Enzy Leads Import\n')
 
   const stats: ImportStats = {
-    processed: 0,
-    created: 0,
-    updated: 0,
-    skipped: 0,
-    errors: 0,
-    errorDetails: [],
+    totalLeads: 0,
+    contactsCreated: 0,
+    projectsCreated: 0,
+    eventsCreated: 0,
+    errors: [],
   }
 
-  // Read JSON file
-  console.log('📖 Reading JSON file...')
-  const fileContent = fs.readFileSync(jsonFilePath, 'utf-8')
-  const data = JSON.parse(fileContent)
+  try {
+    const filePath = join(process.cwd(), '..', 'Enzy Leads', 'ASR-Leads-ALL.json')
+    const fileContent = readFileSync(filePath, 'utf-8')
+    const data = JSON.parse(fileContent)
 
-  // Handle both array and object with leads array
-  const leads: EnzyLead[] = Array.isArray(data) ? data : data.leads || []
+    const leads: EnzyLead[] = data.leads || []
+    stats.totalLeads = leads.length
 
-  console.log(`✅ Found ${leads.length} leads\n`)
+    console.log(`📊 Found ${stats.totalLeads} leads to import\n`)
 
-  // Process each lead
-  console.log('⚙️  Processing leads...\n')
-
-  for (let i = 0; i < leads.length; i++) {
-    const lead = leads[i]
-    await importLead(lead, stats)
-
-    // Progress indicator
-    if ((i + 1) % 10 === 0) {
-      console.log(`   Progress: ${i + 1}/${leads.length}`)
+    for (const lead of leads) {
+      await importLead(lead, stats)
     }
-  }
 
-  // Print summary
-  console.log('\n' + '='.repeat(60))
-  console.log('📊 IMPORT SUMMARY')
-  console.log('='.repeat(60))
-  console.log(`🆕 Created:    ${stats.created}`)
-  console.log(`♻️  Updated:    ${stats.updated}`)
-  console.log(`⏭️  Skipped:    ${stats.skipped}`)
-  console.log(`❌ Errors:     ${stats.errors}`)
-  console.log(`📈 Total:      ${stats.processed}`)
-  console.log('='.repeat(60))
+    console.log('\n' + '='.repeat(60))
+    console.log('📈 IMPORT SUMMARY')
+    console.log('='.repeat(60))
+    console.log(`Total Leads:      ${stats.totalLeads}`)
+    console.log(`Contacts Created: ${stats.contactsCreated}`)
+    console.log(`Projects Created: ${stats.projectsCreated}`)
+    console.log(`Events Created:   ${stats.eventsCreated}`)
+    console.log(`Errors:           ${stats.errors.length}`)
 
-  // Print errors if any
-  if (stats.errorDetails.length > 0) {
-    console.log('\n❌ ERROR DETAILS:')
-    stats.errorDetails.forEach((err) => {
-      console.log(`\n  Lead: ${err.lead}`)
-      console.log(`  Error: ${err.error}`)
-    })
-  }
+    if (stats.errors.length > 0) {
+      console.log('\n❌ ERRORS:')
+      stats.errors.forEach((err) => {
+        console.log(`  - ${err.lead}: ${err.error}`)
+      })
+    }
 
-  console.log('\n✨ Import complete!')
-}
-
-// CLI execution
-const args = process.argv.slice(2)
-
-if (args.length === 0) {
-  console.error('Usage: npx tsx scripts/import-enzy-leads.ts <json-file-path>')
-  console.error('\nExample:')
-  console.error('  npx tsx scripts/import-enzy-leads.ts data/enzy-leads.json')
-  process.exit(1)
-}
-
-const jsonFilePath = args[0]
-
-if (!fs.existsSync(jsonFilePath)) {
-  console.error(`❌ File not found: ${jsonFilePath}`)
-  process.exit(1)
-}
-
-// Run import
-importEnzyLeads(jsonFilePath)
-  .then(() => {
-    console.log('\n✅ Script completed successfully')
-    process.exit(0)
-  })
-  .catch((error) => {
-    console.error('\n❌ Script failed:', error)
+    console.log('\n✅ Import complete!')
+  } catch (error) {
+    console.error('💥 Fatal error:', error)
     process.exit(1)
-  })
+  }
+}
+
+main()

@@ -18,6 +18,7 @@ import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from 'luci
 
 interface DashboardMetricsProps {
   initialData?: DashboardData | null
+  scope?: 'user' | 'company'
 }
 
 interface DashboardData {
@@ -42,19 +43,18 @@ interface DashboardData {
   }
 }
 
-export function DashboardMetrics({ initialData }: DashboardMetricsProps) {
+export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMetricsProps) {
   const [data, setData] = useState<DashboardData | null>(initialData || null)
   const [isLoading, setIsLoading] = useState(!initialData)
 
   useEffect(() => {
-    if (!initialData) {
-      fetchMetrics()
-    }
-  }, [initialData])
+    fetchMetrics()
+  }, [scope])
 
   const fetchMetrics = async () => {
+    setIsLoading(true)
     try {
-      const response = await fetch('/api/dashboard/metrics')
+      const response = await fetch(`/api/dashboard/metrics?scope=${scope}`)
       const result = await response.json()
       if (result.success) {
         setData(result)

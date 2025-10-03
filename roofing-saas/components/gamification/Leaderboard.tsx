@@ -24,9 +24,18 @@ interface Badge {
 interface LeaderboardProps {
   period?: 'all' | 'daily' | 'weekly' | 'monthly'
   limit?: number
+  type?: 'points' | 'knocks' | 'sales'
+  title?: string
+  metricLabel?: string
 }
 
-export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps) {
+export function Leaderboard({
+  period = 'weekly',
+  limit = 10,
+  type = 'points',
+  title = 'Leaderboard',
+  metricLabel = 'points'
+}: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,13 +44,13 @@ export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps)
   useEffect(() => {
     fetchLeaderboard()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod])
+  }, [selectedPeriod, type])
 
   const fetchLeaderboard = async () => {
     setLoading(true)
     try {
       const response = await fetch(
-        `/api/gamification/leaderboard?period=${selectedPeriod}&limit=${limit}`
+        `/api/gamification/leaderboard?period=${selectedPeriod}&limit=${limit}&type=${type}`
       )
       const result = await response.json()
 
@@ -124,7 +133,7 @@ export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps)
     <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Header with Period Selector */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Leaderboard</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
         <div className="flex gap-2">
           {(['daily', 'weekly', 'monthly', 'all'] as const).map((p) => (
             <button
@@ -226,7 +235,7 @@ export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps)
                 <p className="font-semibold text-gray-900">
                   {entry.points.toLocaleString()}
                 </p>
-                <p className="text-xs text-gray-500">points</p>
+                <p className="text-xs text-gray-500">{metricLabel}</p>
               </div>
             </div>
           ))}

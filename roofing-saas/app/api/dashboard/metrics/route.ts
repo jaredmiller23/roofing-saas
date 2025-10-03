@@ -4,7 +4,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 
 /**
  * Dashboard Metrics API
- * GET /api/dashboard/metrics
+ * GET /api/dashboard/metrics?scope=user|company
  *
  * Returns comprehensive KPI metrics for the dashboard:
  * - Lead conversion rate
@@ -14,8 +14,12 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
  * - Crew utilization
  * - Gross margin by job type
  * - Customer acquisition cost
+ *
+ * Scope options:
+ * - user: Show only current user's data (created_by = user.id)
+ * - company: Show all tenant data (default)
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
@@ -27,6 +31,10 @@ export async function GET() {
       return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
     }
 
+    // Get scope from query params
+    const { searchParams } = new URL(request.url)
+    const scope = searchParams.get('scope') || 'company'
+
     const supabase = await createClient()
 
     // Get current date ranges
@@ -36,14 +44,20 @@ export async function GET() {
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
     // === Total Contacts ===
-    const { count: totalContacts } = await supabase
+    let contactsQuery = supabase
       .from('contacts')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
+    if (scope === 'user') {
+      contactsQuery = contactsQuery.eq('created_by', user.id)
+    }
+
+    const { count: totalContacts } = await contactsQuery
+
     // === Active Projects (in pipeline) ===
-    const { count: activeProjects } = await supabase
+    let activeProjectsQuery = supabase
       .from('projects')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -51,8 +65,14 @@ export async function GET() {
       .neq('status', 'won')
       .neq('status', 'lost')
 
+    if (scope === 'user') {
+      activeProjectsQuery = activeProjectsQuery.eq('created_by', user.id)
+    }
+
+    const { count: activeProjects } = await activeProjectsQuery
+
     // === Won Projects (this month) ===
-    const { data: wonProjectsThisMonth } = await supabase
+    let wonProjectsThisMonthQuery = supabase
       .from('projects')
       .select('final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
@@ -60,12 +80,18 @@ export async function GET() {
       .eq('status', 'won')
       .gte('updated_at', startOfMonth.toISOString())
 
+    if (scope === 'user') {
+      wonProjectsThisMonthQuery = wonProjectsThisMonthQuery.eq('created_by', user.id)
+    }
+
+    const { data: wonProjectsThisMonth } = await wonProjectsThisMonthQuery
+
     const monthlyRevenue = wonProjectsThisMonth?.reduce((sum, p) =>
       sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
     ) || 0
 
     // === Revenue Trend (last 6 months) ===
-    const { data: revenueData } = await supabase
+    let revenueDataQuery = supabase
       .from('projects')
       .select('final_value, approved_value, estimated_value, updated_at')
       .eq('tenant_id', tenantId)
@@ -73,6 +99,12 @@ export async function GET() {
       .eq('status', 'won')
       .gte('updated_at', new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString())
       .order('updated_at', { ascending: true })
+
+    if (scope === 'user') {
+      revenueDataQuery = revenueDataQuery.eq('created_by', user.id)
+    }
+
+    const { data: revenueData } = await revenueDataQuery
 
     // Group revenue by month
     const revenueByMonth: { [key: string]: number } = {}
@@ -97,23 +129,35 @@ export async function GET() {
     }))
 
     // === Lead Conversion Rate ===
-    const { data: allProjects } = await supabase
+    let allProjectsQuery = supabase
       .from('projects')
       .select('status')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
+
+    if (scope === 'user') {
+      allProjectsQuery = allProjectsQuery.eq('created_by', user.id)
+    }
+
+    const { data: allProjects } = await allProjectsQuery
 
     const totalLeads = allProjects?.length || 0
     const wonLeads = allProjects?.filter(p => p.status === 'won').length || 0
     const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100) : 0
 
     // === Average Job Value ===
-    const { data: wonProjects } = await supabase
+    let wonProjectsQuery = supabase
       .from('projects')
       .select('final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
+
+    if (scope === 'user') {
+      wonProjectsQuery = wonProjectsQuery.eq('created_by', user.id)
+    }
+
+    const { data: wonProjects } = await wonProjectsQuery
 
     const avgJobValue = wonProjects && wonProjects.length > 0
       ? wonProjects.reduce((sum, p) =>
@@ -122,13 +166,19 @@ export async function GET() {
       : 0
 
     // === Sales Cycle Length ===
-    const { data: wonProjectsWithDates } = await supabase
+    let wonProjectsWithDatesQuery = supabase
       .from('projects')
       .select('created_at, updated_at')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
       .limit(50)
+
+    if (scope === 'user') {
+      wonProjectsWithDatesQuery = wonProjectsWithDatesQuery.eq('created_by', user.id)
+    }
+
+    const { data: wonProjectsWithDates } = await wonProjectsWithDatesQuery
 
     const avgSalesCycle = wonProjectsWithDates && wonProjectsWithDates.length > 0
       ? wonProjectsWithDates.reduce((sum, p) => {
@@ -138,17 +188,29 @@ export async function GET() {
       : 0
 
     // === Activities (Doors Knocked) ===
-    const { data: activities30Days } = await supabase
+    let activities30DaysQuery = supabase
       .from('activities')
       .select('type, created_at')
       .eq('tenant_id', tenantId)
       .gte('created_at', last30Days.toISOString())
 
-    const { data: activities7Days } = await supabase
+    if (scope === 'user') {
+      activities30DaysQuery = activities30DaysQuery.eq('created_by', user.id)
+    }
+
+    const { data: activities30Days } = await activities30DaysQuery
+
+    let activities7DaysQuery = supabase
       .from('activities')
       .select('type, created_at')
       .eq('tenant_id', tenantId)
       .gte('created_at', last7Days.toISOString())
+
+    if (scope === 'user') {
+      activities7DaysQuery = activities7DaysQuery.eq('created_by', user.id)
+    }
+
+    const { data: activities7Days } = await activities7DaysQuery
 
     const doorsKnocked30Days = activities30Days?.filter(a => a.type === 'door_knock').length || 0
     const doorsKnockedPerDay = doorsKnocked30Days / 30
@@ -156,13 +218,19 @@ export async function GET() {
     const doorsKnocked7Days = activities7Days?.filter(a => a.type === 'door_knock').length || 0
 
     // === Pipeline by Status ===
-    const { data: pipelineData } = await supabase
+    let pipelineDataQuery = supabase
       .from('projects')
       .select('status, final_value, approved_value, estimated_value')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .neq('status', 'won')
       .neq('status', 'lost')
+
+    if (scope === 'user') {
+      pipelineDataQuery = pipelineDataQuery.eq('created_by', user.id)
+    }
+
+    const { data: pipelineData } = await pipelineDataQuery
 
     const pipelineByStatus: { [key: string]: { count: number; value: number } } = {}
     pipelineData?.forEach(project => {
