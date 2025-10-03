@@ -99,7 +99,7 @@ export function TerritoryMapEditor({
     drawControlRef.current = drawControl
 
     // Handle draw created
-    map.on(L.Draw.Event.CREATED, (event: L.DrawEvents.Created) => {
+    map.on(L.Draw.Event.CREATED, (event: any) => {
       const layer = event.layer
 
       // Clear existing layers

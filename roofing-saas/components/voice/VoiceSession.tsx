@@ -215,7 +215,9 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
       onError?.(error as Error)
       cleanup()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactId, projectId, onError])
+  // Note: cleanup and handleDataChannelMessage are stable refs, intentionally excluded
 
   /**
    * Handle messages from OpenAI via data channel
@@ -325,7 +327,9 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
     cleanup()
     setStatus('disconnected')
     onSessionEnd?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onSessionEnd])
+  // Note: cleanup is a stable ref, intentionally excluded
 
   /**
    * Cleanup WebRTC resources
