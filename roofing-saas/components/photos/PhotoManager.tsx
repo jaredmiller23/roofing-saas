@@ -51,6 +51,7 @@ export function PhotoManager({
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Handle photo upload success
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUploadSuccess = useCallback((photoId: string) => {
     // Trigger gallery refresh
     setRefreshTrigger(prev => prev + 1)

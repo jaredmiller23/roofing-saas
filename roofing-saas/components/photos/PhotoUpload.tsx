@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -75,7 +76,7 @@ export function PhotoUpload({
 
       await processFile(file)
     },
-    [validateFile, onUploadError]
+    [validateFile, onUploadError, processFile]
   )
 
   // Process and upload file
@@ -129,7 +130,7 @@ export function PhotoUpload({
               })
               latitude = position.coords.latitude
               longitude = position.coords.longitude
-            } catch (error) {
+            } catch {
               console.log('Geolocation not available, continuing without coordinates')
             }
           }
@@ -398,11 +399,13 @@ export function PhotoUpload({
 
           {/* Preview */}
           {previewUrl && (
-            <div className="relative">
-              <img
+            <div className="relative w-full h-64 rounded-lg overflow-hidden">
+              <Image
                 src={previewUrl}
                 alt="Preview"
-                className="w-full rounded-lg"
+                fill
+                style={{ objectFit: 'contain' }}
+                className="rounded-lg"
               />
             </div>
           )}

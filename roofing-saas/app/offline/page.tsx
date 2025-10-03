@@ -26,7 +26,7 @@ export default function OfflinePage() {
         <ul className="text-left text-gray-700 space-y-3 mb-8">
           <li className="flex items-start">
             <span className="mr-2">📸</span>
-            <span>Take photos (they'll sync when you're back online)</span>
+            <span>Take photos (they&apos;ll sync when you&apos;re back online)</span>
           </li>
           <li className="flex items-start">
             <span className="mr-2">👥</span>

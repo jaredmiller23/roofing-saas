@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Photo {
@@ -98,10 +99,10 @@ export function PhotoGallery({
 
         // Notify parent
         onPhotoDelete?.(photoId)
-      } catch (err: any) {
+      } catch (err) {
         console.error('Photo delete error:', err)
         // Extract error message properly
-        const errorMessage = err?.message || err?.error || 'Failed to delete photo'
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete photo'
         alert(errorMessage)
       }
     },
@@ -183,20 +184,27 @@ export function PhotoGallery({
           }}>
             {photos.map((photo, index) => (
               <div key={photo.id} style={{position: 'relative'}}>
-                {/* Just the image, no wrappers */}
-                <img
-                  src={photo.file_url}
-                  alt={`Photo ${index + 1}`}
+                {/* Image wrapper for Next.js Image */}
+                <div
                   style={{
+                    position: 'relative',
                     width: '100%',
                     height: '200px',
-                    objectFit: 'cover',
                     borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'block'
+                    overflow: 'hidden',
+                    cursor: 'pointer'
                   }}
                   onClick={() => onPhotoClick?.(photo, index, photos)}
-                />
+                >
+                  <Image
+                    src={photo.file_url}
+                    alt={`Photo ${index + 1}`}
+                    fill
+                    style={{
+                      objectFit: 'cover'
+                    }}
+                  />
+                </div>
 
                 {/* Simple delete button - always visible */}
                 <button

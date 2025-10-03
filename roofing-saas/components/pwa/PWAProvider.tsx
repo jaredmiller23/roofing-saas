@@ -8,7 +8,6 @@ import { setupSyncListeners } from '@/lib/sync/queue'
 import { InstallPrompt } from './InstallPrompt'
 import { OfflineIndicator } from './OfflineIndicator'
 import { SyncStatus } from './SyncStatus'
-import OfflineQueueStatus from '@/components/photos/OfflineQueueStatus'
 
 interface PWAProviderProps {
   children: React.ReactNode

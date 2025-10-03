@@ -46,6 +46,7 @@ export default function SMSComposer({
   useEffect(() => {
     loadTemplates();
     checkSMSCapability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactId]);
 
   // Update character count

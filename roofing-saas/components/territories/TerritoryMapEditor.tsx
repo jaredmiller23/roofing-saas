@@ -8,6 +8,7 @@ import 'leaflet-draw/dist/leaflet.draw.css'
 import type { TerritoryBoundary } from '@/lib/geo/territory'
 
 // Fix for default marker icons in Next.js
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -98,7 +99,7 @@ export function TerritoryMapEditor({
     drawControlRef.current = drawControl
 
     // Handle draw created
-    map.on(L.Draw.Event.CREATED, (event: any) => {
+    map.on(L.Draw.Event.CREATED, (event: L.DrawEvents.Created) => {
       const layer = event.layer
 
       // Clear existing layers
@@ -115,12 +116,12 @@ export function TerritoryMapEditor({
     })
 
     // Handle draw edited
-    map.on(L.Draw.Event.EDITED, (event: any) => {
+    map.on(L.Draw.Event.EDITED, (event: L.DrawEvents.Edited) => {
       const layers = event.layers
       let boundary: TerritoryBoundary | null = null
 
-      layers.eachLayer((layer: any) => {
-        const geoJson = layer.toGeoJSON()
+      layers.eachLayer((layer: L.Layer) => {
+        const geoJson = (layer as L.Polygon | L.Rectangle).toGeoJSON()
         boundary = convertToTerritoryBoundary(geoJson)
       })
 
@@ -144,6 +145,7 @@ export function TerritoryMapEditor({
         mapRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount
 
   // Load initial boundary
@@ -163,6 +165,7 @@ export function TerritoryMapEditor({
       }
 
       // Create layer from GeoJSON
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const layer = L.geoJSON(geoJsonFeature as any, {
         style: {
           color: '#3b82f6',
@@ -172,7 +175,7 @@ export function TerritoryMapEditor({
       })
 
       // Add to drawn items
-      layer.eachLayer((l: any) => {
+      layer.eachLayer((l: L.Layer) => {
         drawnItemsRef.current?.addLayer(l)
       })
 
@@ -189,25 +192,25 @@ export function TerritoryMapEditor({
   }, [mapReady, initialBoundary])
 
   // Convert Leaflet GeoJSON to our TerritoryBoundary format
-  const convertToTerritoryBoundary = (geoJson: any): TerritoryBoundary => {
+  const convertToTerritoryBoundary = (geoJson: GeoJSON.Feature): TerritoryBoundary => {
     const geometry = geoJson.geometry
 
     if (geometry.type === 'Polygon') {
       return {
         type: 'Polygon',
-        coordinates: geometry.coordinates,
+        coordinates: geometry.coordinates as number[][][],
       }
     } else if (geometry.type === 'MultiPolygon') {
       return {
         type: 'MultiPolygon',
-        coordinates: geometry.coordinates,
+        coordinates: geometry.coordinates as number[][][][],
       }
     }
 
     // Fallback: treat as Polygon
     return {
       type: 'Polygon',
-      coordinates: geometry.coordinates,
+      coordinates: (geometry as GeoJSON.Polygon).coordinates as number[][][],
     }
   }
 

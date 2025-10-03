@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css'
 
 // Fix for default marker icons in Next.js
 // Leaflet's default marker icons don't work out of the box with webpack
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -78,14 +79,8 @@ export function TerritoryMap({
         mapRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount
-
-  // Update map center when prop changes
-  useEffect(() => {
-    if (mapRef.current && center) {
-      mapRef.current.setView(center, zoom)
-    }
-  }, [center, zoom])
 
   // Render territories on map
   useEffect(() => {
@@ -119,6 +114,7 @@ export function TerritoryMap({
         const isSelected = selectedTerritory?.id === territory.id
 
         // Create GeoJSON layer
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const layer = L.geoJSON(geoJsonData as any, {
           style: {
             color: isSelected ? '#2563eb' : '#3b82f6',

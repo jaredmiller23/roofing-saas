@@ -248,7 +248,12 @@ export function ProjectsTable({ params }: ProjectsTableProps) {
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => {
-                const newParams = new URLSearchParams(params as any)
+                const newParams = new URLSearchParams()
+                Object.entries(params).forEach(([key, value]) => {
+                  if (value && typeof value === 'string') {
+                    newParams.set(key, value)
+                  }
+                })
                 newParams.set('page', String(Math.max(1, page - 1)))
                 window.location.href = `/projects?${newParams.toString()}`
               }}
@@ -259,7 +264,12 @@ export function ProjectsTable({ params }: ProjectsTableProps) {
             </button>
             <button
               onClick={() => {
-                const newParams = new URLSearchParams(params as any)
+                const newParams = new URLSearchParams()
+                Object.entries(params).forEach(([key, value]) => {
+                  if (value && typeof value === 'string') {
+                    newParams.set(key, value)
+                  }
+                })
                 newParams.set('page', String(page + 1))
                 window.location.href = `/projects?${newParams.toString()}`
               }}
@@ -281,7 +291,12 @@ export function ProjectsTable({ params }: ProjectsTableProps) {
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                 <button
                   onClick={() => {
-                    const newParams = new URLSearchParams(params as any)
+                    const newParams = new URLSearchParams()
+                    Object.entries(params).forEach(([key, value]) => {
+                      if (value && typeof value === 'string') {
+                        newParams.set(key, value)
+                      }
+                    })
                     newParams.set('page', String(Math.max(1, page - 1)))
                     window.location.href = `/projects?${newParams.toString()}`
                   }}
@@ -292,7 +307,12 @@ export function ProjectsTable({ params }: ProjectsTableProps) {
                 </button>
                 <button
                   onClick={() => {
-                    const newParams = new URLSearchParams(params as any)
+                    const newParams = new URLSearchParams()
+                    Object.entries(params).forEach(([key, value]) => {
+                      if (value && typeof value === 'string') {
+                        newParams.set(key, value)
+                      }
+                    })
                     newParams.set('page', String(page + 1))
                     window.location.href = `/projects?${newParams.toString()}`
                   }}

@@ -100,7 +100,7 @@ export function WeeklyChallengeWidget() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">This Week's Challenge</h3>
+          <h3 className="text-lg font-bold text-gray-900">This Week&apos;s Challenge</h3>
           <p className="text-sm text-purple-700 font-medium mt-0.5">{getChallengeTitle()}</p>
         </div>
         <div className="bg-purple-600 text-white rounded-full p-3">

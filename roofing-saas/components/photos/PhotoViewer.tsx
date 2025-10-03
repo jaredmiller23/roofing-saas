@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 interface Photo {
   id: string
@@ -29,7 +30,6 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [showInfo, setShowInfo] = useState(false)
-  const imageRef = useRef<HTMLImageElement>(null)
 
   const currentPhoto = photos[currentIndex]
 
@@ -226,13 +226,15 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
         )}
 
         {/* Image */}
-        <img
-          ref={imageRef}
-          src={currentPhoto.file_url}
-          alt={`Photo ${currentIndex + 1}`}
-          className="max-w-full max-h-full object-contain"
-          onLoad={handleImageLoad}
-        />
+        <div className="relative w-full h-full flex items-center justify-center">
+          <Image
+            src={currentPhoto.file_url}
+            alt={`Photo ${currentIndex + 1}`}
+            fill
+            style={{ objectFit: 'contain' }}
+            onLoad={handleImageLoad}
+          />
+        </div>
 
         {/* Navigation buttons (desktop) */}
         {photos.length > 1 && (
