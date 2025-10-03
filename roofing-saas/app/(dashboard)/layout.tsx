@@ -1,15 +1,14 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { DashboardNav } from '@/components/layout/DashboardNav'
+import { Sidebar } from '@/components/layout/Sidebar'
 
 /**
- * Dashboard layout - main application layout with navigation
+ * Dashboard layout - main application layout with sidebar navigation
  *
  * This layout wraps all authenticated pages and provides:
- * - Top navigation bar with responsive hamburger menu
- * - User menu
- * - Sign out functionality
+ * - Left sidebar navigation with dark theme
+ * - Responsive mobile menu
+ * - User profile and sign out
  */
 export default async function DashboardLayout({
   children,
@@ -23,26 +22,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/dashboard" className="text-xl font-bold text-gray-900 flex-shrink-0">
-              Roofing CRM
-            </Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar userEmail={user.email || ''} />
 
-            {/* Navigation Links & User Menu */}
-            <div className="flex items-center gap-4 min-w-0">
-              <DashboardNav userEmail={user.email || ''} />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main>
+      {/* Main Content - with left padding for sidebar */}
+      <main className="lg:ml-64 min-h-screen">
         {children}
       </main>
     </div>
