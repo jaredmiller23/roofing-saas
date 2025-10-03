@@ -207,10 +207,10 @@ export function TerritoryMapEditor({
       }
     }
 
-    // Fallback: treat as Polygon
+    // Fallback: treat as Polygon with empty coordinates
     return {
       type: 'Polygon',
-      coordinates: (geometry as GeoJSON.Polygon).coordinates as number[][][],
+      coordinates: ((geometry as any).coordinates || []) as number[][][],
     }
   }
 
