@@ -6,6 +6,23 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 
+interface Knock {
+  id: string
+  created_at: string
+  type: string
+  subject: string
+  description: string
+  contact_id: string
+  contacts: {
+    first_name: string
+    last_name: string
+    address_street: string
+    address_city: string
+    address_state: string
+    address_zip: string
+  }
+}
+
 /**
  * Knocks page - displays door-knocking activities (Enzy-style data)
  *
@@ -161,7 +178,7 @@ export default async function KnocksPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {knocks.map((knock: any) => (
+                {knocks.map((knock: Knock) => (
                   <div
                     key={knock.id}
                     className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
