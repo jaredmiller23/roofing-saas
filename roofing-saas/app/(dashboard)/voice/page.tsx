@@ -101,10 +101,13 @@ export default function VoicePage() {
               <p className="font-medium mb-1">How to use the Voice Assistant:</p>
               <ul className="list-disc list-inside space-y-1 text-blue-800">
                 <li>Click &ldquo;Start Voice Assistant&rdquo; and allow microphone access</li>
-                <li>Try: &ldquo;Create a new contact named Sarah Johnson with phone 555-9876&rdquo;</li>
-                <li>Try: &ldquo;Log a door knock at 456 Oak Street, disposition interested&rdquo;</li>
-                <li>Try: &ldquo;Send a text to 555-1234 saying Running 10 minutes late&rdquo;</li>
-                <li>Try: &ldquo;Call Sarah Johnson&rdquo;</li>
+                <li><strong>CRM Actions:</strong> &ldquo;Create a new contact named Sarah Johnson with phone 555-9876&rdquo;</li>
+                <li><strong>Field Work:</strong> &ldquo;Log a door knock at 456 Oak Street, disposition interested&rdquo;</li>
+                <li><strong>Communication:</strong> &ldquo;Send a text to 555-1234 saying Running 10 minutes late&rdquo;</li>
+                <li><strong>Phone Calls:</strong> &ldquo;Call Sarah Johnson&rdquo;</li>
+                <li><strong>Weather:</strong> &ldquo;What&apos;s the weather forecast for tomorrow?&rdquo;</li>
+                <li><strong>Roofing Knowledge:</strong> &ldquo;What&apos;s the warranty on GAF Timberline shingles?&rdquo;</li>
+                <li><strong>Web Search:</strong> &ldquo;What are current roofing material prices in Nashville?&rdquo;</li>
                 <li>The assistant will confirm actions before executing them</li>
               </ul>
             </div>
@@ -214,13 +217,13 @@ export default function VoicePage() {
             </div>
             <div>
               <p className="text-gray-600 font-medium">Functions Available</p>
-              <p className="text-gray-900">7 CRM + Communication</p>
+              <p className="text-gray-900">10 CRM + Intelligence</p>
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call
+              <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call, get_weather, search_roofing_knowledge, search_web
             </p>
           </div>
         </div>

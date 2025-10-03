@@ -273,6 +273,55 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
                 },
                 required: ['to']
               }
+            },
+            {
+              type: 'function',
+              name: 'get_weather',
+              description: 'Get weather forecast for a location to plan roofing work',
+              parameters: {
+                type: 'object',
+                properties: {
+                  location: {
+                    type: 'string',
+                    description: 'Location (city, state, or zip code). Defaults to Nashville, TN'
+                  },
+                  days: {
+                    type: 'number',
+                    description: 'Number of forecast days (1-7). Default: 3'
+                  }
+                },
+                required: []
+              }
+            },
+            {
+              type: 'function',
+              name: 'search_roofing_knowledge',
+              description: 'Search roofing knowledge base for technical information, best practices, materials, warranties, and installation techniques',
+              parameters: {
+                type: 'object',
+                properties: {
+                  query: {
+                    type: 'string',
+                    description: 'What to search for (e.g., "GAF Timberline warranty", "ice dam prevention", "metal roof installation")'
+                  }
+                },
+                required: ['query']
+              }
+            },
+            {
+              type: 'function',
+              name: 'search_web',
+              description: 'Search the web for current information like pricing, availability, weather alerts, or competitor research',
+              parameters: {
+                type: 'object',
+                properties: {
+                  query: {
+                    type: 'string',
+                    description: 'What to search for (e.g., "copper flashing price", "storm warnings Nashville", "metal roofing trends 2025")'
+                  }
+                },
+                required: ['query']
+              }
             }
           ]
         }
@@ -459,6 +508,37 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
               to: parameters.to,
               contactId: parameters.contact_id,
               record: parameters.record !== false // Default to true
+            })
+          }).then(r => r.json())
+          break
+
+        case 'get_weather':
+          result = await fetch('/api/voice/weather', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: parameters.location || 'Nashville,TN,US',
+              days: parameters.days || 3
+            })
+          }).then(r => r.json())
+          break
+
+        case 'search_roofing_knowledge':
+          result = await fetch('/api/voice/search-rag', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: parameters.query
+            })
+          }).then(r => r.json())
+          break
+
+        case 'search_web':
+          result = await fetch('/api/voice/search-web', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: parameters.query
             })
           }).then(r => r.json())
           break
