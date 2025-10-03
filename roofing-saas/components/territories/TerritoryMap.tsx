@@ -49,7 +49,9 @@ export function TerritoryMap({
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const territoryLayersRef = useRef<Map<string, L.GeoJSON>>(new Map())
+  const currentLayerRef = useRef<L.TileLayer | null>(null)
   const [mapReady, setMapReady] = useState(false)
+  const [currentMapType, setCurrentMapType] = useState<'street' | 'satellite' | 'hybrid' | 'terrain'>('street')
 
   // Initialize map
   useEffect(() => {
@@ -63,12 +65,13 @@ export function TerritoryMap({
       attributionControl: true,
     })
 
-    // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Add default OpenStreetMap tile layer
+    const initialLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map)
 
+    currentLayerRef.current = initialLayer
     mapRef.current = map
     setMapReady(true)
 
@@ -178,6 +181,64 @@ export function TerritoryMap({
     }
   }, [territories, selectedTerritory, mapReady, onTerritoryClick])
 
+  // Switch map layer type
+  const switchMapLayer = (type: 'street' | 'satellite' | 'hybrid' | 'terrain') => {
+    if (!mapRef.current) return
+
+    const map = mapRef.current
+
+    // Remove current layer
+    if (currentLayerRef.current) {
+      map.removeLayer(currentLayerRef.current)
+    }
+
+    // Add new layer based on type
+    let newLayer: L.TileLayer
+
+    switch (type) {
+      case 'satellite':
+        // Using ESRI World Imagery (free, no API key needed)
+        newLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+          maxZoom: 19,
+        })
+        break
+
+      case 'hybrid':
+        // Satellite with labels overlay
+        newLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri',
+          maxZoom: 19,
+        })
+        // Add labels overlay
+        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+        }).addTo(map)
+        break
+
+      case 'terrain':
+        // Using OpenTopoMap (topographic/terrain)
+        newLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+          attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+          maxZoom: 17,
+        })
+        break
+
+      case 'street':
+      default:
+        // OpenStreetMap (default)
+        newLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        })
+        break
+    }
+
+    newLayer.addTo(map)
+    currentLayerRef.current = newLayer
+    setCurrentMapType(type)
+  }
+
   return (
     <div className={`relative ${className}`}>
       <div
@@ -185,6 +246,54 @@ export function TerritoryMap({
         style={{ height }}
         className="rounded-lg overflow-hidden border border-gray-300 z-0"
       />
+
+      {/* Map Layer Controls */}
+      <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 z-[1000] flex gap-1">
+        <button
+          onClick={() => switchMapLayer('street')}
+          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
+            currentMapType === 'street'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          title="Street Map"
+        >
+          Street
+        </button>
+        <button
+          onClick={() => switchMapLayer('satellite')}
+          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
+            currentMapType === 'satellite'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          title="Satellite View"
+        >
+          Satellite
+        </button>
+        <button
+          onClick={() => switchMapLayer('hybrid')}
+          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
+            currentMapType === 'hybrid'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          title="Hybrid View"
+        >
+          Hybrid
+        </button>
+        <button
+          onClick={() => switchMapLayer('terrain')}
+          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
+            currentMapType === 'terrain'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+          title="Terrain Map"
+        >
+          Terrain
+        </button>
+      </div>
 
       {/* Legend */}
       {territories.length > 0 && (
