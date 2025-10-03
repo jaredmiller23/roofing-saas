@@ -15,16 +15,6 @@ interface Project {
   name: string
 }
 
-interface VoiceSessionRecord {
-  id: string
-  session_id: string
-  status: string
-  started_at: string
-  ended_at: string | null
-  duration_seconds: number | null
-  function_calls_count: number
-}
-
 /**
  * Voice Assistant Demo Page
  *

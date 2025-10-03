@@ -6,6 +6,19 @@ import { TeamSettings } from '@/components/settings/team-settings'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { createClient } from '@/lib/supabase/server'
 
+interface TeamMemberData {
+  user_id: string
+  role: string
+  joined_at: string
+  user: {
+    id: string
+    email: string
+    raw_user_meta_data?: {
+      full_name?: string
+    }
+  }
+}
+
 export default async function SettingsPage() {
   const user = await getCurrentUser()
 
@@ -44,7 +57,7 @@ export default async function SettingsPage() {
     .order('joined_at', { ascending: false })
 
   // Format team members data
-  const formattedTeamMembers = (teamMembers || []).map((member: any) => ({
+  const formattedTeamMembers = (teamMembers || []).map((member: TeamMemberData) => ({
     id: member.user.id,
     email: member.user.email,
     full_name: member.user.raw_user_meta_data?.full_name || null,
