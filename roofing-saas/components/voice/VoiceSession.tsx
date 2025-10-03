@@ -12,10 +12,31 @@ interface VoiceSessionProps {
 
 type SessionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
 
+interface ConversationMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: Date
+  functionCall?: {
+    name: string
+    parameters: Record<string, unknown>
+    result?: unknown
+  }
+}
+
 interface SessionConfig {
   instructions: string
   voice: string
   temperature: number
+  turn_detection?: {
+    type: string
+    threshold?: number
+    prefix_padding_ms?: number
+    silence_duration_ms?: number
+  }
+  input_audio_transcription?: {
+    model: string
+  }
   tools: Array<{
     type: string
     name: string
@@ -43,6 +64,7 @@ export function VoiceSession({
   const [status, setStatus] = useState<SessionStatus>('idle')
   const [isMuted, setIsMuted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([])
 
   // WebRTC refs
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
@@ -127,27 +149,58 @@ export function VoiceSession({
 
         // Configure session with CRM function calling
         const config: SessionConfig = {
-          instructions: `You are a helpful AI assistant for a roofing field team.
+          instructions: `You are a helpful AI assistant for a roofing field team with full conversation context awareness.
 
-Your role is to help roofing sales representatives and field workers with CRM tasks while they're on the job.
-You can:
+**Context & Memory:**
+- You maintain full conversation context throughout our interaction
+- Reference previous messages naturally (e.g., "that contact", "the address you mentioned")
+- Ask contextual follow-up questions (e.g., "Would you like to log a knock there too?")
+- Remember entities from earlier turns (contacts, addresses, projects)
+- Use pronouns when context is clear instead of repeating names
+
+**Your Capabilities:**
+
+CRM Actions:
 - Create new contacts (leads/customers)
 - Add notes to contacts or projects
 - Search for existing contacts by name or address
 - Log door knock activities with disposition (interested, not_interested, not_home, callback, appointment)
 - Update contact pipeline stage (new, contacted, qualified, proposal, negotiation, won, lost)
 
-IMPORTANT: When reading phone numbers, read each digit individually (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three...").
+Communication:
+- Send SMS messages (e.g., "Send a text to 5551234567 saying 'Running 10 minutes late'")
+- Initiate phone calls (e.g., "Call Sarah Johnson at 5559876543")
+- Always confirm SMS content and phone calls before executing
 
-**Communication Features:**
-- You can send SMS messages using send_sms (e.g., "Send a text to 5551234567 saying 'Running 10 minutes late'")
-- You can initiate phone calls using make_call (e.g., "Call Sarah Johnson at 5559876543")
-- Always confirm SMS content before sending
-- Confirm phone calls before initiating
+Intelligence Features:
+- Get weather forecasts for roofing work planning
+- Search roofing knowledge base for warranties, materials, best practices
+- Search the web for current market intelligence
 
-Be concise and professional. Ask for clarification when needed. Always confirm actions before executing them.`,
+**Important Guidelines:**
+- Read phone numbers digit-by-digit (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three")
+- Be concise and professional
+- Ask clarifying questions when context is ambiguous
+- Always confirm actions before executing
+- Suggest related actions based on conversation context
+
+**Multi-turn Examples:**
+User: "Create a contact named Sarah Johnson at 555-9876"
+You: [creates contact] "Done! Sarah Johnson is now in the system. Would you like to add any notes about her?"
+
+User: "Log a knock at 123 Oak Street, they were interested"
+You: [logs knock] "Recorded! Should I create a contact for this address or schedule a follow-up?"`,
           voice: 'alloy',
           temperature: 0.7,
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500
+          },
+          input_audio_transcription: {
+            model: 'whisper-1'
+          },
           tools: [
             {
               type: 'function',
@@ -331,8 +384,38 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
           session: config
         }))
 
-        // Send initial greeting trigger
-        setTimeout(() => {
+        // Send initial greeting trigger with CRM context
+        setTimeout(async () => {
+          let contextMessage = 'Hello'
+
+          // Inject contact context if available
+          if (contactId) {
+            try {
+              const contactRes = await fetch(`/api/contacts/${contactId}`)
+              if (contactRes.ok) {
+                const contactData = await contactRes.json()
+                const contact = contactData.contact
+                contextMessage = `Hello. I'm currently working with ${contact.first_name} ${contact.last_name}${contact.phone ? ` (${contact.phone})` : ''}${contact.address ? ` at ${contact.address}` : ''}.`
+              }
+            } catch (err) {
+              console.error('Failed to fetch contact context:', err)
+            }
+          }
+
+          // Inject project context if available
+          if (projectId) {
+            try {
+              const projectRes = await fetch(`/api/projects/${projectId}`)
+              if (projectRes.ok) {
+                const projectData = await projectRes.json()
+                const project = projectData.project
+                contextMessage = `Hello. I'm currently working on project: ${project.name}${project.status ? ` (${project.status})` : ''}.`
+              }
+            } catch (err) {
+              console.error('Failed to fetch project context:', err)
+            }
+          }
+
           dc.send(JSON.stringify({
             type: 'conversation.item.create',
             item: {
@@ -340,7 +423,7 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
               role: 'user',
               content: [{
                 type: 'input_text',
-                text: 'Hello'
+                text: contextMessage
               }]
             }
           }))
@@ -413,9 +496,45 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
       const message = JSON.parse(event.data)
       console.log('Received message:', message.type)
 
+      // Track user transcription
+      if (message.type === 'conversation.item.input_audio_transcription.completed') {
+        const userMessage: ConversationMessage = {
+          id: message.item_id || Date.now().toString(),
+          role: 'user',
+          content: message.transcript || '',
+          timestamp: new Date()
+        }
+        setConversationHistory(prev => [...prev, userMessage])
+      }
+
+      // Track assistant response transcript
+      if (message.type === 'response.audio_transcript.done') {
+        const assistantMessage: ConversationMessage = {
+          id: message.item_id || Date.now().toString(),
+          role: 'assistant',
+          content: message.transcript || '',
+          timestamp: new Date()
+        }
+        setConversationHistory(prev => [...prev, assistantMessage])
+      }
+
       // Handle function calls
       if (message.type === 'response.function_call_arguments.done') {
         const { name, call_id, arguments: args } = message
+
+        // Track function call in conversation
+        const functionMessage: ConversationMessage = {
+          id: call_id || Date.now().toString(),
+          role: 'system',
+          content: `Executing: ${name}`,
+          timestamp: new Date(),
+          functionCall: {
+            name,
+            parameters: JSON.parse(args)
+          }
+        }
+        setConversationHistory(prev => [...prev, functionMessage])
+
         executeCRMFunction(name, JSON.parse(args), call_id)
       }
     } catch (error) {
@@ -711,6 +830,46 @@ Be concise and professional. Ask for clarification when needed. Always confirm a
         <div className="text-center text-sm text-gray-600 max-w-md">
           <p>Listening... You can now speak to your assistant.</p>
           <p className="mt-2">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
+        </div>
+      )}
+
+      {/* Conversation Transcript */}
+      {conversationHistory.length > 0 && (
+        <div className="w-full max-w-2xl mt-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Conversation Transcript</h3>
+          <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto space-y-3">
+            {conversationHistory.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs px-4 py-2 rounded-lg ${
+                    message.role === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : message.role === 'assistant'
+                      ? 'bg-gray-200 text-gray-900'
+                      : 'bg-purple-100 text-purple-900 text-xs'
+                  }`}
+                >
+                  {message.role === 'system' && message.functionCall ? (
+                    <div>
+                      <p className="font-semibold">{message.content}</p>
+                      <p className="text-xs mt-1 opacity-75">
+                        {JSON.stringify(message.functionCall.parameters, null, 2).slice(0, 100)}
+                        {JSON.stringify(message.functionCall.parameters).length > 100 && '...'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
+                  <p className="text-xs opacity-75 mt-1">
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
