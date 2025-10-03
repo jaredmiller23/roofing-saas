@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   BarChart,
@@ -47,11 +47,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
   const [data, setData] = useState<DashboardData | null>(initialData || null)
   const [isLoading, setIsLoading] = useState(!initialData)
 
-  useEffect(() => {
-    fetchMetrics()
-  }, [scope])
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await fetch(`/api/dashboard/metrics?scope=${scope}`)
@@ -64,7 +60,11 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [scope])
+
+  useEffect(() => {
+    fetchMetrics()
+  }, [fetchMetrics])
 
   if (isLoading) {
     return (

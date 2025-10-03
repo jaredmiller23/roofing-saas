@@ -89,16 +89,13 @@ export async function PATCH(
     }
 
     const { id } = params
-    const body = await request.json().catch(() => ({}))
+    const updates = await request.json().catch(() => ({}))
 
     // Remove fields that shouldn't be updated directly
-    const {
-      id: _id,
-      tenant_id: _tenantId,
-      created_by: _createdBy,
-      created_at: _createdAt,
-      ...updates
-    } = body
+    delete updates.id
+    delete updates.tenant_id
+    delete updates.created_by
+    delete updates.created_at
 
     logger.apiRequest('PATCH', `/api/signature-documents/${id}`, {
       tenantId,

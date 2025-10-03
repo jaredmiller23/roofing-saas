@@ -43,12 +43,18 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Build query
+    // Build query with related data
     let query = supabase
       .from('tasks')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        project:projects(id, name),
+        contact:contacts(id, first_name, last_name),
+        assigned_user:auth.users!assigned_to(id, email, raw_user_meta_data),
+        parent_task:tasks!parent_task_id(id, title)
+      `, { count: 'exact' })
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .is('is_deleted', null)
 
     // Apply filters
     if (priority) {
@@ -121,6 +127,23 @@ export async function POST(request: NextRequest) {
     logger.apiRequest('POST', '/api/tasks', { tenantId, userId: user.id })
 
     const body = await request.json()
+    const {
+      title,
+      description,
+      status = 'todo',
+      priority = 'medium',
+      due_date,
+      start_date,
+      project_id,
+      contact_id,
+      assigned_to,
+      parent_task_id,
+      estimated_hours,
+      tags,
+      labels,
+      reminder_enabled,
+      reminder_date
+    } = body
 
     const supabase = await createClient()
 
@@ -128,8 +151,23 @@ export async function POST(request: NextRequest) {
     const { data: task, error } = await supabase
       .from('tasks')
       .insert({
-        ...body,
         tenant_id: tenantId,
+        title,
+        description,
+        status,
+        priority,
+        due_date,
+        start_date,
+        project_id,
+        contact_id,
+        assigned_to,
+        assigned_by: assigned_to ? user.id : null,
+        parent_task_id,
+        estimated_hours,
+        tags,
+        labels,
+        reminder_enabled,
+        reminder_date,
         created_by: user.id,
       })
       .select()
@@ -138,6 +176,16 @@ export async function POST(request: NextRequest) {
     if (error) {
       throw mapSupabaseError(error)
     }
+
+    // Log activity
+    await supabase
+      .from('task_activity')
+      .insert({
+        task_id: task.id,
+        user_id: user.id,
+        action: 'created',
+        changes: { title, status, priority }
+      })
 
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/tasks', 201, duration)

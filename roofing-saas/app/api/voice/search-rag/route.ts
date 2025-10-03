@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Search the web for roofing information
     // This provides real-time access to manufacturer specs, warranties, best practices
-    const searchQuery = `roofing ${query} warranty specifications installation`
+    // const searchQuery = `roofing ${query} warranty specifications installation` // TODO: Use for web search API
 
     // For now, return a helpful response structure
     // In production, this would call a web search API

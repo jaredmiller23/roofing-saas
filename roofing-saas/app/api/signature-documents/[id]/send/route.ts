@@ -43,7 +43,7 @@ export async function POST(
     const {
       recipient_email,
       recipient_name,
-      message = 'Please review and sign this document.',
+      // message = 'Please review and sign this document.', // TODO: Use when email sending is implemented
       expiration_days = 30
     } = body
 
