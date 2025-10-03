@@ -18,6 +18,15 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // One-time scripts and archived code
+      "scripts/**",
+      // Test files
+      "e2e/**",
+      "**/*.spec.ts",
+      "**/*.test.ts",
+      // 3rd party type definitions
+      "types/intuit-oauth.d.ts",
+      "types/next-pwa.d.ts",
     ],
   },
   {
