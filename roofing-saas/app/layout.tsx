@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
 import { PWAProvider } from "@/components/pwa";
 
@@ -13,15 +13,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const pacifico = Pacifico({
+  weight: "400",
+  variable: "--font-pacifico",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Roofing SaaS - CRM & Field Management",
+  title: "Clarity - Roofing CRM",
   description: "Complete roofing business management platform for CRM, field operations, and door-to-door sales",
   manifest: "/manifest.json",
-  themeColor: "#0066cc",
+  themeColor: "#9333ea",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Roofing SaaS",
+    title: "Clarity",
   },
   viewport: {
     width: "device-width",
@@ -49,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
       >
         <PWAProvider>
           {children}
