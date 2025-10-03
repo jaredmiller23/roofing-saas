@@ -179,13 +179,21 @@ export function TasksList() {
               </div>
               <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
             </div>
-            <Button
-              onClick={() => router.push('/tasks/new')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Task
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/tasks/board')}
+              >
+                Board View
+              </Button>
+              <Button
+                onClick={() => router.push('/tasks/new')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Task
+              </Button>
+            </div>
           </div>
           <p className="text-gray-600">
             Manage tasks and deadlines for projects and contacts
