@@ -40,7 +40,7 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
   return (
     <>
       {/* Desktop Navigation */}
-      <div className="hidden lg:flex lg:items-center lg:space-x-8">
+      <div className="hidden xl:flex xl:items-center xl:space-x-6 xl:ml-10">
         {navLinks.map((link) => (
           <Link
             key={link.href}
@@ -59,7 +59,7 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
       {/* Mobile/Tablet Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+        className="xl:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
         aria-label="Toggle navigation menu"
       >
         {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -70,12 +70,12 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/20 z-40 xl:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
 
           {/* Mobile Menu Panel */}
-          <div className="fixed top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50 lg:hidden">
+          <div className="fixed top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50 xl:hidden">
             <div className="max-h-[calc(100vh-4rem)] overflow-y-auto">
               <div className="px-4 py-2 space-y-1">
                 {navLinks.map((link) => (
@@ -114,7 +114,7 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
       )}
 
       {/* Desktop User Menu */}
-      <div className="hidden lg:flex lg:items-center lg:space-x-4 lg:flex-shrink-0">
+      <div className="hidden xl:flex xl:items-center xl:space-x-4 xl:flex-shrink-0 xl:ml-6">
         <span className="text-sm text-gray-600 whitespace-nowrap">{userEmail}</span>
         <form action={signOut}>
           <button
