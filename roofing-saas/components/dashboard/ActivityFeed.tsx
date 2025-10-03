@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   TrendingUp,
   UserPlus,
@@ -24,6 +25,8 @@ interface ActivityItem {
     contact_name?: string
     old_status?: string
     new_status?: string
+    project_id?: string
+    contact_id?: string
   }
 }
 
@@ -137,51 +140,74 @@ export function ActivityFeed() {
       {/* Activity List */}
       {!loading && activities.length > 0 && (
         <div className="space-y-3">
-          {activities.map((activity) => (
-            <div
-              key={activity.id}
-              className={`flex items-start gap-3 p-3 rounded-lg border transition-colors hover:shadow-sm ${getActivityColor(activity.type)}`}
-            >
-              {/* Icon */}
-              <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
-                {getActivityIcon(activity.type)}
-              </div>
+          {activities.map((activity) => {
+            const hasLink = activity.metadata?.project_id || activity.metadata?.contact_id
+            const linkHref = activity.metadata?.project_id
+              ? `/projects/${activity.metadata.project_id}`
+              : activity.metadata?.contact_id
+                ? `/contacts/${activity.metadata.contact_id}`
+                : '#'
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="font-medium text-gray-900 text-sm">
-                    {activity.title}
-                  </p>
-                  <span className="text-xs text-gray-500 whitespace-nowrap">
-                    {formatTimestamp(activity.timestamp)}
-                  </span>
+            const content = (
+              <>
+                {/* Icon */}
+                <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                  {getActivityIcon(activity.type)}
                 </div>
-                <p className="text-sm text-gray-600">
-                  {activity.description}
-                </p>
 
-                {/* Value Display for Won Deals */}
-                {activity.type === 'project_won' && activity.metadata?.value && (
-                  <div className="mt-2 flex items-center gap-1 text-green-700">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="text-sm font-semibold">
-                      {formatCurrency(activity.metadata.value)}
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <p className="font-medium text-gray-900 text-sm">
+                      {activity.title}
+                    </p>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                      {formatTimestamp(activity.timestamp)}
                     </span>
                   </div>
-                )}
+                  <p className="text-sm text-gray-600">
+                    {activity.description}
+                  </p>
 
-                {/* Value Display for New Projects */}
-                {activity.type === 'project_created' && activity.metadata?.value && activity.metadata.value > 0 && (
-                  <div className="mt-2 flex items-center gap-1 text-blue-700">
-                    <span className="text-xs">
-                      Est. {formatCurrency(activity.metadata.value)}
-                    </span>
-                  </div>
-                )}
+                  {/* Value Display for Won Deals */}
+                  {activity.type === 'project_won' && activity.metadata?.value && (
+                    <div className="mt-2 flex items-center gap-1 text-green-700">
+                      <DollarSign className="h-4 w-4" />
+                      <span className="text-sm font-semibold">
+                        {formatCurrency(activity.metadata.value)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Value Display for New Projects */}
+                  {activity.type === 'project_created' && activity.metadata?.value && activity.metadata.value > 0 && (
+                    <div className="mt-2 flex items-center gap-1 text-blue-700">
+                      <span className="text-xs">
+                        Est. {formatCurrency(activity.metadata.value)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )
+
+            return hasLink ? (
+              <Link
+                key={activity.id}
+                href={linkHref}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors hover:shadow-md cursor-pointer ${getActivityColor(activity.type)}`}
+              >
+                {content}
+              </Link>
+            ) : (
+              <div
+                key={activity.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getActivityColor(activity.type)}`}
+              >
+                {content}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
