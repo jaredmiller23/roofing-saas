@@ -28,12 +28,12 @@ export default async function DashboardLayout({
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+            <div className="flex items-center min-w-0 flex-1">
+              <Link href="/dashboard" className="text-xl font-bold text-gray-900 flex-shrink-0">
                 Roofing CRM
               </Link>
 
-              <div className="hidden md:ml-10 md:flex md:space-x-8 overflow-x-auto max-w-3xl scrollbar-thin">
+              <div className="hidden md:ml-10 md:flex md:space-x-8 overflow-x-auto scrollbar-thin min-w-0">
                 <Link
                   href="/dashboard"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
