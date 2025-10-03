@@ -44,8 +44,8 @@ export default function EventsPage() {
       const calendarEvents = data.events?.map((event: Record<string, unknown>) => ({
         id: event.id,
         title: event.title,
-        start: new Date(event.start_at),
-        end: new Date(event.end_at),
+        start: new Date(event.start_at as string),
+        end: new Date(event.end_at as string),
         allDay: event.all_day || false,
         description: event.description,
         location: event.location,

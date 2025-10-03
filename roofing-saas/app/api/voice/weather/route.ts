@@ -112,28 +112,29 @@ export async function POST(request: NextRequest) {
       .filter((_: unknown, i: number) => i % 8 === 0) // Every 8th item (24 hours)
       .slice(0, days)
       .map((item: Record<string, unknown>) => ({
-        date: item.dt_txt.split(' ')[0],
-        day: new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'long' }),
-        high: Math.round(item.main.temp_max),
-        low: Math.round(item.main.temp_min),
-        conditions: item.weather[0].main,
-        precipitation: Math.round((item.pop || 0) * 100),
-        wind_speed: Math.round(item.wind.speed)
+        date: (item.dt_txt as string).split(' ')[0],
+        day: new Date((item.dt as number) * 1000).toLocaleDateString('en-US', { weekday: 'long' }),
+        high: Math.round((item.main as { temp_max: number }).temp_max),
+        low: Math.round((item.main as { temp_min: number }).temp_min),
+        conditions: (item.weather as Array<{ main: string }>)[0].main,
+        precipitation: Math.round(((item.pop as number) || 0) * 100),
+        wind_speed: Math.round((item.wind as { speed: number }).speed)
       }))
 
     // Safety assessment for roofing work
     const maxWindSpeed = Math.max(...forecastByDay.map((d: { wind_speed: number }) => d.wind_speed))
-    const safeToWork = maxWindSpeed < 20 && current.weather[0].main !== 'Rain'
+    const currentWeather = (current.weather as Array<{ main: string; description: string }>)[0]
+    const safeToWork = maxWindSpeed < 20 && currentWeather.main !== 'Rain'
 
     const result = {
-      location: weatherData.city.name,
+      location: (weatherData.city as { name: string }).name,
       current: {
-        temperature: Math.round(current.main.temp),
-        feels_like: Math.round(current.main.feels_like),
-        conditions: current.weather[0].description,
-        humidity: current.main.humidity,
-        wind_speed: Math.round(current.wind.speed),
-        wind_direction: getWindDirection(current.wind.deg)
+        temperature: Math.round((current.main as { temp: number }).temp),
+        feels_like: Math.round((current.main as { feels_like: number }).feels_like),
+        conditions: currentWeather.description,
+        humidity: (current.main as { humidity: number }).humidity,
+        wind_speed: Math.round((current.wind as { speed: number }).speed),
+        wind_direction: getWindDirection((current.wind as { deg: number }).deg)
       },
       forecast: forecastByDay,
       safe_to_work: safeToWork,
