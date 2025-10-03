@@ -16,19 +16,25 @@ interface DashboardNavProps {
 }
 
 const navLinks: NavLink[] = [
+  // Primary navigation (user requested order)
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/contacts', label: 'Contacts' },
+  { href: '/knocks', label: 'Knocks' },
   { href: '/pipeline', label: 'Pipeline' },
-  { href: '/organizations', label: 'Organizations' },
   { href: '/tasks', label: 'Tasks' },
-  { href: '/project-files', label: 'Files' },
+  { href: '/contacts', label: 'Contacts' },
   { href: '/call-logs', label: 'Call Logs' },
+  // { href: '/messaging', label: 'Messaging' }, // TODO: Create messaging page
+  { href: '/settings', label: 'Settings' },
+
+  // Secondary navigation (kept for existing functionality)
+  { href: '/incentives', label: 'Incentives' },
+  { href: '/organizations', label: 'Organizations' },
+  { href: '/project-files', label: 'Files' },
   { href: '/jobs', label: 'Jobs' },
   { href: '/events', label: 'Events' },
   { href: '/surveys', label: 'Surveys' },
   { href: '/projects', label: 'Projects' },
   { href: '/territories', label: 'Territories' },
-  { href: '/settings', label: 'Settings' },
 ]
 
 export function DashboardNav({ userEmail }: DashboardNavProps) {
