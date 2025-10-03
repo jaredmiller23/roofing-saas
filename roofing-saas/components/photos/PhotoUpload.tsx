@@ -56,29 +56,6 @@ export function PhotoUpload({
     return { valid: true }
   }, [])
 
-  // Handle file selection from input
-  const handleFileSelect = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (!file) return
-
-      // Validate file
-      const validation = validateFile(file)
-      if (!validation.valid) {
-        setUploadState({
-          status: 'error',
-          progress: 0,
-          message: validation.error || 'Invalid file',
-        })
-        onUploadError?.(validation.error || 'Invalid file')
-        return
-      }
-
-      await processFile(file)
-    },
-    [validateFile, onUploadError, processFile]
-  )
-
   // Process and upload file
   const processFile = useCallback(
     async (file: File) => {
@@ -223,6 +200,29 @@ export function PhotoUpload({
       }
     },
     [contactId, projectId, tenantId, mode, onUploadSuccess, onUploadError]
+  )
+
+  // Handle file selection from input
+  const handleFileSelect = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0]
+      if (!file) return
+
+      // Validate file
+      const validation = validateFile(file)
+      if (!validation.valid) {
+        setUploadState({
+          status: 'error',
+          progress: 0,
+          message: validation.error || 'Invalid file',
+        })
+        onUploadError?.(validation.error || 'Invalid file')
+        return
+      }
+
+      await processFile(file)
+    },
+    [validateFile, onUploadError, processFile]
   )
 
   // Start camera
