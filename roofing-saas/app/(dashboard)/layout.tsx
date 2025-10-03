@@ -33,7 +33,7 @@ export default async function DashboardLayout({
                 Roofing CRM
               </Link>
 
-              <div className="hidden md:ml-10 md:flex md:space-x-8 overflow-x-auto flex-1 max-w-4xl scrollbar-thin">
+              <div className="hidden md:ml-10 md:flex md:space-x-8 overflow-x-auto max-w-3xl scrollbar-thin">
                 <Link
                   href="/dashboard"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium whitespace-nowrap"
@@ -115,12 +115,12 @@ export default async function DashboardLayout({
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user.email}</span>
+            <div className="flex items-center space-x-4 flex-shrink-0 ml-4">
+              <span className="text-sm text-gray-600 whitespace-nowrap">{user.email}</span>
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 whitespace-nowrap"
                 >
                   Sign out
                 </button>
