@@ -109,7 +109,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }, {}) || {}
 
     // Get recent activities (last 10)
-    const { data: recentActivities, error: activitiesError } = await supabase
+    const { data: recentActivities } = await supabase
       .from('activities')
       .select('id, activity_type, notes, created_at')
       .eq('tenant_id', tenantId)

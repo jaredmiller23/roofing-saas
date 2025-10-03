@@ -6,7 +6,7 @@ import {
   AuthorizationError,
   mapZodError,
 } from '@/lib/api/errors'
-import { successResponse, paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
+import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
 

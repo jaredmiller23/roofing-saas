@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 
@@ -60,7 +60,8 @@ export async function GET() {
     // Process projects into activity items
     if (recentProjects) {
       for (const project of recentProjects) {
-        const contact = project.contacts as any
+        const contactArray = project.contacts as { first_name: string; last_name: string }[] | null
+        const contact = contactArray?.[0] || null
         const contactName = contact
           ? `${contact.first_name} ${contact.last_name}`.trim()
           : project.name

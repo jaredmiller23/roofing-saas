@@ -30,7 +30,7 @@ export function WeeklyChallengeWidget() {
         const data = result.data || result
 
         // Transform data for weekly view
-        const weeklyData = (data.leaderboard || []).map((entry: any) => ({
+        const weeklyData = (data.leaderboard || []).map((entry: { user_id: string; user_name: string; user_email: string; points: number; level: number }) => ({
           id: entry.user_id,
           user_name: entry.user_name,
           user_email: entry.user_email,

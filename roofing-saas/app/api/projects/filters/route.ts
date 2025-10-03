@@ -40,16 +40,16 @@ export async function GET() {
     const assigneesSet = new Set<string>()
 
     projects?.forEach((project) => {
-      const customFields = project.custom_fields as any
+      const customFields = project.custom_fields as Record<string, unknown> | null
 
       if (customFields?.proline_pipeline) {
-        pipelinesSet.add(customFields.proline_pipeline)
+        pipelinesSet.add(customFields.proline_pipeline as string)
       }
       if (customFields?.proline_stage) {
-        stagesSet.add(customFields.proline_stage)
+        stagesSet.add(customFields.proline_stage as string)
       }
       if (customFields?.assigned_to) {
-        assigneesSet.add(customFields.assigned_to)
+        assigneesSet.add(customFields.assigned_to as string)
       }
     })
 

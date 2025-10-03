@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Crown, Medal, Award, Trophy, Star, TrendingUp, Zap, Target } from 'lucide-react'
 
 interface LeaderboardEntry {
@@ -33,6 +34,7 @@ export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps)
 
   useEffect(() => {
     fetchLeaderboard()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPeriod])
 
   const fetchLeaderboard = async () => {
@@ -181,9 +183,11 @@ export function Leaderboard({ period = 'weekly', limit = 10 }: LeaderboardProps)
 
               {/* Avatar */}
               {entry.avatar_url ? (
-                <img
+                <Image
                   src={entry.avatar_url}
                   alt={entry.name}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (

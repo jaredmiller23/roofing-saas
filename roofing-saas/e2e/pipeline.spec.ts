@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 /**
  * Pipeline Page E2E Tests
@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
 
 // Helper to create a test user and log in
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function login(page: unknown) {
+async function login(page: Page) {
   // For now, we'll navigate directly to the pipeline
   // In production, you'd want to:
   // 1. Create a test user via Supabase API

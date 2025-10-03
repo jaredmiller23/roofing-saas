@@ -44,8 +44,7 @@ export function PointsDisplay() {
 
   if (!points) return null
 
-  // Calculate points needed for next level (100 points per level)
-  const pointsForNextLevel = (points.current_level + 1) * 100
+  // Calculate points in current level and progress to next level
   const pointsInCurrentLevel = points.total_points - (points.current_level * 100)
   const progressPercentage = (pointsInCurrentLevel / 100) * 100
 

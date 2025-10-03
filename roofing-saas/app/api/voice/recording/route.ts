@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Update activity with recording information
     const updatedMetadata = {
-      ...(activity.metadata as Record<string, any>),
+      ...(activity.metadata as Record<string, unknown> || {}),
       recording_sid: recordingSid,
       recording_url: recordingUrl ? `${recordingUrl}.mp3` : null,
       recording_status: recordingStatus,

@@ -99,28 +99,28 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   }
 
   // Extract custom fields
-  const customFields = project.custom_fields as any
-  const pipeline = customFields?.proline_pipeline || null
-  const stage = customFields?.proline_stage || null
-  const assignedTo = customFields?.assigned_to || null
-  const location = customFields?.location || null
-  const category = customFields?.category || null
-  const services = customFields?.services || null
+  const customFields = (project.custom_fields as Record<string, unknown>) || {}
+  const pipeline = (customFields?.proline_pipeline as string | undefined) || null
+  const stage = (customFields?.proline_stage as string | undefined) || null
+  const assignedTo = (customFields?.assigned_to as string | undefined) || null
+  const location = (customFields?.location as string | undefined) || null
+  const category = (customFields?.category as string | undefined) || null
+  const services = (customFields?.services as string | undefined) || null
 
-  const leadSource = customFields?.lead_source || null
-  const tags = customFields?.tags || []
-  const statusDates = customFields?.status_dates || {}
+  const leadSource = (customFields?.lead_source as string | undefined) || null
+  const tags = (customFields?.tags as string[]) || []
+  const statusDates = (customFields?.status_dates as Record<string, string>) || {}
 
   // Extract financial data from raw_import_data (Proline import)
-  const rawData = customFields?.raw_import_data || {}
-  const grossRevenue = rawData?.['Gross Revenue'] ? parseFloat(rawData['Gross Revenue']) : customFields?.gross_revenue
-  const netRevenue = rawData?.['Net Revenue'] ? parseFloat(rawData['Net Revenue']) : customFields?.net_revenue
-  const grossProfit = rawData?.['Gross Profit'] ? parseFloat(rawData['Gross Profit']) : null
-  const grossMargin = rawData?.['Gross Margin'] ? parseFloat(rawData['Gross Margin']) : null
-  const projectCosts = rawData?.['Project Costs'] ? parseFloat(rawData['Project Costs']) : customFields?.project_costs
-  const quotedValue = rawData?.['Quoted Value'] ? parseFloat(rawData['Quoted Value']) : null
+  const rawData = (customFields?.raw_import_data as Record<string, string | number>) || {}
+  const grossRevenue = rawData?.['Gross Revenue'] ? parseFloat(String(rawData['Gross Revenue'])) : (customFields?.gross_revenue as number | undefined)
+  const netRevenue = rawData?.['Net Revenue'] ? parseFloat(String(rawData['Net Revenue'])) : (customFields?.net_revenue as number | undefined)
+  const grossProfit = rawData?.['Gross Profit'] ? parseFloat(String(rawData['Gross Profit'])) : null
+  const grossMargin = rawData?.['Gross Margin'] ? parseFloat(String(rawData['Gross Margin'])) : null
+  const projectCosts = rawData?.['Project Costs'] ? parseFloat(String(rawData['Project Costs'])) : (customFields?.project_costs as number | undefined)
+  const quotedValue = rawData?.['Quoted Value'] ? parseFloat(String(rawData['Quoted Value'])) : null
 
-  const formatCurrency = (value: number | null) => {
+  const formatCurrency = (value: number | null | undefined) => {
     if (!value) return '—'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -310,10 +310,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               {/* Activities list */}
               {activities && activities.length > 0 ? (
                 <div className="space-y-3 mb-4">
-                  {activities.map((activity: any) => {
-                    const userName = activity.users?.raw_user_meta_data?.full_name ||
-                                   activity.users?.raw_user_meta_data?.name ||
-                                   activity.users?.email?.split('@')[0] ||
+                  {activities.map((activity) => {
+                    const activityUsers = activity.users as { email?: string; raw_user_meta_data?: { full_name?: string; name?: string } }[] | undefined
+                    const user = activityUsers?.[0]
+                    const userName = user?.raw_user_meta_data?.full_name ||
+                                   user?.raw_user_meta_data?.name ||
+                                   user?.email?.split('@')[0] ||
                                    'Unknown User'
 
                     return (
@@ -523,8 +525,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Stage History</h2>
                 <div className="space-y-1">
                   {Object.entries(statusDates)
-                    .filter(([_, date]) => date)
-                    .sort(([_, dateA], [__, dateB]) => new Date(dateA as string).getTime() - new Date(dateB as string).getTime())
+                    .filter(([, date]) => date)
+                    .sort(([, dateA], [, dateB]) => new Date(dateA as string).getTime() - new Date(dateB as string).getTime())
                     .map(([stage, date], index, array) => {
                       const colors = getStageColor(stage)
                       const isLast = index === array.length - 1

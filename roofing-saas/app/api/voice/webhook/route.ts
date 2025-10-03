@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (activity) {
       // Update existing activity with call status
       const updatedMetadata = {
-        ...(activity.metadata as Record<string, any>),
+        ...(activity.metadata as Record<string, unknown> || {}),
         status: callStatus,
         duration: duration ? parseInt(duration) : null,
         last_status_update: new Date().toISOString(),
