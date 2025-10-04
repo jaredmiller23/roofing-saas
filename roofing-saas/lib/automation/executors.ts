@@ -121,7 +121,7 @@ async function executeCreateTask(config: Record<string, unknown>): Promise<Recor
     let dueDate: string | undefined
     if (due_date_days) {
       const date = new Date()
-      date.setDate(date.getDate() + due_date_days)
+      date.setDate(date.getDate() + (due_date_days as number))
       dueDate = date.toISOString()
     }
 
