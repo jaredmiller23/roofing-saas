@@ -248,7 +248,7 @@ export function RoleSettings() {
                     <Shield className="h-5 w-5 text-blue-600" />
                     <h4 className="font-semibold text-gray-900">{role.name}</h4>
                     {role.is_system && (
-                      <Lock className="h-3 w-3 text-gray-400" title="System role" />
+                      <Lock className="h-3 w-3 text-gray-400" aria-label="System role" />
                     )}
                   </div>
                   {!role.is_system && (
