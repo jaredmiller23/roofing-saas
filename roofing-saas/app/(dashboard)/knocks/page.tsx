@@ -20,7 +20,7 @@ interface Knock {
     address_city: string
     address_state: string
     address_zip: string
-  }
+  }[]
 }
 
 /**
@@ -187,7 +187,7 @@ export default async function KnocksPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-gray-900">
-                            {knock.contacts?.first_name} {knock.contacts?.last_name}
+                            {knock.contacts?.[0]?.first_name} {knock.contacts?.[0]?.last_name}
                           </h3>
                           <span className="text-sm text-gray-500">
                             {new Date(knock.created_at).toLocaleDateString('en-US', {
@@ -199,12 +199,12 @@ export default async function KnocksPage() {
                           </span>
                         </div>
 
-                        {knock.contacts && (
+                        {knock.contacts?.[0] && (
                           <p className="text-sm text-gray-600 mt-1">
-                            {knock.contacts.address_street}
-                            {knock.contacts.address_city && `, ${knock.contacts.address_city}`}
-                            {knock.contacts.address_state && `, ${knock.contacts.address_state}`}
-                            {knock.contacts.address_zip && ` ${knock.contacts.address_zip}`}
+                            {knock.contacts[0].address_street}
+                            {knock.contacts[0].address_city && `, ${knock.contacts[0].address_city}`}
+                            {knock.contacts[0].address_state && `, ${knock.contacts[0].address_state}`}
+                            {knock.contacts[0].address_zip && ` ${knock.contacts[0].address_zip}`}
                           </p>
                         )}
 
