@@ -56,7 +56,10 @@ function getValueByPath(obj: unknown, path: string): unknown {
     if (current === null || current === undefined) {
       return undefined
     }
-    current = current[part]
+    if (typeof current !== 'object') {
+      return undefined
+    }
+    current = (current as Record<string, unknown>)[part]
   }
 
   return current
