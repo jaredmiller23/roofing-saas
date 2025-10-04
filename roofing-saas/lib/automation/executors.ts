@@ -57,8 +57,8 @@ async function executeSendSMS(config: Record<string, unknown>): Promise<Record<s
     }
 
     const result = await sendSMS({
-      to,
-      body: body || '',
+      to: to as string,
+      body: (body || '') as string,
       // TODO: Handle template_id if provided
     })
 
