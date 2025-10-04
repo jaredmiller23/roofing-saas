@@ -86,10 +86,10 @@ async function executeSendEmail(config: Record<string, unknown>): Promise<Record
     }
 
     const result = await sendEmail({
-      to,
-      subject,
-      html: html || undefined,
-      text: text || undefined,
+      to: to as string | string[],
+      subject: subject as string,
+      html: (html as string) || undefined,
+      text: (text as string) || undefined,
       // TODO: Handle template_id if provided
     })
 
