@@ -18,7 +18,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
@@ -33,7 +33,7 @@ export async function GET(
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    const { id } = params
+    const { id } = await params
 
     logger.apiRequest('GET', `/api/signature-documents/${id}/download`, {
       tenantId,
