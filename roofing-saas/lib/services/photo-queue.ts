@@ -41,7 +41,7 @@ export async function addPhotoToQueue(
       try {
         const registration = await navigator.serviceWorker.ready;
         if ('sync' in registration) {
-          await (registration as any).sync.register('photo-sync');
+          await (registration as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register('photo-sync');
           console.log('📡 Background sync registered');
         } else {
           // Fallback: process immediately if online
@@ -140,7 +140,7 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
       .getPublicUrl(uploadData.path);
 
     // Insert into photos table
-    const { data: photoData, error: dbError } = await supabase
+    const { error: dbError } = await supabase
       .from('photos')
       .insert({
         tenant_id: photo.tenantId,

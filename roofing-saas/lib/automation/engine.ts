@@ -7,9 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import {
   type TriggerType,
-  type WorkflowExecution,
   type WorkflowStep,
-  type WorkflowStepExecution,
 } from './types'
 import { executeStep } from './executors'
 import { replaceVariables } from './variables'
@@ -20,7 +18,7 @@ import { replaceVariables } from './variables'
 export async function triggerWorkflow(
   tenantId: string,
   triggerType: TriggerType,
-  triggerData: Record<string, any>
+  triggerData: Record<string, unknown>
 ): Promise<string[]> {
   try {
     const supabase = await createClient()
@@ -97,7 +95,7 @@ export async function triggerWorkflow(
 /**
  * Check if trigger data matches workflow trigger config
  */
-function matchesTriggerConfig(config: Record<string, any>, data: Record<string, any>): boolean {
+function matchesTriggerConfig(config: Record<string, unknown>, data: Record<string, unknown>): boolean {
   // If no config, always match
   if (!config || Object.keys(config).length === 0) {
     return true
@@ -209,7 +207,7 @@ export async function executeWorkflow(executionId: string): Promise<void> {
 async function executeWorkflowStep(
   executionId: string,
   step: WorkflowStep,
-  triggerData: Record<string, any>
+  triggerData: Record<string, unknown>
 ): Promise<void> {
   const supabase = await createClient()
 

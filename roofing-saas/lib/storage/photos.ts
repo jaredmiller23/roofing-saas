@@ -21,7 +21,7 @@ export interface PhotoUploadOptions {
     notes?: string
     latitude?: number
     longitude?: number
-    [key: string]: any
+    [key: string]: unknown
   }
 }
 
@@ -127,7 +127,7 @@ export async function uploadPhoto(options: PhotoUploadOptions): Promise<{
     const filePath = generatePhotoFilename(options.userId, options.file.name)
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filePath, compressedFile, {
         contentType: compressedFile.type,
@@ -260,7 +260,7 @@ export async function listUserPhotos(
     updated_at: string
     created_at: string
     last_accessed_at: string
-    metadata: Record<string, any>
+    metadata: Record<string, unknown>
   }>
   error?: string
 }> {

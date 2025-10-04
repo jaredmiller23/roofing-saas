@@ -55,7 +55,7 @@ export async function checkDomain(domainName: string): Promise<DomainCheckResult
       throw new Error(`Failed to list domains: ${error.message}`)
     }
 
-    const domain = domains?.data?.find((d: any) => d.name === domainName)
+    const domain = domains?.data?.find((d) => (d as Record<string, unknown>).name === domainName)
 
     if (!domain) {
       logger.info('Domain not found in Resend', { domainName })

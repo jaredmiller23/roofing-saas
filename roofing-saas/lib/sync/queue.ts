@@ -111,9 +111,14 @@ export async function syncPendingUploads(tenantId: string): Promise<{ success: n
 /**
  * Execute a pending action
  */
-async function executeAction(action: any): Promise<{ success: boolean; error?: string }> {
+async function executeAction(action: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
   try {
-    const { action_type, entity_type, entity_id, data } = action
+    const { action_type, entity_type, entity_id, data } = action as {
+      action_type: string
+      entity_type: string
+      entity_id?: string
+      data: Record<string, unknown>
+    }
 
     let url = ''
     let method = ''
@@ -152,22 +157,36 @@ async function executeAction(action: any): Promise<{ success: boolean; error?: s
 /**
  * Upload a file to the server
  */
-async function uploadFile(upload: any): Promise<{ success: boolean; error?: string }> {
+async function uploadFile(upload: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
   try {
     const formData = new FormData()
 
+    const {
+      file,
+      file_name,
+      contact_id,
+      project_id,
+      metadata
+    } = upload as {
+      file: Blob
+      file_name: string
+      contact_id?: string
+      project_id?: string
+      metadata?: Record<string, unknown>
+    }
+
     // Add file
-    formData.append('file', upload.file, upload.file_name)
+    formData.append('file', file, file_name)
 
     // Add metadata
-    if (upload.contact_id) {
-      formData.append('contact_id', upload.contact_id)
+    if (contact_id) {
+      formData.append('contact_id', contact_id)
     }
-    if (upload.project_id) {
-      formData.append('project_id', upload.project_id)
+    if (project_id) {
+      formData.append('project_id', project_id)
     }
-    if (upload.metadata) {
-      formData.append('metadata', JSON.stringify(upload.metadata))
+    if (metadata) {
+      formData.append('metadata', JSON.stringify(metadata))
     }
 
     const response = await fetch('/api/photos/upload', {

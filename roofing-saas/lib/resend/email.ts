@@ -123,7 +123,7 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResponse>
         bcc: params.bcc,
         attachments: params.attachments,
         tags: params.tags,
-      } as any)
+      } as unknown)
     }, retryOptions)
 
     if (result.error) {

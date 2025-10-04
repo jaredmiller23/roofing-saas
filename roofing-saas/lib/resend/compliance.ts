@@ -219,7 +219,7 @@ export async function getEmailAnalytics(
   let totalBounced = 0
 
   for (const activity of activities) {
-    const metadata = activity.metadata as Record<string, any>
+    const metadata = activity.metadata as Record<string, unknown>
     if (metadata.status === 'delivered') totalDelivered++
     if (metadata.opened) totalOpened++
     if (metadata.clicked) totalClicked++
