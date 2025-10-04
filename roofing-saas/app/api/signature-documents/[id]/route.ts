@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
@@ -31,7 +31,7 @@ export async function GET(
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    const { id } = params
+    const { id } = await params
 
     logger.apiRequest('GET', `/api/signature-documents/${id}`, { tenantId, id })
 
@@ -73,7 +73,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
@@ -88,7 +88,7 @@ export async function PATCH(
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    const { id } = params
+    const { id } = await params
     const updates = await request.json().catch(() => ({}))
 
     // Remove fields that shouldn't be updated directly
@@ -147,7 +147,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
@@ -162,7 +162,7 @@ export async function DELETE(
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    const { id } = params
+    const { id } = await params
 
     logger.apiRequest('DELETE', `/api/signature-documents/${id}`, { tenantId, id })
 
