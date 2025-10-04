@@ -1,20 +1,34 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from 'recharts'
 import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from 'lucide-react'
+
+// Lazy load chart components to reduce initial bundle size
+const RevenueChart = dynamic(
+  () => import('./DashboardCharts').then(mod => ({ default: mod.RevenueChart })),
+  {
+    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    ssr: false
+  }
+)
+
+const PipelineChart = dynamic(
+  () => import('./DashboardCharts').then(mod => ({ default: mod.PipelineChart })),
+  {
+    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    ssr: false
+  }
+)
+
+const ActivityChart = dynamic(
+  () => import('./DashboardCharts').then(mod => ({ default: mod.ActivityChart })),
+  {
+    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    ssr: false
+  }
+)
 
 interface DashboardMetricsProps {
   initialData?: DashboardData | null
@@ -167,24 +181,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
             <CardDescription>Last 6 months of closed deals</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={metrics.revenueTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-                <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
-                  labelStyle={{ color: '#000' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  dot={{ fill: '#2563eb' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <RevenueChart data={metrics.revenueTrend} />
           </CardContent>
         </Card>
 
@@ -195,28 +192,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
             <CardDescription>Active deals in pipeline</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={metrics.pipelineStatus}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="status" />
-                <YAxis yAxisId="left" orientation="left" stroke="#2563eb" />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke="#10b981"
-                  tickFormatter={(value) => `$${value / 1000}k`}
-                />
-                <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (name === 'value') return formatCurrency(value)
-                    return value
-                  }}
-                />
-                <Legend />
-                <Bar yAxisId="left" dataKey="count" fill="#2563eb" name="Count" />
-                <Bar yAxisId="right" dataKey="value" fill="#10b981" name="Value" />
-              </BarChart>
-            </ResponsiveContainer>
+            <PipelineChart data={metrics.pipelineStatus} />
           </CardContent>
         </Card>
       </div>
@@ -230,18 +206,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
             <CardDescription>Last 7 days of team activity</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={metrics.activityTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="doorKnocks" fill="#2563eb" name="Door Knocks" stackId="a" />
-                <Bar dataKey="calls" fill="#10b981" name="Calls" stackId="a" />
-                <Bar dataKey="emails" fill="#f59e0b" name="Emails" stackId="a" />
-              </BarChart>
-            </ResponsiveContainer>
+            <ActivityChart data={metrics.activityTrend} />
           </CardContent>
         </Card>
       </div>

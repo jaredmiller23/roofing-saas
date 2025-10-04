@@ -1,12 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 // import { useRouter } from 'next/navigation' // TODO: Use for navigation
 import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
-import { StandardCalendar } from '@/components/calendar/StandardCalendar'
-import { GoogleCalendar } from '@/components/calendar/GoogleCalendar'
 import { Calendar, List } from 'lucide-react'
+
+// Lazy load calendar components to reduce initial bundle
+const StandardCalendar = dynamic(() => import('@/components/calendar/StandardCalendar').then(mod => ({ default: mod.StandardCalendar })), {
+  loading: () => <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  ssr: false
+})
+
+const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalendar').then(mod => ({ default: mod.GoogleCalendar })), {
+  loading: () => <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  ssr: false
+})
 
 /**
  * Events page with calendar view

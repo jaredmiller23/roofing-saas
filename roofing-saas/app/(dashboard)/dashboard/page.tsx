@@ -1,12 +1,30 @@
 'use client'
 
 import { useState } from 'react'
-import { PointsDisplay } from '@/components/gamification/PointsDisplay'
-import { Leaderboard } from '@/components/gamification/Leaderboard'
+import dynamic from 'next/dynamic'
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
-import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboard/DashboardScopeFilter'
+
+// Lazy load gamification components to reduce initial bundle
+const PointsDisplay = dynamic(() => import('@/components/gamification/PointsDisplay').then(mod => ({ default: mod.PointsDisplay })), {
+  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  ssr: false
+})
+
+const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
+  loading: () => <div className="h-96 bg-gray-100 rounded-lg animate-pulse" />,
+  ssr: false
+})
+
+const ActivityFeed = dynamic(() => import('@/components/dashboard/ActivityFeed').then(mod => ({ default: mod.ActivityFeed })), {
+  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  ssr: false
+})
+
+const WeeklyChallengeWidget = dynamic(() => import('@/components/dashboard/WeeklyChallengeWidget').then(mod => ({ default: mod.WeeklyChallengeWidget })), {
+  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  ssr: false
+})
 
 /**
  * Dashboard page - main landing page after authentication
