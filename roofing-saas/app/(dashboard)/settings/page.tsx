@@ -16,7 +16,7 @@ interface TeamMemberData {
     raw_user_meta_data?: {
       full_name?: string
     }
-  }
+  }[]
 }
 
 export default async function SettingsPage() {
@@ -58,9 +58,9 @@ export default async function SettingsPage() {
 
   // Format team members data
   const formattedTeamMembers = (teamMembers || []).map((member: TeamMemberData) => ({
-    id: member.user.id,
-    email: member.user.email,
-    full_name: member.user.raw_user_meta_data?.full_name || null,
+    id: member.user[0]?.id || '',
+    email: member.user[0]?.email || '',
+    full_name: member.user[0]?.raw_user_meta_data?.full_name || null,
     role: member.role,
     joined_at: member.joined_at,
   }))
