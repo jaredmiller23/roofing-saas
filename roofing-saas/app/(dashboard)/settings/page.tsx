@@ -28,8 +28,8 @@ export default async function SettingsPage() {
 
   // Get QuickBooks connection status
   const { data: qbConnection } = await supabase
-    .from('quickbooks_connections')
-    .select('*')
+    .from('quickbooks_tokens')
+    .select('realm_id, company_name, country, expires_at, created_at')
     .eq('tenant_id', tenantId)
     .single()
 

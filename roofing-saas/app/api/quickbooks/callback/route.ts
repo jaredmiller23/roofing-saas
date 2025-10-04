@@ -1,119 +1,117 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getOAuthClient } from '@/lib/quickbooks/oauth-client'
-import { getCurrentUser } from '@/lib/auth/session'
-import { getUserTenantId } from '@/lib/auth/session'
-import { createClient } from '@/lib/supabase/server'
-
 /**
- * Handle QuickBooks OAuth callback
- * GET /api/quickbooks/callback
+ * QuickBooks OAuth Callback Endpoint  
+ * Handles the OAuth callback from QuickBooks
  */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { exchangeAuthCode } from '@/lib/quickbooks/client'
+import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
+
 export async function GET(request: NextRequest) {
   try {
-    // Verify user is authenticated
-    const user = await getCurrentUser()
-    if (!user) {
+    const searchParams = request.nextUrl.searchParams
+    const code = searchParams.get('code')
+    const state = searchParams.get('state')
+    const realmId = searchParams.get('realmId')
+    const error = searchParams.get('error')
+
+    // Handle OAuth errors
+    if (error) {
+      logger.error('QuickBooks OAuth error', { error })
       return NextResponse.redirect(
-        new URL('/login?error=unauthorized', request.url)
+        `${request.nextUrl.origin}/settings?qb_error=${encodeURIComponent(error)}`
       )
     }
 
-    // Get user's tenant
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      return NextResponse.redirect(
-        new URL('/dashboard?qb=error&message=no_tenant', request.url)
+    // Validate required parameters
+    if (!code || !state || !realmId) {
+      return NextResponse.json(
+        { error: 'Missing required OAuth parameters' },
+        { status: 400 }
       )
     }
 
-    // Verify CSRF state token
-    const state = request.nextUrl.searchParams.get('state')
-    const storedState = request.cookies.get('qb_oauth_state')?.value
+    // Decode and validate state
+    let stateData: { tenant_id: string; user_id: string; timestamp: number }
+    try {
+      stateData = JSON.parse(Buffer.from(state, 'base64').toString())
+    } catch (_e) {
+      return NextResponse.json({ error: 'Invalid state parameter' }, { status: 400 })
+    }
 
-    if (!state || !storedState || state !== storedState) {
-      return NextResponse.redirect(
-        new URL('/dashboard?qb=error&message=invalid_state', request.url)
-      )
+    // Check state is not too old (5 minutes)
+    if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
+      return NextResponse.json({ error: 'State token expired' }, { status: 400 })
+    }
+
+    const supabase = await createClient()
+
+    // Verify user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user || user.id !== stateData.user_id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Exchange authorization code for tokens
-    const oauthClient = getOAuthClient()
-    const authResponse = await oauthClient.createToken(request.url)
-    const token = authResponse.getJson()
+    const redirectUri = `${request.nextUrl.origin}/api/quickbooks/callback`
+    const tokens = await exchangeAuthCode(code, realmId, redirectUri)
 
-    // Extract token data
-    const accessToken = token.access_token
-    const refreshToken = token.refresh_token
-    const realmId = authResponse.getToken().realmId
-    const expiresIn = token.expires_in // seconds (3600 = 1 hour)
+    // Get QB company info
+    const companyInfo = await fetch(
+      `https://quickbooks.api.intuit.com/v3/company/${realmId}/companyinfo/${realmId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+          Accept: 'application/json',
+        },
+      }
+    ).then(res => res.json())
 
-    if (!realmId) {
-      return NextResponse.redirect(
-        new URL('/dashboard?qb=error&message=no_realm_id', request.url)
-      )
-    }
+    const companyName = companyInfo?.CompanyInfo?.CompanyName || 'Unknown'
+    const country = companyInfo?.CompanyInfo?.Country || 'US'
 
-    // Calculate expiration times
-    const tokenExpiresAt = new Date(Date.now() + expiresIn * 1000)
-    const refreshTokenExpiresAt = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000) // 100 days
+    // Store tokens in database
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
-    // Get company info for display name
-    let companyName = 'QuickBooks Company'
-    try {
-      // Determine base URL based on environment
-      const environment = process.env.QUICKBOOKS_ENVIRONMENT || 'sandbox'
-      const baseUrl = environment === 'production'
-        ? 'https://quickbooks.api.intuit.com'
-        : 'https://sandbox-quickbooks.api.intuit.com'
-
-      oauthClient.setToken(token)
-      const companyResponse = await oauthClient.makeApiCall({
-        url: `${baseUrl}/v3/company/${realmId}/companyinfo/${realmId}`,
-      })
-      const companyData = JSON.parse(companyResponse.text())
-      companyName = companyData.CompanyInfo?.CompanyName || companyName
-    } catch (error) {
-      console.error('Failed to fetch company info:', error)
-    }
-
-    // Store connection in database
-    const supabase = await createClient()
-    const { error: upsertError } = await supabase
-      .from('quickbooks_connections')
+    const { error: insertError } = await supabase
+      .from('quickbooks_tokens')
       .upsert({
-        tenant_id: tenantId,
-        created_by: user.id,
+        tenant_id: stateData.tenant_id,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
         realm_id: realmId,
+        expires_at: expiresAt.toISOString(),
+        token_type: tokens.token_type,
         company_name: companyName,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        token_expires_at: tokenExpiresAt.toISOString(),
-        refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
-        is_active: true,
-        environment: process.env.QUICKBOOKS_ENVIRONMENT || 'sandbox',
-        updated_at: new Date().toISOString(),
+        country,
       }, {
         onConflict: 'tenant_id',
       })
 
-    if (upsertError) {
-      console.error('Database error:', upsertError)
-      return NextResponse.redirect(
-        new URL('/dashboard?qb=error&message=database_error', request.url)
+    if (insertError) {
+      logger.error('Failed to store QB tokens', { error: insertError })
+      return NextResponse.json(
+        { error: 'Failed to save QuickBooks connection' },
+        { status: 500 }
       )
     }
 
-    // Clear state cookie and redirect to success page
-    const response = NextResponse.redirect(
-      new URL('/dashboard?qb=connected', request.url)
-    )
-    response.cookies.delete('qb_oauth_state')
+    logger.info('QuickBooks connected successfully', {
+      tenantId: stateData.tenant_id,
+      realmId,
+      companyName,
+    })
 
-    return response
-  } catch (error) {
-    console.error('QuickBooks OAuth callback error:', error)
+    // Redirect to settings with success message
     return NextResponse.redirect(
-      new URL('/dashboard?qb=error&message=unknown_error', request.url)
+      `${request.nextUrl.origin}/settings?qb_connected=true`
+    )
+  } catch (error) {
+    logger.error('QuickBooks callback error', { error })
+    return NextResponse.redirect(
+      `${request.nextUrl.origin}/settings?qb_error=Failed+to+connect`
     )
   }
 }

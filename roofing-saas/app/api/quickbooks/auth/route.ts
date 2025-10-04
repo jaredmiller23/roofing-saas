@@ -1,47 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getOAuthClient, QUICKBOOKS_SCOPES } from '@/lib/quickbooks/oauth-client'
-import { getCurrentUser } from '@/lib/auth/session'
-import { randomBytes } from 'crypto'
-
 /**
- * Initiate QuickBooks OAuth flow
- * GET /api/quickbooks/auth
+ * QuickBooks OAuth Authorization Endpoint
+ * Redirects user to QuickBooks to authorize the app
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthorizationUrl } from '@/lib/quickbooks/client'
+import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
+
 export async function GET(request: NextRequest) {
   try {
-    // Verify user is authenticated
-    const user = await getCurrentUser()
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const supabase = await createClient()
+
+    // Get current user and tenant
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Generate CSRF token for security
-    const state = randomBytes(32).toString('hex')
+    // Get user's tenant
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .single()
 
-    // Store state in cookie for verification in callback
-    const response = NextResponse.redirect(
-      getOAuthClient().authorizeUri({
-        scope: QUICKBOOKS_SCOPES,
-        state,
-      })
-    )
+    if (!tenantUser) {
+      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+    }
 
-    response.cookies.set('qb_oauth_state', state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 600, // 10 minutes
+    // Generate state token for CSRF protection
+    const state = Buffer.from(JSON.stringify({
+      tenant_id: tenantUser.tenant_id,
+      user_id: user.id,
+      timestamp: Date.now(),
+    })).toString('base64')
+
+    // Get redirect URI (should match QuickBooks app config)
+    const redirectUri = `${request.nextUrl.origin}/api/quickbooks/callback`
+
+    // Get authorization URL
+    const authUrl = getAuthorizationUrl(redirectUri, state)
+
+    logger.info('Redirecting to QuickBooks OAuth', {
+      userId: user.id,
+      tenantId: tenantUser.tenant_id,
     })
 
-    return response
+    // Redirect to QuickBooks authorization page
+    return NextResponse.redirect(authUrl)
   } catch (error) {
-    console.error('QuickBooks OAuth initiation error:', error)
+    logger.error('QuickBooks auth error', { error })
     return NextResponse.json(
-      { error: 'Failed to initiate QuickBooks connection' },
+      { error: 'Failed to initiate QuickBooks authorization' },
       { status: 500 }
     )
   }

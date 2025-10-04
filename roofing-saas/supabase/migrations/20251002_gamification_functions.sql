@@ -33,7 +33,7 @@ BEGIN
   ) VALUES (
     v_tenant_id, p_user_id, p_points, 1, NOW()
   )
-  ON CONFLICT (user_id)
+  ON CONFLICT (tenant_id, user_id)
   DO UPDATE SET
     total_points = gamification_scores.total_points + p_points,
     current_level = FLOOR((gamification_scores.total_points + p_points) / 100) + 1,

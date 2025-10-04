@@ -12,6 +12,67 @@ interface VoiceSessionProps {
 
 type SessionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
 
+/**
+ * Detect if the device is mobile
+ */
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+
+  const userAgent = navigator.userAgent.toLowerCase()
+  const isMobile = /iphone|ipad|ipod|android|webos|blackberry|windows phone/.test(userAgent)
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+  return isMobile || hasTouch
+}
+
+/**
+ * Detect iOS specifically (has unique audio requirements)
+ */
+function isIOSDevice(): boolean {
+  if (typeof window === 'undefined') return false
+
+  const userAgent = navigator.userAgent.toLowerCase()
+  return /iphone|ipad|ipod/.test(userAgent)
+}
+
+/**
+ * Get optimal audio constraints for the device
+ */
+function getAudioConstraints(): MediaStreamConstraints['audio'] {
+  const isMobile = isMobileDevice()
+  const isIOS = isIOSDevice()
+
+  if (isIOS) {
+    // iOS Safari requires specific sample rates (8000, 16000, 24000, 48000)
+    // 24kHz is optimal for OpenAI while being iOS-compatible
+    return {
+      channelCount: 1,
+      sampleRate: 24000, // iOS-compatible, OpenAI-optimized
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true, // Important for mobile environments
+    }
+  } else if (isMobile) {
+    // Android and other mobile devices
+    return {
+      channelCount: 1,
+      sampleRate: 24000,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    }
+  } else {
+    // Desktop devices - can use ideal constraints
+    return {
+      channelCount: 1,
+      sampleRate: { ideal: 24000 }, // Use ideal for flexibility
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false, // Desktop usually has better audio hardware
+    }
+  }
+}
+
 interface ConversationMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
@@ -70,6 +131,7 @@ export function VoiceSession({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const dataChannelRef = useRef<RTCDataChannel | null>(null)
   const audioStreamRef = useRef<MediaStream | null>(null)
+  const wakeLockRef = useRef<any>(null) // WakeLockSentinel type not available in all TypeScript versions
 
   /**
    * Initialize voice session
@@ -81,16 +143,21 @@ export function VoiceSession({
     try {
       setStatus('connecting')
 
-      // Step 1: Get microphone access with OpenAI-optimized constraints
+      // Step 1: Get microphone access with device-optimized constraints
+      const audioConstraints = getAudioConstraints()
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1, // mono
-          sampleRate: 24000, // 24kHz for OpenAI
-          echoCancellation: true,
-          noiseSuppression: true
-        }
+        audio: audioConstraints
       })
       audioStreamRef.current = stream
+
+      // For iOS: Initialize Audio Context to ensure audio can play (iOS requires user gesture)
+      if (isIOSDevice() && typeof window !== 'undefined') {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+        // Resume audio context if suspended (common on iOS)
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume()
+        }
+      }
 
       // Step 2: Create session and get ephemeral token
       const sessionResponse = await fetch('/api/voice/session', {
@@ -120,17 +187,48 @@ export function VoiceSession({
       })
       setSessionId(session_id)
 
-      // Step 3: Create RTCPeerConnection with STUN server
+      // Step 3: Create RTCPeerConnection with mobile-optimized configuration
+      const isMobile = isMobileDevice()
       const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          // Additional STUN servers for better mobile connectivity
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ],
+        // Mobile-specific configuration for cellular networks
+        iceTransportPolicy: isMobile ? 'all' : 'all', // Use all candidates (relay and direct)
+        bundlePolicy: 'max-bundle', // Minimize port usage (better for mobile)
+        rtcpMuxPolicy: 'require', // Multiplex RTP and RTCP (saves bandwidth)
       })
       peerConnectionRef.current = pc
+
+      // Monitor connection quality for mobile networks
+      if (isMobile) {
+        pc.addEventListener('iceconnectionstatechange', () => {
+          console.log('[Mobile] ICE connection state:', pc.iceConnectionState)
+          if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+            console.warn('[Mobile] Connection quality degraded, consider reconnection')
+          }
+        })
+      }
 
       // Step 4: Add remote audio track handler (before other setup)
       pc.addEventListener('track', (event) => {
         const remoteAudio = new Audio()
         remoteAudio.srcObject = event.streams[0]
-        remoteAudio.play()
+
+        // Mobile-specific audio configuration
+        if (isMobile) {
+          remoteAudio.autoplay = true
+          remoteAudio.setAttribute('playsinline', 'true') // Critical for iOS to prevent fullscreen
+          // Set volume to max for better mobile speaker output
+          remoteAudio.volume = 1.0
+        }
+
+        remoteAudio.play().catch(err => {
+          console.error('Error playing remote audio:', err)
+          // iOS may require user interaction - the startSession click gesture should cover this
+        })
       })
 
       // Step 5: Add microphone track to peer connection (BEFORE data channel!)
@@ -143,9 +241,19 @@ export function VoiceSession({
       dataChannelRef.current = dc
 
       // Setup data channel event handlers
-      dc.addEventListener('open', () => {
+      dc.addEventListener('open', async () => {
         console.log('Data channel opened')
         setStatus('connected')
+
+        // Request wake lock on mobile to keep screen on during voice session
+        if (isMobile && 'wakeLock' in navigator) {
+          try {
+            wakeLockRef.current = await (navigator as any).wakeLock.request('screen')
+            console.log('[Mobile] Wake lock acquired - screen will stay on')
+          } catch (err) {
+            console.warn('[Mobile] Failed to acquire wake lock:', err)
+          }
+        }
 
         // Configure session with CRM function calling
         const config: SessionConfig = {
@@ -177,19 +285,41 @@ Intelligence Features:
 - Search roofing knowledge base for warranties, materials, best practices
 - Search the web for current market intelligence
 
+**Roofing Industry Expertise:**
+
+You understand roofing terminology:
+- Roof Types: Shingle (3-tab, architectural, luxury), metal (standing seam, corrugated), tile (clay, concrete), flat/low-slope, TPO, EPDM, modified bitumen
+- Components: Ridge vent, soffit, fascia, drip edge, flashing (valley, step, counter), underlayment (felt, synthetic), ice & water shield, decking/sheathing
+- Materials: Asphalt shingles (GAF, Owens Corning, CertainTeed), copper, aluminum, galvanized steel
+- Issues: Storm damage (hail, wind), leaks, ice dams, ventilation problems, wear & tear
+- Installation: Tear-off, overlay, new construction, repairs, maintenance
+- Safety: OSHA compliance, fall protection, job site safety
+- Measurements: Square (100 sq ft), pitch/slope (e.g., 6/12), linear feet, bundles
+
+Common Scenarios:
+- Storm damage inspections: Note hail size, wind damage, insurance claim potential
+- Leak investigations: Check flashing, penetrations, valley issues
+- Maintenance: Gutter cleaning, shingle replacement, caulking
+- Estimates: Measure square footage, note pitch, accessibility, materials needed
+
 **Important Guidelines:**
 - Read phone numbers digit-by-digit (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three")
 - Be concise and professional
 - Ask clarifying questions when context is ambiguous
 - Always confirm actions before executing
 - Suggest related actions based on conversation context
+- Use industry terminology when appropriate
+- For technical questions, search the roofing knowledge base first
 
 **Multi-turn Examples:**
 User: "Create a contact named Sarah Johnson at 555-9876"
 You: [creates contact] "Done! Sarah Johnson is now in the system. Would you like to add any notes about her?"
 
 User: "Log a knock at 123 Oak Street, they were interested"
-You: [logs knock] "Recorded! Should I create a contact for this address or schedule a follow-up?"`,
+You: [logs knock] "Recorded! Should I create a contact for this address or schedule a follow-up?"
+
+User: "Customer asking about GAF Timberline warranty"
+You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited warranty. The warranty covers manufacturing defects and offers wind resistance up to 130 MPH with proper installation. Would you like more details?"`,
           voice: 'alloy',
           temperature: 0.7,
           turn_detection: {
@@ -747,6 +877,14 @@ You: [logs knock] "Recorded! Should I create a contact for this address or sched
       peerConnectionRef.current = null
     }
 
+    // Release wake lock on mobile
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release()
+        .then(() => console.log('[Mobile] Wake lock released'))
+        .catch((err: Error) => console.warn('[Mobile] Failed to release wake lock:', err))
+      wakeLockRef.current = null
+    }
+
     setSessionId(null)
   }, [])
 
@@ -758,16 +896,16 @@ You: [logs knock] "Recorded! Should I create a contact for this address or sched
   }, [cleanup])
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4 p-6 bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col items-center justify-center space-y-4 p-4 md:p-6 bg-white rounded-lg shadow-lg">
       {/* Status indicator */}
       <div className="text-center">
-        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+        <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm md:text-base font-medium ${
           status === 'connected' ? 'bg-green-100 text-green-800' :
           status === 'connecting' ? 'bg-yellow-100 text-yellow-800' :
           status === 'error' ? 'bg-red-100 text-red-800' :
           'bg-gray-100 text-gray-800'
         }`}>
-          {status === 'connecting' && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
+          {status === 'connecting' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           {status === 'idle' && 'Ready to start'}
           {status === 'connecting' && 'Connecting...'}
           {status === 'connected' && 'Connected'}
@@ -783,14 +921,14 @@ You: [logs knock] "Recorded! Should I create a contact for this address or sched
         </p>
       )}
 
-      {/* Controls */}
+      {/* Controls - Mobile-optimized touch targets */}
       <div className="flex items-center space-x-4">
         {status === 'idle' && (
           <button
             onClick={startSession}
-            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="flex items-center px-6 py-4 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors font-medium text-base md:text-sm touch-manipulation"
           >
-            <Mic className="w-5 h-5 mr-2" />
+            <Mic className="w-5 h-5 md:w-5 md:h-5 mr-2" />
             Start Voice Assistant
           </button>
         )}
@@ -799,20 +937,22 @@ You: [logs knock] "Recorded! Should I create a contact for this address or sched
           <>
             <button
               onClick={toggleMute}
-              className={`p-4 rounded-full transition-colors ${
+              className={`p-5 md:p-4 rounded-full transition-colors touch-manipulation ${
                 isMuted
-                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
               }`}
+              aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             >
-              {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+              {isMuted ? <MicOff className="w-7 h-7 md:w-6 md:h-6" /> : <Mic className="w-7 h-7 md:w-6 md:h-6" />}
             </button>
 
             <button
               onClick={endSession}
-              className="p-4 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+              className="p-5 md:p-4 bg-red-600 text-white rounded-full hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation"
+              aria-label="End voice session"
             >
-              <PhoneOff className="w-6 h-6" />
+              <PhoneOff className="w-7 h-7 md:w-6 md:h-6" />
             </button>
           </>
         )}
@@ -820,16 +960,28 @@ You: [logs knock] "Recorded! Should I create a contact for this address or sched
 
       {/* Instructions */}
       {status === 'idle' && (
-        <div className="text-center text-sm text-gray-600 max-w-md">
-          <p>Click &quot;Start Voice Assistant&quot; to begin speaking with your AI assistant.</p>
+        <div className="text-center text-sm md:text-base text-gray-600 max-w-md px-4">
+          <p>
+            {isMobileDevice() ? 'Tap' : 'Click'} &quot;Start Voice Assistant&quot; to begin speaking with your AI assistant.
+          </p>
           <p className="mt-2">You can create contacts, add notes, search your CRM, log door knocks, and update pipeline stages using voice commands.</p>
+          {isMobileDevice() && (
+            <p className="mt-2 text-xs text-blue-600">
+              📱 Mobile optimized for field use
+            </p>
+          )}
         </div>
       )}
 
       {status === 'connected' && (
-        <div className="text-center text-sm text-gray-600 max-w-md">
-          <p>Listening... You can now speak to your assistant.</p>
-          <p className="mt-2">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
+        <div className="text-center text-sm md:text-base text-gray-600 max-w-md px-4">
+          <p className="font-medium">🎤 Listening... You can now speak to your assistant.</p>
+          <p className="mt-2 text-xs md:text-sm">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
+          {isMobileDevice() && (
+            <p className="mt-2 text-xs text-blue-600">
+              Optimized for {isIOSDevice() ? 'iOS' : 'Android'} audio
+            </p>
+          )}
         </div>
       )}
 

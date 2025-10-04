@@ -175,6 +175,15 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  eslint: {
+    // Skip ESLint during builds (lint hook handles this separately with configurable thresholds)
+    // This prevents build failures from non-critical linting issues like `any` types
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // Type checking is handled separately by tsc
+    ignoreBuildErrors: false,
+  },
   images: {
     remotePatterns: [
       {

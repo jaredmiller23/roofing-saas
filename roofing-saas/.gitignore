@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Data files
+/data/**/*.json
+!/data/enzy-leads-sample.json
+
+# Archived materials
+/data/archive/
+
+# Test artifacts
+/playwright-report/
+/test-results/
