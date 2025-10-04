@@ -212,7 +212,7 @@ export function TerritoryMapEditor({
     // Fallback: treat as Polygon with empty coordinates
     return {
       type: 'Polygon',
-      coordinates: ((geometry as Record<string, unknown>).coordinates || []) as number[][][],
+      coordinates: ((geometry as unknown as Record<string, unknown>).coordinates || []) as number[][][],
     }
   }
 
