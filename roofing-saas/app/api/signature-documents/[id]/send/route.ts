@@ -23,7 +23,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
@@ -38,7 +38,7 @@ export async function POST(
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    const { id } = params
+    const { id } = await params
     const body = await request.json().catch(() => ({}))
     const {
       recipient_email,
