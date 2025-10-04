@@ -1,0 +1,107 @@
+'use client'
+
+interface TypeData {
+  revenue: number
+  cost: number
+  profit: number
+  count: number
+}
+
+interface MarginByTypeChartProps {
+  typeData: Record<string, TypeData>
+}
+
+export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
+  const chartData = Object.entries(typeData).map(([type, data]) => ({
+    type,
+    margin: data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0,
+    profit: data.profit,
+    revenue: data.revenue,
+  }))
+
+  const maxMargin = Math.max(...chartData.map(d => d.margin), 50) // At least 50% scale
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      notation: 'compact',
+      compactDisplay: 'short'
+    }).format(value)
+  }
+
+  const getMarginColor = (margin: number) => {
+    if (margin >= 30) return 'bg-green-500'
+    if (margin >= 20) return 'bg-blue-500'
+    if (margin >= 10) return 'bg-yellow-500'
+    if (margin >= 0) return 'bg-orange-500'
+    return 'bg-red-500'
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Profit Margin by Job Type</h3>
+
+      <div className="space-y-4">
+        {chartData.map((data, index) => (
+          <div key={index}>
+            <div className="flex items-center justify-between mb-1">
+              <div>
+                <span className="text-sm font-medium text-gray-700">{data.type}</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  {formatCurrency(data.profit)} profit
+                </span>
+              </div>
+              <span className="text-sm font-semibold text-gray-900">
+                {data.margin.toFixed(1)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all duration-300 ${getMarginColor(data.margin)}`}
+                style={{ width: `${(data.margin / maxMargin) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {chartData.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <p>No project data available</p>
+        </div>
+      )}
+
+      {/* Legend */}
+      {chartData.length > 0 && (
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 mb-2">Margin Indicators:</p>
+          <div className="flex flex-wrap gap-3 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-500 rounded" />
+              <span className="text-gray-600">Excellent (≥30%)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-blue-500 rounded" />
+              <span className="text-gray-600">Good (20-29%)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-yellow-500 rounded" />
+              <span className="text-gray-600">Fair (10-19%)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-orange-500 rounded" />
+              <span className="text-gray-600">Low (0-9%)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-500 rounded" />
+              <span className="text-gray-600">Negative (&lt;0%)</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
