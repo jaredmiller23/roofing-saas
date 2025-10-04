@@ -40,7 +40,7 @@ export interface Workflow {
   name: string
   description?: string
   trigger_type: TriggerType
-  trigger_config: Record<string, any>
+  trigger_config: Record<string, unknown>
   is_active: boolean
   created_by?: string
   created_at: string
@@ -54,7 +54,7 @@ export interface WorkflowStep {
   workflow_id: string
   step_order: number
   step_type: StepType
-  step_config: Record<string, any>
+  step_config: Record<string, unknown>
   delay_minutes: number
   created_at: string
   updated_at: string
@@ -65,7 +65,7 @@ export interface WorkflowExecution {
   id: string
   workflow_id: string
   tenant_id: string
-  trigger_data: Record<string, any>
+  trigger_data: Record<string, unknown>
   status: WorkflowStatus
   current_step_id?: string
   started_at?: string
@@ -83,7 +83,7 @@ export interface WorkflowStepExecution {
   status: StepStatus
   started_at?: string
   completed_at?: string
-  result_data?: Record<string, any>
+  result_data?: Record<string, unknown>
   error_message?: string
   created_at: string
 }
@@ -113,12 +113,12 @@ export interface CreateTaskConfig {
 
 export interface UpdateContactConfig {
   contact_id: string // Variable like {{trigger.contact_id}}
-  updates: Record<string, any>
+  updates: Record<string, unknown>
 }
 
 export interface UpdateProjectConfig {
   project_id: string // Variable like {{trigger.project_id}}
-  updates: Record<string, any>
+  updates: Record<string, unknown>
 }
 
 export interface WaitConfig {
@@ -135,5 +135,5 @@ export interface WebhookConfig {
   url: string
   method: 'GET' | 'POST' | 'PUT' | 'PATCH'
   headers?: Record<string, string>
-  body?: Record<string, any>
+  body?: Record<string, unknown>
 }

@@ -14,8 +14,8 @@ import { type StepType } from './types'
  */
 export async function executeStep(
   stepType: StepType,
-  config: Record<string, any>
-): Promise<Record<string, any>> {
+  config: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   logger.info('Executing step', { stepType, config })
 
   switch (stepType) {
@@ -48,7 +48,7 @@ export async function executeStep(
 /**
  * Send SMS step
  */
-async function executeSendSMS(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeSendSMS(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const { to, body, template_id } = config
 
@@ -77,7 +77,7 @@ async function executeSendSMS(config: Record<string, any>): Promise<Record<strin
 /**
  * Send Email step
  */
-async function executeSendEmail(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeSendEmail(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const { to, subject, html, text, template_id } = config
 
@@ -107,7 +107,7 @@ async function executeSendEmail(config: Record<string, any>): Promise<Record<str
 /**
  * Create Task step
  */
-async function executeCreateTask(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeCreateTask(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const supabase = await createClient()
 
@@ -156,7 +156,7 @@ async function executeCreateTask(config: Record<string, any>): Promise<Record<st
 /**
  * Update Contact step
  */
-async function executeUpdateContact(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeUpdateContact(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const supabase = await createClient()
 
@@ -189,7 +189,7 @@ async function executeUpdateContact(config: Record<string, any>): Promise<Record
 /**
  * Update Project step
  */
-async function executeUpdateProject(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeUpdateProject(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const supabase = await createClient()
 
@@ -222,7 +222,7 @@ async function executeUpdateProject(config: Record<string, any>): Promise<Record
 /**
  * Wait step (delay is handled by engine, this is just for logging)
  */
-async function executeWait(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeWait(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   const { delay_minutes } = config
 
   logger.info('Wait step executing', { delay_minutes })
@@ -236,7 +236,7 @@ async function executeWait(config: Record<string, any>): Promise<Record<string, 
 /**
  * Webhook step
  */
-async function executeWebhook(config: Record<string, any>): Promise<Record<string, any>> {
+async function executeWebhook(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
     const { url, method = 'POST', headers = {}, body } = config
 

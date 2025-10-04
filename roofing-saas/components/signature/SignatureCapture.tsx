@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
@@ -18,7 +19,6 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
   const [typedSignature, setTypedSignature] = useState('')
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const typeCanvasRef = useRef<HTMLCanvasElement>(null)
 
   // Initialize draw canvas
@@ -124,7 +124,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
 
   const captureSignature = () => {
     let signatureData: string = ''
-    let method: 'draw' | 'type' | 'upload' = activeTab
+    const method: 'draw' | 'type' | 'upload' = activeTab
 
     if (activeTab === 'draw') {
       const canvas = canvasRef.current
@@ -229,11 +229,13 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {uploadedImage && (
-            <div className="border-2 border-gray-300 rounded-lg bg-white p-4">
-              <img
+            <div className="border-2 border-gray-300 rounded-lg bg-white p-4 h-56 relative">
+              <Image
                 src={uploadedImage}
                 alt="Uploaded signature"
-                className="max-h-48 mx-auto"
+                fill
+                className="object-contain"
+                unoptimized
               />
             </div>
           )}

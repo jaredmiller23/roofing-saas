@@ -8,9 +8,9 @@
  * Variables format: {{path.to.value}}
  */
 export function replaceVariables(
-  input: any,
-  context: Record<string, any>
-): any {
+  input: unknown,
+  context: Record<string, unknown>
+): unknown {
   if (typeof input === 'string') {
     return replaceVariablesInString(input, context)
   }
@@ -20,7 +20,7 @@ export function replaceVariables(
   }
 
   if (input !== null && typeof input === 'object') {
-    const result: Record<string, any> = {}
+    const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(input)) {
       result[key] = replaceVariables(value, context)
     }
@@ -35,7 +35,7 @@ export function replaceVariables(
  */
 function replaceVariablesInString(
   str: string,
-  context: Record<string, any>
+  context: Record<string, unknown>
 ): string {
   // Match {{variable.path}}
   return str.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
@@ -48,7 +48,7 @@ function replaceVariablesInString(
  * Get value from object by dot-separated path
  * e.g., getValueByPath({a: {b: {c: 1}}}, 'a.b.c') => 1
  */
-function getValueByPath(obj: any, path: string): any {
+function getValueByPath(obj: unknown, path: string): unknown {
   const parts = path.split('.')
   let current = obj
 

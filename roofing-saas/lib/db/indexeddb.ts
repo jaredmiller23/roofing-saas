@@ -64,7 +64,7 @@ interface RoofingSaaSDB extends DBSchema {
       file: Blob
       file_name: string
       file_type: string
-      metadata?: Record<string, any>
+      metadata?: Record<string, unknown>
       created_at: number
       retry_count: number
       last_error?: string
@@ -79,7 +79,7 @@ interface RoofingSaaSDB extends DBSchema {
       action_type: 'create' | 'update' | 'delete'
       entity_type: 'contact' | 'project' | 'activity'
       entity_id?: string // For updates/deletes
-      data: Record<string, any>
+      data: Record<string, unknown>
       created_at: number
       retry_count: number
       last_error?: string
@@ -102,7 +102,7 @@ export async function initDB(): Promise<IDBPDatabase<RoofingSaaSDB>> {
   }
 
   dbInstance = await openDB<RoofingSaaSDB>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion, newVersion, transaction) {
+    upgrade(db) {
       // Create contacts store
       if (!db.objectStoreNames.contains('contacts')) {
         const contactsStore = db.createObjectStore('contacts', { keyPath: 'id' })

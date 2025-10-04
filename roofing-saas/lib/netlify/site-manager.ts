@@ -201,7 +201,6 @@ export async function checkDomainPointing(
   // Extract base domain and subdomain
   const parts = domain.split('.')
   const isSubdomain = parts.length > 2
-  const baseDomain = parts.slice(-2).join('.')
   const subdomain = isSubdomain ? parts.slice(0, -2).join('.') : ''
 
   // Find relevant DNS records

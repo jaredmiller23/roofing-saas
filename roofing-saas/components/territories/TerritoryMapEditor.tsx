@@ -99,7 +99,7 @@ export function TerritoryMapEditor({
     drawControlRef.current = drawControl
 
     // Handle draw created
-    map.on(L.Draw.Event.CREATED, (event: any) => {
+    map.on(L.Draw.Event.CREATED, (event: L.DrawEvents.Created) => {
       const layer = event.layer
 
       // Clear existing layers
@@ -116,7 +116,7 @@ export function TerritoryMapEditor({
     })
 
     // Handle draw edited
-    map.on(L.Draw.Event.EDITED, (event: any) => {
+    map.on(L.Draw.Event.EDITED, (event: L.DrawEvents.Edited) => {
       const layers = event.layers
       let boundary: TerritoryBoundary | null = null
 
@@ -210,7 +210,7 @@ export function TerritoryMapEditor({
     // Fallback: treat as Polygon with empty coordinates
     return {
       type: 'Polygon',
-      coordinates: ((geometry as any).coordinates || []) as number[][][],
+      coordinates: ((geometry as Record<string, unknown>).coordinates || []) as number[][][],
     }
   }
 

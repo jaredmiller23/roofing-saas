@@ -58,7 +58,7 @@ export function isValidPolygonCoordinates(coordinates: number[][][]): boolean {
 /**
  * Validate GeoJSON boundary data
  */
-export function validateTerritoryBoundary(boundary: any): {
+export function validateTerritoryBoundary(boundary: unknown): {
   valid: boolean
   error?: string
 } {

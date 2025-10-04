@@ -116,7 +116,7 @@ export async function getCallAnalytics(
   let recordedCalls = 0
 
   for (const call of calls) {
-    const metadata = call.metadata as Record<string, any>
+    const metadata = call.metadata as Record<string, unknown>
 
     if (call.direction === 'inbound') {
       inboundCalls++
@@ -256,7 +256,7 @@ export async function getEmailAnalyticsSummary(
   for (const email of emails) {
     if (email.direction === 'outbound') {
       outboundEmails++
-      const metadata = email.metadata as Record<string, any>
+      const metadata = email.metadata as Record<string, unknown>
       if (metadata.opened) openedEmails++
       if (metadata.clicked) clickedEmails++
     }
