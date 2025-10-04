@@ -172,9 +172,9 @@ export async function GET(request: Request) {
 
     // Format leaderboard data
     const formattedLeaderboard = leaderboard?.map((entry, index) => {
-      const count = type === 'knocks' ? entry.knock_count :
+      const count = (type === 'knocks' ? entry.knock_count :
                     type === 'sales' ? entry.sales_count :
-                    entry.total_points || 0
+                    entry.total_points) || 0
 
       return {
         rank: index + 1,
