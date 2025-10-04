@@ -123,7 +123,8 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResponse>
         bcc: params.bcc,
         attachments: params.attachments,
         tags: params.tags,
-      })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
     }, retryOptions)
 
     if (result.error) {
