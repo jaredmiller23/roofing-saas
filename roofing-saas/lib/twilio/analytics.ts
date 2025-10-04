@@ -134,7 +134,7 @@ export async function getCallAnalytics(
 
     // Add duration if available
     if (metadata.duration) {
-      totalDuration += parseInt(metadata.duration)
+      totalDuration += parseInt(metadata.duration as string)
     }
 
     // Check if call was recorded
