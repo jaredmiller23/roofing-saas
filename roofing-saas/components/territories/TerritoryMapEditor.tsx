@@ -117,8 +117,9 @@ export function TerritoryMapEditor({
     })
 
     // Handle draw edited
-    map.on(L.Draw.Event.EDITED, (event: L.DrawEvents.Edited) => {
-      const layers = event.layers
+    map.on(L.Draw.Event.EDITED, (event: unknown) => {
+      const e = event as L.DrawEvents.Edited
+      const layers = e.layers
       let boundary: TerritoryBoundary | null = null
 
       layers.eachLayer((layer: L.Layer) => {
