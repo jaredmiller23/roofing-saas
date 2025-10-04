@@ -69,7 +69,7 @@ export default function SignDocumentPage() {
     }
 
     try {
-      setIsSigning(true)
+      // setIsSigning(true) // TODO: Use for signing state
       setError(null)
 
       const res = await fetch(`/api/signature-documents/${documentId}/sign`, {
@@ -95,7 +95,7 @@ export default function SignDocumentPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit signature')
     } finally {
-      setIsSigning(false)
+      // setIsSigning(false) // TODO: Use for signing state
     }
   }
 
