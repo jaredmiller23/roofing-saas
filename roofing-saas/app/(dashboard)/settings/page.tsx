@@ -10,13 +10,6 @@ interface TeamMemberData {
   user_id: string
   role: string
   joined_at: string
-  user: {
-    id: string
-    email: string
-    raw_user_meta_data?: {
-      full_name?: string
-    }
-  }[]
 }
 
 export default async function SettingsPage() {
@@ -46,21 +39,16 @@ export default async function SettingsPage() {
     .select(`
       user_id,
       role,
-      joined_at,
-      user:auth.users!inner (
-        id,
-        email,
-        raw_user_meta_data
-      )
+      joined_at
     `)
     .eq('tenant_id', tenantId)
     .order('joined_at', { ascending: false })
 
   // Format team members data
   const formattedTeamMembers = (teamMembers || []).map((member: TeamMemberData) => ({
-    id: member.user[0]?.id || '',
-    email: member.user[0]?.email || '',
-    full_name: member.user[0]?.raw_user_meta_data?.full_name || null,
+    id: member.user_id,
+    email: '', // Will need to be fetched separately or joined differently
+    full_name: null,
     role: member.role,
     joined_at: member.joined_at,
   }))
