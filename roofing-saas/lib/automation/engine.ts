@@ -248,7 +248,7 @@ async function executeWorkflowStep(
     })
 
     // Execute the step
-    const result = await executeStep(step.step_type, processedConfig)
+    const result = await executeStep(step.step_type, processedConfig as Record<string, unknown>)
 
     // Update step execution to completed
     await supabase
