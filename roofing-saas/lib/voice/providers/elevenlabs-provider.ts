@@ -9,6 +9,8 @@ import {
   SessionResponse,
   FunctionCallEvent,
   FunctionResultEvent,
+  FunctionCallParameters,
+  FunctionCallResult,
 } from './types'
 import { logger } from '@/lib/logger'
 import { Conversation } from '@elevenlabs/client'
@@ -18,7 +20,7 @@ export class ElevenLabsProvider extends VoiceProvider {
 
   private conversation: Conversation | null = null
   private isConnected: boolean = false
-  private pendingResolvers: Map<string, (value: unknown) => void> = new Map()
+  private pendingResolvers: Map<string, (value: FunctionCallResult) => void> = new Map()
 
   async initSession(config: VoiceProviderConfig): Promise<SessionResponse> {
     // Get signed URL from backend
@@ -64,11 +66,11 @@ export class ElevenLabsProvider extends VoiceProvider {
 
     try {
       // Map CRM functions to client tools (ElevenLabs will execute these client-side)
-      const clientTools: Record<string, (parameters: Record<string, unknown>) => Promise<unknown>> = {}
+      const clientTools: Record<string, (parameters: FunctionCallParameters) => Promise<FunctionCallResult>> = {}
 
       if (sessionResponse.config?.tools) {
         for (const tool of sessionResponse.config.tools) {
-          clientTools[tool.name] = async (parameters: Record<string, unknown>) => {
+          clientTools[tool.name] = async (parameters: FunctionCallParameters) => {
             logger.info('Client tool called', { name: tool.name, parameters })
 
             // Trigger the function call handler
@@ -80,7 +82,7 @@ export class ElevenLabsProvider extends VoiceProvider {
             })
 
             // Return a promise that will be resolved when sendFunctionResult is called
-            return new Promise((resolve) => {
+            return new Promise<FunctionCallResult>((resolve) => {
               // Store resolver for later
               this.pendingResolvers.set(callId, resolve)
             })
@@ -89,9 +91,11 @@ export class ElevenLabsProvider extends VoiceProvider {
       }
 
       // Start conversation session using signed URL
+      // Note: ElevenLabs SDK expects a specific clientTools type signature
+      // We use type assertion here as our stricter types are compatible at runtime
       this.conversation = await Conversation.startSession({
         signedUrl: sessionResponse.ephemeral_token,
-        clientTools: clientTools as Record<string, (parameters: unknown) => string | number | void | Promise<string | number | void>>,
+        clientTools: clientTools as unknown as Record<string, (parameters: unknown) => string | number | void | Promise<string | number | void>>,
 
         onConnect: () => {
           logger.info('ElevenLabs conversation connected')
@@ -105,7 +109,7 @@ export class ElevenLabsProvider extends VoiceProvider {
           onDisconnected()
         },
 
-        onError: (error: unknown) => {
+        onError: (error: Error | string) => {
           logger.error('ElevenLabs connection error', { error })
         },
       })

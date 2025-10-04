@@ -9,7 +9,6 @@ import { logger } from '@/lib/logger'
 // QuickBooks API base URLs
 const QB_OAUTH_URL = 'https://appcenter.intuit.com/connect/oauth2'
 const QB_API_BASE_URL = 'https://quickbooks.api.intuit.com/v3/company'
-const _QB_DISCOVERY_URL = 'https://developer.api.intuit.com/.well-known/openid_configuration/'
 
 // Token response from QuickBooks
 interface TokenResponse {
@@ -84,9 +83,44 @@ export interface QBPayment {
   }>
 }
 
+// QB Company Info entity
+export interface QBCompanyInfo {
+  CompanyName?: string
+  LegalName?: string
+  CompanyAddr?: {
+    Line1?: string
+    City?: string
+    CountrySubDivisionCode?: string
+    PostalCode?: string
+  }
+  CustomerCommunicationAddr?: {
+    Line1?: string
+    City?: string
+    CountrySubDivisionCode?: string
+    PostalCode?: string
+  }
+  PrimaryPhone?: {
+    FreeFormNumber?: string
+  }
+  CompanyStartDate?: string
+  FiscalYearStartMonth?: string
+  Country?: string
+  Email?: {
+    Address?: string
+  }
+  WebAddr?: {
+    URI?: string
+  }
+  SupportedLanguages?: string
+  NameValue?: Array<{
+    Name: string
+    Value: string
+  }>
+}
+
 // QB API Response Types
 interface QBCompanyInfoResponse {
-  CompanyInfo: Record<string, unknown>
+  CompanyInfo: QBCompanyInfo
 }
 
 interface QBQueryResponse<T> {
@@ -155,7 +189,7 @@ export class QuickBooksClient {
   /**
    * Get company info
    */
-  async getCompanyInfo() {
+  async getCompanyInfo(): Promise<QBCompanyInfo> {
     const result = await this.request<QBCompanyInfoResponse>('GET', '/companyinfo/' + this.realmId)
     return result.CompanyInfo
   }

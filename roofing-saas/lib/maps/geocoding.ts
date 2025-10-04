@@ -14,6 +14,31 @@ interface GoogleMapsAddressComponent {
   types: string[]
 }
 
+/**
+ * Google Maps Geocoding API Response
+ */
+interface GoogleMapsGeocodeResponse {
+  results: Array<{
+    address_components: GoogleMapsAddressComponent[]
+    formatted_address: string
+    geometry: {
+      location: {
+        lat: number
+        lng: number
+      }
+      location_type?: string
+      viewport?: {
+        northeast: { lat: number; lng: number }
+        southwest: { lat: number; lng: number }
+      }
+    }
+    place_id: string
+    types: string[]
+  }>
+  status: 'OK' | 'ZERO_RESULTS' | 'OVER_QUERY_LIMIT' | 'REQUEST_DENIED' | 'INVALID_REQUEST' | 'UNKNOWN_ERROR'
+  error_message?: string
+}
+
 export interface GeocodeResult {
   latitude: number
   longitude: number
@@ -55,7 +80,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`
 
     const response = await fetch(url)
-    const data = await response.json()
+    const data: GoogleMapsGeocodeResponse = await response.json()
 
     if (data.status !== 'OK' || !data.results || data.results.length === 0) {
       logger.warn('Geocoding failed', { address, status: data.status })
@@ -119,7 +144,7 @@ export async function reverseGeocode(
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
 
     const response = await fetch(url)
-    const data = await response.json()
+    const data: GoogleMapsGeocodeResponse = await response.json()
 
     if (data.status !== 'OK' || !data.results || data.results.length === 0) {
       logger.warn('Reverse geocoding failed', { latitude, longitude, status: data.status })

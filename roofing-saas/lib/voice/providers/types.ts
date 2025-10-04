@@ -15,15 +15,31 @@ export interface VoiceProviderConfig {
   tools?: VoiceFunction[]
 }
 
+export interface VoiceFunctionParameter {
+  type: string
+  description?: string
+  enum?: string[]
+  items?: VoiceFunctionParameter
+  properties?: Record<string, VoiceFunctionParameter>
+  required?: string[]
+}
+
 export interface VoiceFunction {
   type: 'function'
   name: string
   description: string
   parameters: {
     type: 'object'
-    properties: Record<string, unknown>
+    properties: Record<string, VoiceFunctionParameter>
     required?: string[]
   }
+}
+
+export interface TurnDetectionConfig {
+  type?: 'server_vad'
+  threshold?: number
+  prefix_padding_ms?: number
+  silence_duration_ms?: number
 }
 
 export interface SessionResponse {
@@ -36,7 +52,7 @@ export interface SessionResponse {
     instructions?: string
     voice?: string
     temperature?: number
-    turn_detection?: unknown // OpenAI-specific config, structure varies
+    turn_detection?: TurnDetectionConfig // OpenAI-specific config
     tools?: VoiceFunction[]
   }
 }
@@ -47,15 +63,26 @@ export interface WebRTCConnectionConfig {
   provider: VoiceProviderType
 }
 
+export interface FunctionCallParameters {
+  [key: string]: string | number | boolean | null | FunctionCallParameters | Array<string | number | boolean | null>
+}
+
+export interface FunctionCallResult {
+  success: boolean
+  data?: Record<string, unknown> | Array<Record<string, unknown>> | string | number | boolean | null
+  error?: string
+  message?: string
+}
+
 export interface FunctionCallEvent {
   call_id: string
   name: string
-  parameters: Record<string, unknown>
+  parameters: FunctionCallParameters
 }
 
 export interface FunctionResultEvent {
   call_id: string
-  result: unknown
+  result: FunctionCallResult
 }
 
 /**

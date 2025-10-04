@@ -21,6 +21,16 @@ export interface OptimizedRoute {
   optimized_order: number[]
 }
 
+export interface DirectionsStep {
+  distance: { value: number; text: string }
+  duration: { value: number; text: string }
+  end_location: { lat: number; lng: number }
+  start_location: { lat: number; lng: number }
+  html_instructions: string
+  travel_mode: 'DRIVING' | 'WALKING' | 'BICYCLING' | 'TRANSIT'
+  polyline: { points: string }
+}
+
 export interface DirectionsResult {
   routes: {
     legs: {
@@ -28,25 +38,41 @@ export interface DirectionsResult {
       duration: { value: number; text: string }
       start_address: string
       end_address: string
-      steps: unknown[]
+      start_location: { lat: number; lng: number }
+      end_location: { lat: number; lng: number }
+      steps: DirectionsStep[]
     }[]
     overview_polyline: { points: string }
     waypoint_order?: number[] // Present when optimize:true is used
+    bounds?: {
+      northeast: { lat: number; lng: number }
+      southwest: { lat: number; lng: number }
+    }
   }[]
-  status: string
+  status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'MAX_WAYPOINTS_EXCEEDED' | 'INVALID_REQUEST' | 'OVER_QUERY_LIMIT' | 'REQUEST_DENIED' | 'UNKNOWN_ERROR'
+  error_message?: string
 }
 
 /**
  * Google Maps Distance Matrix API types
  */
 interface DistanceMatrixElement {
-  status: string
+  status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS'
   distance?: { value: number; text: string }
   duration?: { value: number; text: string }
+  duration_in_traffic?: { value: number; text: string }
 }
 
 interface DistanceMatrixRow {
   elements: DistanceMatrixElement[]
+}
+
+interface DistanceMatrixResponse {
+  rows: DistanceMatrixRow[]
+  origin_addresses: string[]
+  destination_addresses: string[]
+  status: 'OK' | 'INVALID_REQUEST' | 'MAX_ELEMENTS_EXCEEDED' | 'OVER_QUERY_LIMIT' | 'REQUEST_DENIED' | 'UNKNOWN_ERROR'
+  error_message?: string
 }
 
 /**
@@ -76,7 +102,7 @@ export async function getDirections(
     }
 
     const response = await fetch(url)
-    const data = await response.json()
+    const data: DirectionsResult = await response.json()
 
     if (data.status !== 'OK') {
       logger.warn('Directions API failed', { status: data.status })
@@ -240,7 +266,7 @@ export async function getDistanceMatrix(
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsStr}&destinations=${destinationsStr}&key=${apiKey}`
 
     const response = await fetch(url)
-    const data = await response.json()
+    const data: DistanceMatrixResponse = await response.json()
 
     if (data.status !== 'OK') {
       logger.warn('Distance Matrix API failed', { status: data.status })
@@ -249,9 +275,9 @@ export async function getDistanceMatrix(
 
     // Extract distance matrix
     const matrix: number[][] = []
-    data.rows.forEach((row: DistanceMatrixRow) => {
+    data.rows.forEach((row) => {
       const distances: number[] = []
-      row.elements.forEach((element: DistanceMatrixElement) => {
+      row.elements.forEach((element) => {
         distances.push(element.status === 'OK' && element.distance ? element.distance.value : Infinity)
       })
       matrix.push(distances)
