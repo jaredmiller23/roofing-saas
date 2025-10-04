@@ -25,12 +25,12 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json().catch(() => ({}))
     const {
       signer_name,
@@ -206,12 +206,12 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const startTime = Date.now()
 
   try {
-    const { id } = params
+    const { id } = await params
 
     logger.apiRequest('GET', `/api/signature-documents/${id}/sign`, { id })
 
