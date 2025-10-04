@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { TaskForm } from '@/components/tasks/task-form'
+import { TaskFormEnhanced } from '@/components/tasks/TaskFormEnhanced'
 import Link from 'next/link'
 
 /**
@@ -60,7 +60,7 @@ export default async function EditTaskPage({
           </p>
         </div>
 
-        <TaskForm task={task} />
+        <TaskFormEnhanced task={task} />
       </div>
     </div>
   )
