@@ -244,11 +244,11 @@ async function executeWebhook(config: Record<string, unknown>): Promise<Record<s
       throw new Error('Missing required field: url')
     }
 
-    const response = await fetch(url, {
-      method,
+    const response = await fetch(url as string, {
+      method: method as string,
       headers: {
         'Content-Type': 'application/json',
-        ...headers,
+        ...(headers as Record<string, string>),
       },
       body: body ? JSON.stringify(body) : undefined,
     })
