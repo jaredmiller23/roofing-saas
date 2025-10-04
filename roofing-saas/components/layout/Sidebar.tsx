@@ -10,7 +10,6 @@ import {
   CheckSquare,
   Users,
   Phone,
-  MessageSquare,
   Settings,
   Trophy,
   Building2,

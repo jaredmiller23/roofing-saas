@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { MapPin, Home, ThumbsUp, ThumbsDown, Calendar, Phone, Loader2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -34,12 +34,13 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
   const [appointmentTime, setAppointmentTime] = useState('')
   const [callbackDate, setCallbackDate] = useState('')
 
-  // Auto-get location on mount
-  useEffect(() => {
-    getLocation()
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    // Placeholder - will need Google Maps API or similar
+    // For now, just show coordinates
+    setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`)
   }, [])
 
-  const getLocation = () => {
+  const getLocation = useCallback(() => {
     setGettingLocation(true)
 
     if (!navigator.geolocation) {
@@ -69,13 +70,12 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
         maximumAge: 0
       }
     )
-  }
+  }, [reverseGeocode])
 
-  const reverseGeocode = async (lat: number, lng: number) => {
-    // Placeholder - will need Google Maps API or similar
-    // For now, just show coordinates
-    setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`)
-  }
+  // Auto-get location on mount
+  useEffect(() => {
+    getLocation()
+  }, [getLocation])
 
   const handleDispositionSelect = (selectedDisposition: Disposition) => {
     setDisposition(selectedDisposition)
