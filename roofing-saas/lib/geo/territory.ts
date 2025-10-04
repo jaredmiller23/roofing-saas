@@ -70,29 +70,31 @@ export function validateTerritoryBoundary(boundary: unknown): {
     return { valid: false, error: 'Boundary must be an object' }
   }
 
-  if (!boundary.type) {
+  const boundaryObj = boundary as Record<string, unknown>
+
+  if (!boundaryObj.type) {
     return { valid: false, error: 'Boundary type is required' }
   }
 
-  if (boundary.type === 'Polygon') {
-    if (!Array.isArray(boundary.coordinates)) {
+  if (boundaryObj.type === 'Polygon') {
+    if (!Array.isArray(boundaryObj.coordinates)) {
       return { valid: false, error: 'Polygon coordinates must be an array' }
     }
 
-    if (!isValidPolygonCoordinates(boundary.coordinates)) {
+    if (!isValidPolygonCoordinates(boundaryObj.coordinates)) {
       return { valid: false, error: 'Invalid polygon coordinates' }
     }
 
     return { valid: true }
   }
 
-  if (boundary.type === 'MultiPolygon') {
-    if (!Array.isArray(boundary.coordinates)) {
+  if (boundaryObj.type === 'MultiPolygon') {
+    if (!Array.isArray(boundaryObj.coordinates)) {
       return { valid: false, error: 'MultiPolygon coordinates must be an array' }
     }
 
     // Validate each polygon in the multipolygon
-    for (const polygonCoords of boundary.coordinates) {
+    for (const polygonCoords of boundaryObj.coordinates) {
       if (!isValidPolygonCoordinates(polygonCoords)) {
         return { valid: false, error: 'Invalid multipolygon coordinates' }
       }
