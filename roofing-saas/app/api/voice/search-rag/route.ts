@@ -11,6 +11,18 @@ import { createClient } from '@/lib/supabase/server'
 import { generateEmbedding } from '@/lib/embeddings'
 
 /**
+ * Knowledge base search result from vector similarity search
+ */
+interface KnowledgeSearchResult {
+  title: string
+  content: string
+  category: string
+  subcategory: string | null
+  manufacturer: string | null
+  similarity: number
+}
+
+/**
  * POST /api/voice/search-rag
  * Search roofing knowledge base using vector similarity
  *
@@ -75,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Format results for voice assistant
-    const formattedResults = (results || []).map((r: any) => ({
+    const formattedResults = (results || []).map((r: KnowledgeSearchResult) => ({
       title: r.title,
       content: r.content,
       category: r.category,
@@ -93,7 +105,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Combine top results into a concise summary
       const topResult = formattedResults[0]
-      summary = `${topResult.content}\n\nI also found related information about ${formattedResults.slice(1).map((r: any) => r.title.toLowerCase()).join(' and ')}.`
+      summary = `${topResult.content}\n\nI also found related information about ${formattedResults.slice(1).map((r: KnowledgeSearchResult) => r.title.toLowerCase()).join(' and ')}.`
     }
 
     const result = {

@@ -4,7 +4,6 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import type { QBPayment } from './client'
 import { QuickBooksClient, QBCustomer, QBInvoice } from './client'
 import { logger } from '@/lib/logger'
 
@@ -60,7 +59,7 @@ export async function syncContactToCustomer(
       action = 'update'
       const existingCustomer = await client.getCustomer(existingMapping.qb_entity_id)
 
-      qbCustomer = {
+      const updatePayload = {
         ...existingCustomer,
         DisplayName: `${contact.first_name} ${contact.last_name}`.trim() || contact.email,
         GivenName: contact.first_name,
@@ -73,9 +72,9 @@ export async function syncContactToCustomer(
           CountrySubDivisionCode: contact.state,
           PostalCode: contact.zip_code,
         } : undefined,
-      }
+      } as QBCustomer & { Id: string; SyncToken: string }
 
-      qbCustomer = await client.updateCustomer(qbCustomer as any)
+      qbCustomer = await client.updateCustomer(updatePayload)
     } else {
       // Create new customer
       action = 'create'
@@ -151,8 +150,11 @@ export async function syncContactToCustomer(
       success: true,
       qbId: qbCustomer.Id!,
     }
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to sync contact to QB', { contactId, error })
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorCode = error && typeof error === 'object' && 'code' in error ? String(error.code) : undefined
 
     // Log failed sync
     await logSync(
@@ -165,14 +167,14 @@ export async function syncContactToCustomer(
       'error',
       undefined,
       undefined,
-      error.message,
-      error.code
+      errorMessage,
+      errorCode
     )
 
     return {
       success: false,
-      error: error.message,
-      errorCode: error.code,
+      error: errorMessage,
+      errorCode,
     }
   }
 }
@@ -278,8 +280,11 @@ export async function syncProjectToInvoice(
       success: true,
       qbId: qbInvoice.Id!,
     }
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Failed to sync project to QB', { projectId, error })
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorCode = error && typeof error === 'object' && 'code' in error ? String(error.code) : undefined
 
     await logSync(
       tenantId,
@@ -291,14 +296,14 @@ export async function syncProjectToInvoice(
       'error',
       undefined,
       undefined,
-      error.message,
-      error.code
+      errorMessage,
+      errorCode
     )
 
     return {
       success: false,
-      error: error.message,
-      errorCode: error.code,
+      error: errorMessage,
+      errorCode,
     }
   }
 }
@@ -355,8 +360,8 @@ async function logSync(
   action: string,
   direction: 'to_qb' | 'from_qb',
   status: 'success' | 'error',
-  requestPayload?: any,
-  responsePayload?: any,
+  requestPayload?: unknown,
+  responsePayload?: unknown,
   errorMessage?: string,
   errorCode?: string
 ) {

@@ -76,7 +76,6 @@ export async function PATCH(
     const validatedData = updateContactSchema.parse({ ...body, id })
 
     // Remove id from update data
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updateData } = validatedData
 
     const supabase = await createClient()

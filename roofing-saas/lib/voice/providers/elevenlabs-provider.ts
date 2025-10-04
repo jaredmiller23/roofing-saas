@@ -18,6 +18,7 @@ export class ElevenLabsProvider extends VoiceProvider {
 
   private conversation: Conversation | null = null
   private isConnected: boolean = false
+  private pendingResolvers: Map<string, (value: unknown) => void> = new Map()
 
   async initSession(config: VoiceProviderConfig): Promise<SessionResponse> {
     // Get signed URL from backend
@@ -63,11 +64,11 @@ export class ElevenLabsProvider extends VoiceProvider {
 
     try {
       // Map CRM functions to client tools (ElevenLabs will execute these client-side)
-      const clientTools: Record<string, (parameters: any) => Promise<any>> = {}
+      const clientTools: Record<string, (parameters: Record<string, unknown>) => Promise<unknown>> = {}
 
       if (sessionResponse.config?.tools) {
         for (const tool of sessionResponse.config.tools) {
-          clientTools[tool.name] = async (parameters: any) => {
+          clientTools[tool.name] = async (parameters: Record<string, unknown>) => {
             logger.info('Client tool called', { name: tool.name, parameters })
 
             // Trigger the function call handler
@@ -80,9 +81,8 @@ export class ElevenLabsProvider extends VoiceProvider {
 
             // Return a promise that will be resolved when sendFunctionResult is called
             return new Promise((resolve) => {
-              // Store resolver for later (this is a simplified approach)
-              // In production, you'd want a proper promise management system
-              ;(this as any)[`pending_${callId}`] = resolve
+              // Store resolver for later
+              this.pendingResolvers.set(callId, resolve)
             })
           }
         }
@@ -91,7 +91,7 @@ export class ElevenLabsProvider extends VoiceProvider {
       // Start conversation session using signed URL
       this.conversation = await Conversation.startSession({
         signedUrl: sessionResponse.ephemeral_token,
-        clientTools,
+        clientTools: clientTools as Record<string, (parameters: unknown) => string | number | void | Promise<string | number | void>>,
 
         onConnect: () => {
           logger.info('ElevenLabs conversation connected')
@@ -105,7 +105,7 @@ export class ElevenLabsProvider extends VoiceProvider {
           onDisconnected()
         },
 
-        onError: (error: any) => {
+        onError: (error: unknown) => {
           logger.error('ElevenLabs connection error', { error })
         },
       })
@@ -135,10 +135,10 @@ export class ElevenLabsProvider extends VoiceProvider {
     })
 
     // Resolve the pending promise for this call
-    const resolver = (this as any)[`pending_${result.call_id}`]
+    const resolver = this.pendingResolvers.get(result.call_id)
     if (resolver) {
       resolver(result.result)
-      delete (this as any)[`pending_${result.call_id}`]
+      this.pendingResolvers.delete(result.call_id)
     }
   }
 

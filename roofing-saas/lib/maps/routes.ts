@@ -28,11 +28,25 @@ export interface DirectionsResult {
       duration: { value: number; text: string }
       start_address: string
       end_address: string
-      steps: any[]
+      steps: unknown[]
     }[]
     overview_polyline: { points: string }
+    waypoint_order?: number[] // Present when optimize:true is used
   }[]
   status: string
+}
+
+/**
+ * Google Maps Distance Matrix API types
+ */
+interface DistanceMatrixElement {
+  status: string
+  distance?: { value: number; text: string }
+  duration?: { value: number; text: string }
+}
+
+interface DistanceMatrixRow {
+  elements: DistanceMatrixElement[]
 }
 
 /**
@@ -189,7 +203,7 @@ export async function optimizeRouteWithDirections(
     })
 
     // Extract optimized order from waypoint_order if available
-    const optimizedOrder: number[] = (route as any).waypoint_order || waypoints.map((_, i) => i)
+    const optimizedOrder: number[] = route.waypoint_order || waypoints.map((_, i) => i)
 
     const optimizedWaypoints = optimizedOrder.map(index => waypoints[index])
 
@@ -235,10 +249,10 @@ export async function getDistanceMatrix(
 
     // Extract distance matrix
     const matrix: number[][] = []
-    data.rows.forEach((row: any) => {
+    data.rows.forEach((row: DistanceMatrixRow) => {
       const distances: number[] = []
-      row.elements.forEach((element: any) => {
-        distances.push(element.status === 'OK' ? element.distance.value : Infinity)
+      row.elements.forEach((element: DistanceMatrixElement) => {
+        distances.push(element.status === 'OK' && element.distance ? element.distance.value : Infinity)
       })
       matrix.push(distances)
     })

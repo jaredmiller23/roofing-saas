@@ -21,7 +21,7 @@ export interface VoiceFunction {
   description: string
   parameters: {
     type: 'object'
-    properties: Record<string, any>
+    properties: Record<string, unknown>
     required?: string[]
   }
 }
@@ -36,7 +36,7 @@ export interface SessionResponse {
     instructions?: string
     voice?: string
     temperature?: number
-    turn_detection?: any
+    turn_detection?: unknown // OpenAI-specific config, structure varies
     tools?: VoiceFunction[]
   }
 }
@@ -50,12 +50,12 @@ export interface WebRTCConnectionConfig {
 export interface FunctionCallEvent {
   call_id: string
   name: string
-  parameters: Record<string, any>
+  parameters: Record<string, unknown>
 }
 
 export interface FunctionResultEvent {
   call_id: string
-  result: any
+  result: unknown
 }
 
 /**

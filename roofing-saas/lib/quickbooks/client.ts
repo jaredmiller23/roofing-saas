@@ -23,6 +23,7 @@ interface TokenResponse {
 // QB Customer entity
 export interface QBCustomer {
   Id?: string
+  SyncToken?: string
   DisplayName: string
   PrimaryEmailAddr?: {
     Address: string
@@ -83,6 +84,25 @@ export interface QBPayment {
   }>
 }
 
+// QB API Response Types
+interface QBCompanyInfoResponse {
+  CompanyInfo: Record<string, unknown>
+}
+
+interface QBQueryResponse<T> {
+  QueryResponse?: {
+    Customer?: T[]
+    Invoice?: T[]
+    Payment?: T[]
+  }
+}
+
+interface QBEntityResponse<T> {
+  Customer?: T
+  Invoice?: T
+  Payment?: T
+}
+
 /**
  * QuickBooks Online API Client
  */
@@ -136,7 +156,7 @@ export class QuickBooksClient {
    * Get company info
    */
   async getCompanyInfo() {
-    const result = await this.request<any>('GET', '/companyinfo/' + this.realmId)
+    const result = await this.request<QBCompanyInfoResponse>('GET', '/companyinfo/' + this.realmId)
     return result.CompanyInfo
   }
 
@@ -150,7 +170,7 @@ export class QuickBooksClient {
     }
     endpoint += ' MAXRESULTS 1000'
 
-    const result = await this.request<any>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBCustomer>>('GET', endpoint)
     return result.QueryResponse?.Customer || []
   }
 
@@ -158,24 +178,24 @@ export class QuickBooksClient {
    * Get customer by ID
    */
   async getCustomer(customerId: string): Promise<QBCustomer> {
-    const result = await this.request<any>('GET', `/customer/${customerId}`)
-    return result.Customer
+    const result = await this.request<QBEntityResponse<QBCustomer>>('GET', `/customer/${customerId}`)
+    return result.Customer!
   }
 
   /**
    * Create customer
    */
   async createCustomer(customer: QBCustomer): Promise<QBCustomer> {
-    const result = await this.request<any>('POST', '/customer', customer)
-    return result.Customer
+    const result = await this.request<QBEntityResponse<QBCustomer>>('POST', '/customer', customer)
+    return result.Customer!
   }
 
   /**
    * Update customer
    */
   async updateCustomer(customer: QBCustomer & { Id: string; SyncToken: string }): Promise<QBCustomer> {
-    const result = await this.request<any>('POST', '/customer', customer)
-    return result.Customer
+    const result = await this.request<QBEntityResponse<QBCustomer>>('POST', '/customer', customer)
+    return result.Customer!
   }
 
   /**
@@ -188,7 +208,7 @@ export class QuickBooksClient {
     }
     endpoint += ' MAXRESULTS 1000'
 
-    const result = await this.request<any>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBInvoice>>('GET', endpoint)
     return result.QueryResponse?.Invoice || []
   }
 
@@ -196,8 +216,8 @@ export class QuickBooksClient {
    * Create invoice
    */
   async createInvoice(invoice: QBInvoice): Promise<QBInvoice> {
-    const result = await this.request<any>('POST', '/invoice', invoice)
-    return result.Invoice
+    const result = await this.request<QBEntityResponse<QBInvoice>>('POST', '/invoice', invoice)
+    return result.Invoice!
   }
 
   /**
@@ -210,7 +230,7 @@ export class QuickBooksClient {
     }
     endpoint += ' MAXRESULTS 1000'
 
-    const result = await this.request<any>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBPayment>>('GET', endpoint)
     return result.QueryResponse?.Payment || []
   }
 
@@ -218,8 +238,8 @@ export class QuickBooksClient {
    * Create payment
    */
   async createPayment(payment: QBPayment): Promise<QBPayment> {
-    const result = await this.request<any>('POST', '/payment', payment)
-    return result.Payment
+    const result = await this.request<QBEntityResponse<QBPayment>>('POST', '/payment', payment)
+    return result.Payment!
   }
 }
 

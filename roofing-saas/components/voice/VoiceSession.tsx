@@ -13,6 +13,18 @@ interface VoiceSessionProps {
 type SessionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
 
 /**
+ * Browser API type extensions for mobile features
+ * These APIs may not have complete TypeScript definitions
+ */
+interface WakeLockSentinel {
+  release: () => Promise<void>
+}
+
+interface WindowWithWebkitAudio extends Window {
+  webkitAudioContext?: typeof AudioContext
+}
+
+/**
  * Detect if the device is mobile
  */
 function isMobileDevice(): boolean {
@@ -131,7 +143,7 @@ export function VoiceSession({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const dataChannelRef = useRef<RTCDataChannel | null>(null)
   const audioStreamRef = useRef<MediaStream | null>(null)
-  const wakeLockRef = useRef<any>(null) // WakeLockSentinel type not available in all TypeScript versions
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   /**
    * Initialize voice session
@@ -152,10 +164,13 @@ export function VoiceSession({
 
       // For iOS: Initialize Audio Context to ensure audio can play (iOS requires user gesture)
       if (isIOSDevice() && typeof window !== 'undefined') {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-        // Resume audio context if suspended (common on iOS)
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume()
+        const AudioContextConstructor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext
+        if (AudioContextConstructor) {
+          const audioContext = new AudioContextConstructor()
+          // Resume audio context if suspended (common on iOS)
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume()
+          }
         }
       }
 
@@ -248,8 +263,12 @@ export function VoiceSession({
         // Request wake lock on mobile to keep screen on during voice session
         if (isMobile && 'wakeLock' in navigator) {
           try {
-            wakeLockRef.current = await (navigator as any).wakeLock.request('screen')
-            console.log('[Mobile] Wake lock acquired - screen will stay on')
+            // Type assertion for experimental Wake Lock API
+            const wakeLock = await (navigator as { wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinel> } }).wakeLock?.request('screen')
+            if (wakeLock) {
+              wakeLockRef.current = wakeLock
+              console.log('[Mobile] Wake lock acquired - screen will stay on')
+            }
           } catch (err) {
             console.warn('[Mobile] Failed to acquire wake lock:', err)
           }

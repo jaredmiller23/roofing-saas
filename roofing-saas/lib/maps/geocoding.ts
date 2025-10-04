@@ -5,6 +5,15 @@
 
 import { logger } from '@/lib/logger'
 
+/**
+ * Google Maps API address component structure
+ */
+interface GoogleMapsAddressComponent {
+  long_name: string
+  short_name: string
+  types: string[]
+}
+
 export interface GeocodeResult {
   latitude: number
   longitude: number
@@ -58,7 +67,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult | n
 
     // Extract address components
     const components: GeocodeResult['address_components'] = {}
-    result.address_components?.forEach((component: any) => {
+    result.address_components?.forEach((component: GoogleMapsAddressComponent) => {
       if (component.types.includes('street_number')) {
         components.street_number = component.long_name
       }
@@ -126,7 +135,7 @@ export async function reverseGeocode(
     let country: string | undefined
     let postal_code: string | undefined
 
-    result.address_components?.forEach((component: any) => {
+    result.address_components?.forEach((component: GoogleMapsAddressComponent) => {
       if (component.types.includes('street_number') || component.types.includes('route')) {
         street_address = street_address
           ? `${street_address} ${component.long_name}`
