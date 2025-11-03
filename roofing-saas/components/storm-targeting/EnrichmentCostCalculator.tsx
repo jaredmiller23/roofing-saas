@@ -10,8 +10,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -159,7 +157,7 @@ export function EnrichmentCostCalculator({
           <Label htmlFor="provider">Enrichment Provider</Label>
           <Select
             value={selectedProvider}
-            onValueChange={(value) => handleProviderChange(value as EnrichmentProvider)}
+            onValueChange={(value: string) => handleProviderChange(value as EnrichmentProvider)}
           >
             <SelectTrigger id="provider">
               <SelectValue />

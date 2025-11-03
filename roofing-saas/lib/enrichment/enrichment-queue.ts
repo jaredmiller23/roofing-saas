@@ -18,7 +18,6 @@ import type {
   EnrichmentOptions,
   EnrichmentJobStatus,
   EnrichmentError,
-  CostEstimate,
 } from './types';
 import {
   generateAddressHash,
@@ -32,11 +31,11 @@ import {
 // =====================================================
 
 export class EnrichmentQueueManager {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: Awaited<ReturnType<typeof createClient>>;
   private batchDataClient?: BatchDataClient;
   private tracerfyClient?: TracerfyClient;
 
-  constructor(supabase: ReturnType<typeof createClient>) {
+  constructor(supabase: Awaited<ReturnType<typeof createClient>>) {
     this.supabase = supabase;
   }
 
@@ -300,7 +299,7 @@ export class EnrichmentQueueManager {
     }
 
     // Transform cached data to PropertyEnrichmentResult format
-    const results: PropertyEnrichmentResult[] = cached.map(item => ({
+    const results: PropertyEnrichmentResult[] = cached.map((item: any) => ({
       success: true,
       provider: item.provider as EnrichmentProvider,
       provider_id: item.provider_id,
@@ -617,7 +616,7 @@ export class EnrichmentQueueManager {
 // =====================================================
 
 export function createEnrichmentQueue(
-  supabase: ReturnType<typeof createClient>
+  supabase: Awaited<ReturnType<typeof createClient>>
 ): EnrichmentQueueManager {
   return new EnrichmentQueueManager(supabase);
 }
