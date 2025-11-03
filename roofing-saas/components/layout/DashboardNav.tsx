@@ -36,6 +36,8 @@ const navLinks: NavLink[] = [
   { href: '/surveys', label: 'Surveys' },
   { href: '/projects', label: 'Projects' },
   { href: '/territories', label: 'Territories' },
+  { href: '/storm-targeting', label: 'Storm Targeting' },
+  { href: '/storm-targeting/leads', label: 'Storm Leads' },
 ]
 
 export function DashboardNav({ userEmail }: DashboardNavProps) {

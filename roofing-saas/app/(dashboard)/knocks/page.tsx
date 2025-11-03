@@ -11,8 +11,8 @@ interface Knock {
   created_at: string
   type: string
   subject: string
-  description: string
-  contact_id: string
+  content: string
+  contact_id: string | null
   contacts: {
     first_name: string
     last_name: string
@@ -20,7 +20,7 @@ interface Knock {
     address_city: string
     address_state: string
     address_zip: string
-  }[]
+  } | null
 }
 
 /**
@@ -47,14 +47,14 @@ export default async function KnocksPage() {
   const supabase = await createClient()
 
   // Get all door knock activities
-  const { data: knocks, error } = await supabase
+  const { data, error } = await supabase
     .from('activities')
     .select(`
       id,
       created_at,
       type,
       subject,
-      description,
+      content,
       contact_id,
       contacts (
         first_name,
@@ -69,6 +69,9 @@ export default async function KnocksPage() {
     .eq('type', 'door_knock')
     .order('created_at', { ascending: false })
     .limit(100)
+
+  // Type assertion: Supabase returns contacts as array, but it's actually a single object for many-to-one
+  const knocks = data as unknown as Knock[] | null
 
   if (error) {
     console.error('Error fetching knocks:', error)
@@ -178,51 +181,63 @@ export default async function KnocksPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {knocks.map((knock: Knock) => (
-                  <div
-                    key={knock.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-gray-900">
-                            {knock.contacts?.[0]?.first_name} {knock.contacts?.[0]?.last_name}
-                          </h3>
-                          <span className="text-sm text-gray-500">
-                            {new Date(knock.created_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </span>
+                {knocks.map((knock: Knock) => {
+                  const hasContact = knock.contact_id && knock.contacts
+                  const knockElement = (
+                    <div
+                      key={knock.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-gray-900">
+                              {knock.contacts?.first_name} {knock.contacts?.last_name}
+                              {!hasContact && 'No contact linked'}
+                            </h3>
+                            <span className="text-sm text-gray-500">
+                              {new Date(knock.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+
+                          {knock.contacts && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {knock.contacts.address_street}
+                              {knock.contacts.address_city && `, ${knock.contacts.address_city}`}
+                              {knock.contacts.address_state && `, ${knock.contacts.address_state}`}
+                              {knock.contacts.address_zip && ` ${knock.contacts.address_zip}`}
+                            </p>
+                          )}
+
+                          {knock.subject && (
+                            <p className="text-sm font-medium text-gray-700 mt-2">
+                              {knock.subject}
+                            </p>
+                          )}
+
+                          {knock.content && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {knock.content}
+                            </p>
+                          )}
                         </div>
-
-                        {knock.contacts?.[0] && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {knock.contacts[0].address_street}
-                            {knock.contacts[0].address_city && `, ${knock.contacts[0].address_city}`}
-                            {knock.contacts[0].address_state && `, ${knock.contacts[0].address_state}`}
-                            {knock.contacts[0].address_zip && ` ${knock.contacts[0].address_zip}`}
-                          </p>
-                        )}
-
-                        {knock.subject && (
-                          <p className="text-sm font-medium text-gray-700 mt-2">
-                            {knock.subject}
-                          </p>
-                        )}
-
-                        {knock.description && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {knock.description}
-                          </p>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+
+                  return hasContact ? (
+                    <Link key={knock.id} href={`/contacts/${knock.contact_id}`}>
+                      {knockElement}
+                    </Link>
+                  ) : (
+                    knockElement
+                  )
+                })}
               </div>
             )}
           </CardContent>

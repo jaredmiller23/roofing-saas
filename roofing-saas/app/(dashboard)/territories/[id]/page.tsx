@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { TerritoryMap } from '@/components/territories/TerritoryMap'
+import { TerritoryMap } from '@/components/territories/TerritoryMapWrapper'
+import { HousePinDropper } from '@/components/territories/HousePinDropper'
+import { Button } from '@/components/ui/button'
 
 interface Territory {
   id: string
@@ -35,6 +37,8 @@ export default function TerritoryDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [map, setMap] = useState<any>(null)
+  const [pinDropEnabled, setPinDropEnabled] = useState(false)
 
   // Fetch territory data
   useEffect(() => {
@@ -80,6 +84,12 @@ export default function TerritoryDetailPage() {
       setDeleteConfirm(false)
     }
   }
+
+  // Memoize territories array to prevent new array reference on every render
+  // This prevents TerritoryMap from re-rendering unnecessarily
+  const territoriesArray = useMemo(() => {
+    return territory ? [territory] : []
+  }, [territory])
 
   if (loading) {
     return (
@@ -212,12 +222,43 @@ export default function TerritoryDetailPage() {
         {/* Map Visualization */}
         {territory.boundary_data && (
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Territory Map</h2>
-            <TerritoryMap
-              territories={[territory]}
-              selectedTerritory={territory}
-              height="600px"
-            />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Territory Map</h2>
+
+              {/* Pin Dropping Toggle */}
+              <Button
+                onClick={() => setPinDropEnabled(!pinDropEnabled)}
+                variant={pinDropEnabled ? 'default' : 'outline'}
+                className="gap-2"
+              >
+                <span className="text-lg">📍</span>
+                {pinDropEnabled ? 'Stop Dropping Pins' : 'Drop Pins on Map'}
+              </Button>
+            </div>
+
+            <div className="relative">
+              <TerritoryMap
+                key={`territory-map-${territory.id}`}
+                territories={territoriesArray}
+                selectedTerritory={territory}
+                height="600px"
+                onMapReady={setMap}
+                disableTerritoryInteractions={pinDropEnabled}
+              />
+
+              {/* Pin Dropper Overlay */}
+              <HousePinDropper
+                key={`pin-dropper-${territory.id}`}
+                map={map}
+                territoryId={territory.id}
+                enabled={pinDropEnabled}
+                onPinCreated={(pin) => {
+                  console.log('Pin created:', pin)
+                  // Auto-disable pin mode after creating a pin
+                  // setPinDropEnabled(false)
+                }}
+              />
+            </div>
           </div>
         )}
       </div>

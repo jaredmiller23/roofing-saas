@@ -2,8 +2,10 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Mic, MicOff, PhoneOff, Loader2 } from 'lucide-react'
+import { createVoiceProvider, VoiceProviderType, VoiceProvider, FunctionCallEvent, VoiceFunction } from '@/lib/voice/providers'
 
 interface VoiceSessionProps {
+  provider?: VoiceProviderType
   contactId?: string
   projectId?: string
   onSessionEnd?: () => void
@@ -54,33 +56,30 @@ function getAudioConstraints(): MediaStreamConstraints['audio'] {
   const isMobile = isMobileDevice()
   const isIOS = isIOSDevice()
 
+  // Use basic constraints for maximum compatibility
+  // Browsers will use the closest supported values
   if (isIOS) {
-    // iOS Safari requires specific sample rates (8000, 16000, 24000, 48000)
-    // 24kHz is optimal for OpenAI while being iOS-compatible
+    // iOS Safari - be very conservative
     return {
-      channelCount: 1,
-      sampleRate: 24000, // iOS-compatible, OpenAI-optimized
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: true, // Important for mobile environments
+      autoGainControl: true,
     }
   } else if (isMobile) {
     // Android and other mobile devices
     return {
-      channelCount: 1,
-      sampleRate: 24000,
       echoCancellation: true,
       noiseSuppression: true,
       autoGainControl: true,
     }
   } else {
-    // Desktop devices - can use ideal constraints
+    // Desktop devices - add optional ideal constraints
     return {
-      channelCount: 1,
-      sampleRate: { ideal: 24000 }, // Use ideal for flexibility
       echoCancellation: true,
       noiseSuppression: true,
-      autoGainControl: false, // Desktop usually has better audio hardware
+      autoGainControl: true,
+      sampleRate: { ideal: 24000 },
+      channelCount: { ideal: 1 },
     }
   }
 }
@@ -128,6 +127,7 @@ interface SessionConfig {
  * - Manages session lifecycle
  */
 export function VoiceSession({
+  provider = 'openai',
   contactId,
   projectId,
   onSessionEnd,
@@ -138,563 +138,215 @@ export function VoiceSession({
   const [isMuted, setIsMuted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([])
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // WebRTC refs
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
-  const dataChannelRef = useRef<RTCDataChannel | null>(null)
+  // Provider and stream refs
+  const voiceProviderRef = useRef<VoiceProvider | null>(null)
   const audioStreamRef = useRef<MediaStream | null>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   /**
-   * Initialize voice session
+   * Initialize voice session using selected provider
    * 1. Request microphone permission
-   * 2. Create session with backend
-   * 3. Establish WebRTC connection
+   * 2. Create provider instance
+   * 3. Initialize session and establish connection
    */
   const startSession = useCallback(async () => {
     try {
       setStatus('connecting')
+      setErrorMessage(null) // Clear any previous errors
 
-      // Step 1: Get microphone access with device-optimized constraints
-      const audioConstraints = getAudioConstraints()
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: audioConstraints
-      })
+      // Step 1: Get microphone access with progressive fallback
+      let stream: MediaStream | null = null
+
+      // Try #1: Device-optimized constraints
+      try {
+        const audioConstraints = getAudioConstraints()
+        console.log('Trying audio constraints:', audioConstraints)
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: audioConstraints
+        })
+      } catch (err) {
+        console.warn('Failed with optimized constraints, trying basic...', err)
+
+        // Try #2: Just echo cancellation
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true }
+          })
+        } catch (err2) {
+          console.warn('Failed with echo cancellation, trying raw audio...', err2)
+
+          // Try #3: No constraints at all - just get any audio
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+          })
+        }
+      }
+
+      if (!stream) {
+        throw new Error('Failed to access microphone')
+      }
+
       audioStreamRef.current = stream
+      console.log('✓ Microphone access granted')
 
-      // For iOS: Initialize Audio Context to ensure audio can play (iOS requires user gesture)
+      // For iOS: Initialize Audio Context to ensure audio can play
       if (isIOSDevice() && typeof window !== 'undefined') {
         const AudioContextConstructor = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext
         if (AudioContextConstructor) {
           const audioContext = new AudioContextConstructor()
-          // Resume audio context if suspended (common on iOS)
           if (audioContext.state === 'suspended') {
             await audioContext.resume()
           }
         }
       }
 
-      // Step 2: Create session and get ephemeral token
-      const sessionResponse = await fetch('/api/voice/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contact_id: contactId,
-          project_id: projectId,
-          context: {
-            timestamp: new Date().toISOString(),
+      // Step 2: Create voice provider instance
+      const voiceProvider = createVoiceProvider(provider)
+      voiceProviderRef.current = voiceProvider
+
+      // Step 3: Define CRM tools for the provider
+      const crmTools: VoiceFunction[] = [
+        {
+          type: 'function' as const,
+          name: 'create_contact',
+          description: 'Create a new contact (lead/customer) in the CRM',
+          parameters: {
+            type: 'object' as const,
+            properties: {
+              first_name: { type: 'string' },
+              last_name: { type: 'string' },
+              phone: { type: 'string' },
+              address: { type: 'string' },
+            },
+            required: ['first_name', 'last_name']
           }
-        })
-      })
-
-      if (!sessionResponse.ok) {
-        throw new Error('Failed to create voice session')
-      }
-
-      const responseData = await sessionResponse.json()
-      const { session_id, ephemeral_token } = responseData.data
-      console.log('Received session from backend:', {
-        session_id,
-        tokenType: typeof ephemeral_token,
-        tokenLength: ephemeral_token?.length,
-        tokenStart: ephemeral_token?.substring(0, 30) + '...',
-        fullToken: ephemeral_token // DEBUG: show full token
-      })
-      setSessionId(session_id)
-
-      // Step 3: Create RTCPeerConnection with mobile-optimized configuration
-      const isMobile = isMobileDevice()
-      const pc = new RTCPeerConnection({
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          // Additional STUN servers for better mobile connectivity
-          { urls: 'stun:stun1.l.google.com:19302' },
-        ],
-        // Mobile-specific configuration for cellular networks
-        iceTransportPolicy: isMobile ? 'all' : 'all', // Use all candidates (relay and direct)
-        bundlePolicy: 'max-bundle', // Minimize port usage (better for mobile)
-        rtcpMuxPolicy: 'require', // Multiplex RTP and RTCP (saves bandwidth)
-      })
-      peerConnectionRef.current = pc
-
-      // Monitor connection quality for mobile networks
-      if (isMobile) {
-        pc.addEventListener('iceconnectionstatechange', () => {
-          console.log('[Mobile] ICE connection state:', pc.iceConnectionState)
-          if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-            console.warn('[Mobile] Connection quality degraded, consider reconnection')
-          }
-        })
-      }
-
-      // Step 4: Add remote audio track handler (before other setup)
-      pc.addEventListener('track', (event) => {
-        const remoteAudio = new Audio()
-        remoteAudio.srcObject = event.streams[0]
-
-        // Mobile-specific audio configuration
-        if (isMobile) {
-          remoteAudio.autoplay = true
-          remoteAudio.setAttribute('playsinline', 'true') // Critical for iOS to prevent fullscreen
-          // Set volume to max for better mobile speaker output
-          remoteAudio.volume = 1.0
-        }
-
-        remoteAudio.play().catch(err => {
-          console.error('Error playing remote audio:', err)
-          // iOS may require user interaction - the startSession click gesture should cover this
-        })
-      })
-
-      // Step 5: Add microphone track to peer connection (BEFORE data channel!)
-      stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream)
-      })
-
-      // Step 6: Create data channel for events
-      const dc = pc.createDataChannel('oai-events')
-      dataChannelRef.current = dc
-
-      // Setup data channel event handlers
-      dc.addEventListener('open', async () => {
-        console.log('Data channel opened')
-        setStatus('connected')
-
-        // Request wake lock on mobile to keep screen on during voice session
-        if (isMobile && 'wakeLock' in navigator) {
-          try {
-            // Type assertion for experimental Wake Lock API
-            const wakeLock = await (navigator as { wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinel> } }).wakeLock?.request('screen')
-            if (wakeLock) {
-              wakeLockRef.current = wakeLock
-              console.log('[Mobile] Wake lock acquired - screen will stay on')
-            }
-          } catch (err) {
-            console.warn('[Mobile] Failed to acquire wake lock:', err)
-          }
-        }
-
-        // Configure session with CRM function calling
-        const config: SessionConfig = {
-          instructions: `You are a helpful AI assistant for a roofing field team with full conversation context awareness.
-
-**Context & Memory:**
-- You maintain full conversation context throughout our interaction
-- Reference previous messages naturally (e.g., "that contact", "the address you mentioned")
-- Ask contextual follow-up questions (e.g., "Would you like to log a knock there too?")
-- Remember entities from earlier turns (contacts, addresses, projects)
-- Use pronouns when context is clear instead of repeating names
-
-**Your Capabilities:**
-
-CRM Actions:
-- Create new contacts (leads/customers)
-- Add notes to contacts or projects
-- Search for existing contacts by name or address
-- Log door knock activities with disposition (interested, not_interested, not_home, callback, appointment)
-- Update contact pipeline stage (new, contacted, qualified, proposal, negotiation, won, lost)
-
-Communication:
-- Send SMS messages (e.g., "Send a text to 5551234567 saying 'Running 10 minutes late'")
-- Initiate phone calls (e.g., "Call Sarah Johnson at 5559876543")
-- Always confirm SMS content and phone calls before executing
-
-Intelligence Features:
-- Get weather forecasts for roofing work planning
-- Search roofing knowledge base for warranties, materials, best practices
-- Search the web for current market intelligence
-
-**Roofing Industry Expertise:**
-
-You understand roofing terminology:
-- Roof Types: Shingle (3-tab, architectural, luxury), metal (standing seam, corrugated), tile (clay, concrete), flat/low-slope, TPO, EPDM, modified bitumen
-- Components: Ridge vent, soffit, fascia, drip edge, flashing (valley, step, counter), underlayment (felt, synthetic), ice & water shield, decking/sheathing
-- Materials: Asphalt shingles (GAF, Owens Corning, CertainTeed), copper, aluminum, galvanized steel
-- Issues: Storm damage (hail, wind), leaks, ice dams, ventilation problems, wear & tear
-- Installation: Tear-off, overlay, new construction, repairs, maintenance
-- Safety: OSHA compliance, fall protection, job site safety
-- Measurements: Square (100 sq ft), pitch/slope (e.g., 6/12), linear feet, bundles
-
-Common Scenarios:
-- Storm damage inspections: Note hail size, wind damage, insurance claim potential
-- Leak investigations: Check flashing, penetrations, valley issues
-- Maintenance: Gutter cleaning, shingle replacement, caulking
-- Estimates: Measure square footage, note pitch, accessibility, materials needed
-
-**Important Guidelines:**
-- Read phone numbers digit-by-digit (e.g., "4-2-3-5-5-5-5-5-5-5" not "four hundred twenty-three")
-- Be concise and professional
-- Ask clarifying questions when context is ambiguous
-- Always confirm actions before executing
-- Suggest related actions based on conversation context
-- Use industry terminology when appropriate
-- For technical questions, search the roofing knowledge base first
-
-**Multi-turn Examples:**
-User: "Create a contact named Sarah Johnson at 555-9876"
-You: [creates contact] "Done! Sarah Johnson is now in the system. Would you like to add any notes about her?"
-
-User: "Log a knock at 123 Oak Street, they were interested"
-You: [logs knock] "Recorded! Should I create a contact for this address or schedule a follow-up?"
-
-User: "Customer asking about GAF Timberline warranty"
-You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited warranty. The warranty covers manufacturing defects and offers wind resistance up to 130 MPH with proper installation. Would you like more details?"`,
-          voice: 'alloy',
-          temperature: 0.7,
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500
-          },
-          input_audio_transcription: {
-            model: 'whisper-1'
-          },
-          tools: [
-            {
-              type: 'function',
-              name: 'create_contact',
-              description: 'Create a new contact (lead/customer) in the CRM',
-              parameters: {
-                type: 'object',
-                properties: {
-                  first_name: { type: 'string' },
-                  last_name: { type: 'string' },
-                  phone: { type: 'string' },
-                  address: { type: 'string' },
-                  notes: { type: 'string' }
-                },
-                required: ['first_name', 'last_name']
-              }
-            },
-            {
-              type: 'function',
-              name: 'add_note',
-              description: 'Add a note to an existing contact or project',
-              parameters: {
-                type: 'object',
-                properties: {
-                  entity_type: {
-                    type: 'string',
-                    enum: ['contact', 'project']
-                  },
-                  entity_id: { type: 'string' },
-                  note: { type: 'string' }
-                },
-                required: ['entity_type', 'entity_id', 'note']
-              }
-            },
-            {
-              type: 'function',
-              name: 'search_contact',
-              description: 'Search for a contact by name or address',
-              parameters: {
-                type: 'object',
-                properties: {
-                  query: { type: 'string' }
-                },
-                required: ['query']
-              }
-            },
-            {
-              type: 'function',
-              name: 'log_knock',
-              description: 'Log a door knock activity at an address',
-              parameters: {
-                type: 'object',
-                properties: {
-                  address: { type: 'string' },
-                  disposition: {
-                    type: 'string',
-                    enum: ['interested', 'not_interested', 'not_home', 'callback', 'appointment']
-                  },
-                  notes: { type: 'string' },
-                  contact_id: { type: 'string', description: 'Optional contact ID if known' }
-                },
-                required: ['address', 'disposition']
-              }
-            },
-            {
-              type: 'function',
-              name: 'update_contact_stage',
-              description: 'Update the pipeline stage of a contact',
-              parameters: {
-                type: 'object',
-                properties: {
-                  contact_id: { type: 'string' },
-                  stage: {
-                    type: 'string',
-                    enum: ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost']
-                  }
-                },
-                required: ['contact_id', 'stage']
-              }
-            },
-            {
-              type: 'function',
-              name: 'send_sms',
-              description: 'Send a text message (SMS) to a contact or phone number',
-              parameters: {
-                type: 'object',
-                properties: {
-                  to: {
-                    type: 'string',
-                    description: 'Phone number to send to (10 digits, e.g., 5551234567)'
-                  },
-                  body: {
-                    type: 'string',
-                    description: 'The text message to send (max 1600 characters)'
-                  },
-                  contact_id: {
-                    type: 'string',
-                    description: 'Optional contact ID to associate this SMS with'
-                  }
-                },
-                required: ['to', 'body']
-              }
-            },
-            {
-              type: 'function',
-              name: 'make_call',
-              description: 'Initiate a phone call to a contact or phone number',
-              parameters: {
-                type: 'object',
-                properties: {
-                  to: {
-                    type: 'string',
-                    description: 'Phone number to call (10 digits, e.g., 5551234567)'
-                  },
-                  contact_id: {
-                    type: 'string',
-                    description: 'Optional contact ID to associate this call with'
-                  },
-                  record: {
-                    type: 'boolean',
-                    description: 'Whether to record the call (default: true)'
-                  }
-                },
-                required: ['to']
-              }
-            },
-            {
-              type: 'function',
-              name: 'get_weather',
-              description: 'Get weather forecast for a location to plan roofing work',
-              parameters: {
-                type: 'object',
-                properties: {
-                  location: {
-                    type: 'string',
-                    description: 'Location (city, state, or zip code). Defaults to Nashville, TN'
-                  },
-                  days: {
-                    type: 'number',
-                    description: 'Number of forecast days (1-7). Default: 3'
-                  }
-                },
-                required: []
-              }
-            },
-            {
-              type: 'function',
-              name: 'search_roofing_knowledge',
-              description: 'Search roofing knowledge base for technical information, best practices, materials, warranties, and installation techniques',
-              parameters: {
-                type: 'object',
-                properties: {
-                  query: {
-                    type: 'string',
-                    description: 'What to search for (e.g., "GAF Timberline warranty", "ice dam prevention", "metal roof installation")'
-                  }
-                },
-                required: ['query']
-              }
-            },
-            {
-              type: 'function',
-              name: 'search_web',
-              description: 'Search the web for current information like pricing, availability, weather alerts, or competitor research',
-              parameters: {
-                type: 'object',
-                properties: {
-                  query: {
-                    type: 'string',
-                    description: 'What to search for (e.g., "copper flashing price", "storm warnings Nashville", "metal roofing trends 2025")'
-                  }
-                },
-                required: ['query']
-              }
-            }
-          ]
-        }
-
-        dc.send(JSON.stringify({
-          type: 'session.update',
-          session: config
-        }))
-
-        // Send initial greeting trigger with CRM context
-        setTimeout(async () => {
-          let contextMessage = 'Hello'
-
-          // Inject contact context if available
-          if (contactId) {
-            try {
-              const contactRes = await fetch(`/api/contacts/${contactId}`)
-              if (contactRes.ok) {
-                const contactData = await contactRes.json()
-                const contact = contactData.contact
-                contextMessage = `Hello. I'm currently working with ${contact.first_name} ${contact.last_name}${contact.phone ? ` (${contact.phone})` : ''}${contact.address ? ` at ${contact.address}` : ''}.`
-              }
-            } catch (err) {
-              console.error('Failed to fetch contact context:', err)
-            }
-          }
-
-          // Inject project context if available
-          if (projectId) {
-            try {
-              const projectRes = await fetch(`/api/projects/${projectId}`)
-              if (projectRes.ok) {
-                const projectData = await projectRes.json()
-                const project = projectData.project
-                contextMessage = `Hello. I'm currently working on project: ${project.name}${project.status ? ` (${project.status})` : ''}.`
-              }
-            } catch (err) {
-              console.error('Failed to fetch project context:', err)
-            }
-          }
-
-          dc.send(JSON.stringify({
-            type: 'conversation.item.create',
-            item: {
-              type: 'message',
-              role: 'user',
-              content: [{
-                type: 'input_text',
-                text: contextMessage
-              }]
-            }
-          }))
-
-          // Trigger response
-          dc.send(JSON.stringify({
-            type: 'response.create'
-          }))
-        }, 100) // Small delay to ensure session is ready
-      })
-
-      dc.addEventListener('message', handleDataChannelMessage)
-      dc.addEventListener('close', () => {
-        console.log('Data channel closed')
-        setStatus('disconnected')
-      })
-
-      // Step 7: Create offer and set local description
-      await pc.setLocalDescription()
-
-      // Step 8: Send offer to OpenAI Realtime API
-      console.log('Connecting to OpenAI Realtime API...', {
-        endpoint: 'https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17',
-        hasToken: !!ephemeral_token,
-        hasSdp: !!pc.localDescription?.sdp
-      })
-
-      const sdpResponse = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${ephemeral_token}`,
-          'Content-Type': 'application/sdp'
         },
-        body: pc.localDescription?.sdp
+        {
+          type: 'function' as const,
+          name: 'search_contact',
+          description: 'Search for a contact by name or address',
+          parameters: {
+            type: 'object' as const,
+            properties: {
+              query: { type: 'string' }
+            },
+            required: ['query']
+          }
+        },
+        {
+          type: 'function' as const,
+          name: 'add_note',
+          description: 'Add a note to an existing contact or project',
+          parameters: {
+            type: 'object' as const,
+            properties: {
+              entity_id: { type: 'string' },
+              note: { type: 'string' }
+            },
+            required: ['entity_id', 'note']
+          }
+        },
+        {
+          type: 'function' as const,
+          name: 'log_knock',
+          description: 'Log a door knock activity at an address',
+          parameters: {
+            type: 'object' as const,
+            properties: {
+              address: { type: 'string' },
+              disposition: {
+                type: 'string',
+                enum: ['interested', 'not_interested', 'not_home']
+              }
+            },
+            required: ['address', 'disposition']
+          }
+        },
+        {
+          type: 'function' as const,
+          name: 'update_contact_stage',
+          description: 'Update the pipeline stage of a contact',
+          parameters: {
+            type: 'object' as const,
+            properties: {
+              contact_id: { type: 'string' },
+              stage: {
+                type: 'string',
+                enum: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
+              }
+            },
+            required: ['contact_id', 'stage']
+          }
+        }
+      ]
+
+      // Step 4: Initialize session with provider
+      const sessionResponse = await voiceProvider.initSession({
+        provider,
+        contactId,
+        projectId,
+        instructions: undefined, // Use provider defaults
+        voice: undefined,
+        temperature: undefined,
+        tools: crmTools,
       })
 
-      if (!sdpResponse.ok) {
-        const errorText = await sdpResponse.text()
-        console.error('OpenAI Realtime API error:', {
-          status: sdpResponse.status,
-          statusText: sdpResponse.statusText,
-          body: errorText
-        })
-        throw new Error(`Failed to connect to OpenAI Realtime API: ${sdpResponse.status} ${errorText}`)
-      }
+      setSessionId(sessionResponse.session_id)
 
-      // Step 9: Set remote description from answer
-      const answer = {
-        type: 'answer' as RTCSdpType,
-        sdp: await sdpResponse.text()
-      }
-      await pc.setRemoteDescription(answer)
+      // Step 4: Establish WebRTC connection with provider
+      const isMobile = isMobileDevice()
+      await voiceProvider.establishConnection(
+        sessionResponse,
+        stream,
+        (event: FunctionCallEvent) => {
+          // Handle function calls
+          executeCRMFunction(event.name, event.parameters, event.call_id)
+        },
+        async () => {
+          // On connected
+          console.log(`${provider} voice assistant connected`)
+          setStatus('connected')
 
-      console.log('WebRTC connection established')
+          // Request wake lock on mobile
+          if (isMobile && 'wakeLock' in navigator) {
+            try {
+              const wakeLock = await (navigator as { wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinel> } }).wakeLock?.request('screen')
+              if (wakeLock) {
+                wakeLockRef.current = wakeLock
+                console.log('[Mobile] Wake lock acquired')
+              }
+            } catch (err) {
+              console.warn('[Mobile] Failed to acquire wake lock:', err)
+            }
+          }
+        },
+        () => {
+          // On disconnected
+          console.log(`${provider} voice assistant disconnected`)
+          setStatus('disconnected')
+        }
+      )
+
+      console.log(`${provider} voice session established`)
     } catch (error) {
-      console.error('Failed to start voice session:', error)
+      const err = error as Error
+      console.error('Failed to start voice session:', err)
       setStatus('error')
-      onError?.(error as Error)
+      setErrorMessage(err.message)
+      onError?.(err)
       cleanup()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId, projectId, onError])
-  // Note: cleanup and handleDataChannelMessage are stable refs, intentionally excluded
+  }, [provider, contactId, projectId, onError])
+  // Note: cleanup and executeCRMFunction are stable refs, intentionally excluded
+
 
   /**
-   * Handle messages from OpenAI via data channel
+   * Execute CRM function and send result back to provider
    */
-  const handleDataChannelMessage = useCallback((event: MessageEvent) => {
-    try {
-      const message = JSON.parse(event.data)
-      console.log('Received message:', message.type)
-
-      // Track user transcription
-      if (message.type === 'conversation.item.input_audio_transcription.completed') {
-        const userMessage: ConversationMessage = {
-          id: message.item_id || Date.now().toString(),
-          role: 'user',
-          content: message.transcript || '',
-          timestamp: new Date()
-        }
-        setConversationHistory(prev => [...prev, userMessage])
-      }
-
-      // Track assistant response transcript
-      if (message.type === 'response.audio_transcript.done') {
-        const assistantMessage: ConversationMessage = {
-          id: message.item_id || Date.now().toString(),
-          role: 'assistant',
-          content: message.transcript || '',
-          timestamp: new Date()
-        }
-        setConversationHistory(prev => [...prev, assistantMessage])
-      }
-
-      // Handle function calls
-      if (message.type === 'response.function_call_arguments.done') {
-        const { name, call_id, arguments: args } = message
-
-        // Track function call in conversation
-        const functionMessage: ConversationMessage = {
-          id: call_id || Date.now().toString(),
-          role: 'system',
-          content: `Executing: ${name}`,
-          timestamp: new Date(),
-          functionCall: {
-            name,
-            parameters: JSON.parse(args)
-          }
-        }
-        setConversationHistory(prev => [...prev, functionMessage])
-
-        executeCRMFunction(name, JSON.parse(args), call_id)
-      }
-    } catch (error) {
-      console.error('Error handling data channel message:', error)
-    }
-  }, [])
-
-  /**
-   * Execute CRM function and send result back to OpenAI
-   */
-  const executeCRMFunction = async (
+  const executeCRMFunction = useCallback(async (
     functionName: string,
     parameters: Record<string, unknown>,
     callId: string
@@ -702,11 +354,11 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
     try {
       console.log(`Executing function: ${functionName}`, parameters)
 
-      let result: unknown
+      let apiResult: unknown
 
       switch (functionName) {
         case 'create_contact':
-          result = await fetch('/api/contacts', {
+          apiResult = await fetch('/api/contacts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(parameters)
@@ -714,7 +366,7 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'add_note':
-          result = await fetch('/api/activities', {
+          apiResult = await fetch('/api/activities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -725,12 +377,12 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'search_contact':
-          result = await fetch(`/api/contacts?search=${encodeURIComponent(parameters.query as string)}`)
+          apiResult = await fetch(`/api/contacts?search=${encodeURIComponent(parameters.query as string)}`)
             .then(r => r.json())
           break
 
         case 'log_knock':
-          result = await fetch('/api/knocks', {
+          apiResult = await fetch('/api/knocks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -738,8 +390,6 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
               disposition: parameters.disposition,
               notes: parameters.notes,
               contact_id: parameters.contact_id,
-              // Use approximate coordinates if address geocoding not available
-              // In production, you'd geocode the address
               latitude: 0,
               longitude: 0
             })
@@ -747,7 +397,7 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'update_contact_stage':
-          result = await fetch(`/api/contacts/${parameters.contact_id}`, {
+          apiResult = await fetch(`/api/contacts/${parameters.contact_id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -757,7 +407,7 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'send_sms':
-          result = await fetch('/api/sms/send', {
+          apiResult = await fetch('/api/sms/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -769,19 +419,19 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'make_call':
-          result = await fetch('/api/voice/call', {
+          apiResult = await fetch('/api/voice/call', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               to: parameters.to,
               contactId: parameters.contact_id,
-              record: parameters.record !== false // Default to true
+              record: parameters.record !== false
             })
           }).then(r => r.json())
           break
 
         case 'get_weather':
-          result = await fetch('/api/voice/weather', {
+          apiResult = await fetch('/api/voice/weather', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -792,7 +442,7 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'search_roofing_knowledge':
-          result = await fetch('/api/voice/search-rag', {
+          apiResult = await fetch('/api/voice/search-rag', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -802,7 +452,7 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           break
 
         case 'search_web':
-          result = await fetch('/api/voice/search-web', {
+          apiResult = await fetch('/api/voice/search-web', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -815,43 +465,31 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           throw new Error(`Unknown function: ${functionName}`)
       }
 
-      // Send result back to OpenAI
-      if (dataChannelRef.current) {
-        dataChannelRef.current.send(JSON.stringify({
-          type: 'conversation.item.create',
-          item: {
-            type: 'function_call_output',
-            call_id: callId,
-            output: JSON.stringify(result)
+      // Send result back to provider
+      if (voiceProviderRef.current) {
+        voiceProviderRef.current.sendFunctionResult({
+          call_id: callId,
+          result: {
+            success: true,
+            data: apiResult as Record<string, unknown> | Array<Record<string, unknown>> | string | number | boolean | null
           }
-        }))
-
-        // Trigger OpenAI to generate response based on function result
-        dataChannelRef.current.send(JSON.stringify({
-          type: 'response.create'
-        }))
+        })
       }
     } catch (error) {
       console.error(`Error executing ${functionName}:`, error)
 
-      // Send error back to OpenAI
-      if (dataChannelRef.current) {
-        dataChannelRef.current.send(JSON.stringify({
-          type: 'conversation.item.create',
-          item: {
-            type: 'function_call_output',
-            call_id: callId,
-            output: JSON.stringify({ error: (error as Error).message })
+      // Send error back to provider
+      if (voiceProviderRef.current) {
+        voiceProviderRef.current.sendFunctionResult({
+          call_id: callId,
+          result: {
+            success: false,
+            error: (error as Error).message
           }
-        }))
-
-        // Trigger OpenAI to generate response even for errors
-        dataChannelRef.current.send(JSON.stringify({
-          type: 'response.create'
-        }))
+        })
       }
     }
-  }
+  }, [])
 
   /**
    * Toggle microphone mute
@@ -878,22 +516,19 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
   // Note: cleanup is a stable ref, intentionally excluded
 
   /**
-   * Cleanup WebRTC resources
+   * Cleanup resources
    */
   const cleanup = useCallback(() => {
+    // Stop audio stream
     if (audioStreamRef.current) {
       audioStreamRef.current.getTracks().forEach(track => track.stop())
       audioStreamRef.current = null
     }
 
-    if (dataChannelRef.current) {
-      dataChannelRef.current.close()
-      dataChannelRef.current = null
-    }
-
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close()
-      peerConnectionRef.current = null
+    // Cleanup provider
+    if (voiceProviderRef.current) {
+      voiceProviderRef.current.cleanup()
+      voiceProviderRef.current = null
     }
 
     // Release wake lock on mobile
@@ -931,6 +566,13 @@ You: [searches knowledge base] "GAF Timberline HDZ comes with a lifetime limited
           {status === 'disconnected' && 'Disconnected'}
           {status === 'error' && 'Connection error'}
         </div>
+
+        {/* Error message */}
+        {status === 'error' && errorMessage && (
+          <div className="mt-2 text-xs text-red-600 max-w-md">
+            {errorMessage}
+          </div>
+        )}
       </div>
 
       {/* Session ID */}

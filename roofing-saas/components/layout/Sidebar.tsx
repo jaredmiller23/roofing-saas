@@ -18,6 +18,8 @@ import {
   Calendar,
   ClipboardList,
   Map,
+  CloudLightning,
+  ListChecks,
   Menu,
   X,
   LogOut
@@ -52,6 +54,8 @@ const navLinks: NavLink[] = [
   { href: '/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/projects', label: 'Projects', icon: Workflow },
   { href: '/territories', label: 'Territories', icon: Map },
+  { href: '/storm-targeting', label: 'Storm Targeting', icon: CloudLightning },
+  { href: '/storm-targeting/leads', label: 'Storm Leads', icon: ListChecks },
 ]
 
 export function Sidebar({ userEmail }: SidebarProps) {

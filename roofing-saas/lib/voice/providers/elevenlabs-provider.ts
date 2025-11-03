@@ -62,7 +62,20 @@ export class ElevenLabsProvider extends VoiceProvider {
     onConnected: () => void,
     onDisconnected: () => void
   ): Promise<RTCPeerConnection> {
-    logger.info('Establishing ElevenLabs connection with signed URL')
+    logger.info('Establishing ElevenLabs connection with signed URL', {
+      hasSignedUrl: !!sessionResponse.ephemeral_token,
+      agentId: sessionResponse.agent_id
+    })
+
+    // Verify we're in a browser environment
+    if (typeof window === 'undefined') {
+      throw new Error('ElevenLabs provider requires browser environment')
+    }
+
+    // Verify Conversation is available
+    if (!Conversation) {
+      throw new Error('ElevenLabs SDK not loaded - please ensure @elevenlabs/client is installed')
+    }
 
     try {
       // Map CRM functions to client tools (ElevenLabs will execute these client-side)

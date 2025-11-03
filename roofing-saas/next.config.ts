@@ -175,6 +175,11 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  // CRITICAL FIX: Disable React Strict Mode to prevent double-mounting
+  // This fixes the "Map container is already initialized" error in development
+  // Note: This only affects development mode, production is unaffected
+  reactStrictMode: false,
+
   eslint: {
     // Skip ESLint during builds (lint hook handles this separately with configurable thresholds)
     // This prevents build failures from non-critical linting issues like `any` types

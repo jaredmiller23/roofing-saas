@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { TerritoryForm } from '@/components/territories/TerritoryForm'
-import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'
+// TerritoryMapEditor temporarily disabled during Google Maps migration
+// import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'
 import type { TerritoryBoundary } from '@/lib/geo/territory'
 
 /**
@@ -53,15 +54,25 @@ export default function NewTerritoryPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: Map Editor */}
+          {/* Left: Map Editor - Temporarily Disabled */}
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Draw Territory Boundary
             </h2>
-            <TerritoryMapEditor
-              onBoundaryChange={handleBoundaryChange}
-              height="600px"
-            />
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center" style={{ height: '600px' }}>
+              <div className="flex flex-col items-center justify-center h-full">
+                <svg className="w-16 h-16 text-yellow-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Territory Drawing Temporarily Disabled
+                </h3>
+                <p className="text-gray-600 max-w-md">
+                  The territory boundary editor is being migrated to Google Maps Drawing Manager.
+                  For now, territories can be created via the API or you can skip the boundary and add it later.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Right: Territory Form */}

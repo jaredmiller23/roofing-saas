@@ -91,9 +91,9 @@ export async function POST(request: Request) {
         created_by: user.id,
         type: 'door_knock',
         subject: `Door knock at ${address || `${latitude}, ${longitude}`}`,
-        description: disposition ? `Disposition: ${disposition}` : null,
+        content: disposition ? `Disposition: ${disposition}` : null,
         contact_id,
-        metadata: {
+        outcome_details: {
           knock_id: knock.id,
           disposition,
           latitude,
