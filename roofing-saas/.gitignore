@@ -51,3 +51,46 @@ next-env.d.ts
 /playwright-report/
 /test-results/
 /playwright/.auth/
+
+# ============================================
+# SECURITY: Credentials & Secrets
+# ============================================
+# CRITICAL: These patterns prevent credential leaks
+# See docs/PREVENTION_PLAN.md for details
+
+# Production environment files
+.env.production
+.env.production.local
+.env.local.backup
+.env.*.backup
+
+# Credential directories
+secrets/
+credentials/
+keys/
+
+# Credential files
+**/secrets.json
+**/credentials.json
+**/api-keys.json
+*.key
+*.cert
+*.p12
+
+# Documentation files that might contain credentials
+# (Incident: PRODUCTION_DEPLOYMENT_GUIDE.md - Nov 18, 2025)
+*DEPLOYMENT_GUIDE*.md
+*PRODUCTION*.md
+SETUP_PRODUCTION.md
+CREDENTIALS*.md
+SECRETS*.md
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+
+# IDE/Editor credential caches
+.vscode/settings.json
+.idea/workspace.xml
