@@ -187,7 +187,7 @@ export interface PropertyEnrichmentResponse {
   providerId?: string;
 
   // Raw data
-  rawData?: Record<string, any>;
+  rawData?: Record<string, unknown>;
 
   // Error handling
   error?: string;
@@ -211,7 +211,7 @@ export interface StormEvent {
   longitude?: number;
   pathLength?: number;
   pathWidth?: number;
-  pathPolygon?: any; // Geography type
+  pathPolygon?: unknown; // PostGIS Geography type (GeoJSON)
   propertyDamage?: number;
   cropDamage?: number;
   injuries?: number;
@@ -227,7 +227,7 @@ export interface StormTargetingArea {
   tenantId: string;
   name: string;
   description?: string;
-  boundaryPolygon: any; // Geography type
+  boundaryPolygon: unknown; // PostGIS Geography type (GeoJSON)
   stormEventId?: string;
   areaSquareMiles?: number;
   addressCount: number;
@@ -253,14 +253,14 @@ export interface BulkImportJob {
   updatedContacts?: number;
   duplicateContacts?: number;
   errorMessage?: string;
-  errorLog?: any;
+  errorLog?: unknown;
   retryCount: number;
   maxRetries: number;
   startedAt?: string;
   completedAt?: string;
   estimatedCompletionAt?: string;
-  importSettings?: any;
-  results?: any;
+  importSettings?: unknown;
+  results?: unknown;
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
@@ -386,7 +386,7 @@ export interface ApiError {
   success: false;
   error: string;
   code?: string;
-  details?: any;
+  details?: unknown;
   validationErrors?: ValidationError[];
 }
 

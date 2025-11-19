@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateSimpleTwiML } from '@/lib/twilio/voice'
 import { logger } from '@/lib/logger'
+import { verifyTwilioSignature, parseTwilioQueryParams } from '@/lib/webhooks/security'
 
 /**
  * POST /api/voice/twiml
@@ -24,6 +25,17 @@ async function handleTwiMLRequest(request: NextRequest) {
       message: message ? 'Custom message' : 'Default message',
       url: request.url,
     })
+
+    // Verify Twilio webhook signature
+    const params = parseTwilioQueryParams(searchParams)
+    const verification = await verifyTwilioSignature(request, params)
+
+    if (!verification.valid) {
+      logger.error('Invalid Twilio signature', { error: verification.error })
+      return new NextResponse('Unauthorized', { status: 403 })
+    }
+
+    logger.info('Twilio signature verified successfully')
 
     // Generate TwiML response
     const twiml = generateSimpleTwiML(message || undefined)

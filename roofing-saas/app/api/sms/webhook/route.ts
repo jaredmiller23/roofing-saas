@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
 import twilio from 'twilio'
+import { verifyTwilioSignature, parseTwilioFormData } from '@/lib/webhooks/security'
 
 /**
  * POST /api/sms/webhook
@@ -31,14 +32,16 @@ export async function POST(request: NextRequest) {
       numMedia,
     })
 
-    // Validate webhook signature (optional but recommended for production)
-    // const signature = request.headers.get('x-twilio-signature')
-    // const url = request.url
-    // const twilioValidator = twilio.validateRequest(authToken, signature, url, formData)
-    // if (!twilioValidator) {
-    //   logger.error('Invalid Twilio signature')
-    //   return new NextResponse('Unauthorized', { status: 401 })
-    // }
+    // Verify Twilio webhook signature
+    const params = parseTwilioFormData(formData)
+    const verification = await verifyTwilioSignature(request, params)
+
+    if (!verification.valid) {
+      logger.error('Invalid Twilio signature', { error: verification.error })
+      return new NextResponse('Unauthorized', { status: 403 })
+    }
+
+    logger.info('Twilio signature verified successfully')
 
     const supabase = await createClient()
 

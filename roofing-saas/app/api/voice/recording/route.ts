@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
+import { verifyTwilioSignature, parseTwilioFormData } from '@/lib/webhooks/security'
 
 /**
  * POST /api/voice/recording
@@ -29,6 +30,17 @@ export async function POST(request: NextRequest) {
       duration: recordingDuration ? parseInt(recordingDuration) : null,
       url: recordingUrl,
     })
+
+    // Verify Twilio webhook signature
+    const params = parseTwilioFormData(formData)
+    const verification = await verifyTwilioSignature(request, params)
+
+    if (!verification.valid) {
+      logger.error('Invalid Twilio signature', { error: verification.error })
+      return new NextResponse('Unauthorized', { status: 403 })
+    }
+
+    logger.info('Twilio signature verified successfully')
 
     const supabase = await createClient()
 

@@ -11,8 +11,8 @@
 
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, DrawingManager, Polygon, useJsApiLoader } from '@react-google-maps/api';
+import { useState, useCallback, useRef } from 'react';
+import { GoogleMap, DrawingManager, useJsApiLoader } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -283,7 +283,7 @@ export default function StormTargetingPage() {
         map: map,
       });
 
-      setCurrentOverlay(polygon as any);
+      setCurrentOverlay(polygon as google.maps.drawing.OverlayCompleteEvent['overlay']);
       setDrawnPolygon({ coordinates });
 
       // Center map on ZIP code
@@ -711,7 +711,7 @@ export default function StormTargetingPage() {
                   <br />
                   • Export to CSV to get owner data (county records, skip tracing, etc.)
                   <br />
-                  • Import as address-only leads (you'll add owner data later)
+                  • Import as address-only leads (you&apos;ll add owner data later)
                 </AlertDescription>
               </Alert>
             </div>

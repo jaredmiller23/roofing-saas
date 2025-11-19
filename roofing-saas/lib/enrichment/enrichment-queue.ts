@@ -133,22 +133,22 @@ export class EnrichmentQueueManager {
 
     // Start processing (can be async)
     this.processEnrichmentJob(
-      job.id,
+      job.id as string,
       addressesToEnrich,
       provider,
       options,
       cachedResults.results
     ).catch(error => {
       console.error('Enrichment job error:', error);
-      this.updateJobStatus(job.id, 'failed', {
+      this.updateJobStatus(job.id as string, 'failed', {
         error_message: error.message,
       });
     });
 
     // Return initial result
     return {
-      job_id: job.id,
-      status: 'processing',
+      job_id: job.id as string,
+      status: 'processing' as const,
       total_addresses: addresses.length,
       processed_count: 0,
       successful_count: cachedResults.cachedCount,
@@ -156,8 +156,8 @@ export class EnrichmentQueueManager {
       cached_count: cachedResults.cachedCount,
       results: cachedResults.results,
       errors: [],
-      started_at: job.started_at || new Date().toISOString(),
-      estimated_completion_at: job.estimated_completion_at,
+      started_at: (job.started_at as string) || new Date().toISOString(),
+      estimated_completion_at: job.estimated_completion_at as string | undefined,
       cost_estimate: costEstimate,
     };
   }
@@ -299,7 +299,7 @@ export class EnrichmentQueueManager {
     }
 
     // Transform cached data to PropertyEnrichmentResult format
-    const results: PropertyEnrichmentResult[] = cached.map((item: any) => ({
+    const results: PropertyEnrichmentResult[] = cached.map((item: Record<string, unknown>) => ({
       success: true,
       provider: item.provider as EnrichmentProvider,
       provider_id: item.provider_id,
@@ -331,20 +331,20 @@ export class EnrichmentQueueManager {
       roof_material: item.roof_material,
       roof_age: item.roof_age,
       roof_condition: item.roof_condition,
-      property_data: item.property_data as Record<string, any>,
+      property_data: item.property_data as Record<string, unknown>,
       cached: true,
       cache_hit: true,
       enriched_at: item.enriched_at,
       expires_at: item.expires_at,
       quality_score: calculateQualityScore(item as any),
       data_completeness: calculateCompleteness(item as any),
-    }));
+    })) as any;
 
     // Update hit count
     await this.supabase
       .from('property_enrichment_cache')
       .update({
-        hit_count: this.supabase.rpc('increment', { value: 1 }) as any,
+        hit_count: this.supabase.rpc('increment', { value: 1 }) as unknown as number,
         last_accessed_at: new Date().toISOString(),
       })
       .in('address_hash', hashes);
@@ -422,7 +422,7 @@ export class EnrichmentQueueManager {
     targetingAreaId: string | undefined,
     totalItems: number,
     provider: EnrichmentProvider
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     const estimatedCompletionMinutes = Math.ceil(totalItems / 50); // ~50 per minute
     const estimatedCompletionAt = new Date();
     estimatedCompletionAt.setMinutes(
@@ -462,7 +462,7 @@ export class EnrichmentQueueManager {
   private async updateJobStatus(
     jobId: string,
     status: EnrichmentJobStatus,
-    updates: Record<string, any> = {}
+    updates: Record<string, unknown> = {}
   ): Promise<void> {
     const { error } = await this.supabase
       .from('bulk_import_jobs')

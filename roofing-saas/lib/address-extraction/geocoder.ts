@@ -37,7 +37,7 @@ function sleep(ms: number): Promise<void> {
 /**
  * Parse Google Geocoding API response to extract address components
  */
-function parseGoogleGeocodingResult(result: any): Partial<GeocodingResponse> {
+function parseGoogleGeocodingResult(result: Record<string, unknown>): Partial<GeocodingResponse> {
   if (!result || result.status === 'ZERO_RESULTS') {
     return {
       success: false,
@@ -45,7 +45,8 @@ function parseGoogleGeocodingResult(result: any): Partial<GeocodingResponse> {
     };
   }
 
-  const firstResult = result.results?.[0];
+  const results = result.results as any[];
+  const firstResult = results?.[0];
   if (!firstResult) {
     return {
       success: false,

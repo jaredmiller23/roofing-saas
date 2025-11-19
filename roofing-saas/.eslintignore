@@ -1,0 +1,17 @@
+# Test files
+e2e/
+*.spec.ts
+*.test.ts
+
+# Build artifacts
+.next/
+out/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Generated files
+playwright-report/
+test-results/

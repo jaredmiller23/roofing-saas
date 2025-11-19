@@ -2,7 +2,8 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Phone, PhoneIncoming, PhoneOutgoing, Clock, FileText } from 'lucide-react'
+import { Phone, PhoneIncoming, PhoneOutgoing, Clock, FileText, Mic } from 'lucide-react'
+import { AudioPlayer } from '@/components/call-logs/audio-player'
 
 /**
  * View call log details page
@@ -123,6 +124,20 @@ export default async function CallLogDetailPage({
             )}
           </div>
         </div>
+
+        {/* Call Recording Card */}
+        {call.recording_url && (
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Mic className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Call Recording</h2>
+            </div>
+            <AudioPlayer
+              recordingUrl={call.recording_url}
+              duration={call.recording_duration}
+            />
+          </div>
+        )}
 
         {/* Notes Card */}
         {call.notes && (

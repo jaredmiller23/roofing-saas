@@ -1,6 +1,7 @@
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, getUserRole } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
 
 /**
  * Dashboard layout - main application layout with sidebar navigation
@@ -9,6 +10,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
  * - Left sidebar navigation with dark theme
  * - Responsive mobile menu
  * - User profile and sign out
+ * - Admin impersonation UI (for admins only)
  */
 export default async function DashboardLayout({
   children,
@@ -21,14 +23,19 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Get user role for admin-only features
+  const userRole = await getUserRole(user.id)
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar userEmail={user.email || ''} />
+      <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
 
-      {/* Main Content - with left padding for sidebar */}
-      <main className="lg:ml-64 min-h-screen">
-        {children}
+      {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
+      <main className="lg:ml-64 min-h-screen pb-20">
+        <DashboardLayoutClient>
+          {children}
+        </DashboardLayoutClient>
       </main>
     </div>
   )

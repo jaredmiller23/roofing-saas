@@ -15,7 +15,6 @@ import type {
   ExtractAddressesRequest,
   ExtractAddressesResponse,
   Polygon,
-  ExtractedAddress,
 } from '@/lib/address-extraction/types';
 
 // =====================================================

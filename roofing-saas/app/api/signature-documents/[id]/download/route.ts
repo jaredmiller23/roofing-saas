@@ -9,6 +9,7 @@ import {
 import { errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
+import { generateSignedPDF, uploadPDFToStorage } from '@/lib/pdf/signature-pdf-generator'
 
 /**
  * GET /api/signature-documents/[id]/download
@@ -62,56 +63,66 @@ export async function GET(
       throw ValidationError('Document must be signed before downloading')
     }
 
-    // If file_url exists, fetch and return it
-    if (document.file_url) {
-      // TODO: Fetch PDF from Supabase Storage and return
-      // For now, return a placeholder response
+    try {
+      // Generate PDF with signatures
+      logger.info('Generating signed PDF', {
+        documentId: id,
+        signaturesCount: document.signatures?.length || 0
+      })
+
+      const pdfBytes = await generateSignedPDF(
+        {
+          title: document.title,
+          description: document.description,
+          document_type: document.document_type,
+          project: document.project,
+          contact: document.contact
+        },
+        document.signatures || [],
+        document.file_url || undefined
+      )
+
+      // Upload to Supabase Storage if not already stored
+      let finalUrl = document.file_url
+
+      if (!finalUrl || !finalUrl.includes('signed')) {
+        const fileName = `signed-documents/${tenantId}/${id}_signed_${Date.now()}.pdf`
+
+        finalUrl = await uploadPDFToStorage(
+          pdfBytes,
+          fileName,
+          'documents',
+          supabase
+        )
+
+        // Update document with signed PDF URL
+        await supabase
+          .from('signature_documents')
+          .update({ file_url: finalUrl })
+          .eq('id', id)
+
+        logger.info('Signed PDF uploaded to storage', {
+          documentId: id,
+          fileUrl: finalUrl
+        })
+      }
 
       const duration = Date.now() - startTime
       logger.apiResponse('GET', `/api/signature-documents/${id}/download`, 200, duration)
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'PDF download endpoint ready. PDF generation to be implemented.',
-          document_url: document.file_url,
-          signatures: document.signatures
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-    }
-
-    // If no file_url, we need to generate PDF from HTML template
-    // TODO: Implement PDF generation using Puppeteer or similar
-    // 1. Get template HTML
-    // 2. Replace placeholders with document data
-    // 3. Add signature images
-    // 4. Generate PDF
-    // 5. Store in Supabase Storage
-    // 6. Return PDF
-
-    const duration = Date.now() - startTime
-    logger.apiResponse('GET', `/api/signature-documents/${id}/download`, 501, duration)
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'PDF generation not yet implemented',
-        document,
-        signatures: document.signatures
-      }),
-      {
-        status: 501,
+      // Return PDF as downloadable file
+      return new Response(Buffer.from(pdfBytes), {
+        status: 200,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${document.title.replace(/[^a-z0-9]/gi, '_')}_signed.pdf"`,
+          'Content-Length': pdfBytes.length.toString(),
         }
-      }
-    )
+      })
+    } catch (pdfError) {
+      logger.error('Error generating PDF', { error: pdfError, documentId: id })
+      throw new Error(`PDF generation failed: ${(pdfError as Error).message}`)
+    }
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error downloading signature document', { error, duration })

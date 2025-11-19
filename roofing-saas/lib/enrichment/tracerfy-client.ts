@@ -17,7 +17,6 @@ import type {
   PropertyEnrichmentResult,
   EnrichmentError,
   TracerfyConfig,
-  TracerfySkipTraceResponse,
 } from './types';
 
 // =====================================================
@@ -140,7 +139,7 @@ export class TracerfyClient {
       maxRetries?: number;
     } = {}
   ): Promise<PropertyEnrichmentResult[]> {
-    const { onProgress, maxRetries = 3 } = options;
+    const { onProgress } = options;
 
     // Validate all addresses
     const validAddresses: AddressInput[] = [];
@@ -150,7 +149,7 @@ export class TracerfyClient {
       try {
         this.validateInput(address);
         validAddresses.push(address);
-      } catch (error) {
+      } catch {
         // Create error result for invalid address
         invalidResults.push({
           success: false,
@@ -173,7 +172,7 @@ export class TracerfyClient {
       const queueResponse = await this.submitTraceJob(validAddresses);
 
       // Poll for results with progress updates
-      const results = await this.pollForResults(queueResponse.queue_id, (processed, total) => {
+      const results = await this.pollForResults(queueResponse.queue_id, (processed, _total) => {
         if (onProgress) {
           onProgress(processed + invalidResults.length, addresses.length);
         }

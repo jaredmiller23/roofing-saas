@@ -6,9 +6,7 @@
 
 import type {
   Polygon,
-  LatLng,
   BoundingBox,
-  OSMElement,
   OverpassResponse,
   BuildingData,
   ExtractedAddress,
@@ -27,7 +25,6 @@ const OVERPASS_ENDPOINTS = [
   // Removed Russian endpoint - frequently times out
 ];
 
-const DEFAULT_TIMEOUT = 60; // seconds (reduced from 180 for faster failures)
 const MAX_RETRIES = 2; // Reduced from 3 to fail faster
 const RATE_LIMIT_DELAY = 1000; // ms between requests
 

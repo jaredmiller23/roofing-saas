@@ -5,16 +5,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
-  DoorOpen,
   Workflow,
   CheckSquare,
-  Users,
   Phone,
   Settings,
   Trophy,
   Building2,
-  FileText,
-  Briefcase,
   Calendar,
   ClipboardList,
   Map,
@@ -25,6 +21,8 @@ import {
   LogOut
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
+import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
+import type { UserForImpersonation } from '@/lib/impersonation/types'
 
 interface NavLink {
   href: string
@@ -34,35 +32,60 @@ interface NavLink {
 
 interface SidebarProps {
   userEmail: string
+  userRole?: string
 }
 
 const navLinks: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/knocks', label: 'Knocks', icon: DoorOpen },
-  { href: '/pipeline', label: 'Pipeline', icon: Workflow },
+  { href: '/territories', label: 'Field Activity', icon: Map },
+  { href: '/projects', label: 'Sales & Projects', icon: Workflow },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/contacts', label: 'Contacts', icon: Users },
   { href: '/call-logs', label: 'Call Logs', icon: Phone },
   { href: '/settings', label: 'Settings', icon: Settings },
 
   // Secondary navigation
   { href: '/incentives', label: 'Incentives', icon: Trophy },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
-  { href: '/project-files', label: 'Files', icon: FileText },
-  { href: '/jobs', label: 'Jobs', icon: Briefcase },
   { href: '/events', label: 'Events', icon: Calendar },
   { href: '/surveys', label: 'Surveys', icon: ClipboardList },
-  { href: '/projects', label: 'Projects', icon: Workflow },
-  { href: '/territories', label: 'Territories', icon: Map },
   { href: '/storm-targeting', label: 'Storm Targeting', icon: CloudLightning },
   { href: '/storm-targeting/leads', label: 'Storm Leads', icon: ListChecks },
 ]
 
-export function Sidebar({ userEmail }: SidebarProps) {
+export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<UserForImpersonation | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const pathname = usePathname()
 
   const isActive = (href: string) => pathname === href
+  const isAdmin = userRole === 'admin'
+
+  const handleUserSelect = (user: UserForImpersonation) => {
+    setSelectedUser(user)
+    setIsDialogOpen(true)
+  }
+
+  const handleStartImpersonation = async (userId: string, reason?: string) => {
+    try {
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, reason }),
+      })
+
+      if (response.ok) {
+        // Reload page to start impersonation session
+        window.location.reload()
+      } else {
+        const data = await response.json()
+        alert(`Failed to start impersonation: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error starting impersonation:', error)
+      alert('Failed to start impersonation. Please try again.')
+    }
+  }
 
   return (
     <>
@@ -124,16 +147,23 @@ export function Sidebar({ userEmail }: SidebarProps) {
         </nav>
 
         {/* User Section */}
-        <div className="border-t border-gray-800 p-4">
-          <div className="flex items-center gap-3 px-3 py-2 mb-2">
+        <div className="border-t border-gray-800 p-4 space-y-2">
+          <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold text-sm">
               {userEmail.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{userEmail}</p>
-              <p className="text-xs text-gray-400">Admin</p>
+              <p className="text-xs text-gray-400 capitalize">{userRole}</p>
             </div>
           </div>
+
+          {/* Admin-only: Impersonate User */}
+          {isAdmin && (
+            <div className="px-2">
+              <UserPicker onUserSelect={handleUserSelect} />
+            </div>
+          )}
 
           <form action={signOut} className="w-full">
             <button
@@ -146,6 +176,17 @@ export function Sidebar({ userEmail }: SidebarProps) {
           </form>
         </div>
       </aside>
+
+      {/* Impersonation Confirmation Dialog */}
+      <ConfirmImpersonationDialog
+        user={selectedUser}
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false)
+          setSelectedUser(null)
+        }}
+        onConfirm={handleStartImpersonation}
+      />
     </>
   )
 }

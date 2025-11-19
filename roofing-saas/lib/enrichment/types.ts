@@ -92,7 +92,7 @@ export interface PropertyEnrichmentResult {
 
   // Provider-Specific
   provider_id?: string;
-  property_data?: Record<string, any>; // Raw provider data
+  property_data?: Record<string, unknown>; // Raw provider data
 
   // Quality Metrics
   quality_score?: number; // 0-100
@@ -107,7 +107,7 @@ export interface PropertyEnrichmentResult {
 
   // Error Handling
   error?: string;
-  error_details?: Record<string, any>;
+  error_details?: Record<string, unknown>;
 }
 
 // =====================================================
@@ -183,7 +183,7 @@ export interface EnrichmentError {
   address: AddressInput;
   error_type: EnrichmentErrorType;
   error_message: string;
-  error_details?: Record<string, any>;
+  error_details?: Record<string, unknown>;
   retry_count: number;
   timestamp: string;
 }

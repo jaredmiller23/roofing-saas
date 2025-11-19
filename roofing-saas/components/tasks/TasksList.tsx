@@ -65,7 +65,11 @@ export function TasksList() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to load tasks')
+        // Handle error response format: { success: false, error: { code, message, details } }
+        const errorMessage = typeof data.error === 'string'
+          ? data.error
+          : data.error?.message || data.message || 'Failed to load tasks'
+        throw new Error(errorMessage)
       }
 
       setTasks(data.tasks || [])

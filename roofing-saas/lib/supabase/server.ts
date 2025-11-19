@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { ImpersonationCookie } from '@/lib/impersonation/types'
+import { IMPERSONATION_COOKIE_NAME } from '@/lib/impersonation/types'
 
 /**
  * Server-side Supabase client for Server Components and Server Actions
@@ -26,7 +28,7 @@ import { cookies } from 'next/headers'
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(
+  const client = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -48,6 +50,39 @@ export async function createClient() {
       },
     }
   )
+
+  // Check for active impersonation session and set Postgres session variables
+  // This allows RLS policies to use get_effective_user_id() function
+  const impersonationCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
+
+  if (impersonationCookie) {
+    try {
+      const sessionData: ImpersonationCookie = JSON.parse(impersonationCookie.value)
+
+      // Verify session hasn't expired
+      const expiresAt = new Date(sessionData.expires_at)
+      const now = new Date()
+
+      if (now <= expiresAt) {
+        // Set Postgres session variables for RLS
+        // These are read by the get_effective_user_id() function
+        try {
+          await client.rpc('set_impersonation_session', {
+            p_admin_user_id: sessionData.admin_user_id,
+            p_impersonated_user_id: sessionData.impersonated_user_id,
+          })
+        } catch (error) {
+          // Log error but don't throw - allow normal auth to proceed
+          console.error('Failed to set impersonation session variables:', error)
+        }
+      }
+    } catch (error) {
+      // Silently fail - if impersonation setup fails, continue with normal auth
+      console.error('Error setting up impersonation session:', error)
+    }
+  }
+
+  return client
 }
 
 /**

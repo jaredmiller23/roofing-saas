@@ -13,6 +13,7 @@ import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/res
 import { logger } from '@/lib/logger'
 import type { ContactListResponse } from '@/lib/types/api'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
+import { triggerWorkflow } from '@/lib/automation/engine'
 
 /**
  * GET /api/contacts
@@ -180,6 +181,15 @@ export async function POST(request: NextRequest) {
       'Created new contact',
       contact.id
     )
+
+    // Trigger automation workflows for contact creation (non-blocking)
+    triggerWorkflow(tenantId, 'contact_created', {
+      contact_id: contact.id,
+      contact: contact,
+      user_id: user.id,
+    }).catch((error) => {
+      logger.error('Failed to trigger contact_created workflows', { error, contactId: contact.id })
+    })
 
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/contacts', 201, duration)

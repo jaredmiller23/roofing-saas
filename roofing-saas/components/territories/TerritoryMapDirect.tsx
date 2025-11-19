@@ -48,6 +48,16 @@ export default function TerritoryMapDirect({
   const currentMapTypeRef = useRef<string>('hybrid')
   const isInitializedRef = useRef(false)
 
+  // Capture initial values to use in effect (map should only initialize once)
+  const initialCenterRef = useRef(center)
+  const initialZoomRef = useRef(zoom)
+  const onMapReadyRef = useRef(onMapReady)
+
+  // Keep onMapReady callback up to date
+  useEffect(() => {
+    onMapReadyRef.current = onMapReady
+  }, [onMapReady])
+
   // Initialize map ONCE - never touch it again except through imperative API
   useEffect(() => {
     if (!mapContainerRef.current || isInitializedRef.current) return
@@ -58,10 +68,13 @@ export default function TerritoryMapDirect({
 
     console.log('[TerritoryMapDirect] Initializing Google Maps')
 
+    const initialCenter = initialCenterRef.current
+    const initialZoom = initialZoomRef.current
+
     // Create map with hybrid view
     const map = new google.maps.Map(mapContainerRef.current, {
-      center: { lat: center[0], lng: center[1] },
-      zoom: zoom,
+      center: { lat: initialCenter[0], lng: initialCenter[1] },
+      zoom: initialZoom,
       mapTypeId: 'hybrid',
       zoomControl: true,
       streetViewControl: true,
@@ -71,7 +84,7 @@ export default function TerritoryMapDirect({
 
     mapRef.current = map
     isInitializedRef.current = true
-    onMapReady?.(map)
+    onMapReadyRef.current?.(map)
 
     // Cleanup on unmount
     return () => {
@@ -79,7 +92,7 @@ export default function TerritoryMapDirect({
       polygonsRef.current.forEach(polygon => polygon.setMap(null))
       polygonsRef.current = []
     }
-  }, []) // Empty deps - run once only
+  }, []) // Empty deps intentional - map initializes once with initial values
 
   // Render territories (update polygons when territories change)
   useEffect(() => {

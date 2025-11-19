@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback, memo, useMemo } from 'react'
-import { GoogleMap, useJsApiLoader, Polygon } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api'
 
 interface TerritoryBoundary {
   type: 'Polygon' | 'MultiPolygon'
@@ -172,6 +172,23 @@ function TerritoryMapClient({
     return paths
   }
 
+  // Memoize map container style to prevent new object on every render
+  // IMPORTANT: These hooks must be called BEFORE any conditional returns (Rules of Hooks)
+  const mapContainerStyle = useMemo(() => ({ height, width: '100%' }), [height])
+
+  // Memoize options to prevent new object on every render
+  // NOTE: Do NOT set mapTypeId here - it will be set imperatively in onLoad
+  const mapOptions = useMemo(() => ({
+    zoomControl: true,
+    streetViewControl: true,
+    mapTypeControl: false,
+    fullscreenControl: true,
+  }), [])
+
+  // Initial center/zoom - only used on first render
+  const initialCenter = useMemo(() => ({ lat: center[0], lng: center[1] }), [center])
+  const initialZoom = useMemo(() => zoom, [zoom])
+
   // Change map type (no state update to avoid re-render)
   const switchMapType = (event: React.MouseEvent, type: 'roadmap' | 'satellite' | 'hybrid' | 'terrain') => {
     // Stop event propagation to prevent parent re-renders
@@ -219,22 +236,6 @@ function TerritoryMapClient({
       </div>
     )
   }
-
-  // Memoize map container style to prevent new object on every render
-  const mapContainerStyle = useMemo(() => ({ height, width: '100%' }), [height])
-
-  // Memoize options to prevent new object on every render
-  // NOTE: Do NOT set mapTypeId here - it will be set imperatively in onLoad
-  const mapOptions = useMemo(() => ({
-    zoomControl: true,
-    streetViewControl: true,
-    mapTypeControl: false,
-    fullscreenControl: true,
-  }), [])
-
-  // Initial center/zoom - only used on first render
-  const initialCenter = useMemo(() => ({ lat: center[0], lng: center[1] }), [center])
-  const initialZoom = useMemo(() => zoom, [zoom])
 
   return (
     <div className={`relative ${className}`}>

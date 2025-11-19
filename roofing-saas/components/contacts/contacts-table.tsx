@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Contact } from '@/lib/types/contact'
+import { Contact, getCombinedTypeLabel } from '@/lib/types/contact'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Phone, MessageSquare, Mail } from 'lucide-react'
+import { Phone, MessageSquare, Mail, Building2 } from 'lucide-react'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -280,10 +280,12 @@ export function ContactsTable({ params }: ContactsTableProps) {
                 />
               </th>
               <SortableHeader field="name">Name</SortableHeader>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type & Category
+              </th>
               <SortableHeader field="email">Email</SortableHeader>
               <SortableHeader field="phone">Phone</SortableHeader>
               <SortableHeader field="stage">Stage</SortableHeader>
-              <SortableHeader field="type">Type</SortableHeader>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -307,6 +309,21 @@ export function ContactsTable({ params }: ContactsTableProps) {
                   >
                     {contact.first_name} {contact.last_name}
                   </Link>
+                  {contact.company && (
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {contact.company}
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {contact.is_organization && (
+                      <Building2 className="h-4 w-4 text-gray-400" aria-label="Organization" />
+                    )}
+                    <span className="text-sm text-gray-900">
+                      {getCombinedTypeLabel(contact)}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {contact.email || '-'}
@@ -318,9 +335,6 @@ export function ContactsTable({ params }: ContactsTableProps) {
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(contact.stage)}`}>
                     {contact.stage}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
-                  {contact.type}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">

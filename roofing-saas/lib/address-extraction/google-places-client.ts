@@ -12,26 +12,6 @@ import type {
 } from './types';
 
 // =====================================================
-// TYPES
-// =====================================================
-
-interface PlacesNearbySearchResponse {
-  results: Array<{
-    geometry: {
-      location: {
-        lat: number;
-        lng: number;
-      };
-    };
-    name: string;
-    formatted_address?: string;
-    types: string[];
-  }>;
-  status: string;
-  error_message?: string;
-}
-
-// =====================================================
 // HELPER FUNCTIONS
 // =====================================================
 
@@ -150,14 +130,17 @@ export class GooglePlacesClient {
     console.log(`[Google Places] Found ${places.length} places`);
 
     // Convert to ExtractedAddress format
-    const addresses: ExtractedAddress[] = places.map((place: any) => ({
-      lat: place.location?.latitude || 0,
-      lng: place.location?.longitude || 0,
-      fullAddress: place.formattedAddress,
-      source: 'google_places' as const,
-      confidence: 0.8,
-      isResidential: true, // We searched for residential, so assume all are residential
-    }));
+    const addresses: ExtractedAddress[] = places.map((place: Record<string, unknown>) => {
+      const location = place.location as any;
+      return {
+        lat: location?.latitude || 0,
+        lng: location?.longitude || 0,
+        fullAddress: place.formattedAddress as string,
+        source: 'google_places' as const,
+        confidence: 0.8,
+        isResidential: true, // We searched for residential, so assume all are residential
+      };
+    });
 
     const processingTimeMs = Date.now() - startTime;
 

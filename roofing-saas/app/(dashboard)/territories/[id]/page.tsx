@@ -37,7 +37,7 @@ export default function TerritoryDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [map, setMap] = useState<any>(null)
+  const [map, setMap] = useState<google.maps.Map | null>(null)
   const [pinDropEnabled, setPinDropEnabled] = useState(false)
 
   // Fetch territory data

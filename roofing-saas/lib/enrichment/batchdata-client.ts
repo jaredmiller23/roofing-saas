@@ -134,7 +134,7 @@ export class BatchDataClient {
     address: AddressInput,
     maxRetries: number
   ): Promise<PropertyEnrichmentResult> {
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -359,7 +359,7 @@ export class BatchDataClient {
   /**
    * Handle API errors
    */
-  private handleError(address: AddressInput, error: any): PropertyEnrichmentResult {
+  private handleError(address: AddressInput, error: unknown): PropertyEnrichmentResult {
     const addressHash = generateAddressHash(address);
     const fullAddress = address.full_address || 'Unknown';
 

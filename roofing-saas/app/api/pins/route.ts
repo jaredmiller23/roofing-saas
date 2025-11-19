@@ -15,13 +15,7 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams
     const territoryId = searchParams.get('territory_id')
-
-    if (!territoryId) {
-      return NextResponse.json(
-        { error: 'territory_id is required' },
-        { status: 400 }
-      )
-    }
+    const limit = searchParams.get('limit') || '100'
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -32,8 +26,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch pins for the territory - first get pins
-    const { data: pins, error } = await supabase
+    // Build query - territory_id is now optional
+    let query = supabase
       .from('knocks')
       .select(`
         id,
@@ -51,9 +45,16 @@ export async function GET(request: NextRequest) {
         user_id,
         contact_id
       `)
-      .eq('territory_id', territoryId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
+      .limit(parseInt(limit))
+
+    // Filter by territory if provided
+    if (territoryId) {
+      query = query.eq('territory_id', territoryId)
+    }
+
+    const { data: pins, error } = await query
 
     if (error) {
       console.error('[API] Error fetching pins:', error)
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: pinsWithUsers
+      pins: pinsWithUsers  // Changed from 'data' to 'pins' to match frontend expectation
     })
   } catch (error) {
     console.error('[API] Error in GET /api/pins:', error)
@@ -336,7 +337,7 @@ export async function PUT(request: NextRequest) {
     // If creating/updating contact
     if (create_contact && contact_data && !existingPin.contact_id) {
       // Create contact linked to this pin
-      const { data: contact, error: contactError } = await supabase
+      const { error: contactError } = await supabase
         .rpc('create_contact_from_pin', {
           p_knock_id: id,
           p_first_name: contact_data.first_name,

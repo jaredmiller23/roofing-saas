@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Get current connection from database
     const supabase = await createClient()
     const { data: connection, error: fetchError } = await supabase
-      .from('quickbooks_connections')
+      .from('quickbooks_tokens')
       .select('*')
       .eq('tenant_id', tenantId)
       .single()
@@ -44,19 +44,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if refresh token is still valid (within 100 days)
-    const refreshExpiresAt = new Date(connection.refresh_token_expires_at)
-    if (refreshExpiresAt <= new Date()) {
-      // Refresh token expired - user must reauthorize
-      await supabase
-        .from('quickbooks_connections')
-        .update({ is_active: false })
-        .eq('tenant_id', tenantId)
-
-      return NextResponse.json(
-        { error: 'REAUTH_REQUIRED', message: 'Please reconnect your QuickBooks account' },
-        { status: 401 }
-      )
+    // Check if token is already expired
+    const expiresAt = new Date(connection.expires_at)
+    if (expiresAt <= new Date()) {
+      // Token expired, try to refresh
+      // (QuickBooks refresh tokens are valid for 100 days from last refresh)
     }
 
     // Initialize OAuth client with current tokens
@@ -74,20 +66,17 @@ export async function POST(request: NextRequest) {
     const authResponse = await oauthClient.refresh()
     const newToken = authResponse.getJson()
 
-    // Calculate new expiration times
+    // Calculate new expiration time
     const tokenExpiresAt = new Date(Date.now() + newToken.expires_in * 1000)
-    const refreshTokenExpiresAt = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000)
 
     // Update tokens in database
-    // IMPORTANT: Always update refresh_token as it changes every 24 hours!
+    // IMPORTANT: Always update refresh_token as it rotates with each refresh
     const { error: updateError } = await supabase
-      .from('quickbooks_connections')
+      .from('quickbooks_tokens')
       .update({
         access_token: newToken.access_token,
         refresh_token: newToken.refresh_token,
-        token_expires_at: tokenExpiresAt.toISOString(),
-        refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
-        updated_at: new Date().toISOString(),
+        expires_at: tokenExpiresAt.toISOString(),
       })
       .eq('tenant_id', tenantId)
 
@@ -107,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Token refresh error:', error)
 
-    // If refresh fails with auth error, mark connection as inactive
+    // If refresh fails with auth error, delete the tokens (reauth required)
     if (error.authResponse?.status === 401) {
       const user = await getCurrentUser()
       if (user) {
@@ -115,8 +104,8 @@ export async function POST(request: NextRequest) {
         if (tenantId) {
           const supabase = await createClient()
           await supabase
-            .from('quickbooks_connections')
-            .update({ is_active: false, sync_error: 'Token refresh failed - reauth required' })
+            .from('quickbooks_tokens')
+            .delete()
             .eq('tenant_id', tenantId)
         }
       }

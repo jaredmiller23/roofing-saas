@@ -96,27 +96,6 @@ interface ConversationMessage {
   }
 }
 
-interface SessionConfig {
-  instructions: string
-  voice: string
-  temperature: number
-  turn_detection?: {
-    type: string
-    threshold?: number
-    prefix_padding_ms?: number
-    silence_duration_ms?: number
-  }
-  input_audio_transcription?: {
-    model: string
-  }
-  tools: Array<{
-    type: string
-    name: string
-    description: string
-    parameters: object
-  }>
-}
-
 /**
  * VoiceSession Component
  *
@@ -137,7 +116,7 @@ export function VoiceSession({
   const [status, setStatus] = useState<SessionStatus>('idle')
   const [isMuted, setIsMuted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([])
+  const [conversationHistory] = useState<ConversationMessage[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Provider and stream refs

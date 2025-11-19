@@ -14,8 +14,10 @@ interface QBConnection {
   realm_id: string
   access_token: string
   refresh_token: string
-  token_expires_at: string
-  is_active: boolean
+  expires_at: string
+  token_type: string
+  company_name?: string
+  country?: string
 }
 
 /**
@@ -25,10 +27,9 @@ export async function getQuickBooksConnection(tenantId: string): Promise<QBConne
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('quickbooks_connections')
+    .from('quickbooks_tokens')
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('is_active', true)
     .single()
 
   if (error || !data) {
@@ -42,7 +43,7 @@ export async function getQuickBooksConnection(tenantId: string): Promise<QBConne
  * Check if token needs refresh and refresh if necessary
  */
 async function ensureValidToken(connection: QBConnection): Promise<string> {
-  const expiresAt = new Date(connection.token_expires_at)
+  const expiresAt = new Date(connection.expires_at)
   const bufferTime = 5 * 60 * 1000 // 5 minutes buffer
   const needsRefresh = expiresAt.getTime() - Date.now() < bufferTime
 
@@ -66,16 +67,13 @@ async function ensureValidToken(connection: QBConnection): Promise<string> {
   // Update database with new tokens
   const supabase = await createClient()
   const tokenExpiresAt = new Date(Date.now() + newToken.expires_in * 1000)
-  const refreshTokenExpiresAt = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000)
 
   await supabase
-    .from('quickbooks_connections')
+    .from('quickbooks_tokens')
     .update({
       access_token: newToken.access_token,
       refresh_token: newToken.refresh_token,
-      token_expires_at: tokenExpiresAt.toISOString(),
-      refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
-      updated_at: new Date().toISOString(),
+      expires_at: tokenExpiresAt.toISOString(),
     })
     .eq('tenant_id', connection.tenant_id)
 
@@ -175,19 +173,17 @@ export async function makeQuickBooksApiCall(
 }
 
 /**
- * Mark connection as inactive
+ * Mark connection as inactive by deleting tokens
+ * (User will need to re-authorize)
  */
 async function markConnectionInactive(tenantId: string, error: string): Promise<void> {
   const supabase = await createClient()
   await supabase
-    .from('quickbooks_connections')
-    .update({
-      is_active: false,
-      sync_error: error,
-    })
+    .from('quickbooks_tokens')
+    .delete()
     .eq('tenant_id', tenantId)
 
-  logger.warn('QuickBooks connection marked inactive', { tenantId, error })
+  logger.warn('QuickBooks connection removed due to error', { tenantId, error })
 }
 
 /**

@@ -92,3 +92,23 @@ export async function hasRole(userId: string, role: string): Promise<boolean> {
 export async function isAdmin(userId: string): Promise<boolean> {
   return hasRole(userId, 'admin')
 }
+
+/**
+ * Get user's role in their tenant
+ * Returns null if user is not associated with a tenant
+ */
+export async function getUserRole(userId: string): Promise<string | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('tenant_users')
+    .select('role')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  return data.role
+}

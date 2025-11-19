@@ -29,6 +29,54 @@ interface EnrichmentCostCalculatorProps {
   defaultProvider?: EnrichmentProvider;
 }
 
+// Provider pricing configuration (in cents per lookup)
+// Moved outside component to prevent recreation on every render
+const PROVIDER_PRICING: Record<EnrichmentProvider, {
+  cost: number;
+  label: string;
+  description: string;
+  paymentModel: 'pay-per-use' | 'subscription' | 'free';
+  subscriptionCost?: number;
+}> = {
+  batchdata: {
+    cost: 2.5, // $0.025
+    label: 'BatchData API',
+    description: 'Pay-as-you-go property data',
+    paymentModel: 'pay-per-use',
+  },
+  propertyradar: {
+    cost: 0,
+    label: 'PropertyRadar',
+    description: 'Subscription-based (limited queries)',
+    paymentModel: 'subscription',
+    subscriptionCost: 11900, // $119/month
+  },
+  tracerfy: {
+    cost: 0.9, // $0.009
+    label: 'Tracerfy Skip Tracing',
+    description: 'Requires owner names - for door-knock follow-ups',
+    paymentModel: 'pay-per-use',
+  },
+  lead_sherpa: {
+    cost: 12, // $0.12
+    label: 'Lead Sherpa',
+    description: 'Premium skip tracing',
+    paymentModel: 'pay-per-use',
+  },
+  county_assessor: {
+    cost: 0,
+    label: 'County Assessor',
+    description: 'Free (limited data)',
+    paymentModel: 'free',
+  },
+  manual: {
+    cost: 0,
+    label: 'Manual Entry',
+    description: 'No API cost',
+    paymentModel: 'free',
+  },
+};
+
 export function EnrichmentCostCalculator({
   addressCount,
   cachedCount = 0,
@@ -38,57 +86,10 @@ export function EnrichmentCostCalculator({
 }: EnrichmentCostCalculatorProps) {
   const [selectedProvider, setSelectedProvider] = useState<EnrichmentProvider>(defaultProvider);
 
-  // Provider pricing (in cents per lookup)
-  const providerPricing: Record<EnrichmentProvider, {
-    cost: number;
-    label: string;
-    description: string;
-    paymentModel: 'pay-per-use' | 'subscription' | 'free';
-    subscriptionCost?: number;
-  }> = {
-    batchdata: {
-      cost: 2.5, // $0.025
-      label: 'BatchData API',
-      description: 'Pay-as-you-go property data',
-      paymentModel: 'pay-per-use',
-    },
-    propertyradar: {
-      cost: 0,
-      label: 'PropertyRadar',
-      description: 'Subscription-based (limited queries)',
-      paymentModel: 'subscription',
-      subscriptionCost: 11900, // $119/month
-    },
-    tracerfy: {
-      cost: 0.9, // $0.009
-      label: 'Tracerfy Skip Tracing',
-      description: 'Requires owner names - for door-knock follow-ups',
-      paymentModel: 'pay-per-use',
-    },
-    lead_sherpa: {
-      cost: 12, // $0.12
-      label: 'Lead Sherpa',
-      description: 'Premium skip tracing',
-      paymentModel: 'pay-per-use',
-    },
-    county_assessor: {
-      cost: 0,
-      label: 'County Assessor',
-      description: 'Free (limited data)',
-      paymentModel: 'free',
-    },
-    manual: {
-      cost: 0,
-      label: 'Manual Entry',
-      description: 'No API cost',
-      paymentModel: 'free',
-    },
-  };
-
   // Calculate costs
   const costs = useMemo(() => {
     const newLookups = Math.max(0, addressCount - cachedCount);
-    const provider = providerPricing[selectedProvider];
+    const provider = PROVIDER_PRICING[selectedProvider];
 
     const lookupCost = newLookups * provider.cost;
     const subscriptionCost = provider.subscriptionCost || 0;
@@ -107,7 +108,7 @@ export function EnrichmentCostCalculator({
       costPerAddress,
       newLookups,
     };
-  }, [addressCount, cachedCount, selectedProvider, providerPricing]);
+  }, [addressCount, cachedCount, selectedProvider]);
 
   // Notify parent of cost changes
   useEffect(() => {
@@ -134,7 +135,7 @@ export function EnrichmentCostCalculator({
     }).format(cents / 100);
   };
 
-  const provider = providerPricing[selectedProvider];
+  const provider = PROVIDER_PRICING[selectedProvider];
   const savingsPercentage = costs.estimatedWithoutCache > 0
     ? Math.round((costs.cacheSavings / costs.estimatedWithoutCache) * 100)
     : 0;

@@ -15,6 +15,20 @@ export type ContactStage =
 
 export type ContactPriority = 'low' | 'normal' | 'high' | 'urgent'
 
+/**
+ * Contact category (role/type of contact)
+ * Used for combined type system: e.g., "Lead-Homeowner", "Customer-Adjuster"
+ */
+export type ContactCategory =
+  | 'homeowner'
+  | 'adjuster'
+  | 'sub_contractor'
+  | 'real_estate_agent'
+  | 'developer'
+  | 'property_manager'
+  | 'local_business'
+  | 'other'
+
 export interface Contact {
   id: string
   tenant_id: string
@@ -29,6 +43,12 @@ export interface Contact {
   email: string | null
   phone: string | null
   mobile_phone: string | null
+
+  // Organization Info (merged from organizations table)
+  is_organization: boolean
+  company: string | null
+  website: string | null
+  contact_category: ContactCategory
 
   // Address
   address_street: string | null
@@ -76,6 +96,10 @@ export interface CreateContactInput {
   email?: string
   phone?: string
   mobile_phone?: string
+  is_organization?: boolean
+  company?: string
+  website?: string
+  contact_category?: ContactCategory
   address_street?: string
   address_city?: string
   address_state?: string
@@ -107,6 +131,8 @@ export interface ContactFilters {
   search?: string
   type?: ContactType
   stage?: ContactStage
+  contact_category?: ContactCategory
+  is_organization?: boolean
   assigned_to?: string
   priority?: ContactPriority
   tags?: string[]
@@ -122,4 +148,83 @@ export interface ContactListResponse {
   page: number
   limit: number
   has_more: boolean
+}
+
+/**
+ * Helper Functions for Combined Type System
+ */
+
+/**
+ * Get combined type label for display
+ * Examples: "Lead-Homeowner", "Customer-Adjuster", "Company: ABC Corp (Developer)"
+ */
+export function getCombinedTypeLabel(contact: Contact): string {
+  if (contact.is_organization && contact.company) {
+    return `Company: ${contact.company} (${formatCategory(contact.contact_category)})`
+  }
+  return `${formatType(contact.type)}-${formatCategory(contact.contact_category)}`
+}
+
+/**
+ * Format contact category for display
+ */
+export function formatCategory(category: ContactCategory): string {
+  const labels: Record<ContactCategory, string> = {
+    homeowner: 'Homeowner',
+    adjuster: 'Adjuster',
+    sub_contractor: 'Sub Contractor',
+    real_estate_agent: 'Real Estate Agent',
+    developer: 'Developer',
+    property_manager: 'Property Manager',
+    local_business: 'Local Business',
+    other: 'Other',
+  }
+  return labels[category]
+}
+
+/**
+ * Format contact type (sales stage) for display
+ */
+export function formatType(type: ContactType): string {
+  const labels: Record<ContactType, string> = {
+    lead: 'Lead',
+    prospect: 'Prospect',
+    customer: 'Customer',
+  }
+  return labels[type]
+}
+
+/**
+ * Format contact stage for display
+ */
+export function formatStage(stage: ContactStage): string {
+  const labels: Record<ContactStage, string> = {
+    new: 'New',
+    contacted: 'Contacted',
+    qualified: 'Qualified',
+    proposal: 'Proposal',
+    negotiation: 'Negotiation',
+    won: 'Won',
+    lost: 'Lost',
+  }
+  return labels[stage]
+}
+
+/**
+ * Get all contact category options for dropdowns
+ */
+export function getContactCategoryOptions(): Array<{
+  value: ContactCategory
+  label: string
+}> {
+  return [
+    { value: 'homeowner', label: 'Homeowner' },
+    { value: 'adjuster', label: 'Adjuster (Insurance)' },
+    { value: 'sub_contractor', label: 'Sub Contractor' },
+    { value: 'real_estate_agent', label: 'Real Estate Agent' },
+    { value: 'developer', label: 'Developer' },
+    { value: 'property_manager', label: 'Property Manager' },
+    { value: 'local_business', label: 'Local Business' },
+    { value: 'other', label: 'Other' },
+  ]
 }

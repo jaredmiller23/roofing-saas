@@ -12,9 +12,10 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 **Phase 2 Completed**: October 1, 2025
 **Phase 3 Started**: October 1, 2025 (6:30 PM)
 **Phase 4 Started**: October 2, 2025
-**Current Date**: November 2, 2025
+**Current Date**: November 17, 2025
 **Current Phase**: Phase 4 - Extensions & Enhancements
 **Status**: Phases 1-3 Complete, Phase 4 In Progress (E-Signature ✅, TypeScript Cleanup ✅, Voice Provider System ✅)
+**Latest Update**: Claude November 2025 capabilities integrated (Extended Thinking, Memory API, Agent Skills)
 
 ## 🌟 ENHANCED CAPABILITIES (October 1, 2025)
 
@@ -31,6 +32,72 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 - **Enhanced Planning**: Optimal architecture decisions
 - **Domain Expertise**: Superior roofing business logic
 - **Best Coding Model**: Industry-leading code quality
+
+## 🚀 NOVEMBER 2025 UPDATES - NEW SUPERPOWERS
+
+### Extended Thinking (NEW)
+- **What**: Deeper reasoning mode for complex decisions
+- **When to Use**:
+  - Architecture decisions (AI Voice pipeline, data models)
+  - Security & compliance analysis (TCPA, RLS policies)
+  - Performance optimization strategies
+  - Complex data migrations & transformations
+- **How**: Available on-demand for complex reasoning tasks
+- **Benefit**: Better decisions on critical path items
+- **Guide**: See `/docs/guides/EXTENDED_THINKING_GUIDE.md`
+
+### Memory API (NEW - 500K Tokens)
+- **What**: Persistent context across sessions (~1,000 pages)
+- **Availability**: Max, Enterprise, Team plans (rolling out to Pro)
+- **Use For**:
+  - Project architecture & design decisions
+  - Coding patterns & preferences
+  - Business rules & constraints
+  - Integration credentials context
+- **Benefit**: Stop repeating context every session
+- **Guide**: See `/docs/guides/MEMORY_API_USAGE.md`
+
+### Agent Skills (BETA)
+- **What**: Domain-specific knowledge packages
+- **Current Skills**:
+  - `roofing-business`: Industry terms, workflows, compliance basics
+  - `quickbooks`: API patterns, accounting rules, OAuth flows
+  - `compliance`: TCPA, call recording laws, data retention
+- **How It Works**: Organized folders with instructions/scripts/resources
+- **When to Use**: Automatically loaded for domain-specific tasks
+- **Benefit**: Consistent business logic, reduced context repetition
+- **Guide**: See `/docs/guides/AGENT_SKILLS_SETUP.md`
+
+### Enhanced Checkpoints (UPDATED)
+- **What**: Esc×2 or `/rewind` to instantly restore code/conversation state
+- **Improvements**: Better state management, more reliable rewinding
+- **Best Practices**:
+  - Before major refactors
+  - When experimenting with architecture
+  - Testing new integrations (Twilio, QuickBooks)
+  - Complex data transformations
+- **Benefit**: Fearless experimentation
+- **Guide**: See `/docs/guides/CHECKPOINT_WORKFLOWS.md`
+
+### Context Editing (NEW)
+- **What**: Automatic thinking block clearing (`clear_thinking_20251015`)
+- **Benefit**: Reduced token usage in long sessions
+- **How**: Automatically manages internal reasoning blocks
+- **Impact**: More efficient long-running development sessions
+
+### Claude Code for Web (October 2025)
+- **What**: Browser-based async coding agent
+- **Use Cases**:
+  - Long-running data migrations
+  - Batch processing setup
+  - Async code reviews
+- **Benefit**: Start tasks, come back later
+- **Same Features**: Checkpoints, sandboxing, all CLI capabilities
+
+### Enhanced Security
+- **Filesystem Sandboxing**: Safer file operations with intelligent guardrails
+- **Network Sandboxing**: Controlled external API access
+- **Benefit**: Reduced permission prompts, safer autonomous work
 
 ### Key Context
 - **Real client** with active roofing operations
@@ -118,7 +185,7 @@ mcp__archon__manage_task("create",
 Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 ```
 
-### ✅ ARCHON OPERATIONAL STATUS (November 2, 2025)
+### ✅ ARCHON OPERATIONAL STATUS (November 17, 2025)
 **Status**: 100% Operational - Technical ✅ Process ✅
 
 **Health Check**: All systems functioning
@@ -155,12 +222,22 @@ Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 
 ## 📋 ESSENTIAL DOCUMENTS
 
+### Core Planning
 1. **PRD_v2.md** - Product requirements (v2.1 enhanced with parallel strategies)
 2. **START_HERE.md** - Setup instructions (updated Oct 1 with new capabilities)
 3. **PHASE_BREAKDOWN.md** - Detailed tasks (v2.0 with subagent/parallel patterns)
-4. **SONNET_4.5_CAPABILITIES.md** - Claude Sonnet 4.5 feature guide (NEW)
-5. **AI_VOICE_ASSISTANT_ARCHITECTURE.md** - Voice AI technical blueprint
-6. **DATABASE_SCHEMA_v2.sql** - Multi-tenant database structure
+4. **DATABASE_SCHEMA_v2.sql** - Multi-tenant database structure
+
+### Claude Capabilities (November 2025)
+5. **SONNET_4.5_CAPABILITIES.md** - Claude Sonnet 4.5 feature guide
+6. **EXTENDED_THINKING_GUIDE.md** - When and how to use extended thinking
+7. **CHECKPOINT_WORKFLOWS.md** - Best practices for checkpoint usage
+8. **AGENT_SKILLS_SETUP.md** - Domain-specific knowledge packages
+9. **MEMORY_API_USAGE.md** - Persistent context patterns
+
+### Technical Architecture
+10. **AI_VOICE_ASSISTANT_ARCHITECTURE.md** - Voice AI technical blueprint
+11. **MULTI_TENANT_ARCHITECTURE_GUIDE.md** - RLS and tenant isolation patterns
 
 ## 🚀 CURRENT STATUS
 

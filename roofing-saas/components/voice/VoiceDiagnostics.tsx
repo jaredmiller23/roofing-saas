@@ -3,12 +3,19 @@
 import { useState } from 'react'
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 
+interface DiagnosticResult {
+  key: string
+  status: 'success' | 'error' | 'warning'
+  message: string
+  value?: string
+}
+
 export function VoiceDiagnostics() {
   const [isOpen, setIsOpen] = useState(false)
-  const [testResults, setTestResults] = useState<Record<string, any>>({})
+  const [testResults, setTestResults] = useState<Record<string, DiagnosticResult>>({})
 
   const runDiagnostics = async () => {
-    const results: Record<string, any> = {}
+    const results: Record<string, DiagnosticResult> = {}
 
     // 0. Browser detection
     const userAgent = navigator.userAgent

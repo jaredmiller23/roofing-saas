@@ -4,13 +4,11 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { login, waitForNotification, waitForNetworkIdle } from './utils/test-helpers'
+import { waitForNotification, waitForNetworkIdle } from './utils/test-helpers'
 
 test.describe('E-Signature Workflow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login before each test
-    await login(page, 'test@example.com', 'testpassword123')
-  })
+  // Tests use storageState authentication from playwright.config.ts
+  // No manual login needed - already authenticated via setup project
 
   test('should create a new signature document', async ({ page }) => {
     // Navigate to signatures page

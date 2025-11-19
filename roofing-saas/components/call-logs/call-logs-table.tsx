@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink } from 'lucide-react'
+import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink, Mic } from 'lucide-react'
 
 interface CallLog {
   id: string
@@ -14,6 +14,7 @@ interface CallLog {
   disposition: string | null
   started_at: string | null
   notes: string | null
+  recording_url: string | null
   created_at: string
 }
 
@@ -144,6 +145,9 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Outcome
               </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Recording
+              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -177,6 +181,15 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {call.outcome || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-center">
+                  {call.recording_url ? (
+                    <span title="Recording available">
+                      <Mic className="h-4 w-4 text-blue-600 inline" />
+                    </span>
+                  ) : (
+                    <span className="text-gray-300">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link

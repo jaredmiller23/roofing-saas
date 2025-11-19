@@ -84,7 +84,7 @@ export async function PUT(
     // If creating/updating contact
     if (create_contact && contact_data && !existingPin.contact_id) {
       // Create contact linked to this pin
-      const { data: contact, error: contactError } = await supabase
+      const { error: contactError } = await supabase
         .rpc('create_contact_from_pin', {
           p_knock_id: id,
           p_first_name: contact_data.first_name,

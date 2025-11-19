@@ -21,7 +21,11 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import type { BatchEnrichmentResult } from '@/lib/enrichment/types';
+import type {
+  BatchEnrichmentResult,
+  PropertyEnrichmentResult,
+  EnrichmentError
+} from '@/lib/enrichment/types';
 
 interface EnrichmentProgressProps {
   jobId: string;
@@ -63,8 +67,8 @@ interface JobStatus {
     average_quality_score?: number;
     average_completeness?: number;
   };
-  results: any[];
-  errors: any[];
+  results: PropertyEnrichmentResult[];
+  errors: EnrichmentError[];
 }
 
 export function EnrichmentProgress({
@@ -96,7 +100,26 @@ export function EnrichmentProgress({
 
       // Call callbacks
       if (data.status === 'completed' && onComplete) {
-        onComplete(data as any);
+        // Convert JobStatus to BatchEnrichmentResult
+        const result: BatchEnrichmentResult = {
+          job_id: data.job_id,
+          status: data.status,
+          total_addresses: data.progress.total,
+          processed_count: data.progress.processed,
+          successful_count: data.progress.successful,
+          failed_count: data.progress.failed,
+          cached_count: data.progress.cached,
+          results: data.results,
+          errors: data.errors,
+          started_at: data.timing.started_at,
+          completed_at: data.timing.completed_at,
+          estimated_completion_at: data.timing.estimated_completion_at,
+          duration_ms: data.timing.duration_ms,
+          cost_estimate: data.cost_estimate as any,
+          average_quality_score: data.quality.average_quality_score,
+          average_completeness: data.quality.average_completeness,
+        };
+        onComplete(result);
       } else if (data.status === 'failed' && onError) {
         onError('Enrichment job failed');
       }

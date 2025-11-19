@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
+import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
+import type { UserForImpersonation } from '@/lib/impersonation/types'
 
 interface NavLink {
   href: string
@@ -13,6 +15,7 @@ interface NavLink {
 
 interface DashboardNavProps {
   userEmail: string
+  userRole?: string
 }
 
 const navLinks: NavLink[] = [
@@ -40,11 +43,40 @@ const navLinks: NavLink[] = [
   { href: '/storm-targeting/leads', label: 'Storm Leads' },
 ]
 
-export function DashboardNav({ userEmail }: DashboardNavProps) {
+export function DashboardNav({ userEmail, userRole }: DashboardNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<UserForImpersonation | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const pathname = usePathname()
 
   const isActive = (href: string) => pathname === href
+  const isAdmin = userRole === 'admin'
+
+  const handleUserSelect = (user: UserForImpersonation) => {
+    setSelectedUser(user)
+    setIsDialogOpen(true)
+  }
+
+  const handleStartImpersonation = async (userId: string, reason?: string) => {
+    try {
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, reason }),
+      })
+
+      if (response.ok) {
+        // Reload page to start impersonation session
+        window.location.reload()
+      } else {
+        const data = await response.json()
+        alert(`Failed to start impersonation: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error starting impersonation:', error)
+      alert('Failed to start impersonation. Please try again.')
+    }
+  }
 
   return (
     <>
@@ -124,6 +156,11 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
 
       {/* Desktop User Menu */}
       <div className="hidden xl:flex xl:items-center xl:space-x-4 xl:flex-shrink-0 xl:ml-6">
+        {/* Admin-only: Impersonate User */}
+        {isAdmin && (
+          <UserPicker onUserSelect={handleUserSelect} />
+        )}
+
         <span className="text-sm text-gray-600 whitespace-nowrap">{userEmail}</span>
         <form action={signOut}>
           <button
@@ -134,6 +171,17 @@ export function DashboardNav({ userEmail }: DashboardNavProps) {
           </button>
         </form>
       </div>
+
+      {/* Impersonation Confirmation Dialog */}
+      <ConfirmImpersonationDialog
+        user={selectedUser}
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false)
+          setSelectedUser(null)
+        }}
+        onConfirm={handleStartImpersonation}
+      />
     </>
   )
 }

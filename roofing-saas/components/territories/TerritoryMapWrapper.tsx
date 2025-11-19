@@ -34,7 +34,7 @@ interface TerritoryMapProps {
   territories?: Territory[]
   selectedTerritory?: Territory | null
   onTerritoryClick?: (territory: Territory) => void
-  onMapReady?: (map: any) => void
+  onMapReady?: (map: google.maps.Map) => void
   center?: [number, number]
   zoom?: number
   height?: string

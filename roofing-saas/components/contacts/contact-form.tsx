@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Contact } from '@/lib/types/contact'
+import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 
 interface ContactFormProps {
   contact?: Contact
@@ -20,6 +20,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     email: contact?.email || '',
     phone: contact?.phone || '',
     mobile_phone: contact?.mobile_phone || '',
+    is_organization: contact?.is_organization || false,
+    company: contact?.company || '',
+    website: contact?.website || '',
+    contact_category: contact?.contact_category || 'homeowner',
     address_street: contact?.address_street || '',
     address_city: contact?.address_city || '',
     address_state: contact?.address_state || '',
@@ -49,6 +53,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         mobile_phone: formData.mobile_phone || undefined,
+        company: formData.company || undefined,
+        website: formData.website || undefined,
         roof_age: formData.roof_age ? parseInt(formData.roof_age) : undefined,
         square_footage: formData.square_footage
           ? parseInt(formData.square_footage)
@@ -86,9 +92,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
+    const target = e.target as HTMLInputElement
+    const value = target.type === 'checkbox' ? target.checked : target.value
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [target.name]: value,
     })
   }
 
@@ -176,9 +184,80 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             />
           </div>
 
+          <div className="md:col-span-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_organization"
+                name="is_organization"
+                checked={formData.is_organization}
+                onChange={handleChange}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_organization" className="ml-2 block text-sm font-medium text-gray-700">
+                This is a company/organization (not an individual)
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+              Company Name
+            </label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              placeholder={formData.is_organization ? "Company name" : "Employer (optional)"}
+              value={formData.company}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {formData.is_organization
+                ? "The name of the organization"
+                : "Optional: The company this person works for"}
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+              Website
+            </label>
+            <input
+              type="url"
+              id="website"
+              name="website"
+              placeholder="https://example.com"
+              value={formData.website}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="contact_category" className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="contact_category"
+              name="contact_category"
+              required
+              value={formData.contact_category}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {getContactCategoryOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-              Type
+              Sales Stage
             </label>
             <select
               id="type"

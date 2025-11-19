@@ -17,6 +17,9 @@ test.describe('Basic Tests', () => {
   })
 
   test('should load login page', async ({ page }) => {
+    // Override storageState to test unauthenticated state
+    // This test needs to see the actual login page, not be redirected as an authenticated user
+    await page.context().clearCookies()
     await page.goto('/login')
 
     // Should see login form

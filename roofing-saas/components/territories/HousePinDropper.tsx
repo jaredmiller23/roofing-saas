@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { Marker } from '@react-google-maps/api'
+import { useEffect, useRef, useState } from 'react'
 import { PinPopup } from './PinPopup'
 import { toast } from 'sonner'
 
@@ -82,9 +81,12 @@ export function HousePinDropper({
   useEffect(() => {
     if (!map || !existingPins.length) return
 
+    // Capture the current markers reference for cleanup
+    const markers = markersRef.current
+
     // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null))
-    markersRef.current.clear()
+    markers.forEach(marker => marker.setMap(null))
+    markers.clear()
 
     // Add markers for each existing pin
     existingPins.forEach(pin => {
@@ -116,14 +118,14 @@ export function HousePinDropper({
 
       // Store reference to marker
       if (pin.id) {
-        markersRef.current.set(pin.id, marker)
+        markers.set(pin.id, marker)
       }
     })
 
     return () => {
-      // Cleanup markers on unmount
-      markersRef.current.forEach(marker => marker.setMap(null))
-      markersRef.current.clear()
+      // Cleanup markers on unmount using the captured reference
+      markers.forEach(marker => marker.setMap(null))
+      markers.clear()
     }
   }, [map, existingPins])
 

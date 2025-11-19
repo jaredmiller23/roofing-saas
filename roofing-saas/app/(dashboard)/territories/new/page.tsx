@@ -21,7 +21,8 @@ export default function NewTerritoryPage() {
   const router = useRouter()
   const [boundaryData, setBoundaryData] = useState<TerritoryBoundary | null>(null)
 
-  const handleBoundaryChange = (boundary: TerritoryBoundary | null) => {
+  // Temporarily unused while TerritoryMapEditor is disabled during Google Maps migration
+  const _handleBoundaryChange = (boundary: TerritoryBoundary | null) => {
     setBoundaryData(boundary)
   }
 

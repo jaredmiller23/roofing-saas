@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
+import { verifyResendSignature } from '@/lib/webhooks/security'
+import { triggerWorkflow } from '@/lib/automation/engine'
 
 /**
  * POST /api/email/webhook
@@ -15,8 +17,21 @@ export async function POST(request: NextRequest) {
   try {
     logger.info('Received email webhook from Resend')
 
-    // Get webhook payload
-    const payload = await request.json()
+    // Get raw body for signature verification (Resend requires raw body)
+    const rawBody = await request.text()
+
+    // Verify Resend webhook signature
+    const verification = await verifyResendSignature(request, rawBody)
+
+    if (!verification.valid) {
+      logger.error('Invalid Resend signature', { error: verification.error })
+      return new NextResponse('Unauthorized', { status: 403 })
+    }
+
+    logger.info('Resend signature verified successfully')
+
+    // Parse webhook payload
+    const payload = JSON.parse(rawBody)
     const { type, data } = payload
 
     logger.info('Email webhook event', {
@@ -69,6 +84,16 @@ export async function POST(request: NextRequest) {
         // Store user agent and IP for analytics
         updatedMetadata.last_open_user_agent = data.user_agent
         updatedMetadata.last_open_ip = data.ip_address
+
+        // Trigger email_opened workflows (non-blocking)
+        triggerWorkflow(activity.tenant_id, 'email_opened', {
+          email_id: data.email_id,
+          contact_id: activity.contact_id,
+          activity_id: activity.id,
+          opened_at: data.created_at,
+        }).catch((error) => {
+          logger.error('Failed to trigger email_opened workflows', { error, emailId: data.email_id })
+        })
         break
 
       case 'email.clicked':
@@ -76,6 +101,17 @@ export async function POST(request: NextRequest) {
         updatedMetadata.clicked = true
         updatedMetadata.click_count = ((updatedMetadata.click_count as number) || 0) + 1
         updatedMetadata.last_clicked_link = data.link
+
+        // Trigger email_clicked workflows (non-blocking)
+        triggerWorkflow(activity.tenant_id, 'email_clicked', {
+          email_id: data.email_id,
+          contact_id: activity.contact_id,
+          activity_id: activity.id,
+          link: data.link,
+          clicked_at: data.created_at,
+        }).catch((error) => {
+          logger.error('Failed to trigger email_clicked workflows', { error, emailId: data.email_id })
+        })
         break
 
       case 'email.bounced':
