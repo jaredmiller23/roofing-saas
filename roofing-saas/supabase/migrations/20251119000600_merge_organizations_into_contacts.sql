@@ -45,7 +45,24 @@ SELECT * FROM contacts;
 CREATE TABLE IF NOT EXISTS projects_backup_20251119 AS
 SELECT id, organization_id, contact_id FROM projects;
 
-RAISE NOTICE 'Backup tables created: organizations_backup_20251119, contacts_backup_20251119, projects_backup_20251119';
+DO $$
+BEGIN
+  RAISE NOTICE 'Backup tables created: organizations_backup_20251119, contacts_backup_20251119, projects_backup_20251119';
+END $$;
+
+-- =============================================
+-- PHASE 0.5: TEMPORARILY DROP SUBSTATUS TRIGGERS
+-- =============================================
+-- These triggers from Migration 6 interfere with INSERT operations
+-- We'll recreate them at the end of this migration
+
+DROP TRIGGER IF EXISTS trigger_set_default_substatus_contacts ON contacts;
+DROP TRIGGER IF EXISTS trigger_set_default_substatus_projects ON projects;
+
+DO $$
+BEGIN
+  RAISE NOTICE 'Temporarily dropped substatus triggers to avoid conflicts during migration';
+END $$;
 
 -- =============================================
 -- PHASE 1: ADD NEW FIELDS TO CONTACTS TABLE
@@ -68,20 +85,30 @@ ALTER TABLE contacts
 ADD COLUMN IF NOT EXISTS contact_category TEXT;
 
 -- Add constraint for contact_category values
-ALTER TABLE contacts
-ADD CONSTRAINT IF NOT EXISTS contact_category_check
-CHECK (contact_category IS NULL OR contact_category IN (
-  'homeowner',
-  'adjuster',
-  'sub_contractor',
-  'real_estate_agent',
-  'developer',
-  'property_manager',
-  'local_business',
-  'other'
-));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'contact_category_check'
+  ) THEN
+    ALTER TABLE contacts
+    ADD CONSTRAINT contact_category_check
+    CHECK (contact_category IS NULL OR contact_category IN (
+      'homeowner',
+      'adjuster',
+      'sub_contractor',
+      'real_estate_agent',
+      'developer',
+      'property_manager',
+      'local_business',
+      'other'
+    ));
+  END IF;
+END $$;
 
-RAISE NOTICE 'Added new columns to contacts table: is_organization, company, website, contact_category';
+DO $$
+BEGIN
+  RAISE NOTICE 'Added new columns to contacts table: is_organization, company, website, contact_category';
+END $$;
 
 -- =============================================
 -- PHASE 2: SET DEFAULTS FOR EXISTING CONTACTS
@@ -99,7 +126,10 @@ ALTER COLUMN contact_category SET DEFAULT 'homeowner';
 ALTER TABLE contacts
 ALTER COLUMN contact_category SET NOT NULL;
 
-RAISE NOTICE 'Set default contact_category = homeowner for existing contacts';
+DO $$
+BEGIN
+  RAISE NOTICE 'Set default contact_category = homeowner for existing contacts';
+END $$;
 
 -- =============================================
 -- PHASE 3: MIGRATE ORGANIZATIONS DATA
@@ -231,7 +261,10 @@ WHERE p.organization_id = o.id
   AND p.contact_id IS NULL
   AND o.primary_contact_id IS NOT NULL;
 
-RAISE NOTICE 'Updated project contacts from organization primary_contact_id references';
+DO $$
+BEGIN
+  RAISE NOTICE 'Updated project contacts from organization primary_contact_id references';
+END $$;
 
 -- =============================================
 -- PHASE 5: DROP ORGANIZATION REFERENCES
@@ -241,7 +274,10 @@ RAISE NOTICE 'Updated project contacts from organization primary_contact_id refe
 ALTER TABLE projects
 DROP COLUMN IF EXISTS organization_id;
 
-RAISE NOTICE 'Dropped organization_id column from projects table';
+DO $$
+BEGIN
+  RAISE NOTICE 'Dropped organization_id column from projects table';
+END $$;
 
 -- =============================================
 -- PHASE 6: DROP ORGANIZATIONS TABLE
@@ -270,7 +306,10 @@ DROP INDEX IF EXISTS idx_projects_organization_id;
 -- Finally, drop the table
 DROP TABLE IF EXISTS organizations CASCADE;
 
-RAISE NOTICE 'Dropped organizations table and all associated policies, triggers, functions, and indexes';
+DO $$
+BEGIN
+  RAISE NOTICE 'Dropped organizations table and all associated policies, triggers, functions, and indexes';
+END $$;
 
 -- =============================================
 -- PHASE 7: CREATE NEW INDEXES FOR PERFORMANCE
@@ -304,7 +343,10 @@ CREATE INDEX IF NOT EXISTS idx_contacts_website
 ON contacts(website)
 WHERE website IS NOT NULL;
 
-RAISE NOTICE 'Created performance indexes on new contact fields';
+DO $$
+BEGIN
+  RAISE NOTICE 'Created performance indexes on new contact fields';
+END $$;
 
 -- =============================================
 -- PHASE 8: UPDATE SEARCH VECTOR (if exists)
@@ -395,6 +437,26 @@ BEGIN
   RAISE NOTICE '2. Update TypeScript types (/lib/types/contact.ts)';
   RAISE NOTICE '3. Update UI components to use new fields';
   RAISE NOTICE '4. If successful, drop backup tables after 7 days';
+END $$;
+
+-- =============================================
+-- PHASE 10: RECREATE SUBSTATUS TRIGGERS
+-- =============================================
+-- Restore the triggers we dropped in Phase 0.5
+
+CREATE TRIGGER trigger_set_default_substatus_contacts
+  BEFORE INSERT OR UPDATE ON contacts
+  FOR EACH ROW
+  EXECUTE FUNCTION set_default_substatus();
+
+CREATE TRIGGER trigger_set_default_substatus_projects
+  BEFORE INSERT OR UPDATE ON projects
+  FOR EACH ROW
+  EXECUTE FUNCTION set_default_substatus();
+
+DO $$
+BEGIN
+  RAISE NOTICE 'Recreated substatus triggers after migration complete';
 END $$;
 
 -- =============================================

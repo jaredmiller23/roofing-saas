@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS ai_conversations (
   metadata JSONB DEFAULT '{}'::jsonb,
 
   CONSTRAINT ai_conversations_tenant_user_fk FOREIGN KEY (tenant_id, user_id)
-    REFERENCES user_tenants(tenant_id, user_id) ON DELETE CASCADE
+    REFERENCES tenant_users(tenant_id, user_id) ON DELETE CASCADE
 );
 
 -- Create ai_messages table
@@ -80,7 +80,7 @@ CREATE POLICY "Users can view own conversations"
   USING (
     user_id = auth.uid() AND
     tenant_id IN (
-      SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+      SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   );
 
@@ -89,7 +89,7 @@ CREATE POLICY "Users can create own conversations"
   WITH CHECK (
     user_id = auth.uid() AND
     tenant_id IN (
-      SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+      SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   );
 
@@ -98,7 +98,7 @@ CREATE POLICY "Users can update own conversations"
   USING (
     user_id = auth.uid() AND
     tenant_id IN (
-      SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+      SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   );
 
@@ -107,7 +107,7 @@ CREATE POLICY "Users can delete own conversations"
   USING (
     user_id = auth.uid() AND
     tenant_id IN (
-      SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+      SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   );
 
@@ -120,7 +120,7 @@ CREATE POLICY "Users can view messages in own conversations"
       WHERE id = ai_messages.conversation_id
         AND user_id = auth.uid()
         AND tenant_id IN (
-          SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+          SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
         )
     )
   );
@@ -133,7 +133,7 @@ CREATE POLICY "Users can create messages in own conversations"
       WHERE id = ai_messages.conversation_id
         AND user_id = auth.uid()
         AND tenant_id IN (
-          SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+          SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
         )
     )
   );
@@ -146,7 +146,7 @@ CREATE POLICY "Users can update messages in own conversations"
       WHERE id = ai_messages.conversation_id
         AND user_id = auth.uid()
         AND tenant_id IN (
-          SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+          SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
         )
     )
   );
@@ -159,7 +159,7 @@ CREATE POLICY "Users can delete messages in own conversations"
       WHERE id = ai_messages.conversation_id
         AND user_id = auth.uid()
         AND tenant_id IN (
-          SELECT tenant_id FROM user_tenants WHERE user_id = auth.uid()
+          SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
         )
     )
   );

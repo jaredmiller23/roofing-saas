@@ -63,9 +63,9 @@ ALTER TABLE activities ADD COLUMN IF NOT EXISTS performed_by UUID REFERENCES aut
 ALTER TABLE activities ADD COLUMN IF NOT EXISTS on_behalf_of UUID REFERENCES auth.users(id);
 ALTER TABLE activities ADD COLUMN IF NOT EXISTS is_impersonated_action BOOLEAN DEFAULT false;
 
--- Backfill existing records (performed_by = user_id for historical data)
+-- Backfill existing records (performed_by = created_by for historical data)
 UPDATE activities
-SET performed_by = user_id
+SET performed_by = created_by
 WHERE performed_by IS NULL;
 
 -- ============================================================================
