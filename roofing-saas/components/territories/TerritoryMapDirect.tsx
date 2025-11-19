@@ -47,6 +47,7 @@ export default function TerritoryMapDirect({
   const polygonsRef = useRef<google.maps.Polygon[]>([])
   const currentMapTypeRef = useRef<string>('hybrid')
   const isInitializedRef = useRef(false)
+  const hasFitBoundsRef = useRef(false)
 
   // Capture initial values to use in effect (map should only initialize once)
   const initialCenterRef = useRef(center)
@@ -106,8 +107,6 @@ export default function TerritoryMapDirect({
 
     if (disableTerritoryInteractions) return
 
-    let hasFitBounds = false
-
     // Add new polygons
     territories.forEach(territory => {
       if (!territory.boundary_data) return
@@ -156,7 +155,7 @@ export default function TerritoryMapDirect({
     })
 
     // Fit bounds to show all territories (ONLY on first territory load)
-    if (!hasFitBounds && territories.length > 0 && territories.some(t => t.boundary_data)) {
+    if (!hasFitBoundsRef.current && territories.length > 0 && territories.some(t => t.boundary_data)) {
       try {
         const bounds = new google.maps.LatLngBounds()
         polygonsRef.current.forEach(polygon => {
@@ -166,7 +165,7 @@ export default function TerritoryMapDirect({
         })
         if (!bounds.isEmpty()) {
           mapRef.current!.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 })
-          hasFitBounds = true
+          hasFitBoundsRef.current = true
         }
       } catch (error) {
         console.error('Error fitting bounds:', error)
