@@ -6,12 +6,8 @@ const withPWA = withPWAInit({
   dest: "public",
   register: true,
   skipWaiting: true,
+  clientsClaim: true,
   disable: process.env.NODE_ENV === 'development', // Disable PWA in development to avoid Turbopack conflicts
-  // Background sync for offline photo queue
-  workboxOptions: {
-    skipWaiting: true,
-    clientsClaim: true,
-  },
   // Caching strategies
   runtimeCaching: [
     {
