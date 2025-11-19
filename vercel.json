@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd roofing-saas && npm run build",
+  "devCommand": "cd roofing-saas && npm run dev",
+  "installCommand": "cd roofing-saas && npm install",
+  "outputDirectory": "roofing-saas/.next"
+}
