@@ -12,7 +12,7 @@ import { getCurrentUser } from '@/lib/auth/session'
  * GET /api/admin/impersonate/status
  * Check if currently impersonating another user
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
@@ -87,15 +87,18 @@ export async function GET(request: NextRequest) {
     const timeRemainingMs = expiresAt.getTime() - now.getTime()
     const timeRemainingSeconds = Math.floor(timeRemainingMs / 1000)
 
+    const adminUserData = adminData?.users as { email?: string } | null
+    const impersonatedUserData = impersonatedData?.users as { email?: string } | null
+
     const response: ImpersonationStatusResponse = {
       is_impersonating: true,
       admin_user: {
         id: sessionData.admin_user_id,
-        email: (adminData?.users as any)?.email || user.email || '',
+        email: adminUserData?.email || user.email || '',
       },
       impersonated_user: {
         id: sessionData.impersonated_user_id,
-        email: (impersonatedData?.users as any)?.email || '',
+        email: impersonatedUserData?.email || '',
         role: impersonatedData?.role || 'user',
       },
       started_at: sessionData.started_at,

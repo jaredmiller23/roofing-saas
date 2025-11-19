@@ -39,7 +39,7 @@ export interface ResendSignatureVerificationResult {
  */
 export async function verifyTwilioSignature(
   request: NextRequest,
-  params: Record<string, any>
+  params: Record<string, string | string[]>
 ): Promise<TwilioSignatureVerificationResult> {
   try {
     // Get Twilio auth token from environment
@@ -99,10 +99,10 @@ export async function verifyTwilioSignature(
  * @param formData - FormData from the request
  * @returns Plain object with form data
  */
-export function parseTwilioFormData(formData: FormData): Record<string, any> {
-  const params: Record<string, any> = {}
+export function parseTwilioFormData(formData: FormData): Record<string, string> {
+  const params: Record<string, string> = {}
 
-  formData.forEach((value, key) => {
+  formData.forEach((value: FormDataEntryValue, key: string) => {
     params[key] = value.toString()
   })
 
@@ -117,10 +117,10 @@ export function parseTwilioFormData(formData: FormData): Record<string, any> {
  * @param searchParams - URLSearchParams from the request
  * @returns Plain object with query params
  */
-export function parseTwilioQueryParams(searchParams: URLSearchParams): Record<string, any> {
-  const params: Record<string, any> = {}
+export function parseTwilioQueryParams(searchParams: URLSearchParams): Record<string, string> {
+  const params: Record<string, string> = {}
 
-  searchParams.forEach((value, key) => {
+  searchParams.forEach((value: string, key: string) => {
     params[key] = value
   })
 

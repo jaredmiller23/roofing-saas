@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Build query - get user's own filters + shared filters (RLS handles tenant isolation)
-    const { data, error, count } = await supabase
+    const { data, error } = await supabase
       .from('saved_filters')
       .select('*')
       .eq('entity_type', entity_type)

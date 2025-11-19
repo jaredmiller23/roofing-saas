@@ -21,16 +21,14 @@ import {
   ArrowLeft,
   Mail,
   FileText,
-  ClipboardCheck,
   RefreshCw,
   Star,
-  CloudRain,
   Loader2,
   Clock,
   Target,
   Zap,
 } from 'lucide-react'
-import { getAllTemplates, getTemplateById, type CampaignTemplate } from '@/lib/campaigns/templates'
+import { getAllTemplates, type CampaignTemplate } from '@/lib/campaigns/templates'
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   lead_nurture: <Mail className="h-5 w-5" />,

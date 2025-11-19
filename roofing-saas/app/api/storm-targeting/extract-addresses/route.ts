@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
 import { googlePlacesClient } from '@/lib/address-extraction/google-places-client';
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
@@ -38,7 +39,7 @@ function polygonToPostGIS(polygon: Polygon): string {
  * Calculate area of polygon in square miles (using PostGIS)
  */
 async function calculateAreaSquareMiles(
-  supabase: any,
+  supabase: SupabaseClient,
   polygonWKT: string
 ): Promise<number> {
   const { data, error } = await supabase.rpc('calculate_polygon_area_sq_miles', {

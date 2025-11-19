@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface SignatureData {
   signer_name: string
@@ -146,7 +147,7 @@ export async function generateSignedPDF(
   // Add signatures to the last page
   const pages = pdfDoc.getPages()
   const lastPage = pages[pages.length - 1]
-  const { width, height } = lastPage.getSize()
+  const { width } = lastPage.getSize()
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
@@ -266,10 +267,10 @@ export async function uploadPDFToStorage(
   pdfBytes: Uint8Array,
   fileName: string,
   bucket: string,
-  supabase: any // SupabaseClient type
+  supabase: SupabaseClient
 ): Promise<string> {
   // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from(bucket)
     .upload(fileName, pdfBytes, {
       contentType: 'application/pdf',

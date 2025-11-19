@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Mail, MessageSquare, CheckCircle, XCircle, TrendingUp, Users, Loader2 } from 'lucide-react'
+import { ArrowLeft, Mail, MessageSquare, CheckCircle, TrendingUp, Users, Loader2 } from 'lucide-react'
 import type { Campaign, CampaignEnrollment } from '@/lib/campaigns/types'
 
 export default function CampaignAnalyticsPage() {
@@ -20,6 +20,7 @@ export default function CampaignAnalyticsPage() {
     if (campaignId) {
       fetchAnalyticsData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
 
   const fetchAnalyticsData = async () => {

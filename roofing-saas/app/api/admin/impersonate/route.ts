@@ -157,13 +157,16 @@ export async function POST(request: NextRequest) {
       path: '/',
     })
 
+    const adminUserData = adminData?.users as { email?: string } | null
+    const impersonatedUserData = targetUser.users as { email?: string } | null
+
     const response: StartImpersonationResponse = {
       success: true,
       session: {
         admin_user_id: user.id,
-        admin_email: (adminData?.users as any)?.email || user.email || '',
+        admin_email: adminUserData?.email || user.email || '',
         impersonated_user_id: targetUserId,
-        impersonated_email: (targetUser.users as any)?.email || '',
+        impersonated_email: impersonatedUserData?.email || '',
         impersonated_role: targetUser.role,
         started_at: startedAt.toISOString(),
         expires_at: expiresAt.toISOString(),
@@ -186,7 +189,7 @@ export async function POST(request: NextRequest) {
  * DELETE /api/admin/impersonate
  * Stop impersonating (exit impersonation session)
  */
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {

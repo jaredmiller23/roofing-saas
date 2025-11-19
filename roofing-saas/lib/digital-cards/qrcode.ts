@@ -111,7 +111,7 @@ export async function createQRCodeResponse(
 ): Promise<Response> {
   const buffer = await generateQRCodeBuffer(url, options)
 
-  return new Response(buffer as any, {
+  return new Response(buffer as unknown as BodyInit, {
     headers: {
       'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=31536000, immutable',

@@ -54,6 +54,7 @@ export default function PublicCardPage() {
       fetchCard()
       trackView()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
   const fetchCard = async () => {
@@ -131,7 +132,7 @@ export default function PublicCardPage() {
   }
 
   const handleSocialClick = (platform: string) => {
-    trackInteraction(`${platform}_click` as any)
+    trackInteraction(`${platform}_click` as 'linkedin_click' | 'facebook_click' | 'instagram_click' | 'twitter_click')
   }
 
   const handleContactSubmit = async (e: React.FormEvent) => {

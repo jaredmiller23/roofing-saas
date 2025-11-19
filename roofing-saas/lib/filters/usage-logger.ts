@@ -233,6 +233,22 @@ export function buildWhereClause(criteria: Record<string, FilterCriterion>): {
 }
 
 /**
+ * Supabase query builder interface (subset of methods we use)
+ */
+interface SupabaseQueryBuilder {
+  eq(column: string, value: string | number): this
+  neq(column: string, value: string | number): this
+  ilike(column: string, pattern: string): this
+  not(column: string, operator: string, value: unknown): this
+  gt(column: string, value: number): this
+  lt(column: string, value: number): this
+  gte(column: string, value: number): this
+  lte(column: string, value: number): this
+  in(column: string, values: unknown[]): this
+  is(column: string, value: null): this
+}
+
+/**
  * Apply filters to a Supabase query
  *
  * Helper to apply filter criteria to a Supabase query builder
@@ -241,78 +257,78 @@ export function buildWhereClause(criteria: Record<string, FilterCriterion>): {
  * @param criteria Filter criteria
  * @returns Modified query builder
  */
-export function applyFiltersToQuery<T>(
-  query: any,
+export function applyFiltersToQuery<T extends SupabaseQueryBuilder>(
+  query: T,
   criteria: Record<string, FilterCriterion>
-): any {
+): T {
   for (const [field, criterion] of Object.entries(criteria)) {
     const { operator, value } = criterion
 
     switch (operator) {
       case 'equals':
-        query = query.eq(field, value as string | number)
+        query = query.eq(field, value as string | number) as T
         break
 
       case 'not_equals':
-        query = query.neq(field, value as string | number)
+        query = query.neq(field, value as string | number) as T
         break
 
       case 'contains':
-        query = query.ilike(field, `%${value}%`)
+        query = query.ilike(field, `%${value}%`) as T
         break
 
       case 'not_contains':
-        query = query.not(field, 'ilike', `%${value}%`)
+        query = query.not(field, 'ilike', `%${value}%`) as T
         break
 
       case 'starts_with':
-        query = query.ilike(field, `${value}%`)
+        query = query.ilike(field, `${value}%`) as T
         break
 
       case 'ends_with':
-        query = query.ilike(field, `%${value}`)
+        query = query.ilike(field, `%${value}`) as T
         break
 
       case 'greater_than':
-        query = query.gt(field, value as number)
+        query = query.gt(field, value as number) as T
         break
 
       case 'less_than':
-        query = query.lt(field, value as number)
+        query = query.lt(field, value as number) as T
         break
 
       case 'greater_than_or_equal':
-        query = query.gte(field, value as number)
+        query = query.gte(field, value as number) as T
         break
 
       case 'less_than_or_equal':
-        query = query.lte(field, value as number)
+        query = query.lte(field, value as number) as T
         break
 
       case 'in':
         if (Array.isArray(value) && value.length > 0) {
-          query = query.in(field, value as unknown[])
+          query = query.in(field, value as unknown[]) as T
         }
         break
 
       case 'not_in':
         if (Array.isArray(value) && value.length > 0) {
-          query = query.not(field, 'in', value as unknown[])
+          query = query.not(field, 'in', value as unknown[]) as T
         }
         break
 
       case 'between':
         if (Array.isArray(value) && value.length === 2) {
-          query = query.gte(field, value[0] as number).lte(field, value[1] as number)
+          query = query.gte(field, value[0] as number).lte(field, value[1] as number) as T
         }
         break
 
       case 'is_null':
-        query = query.is(field, null)
+        query = query.is(field, null) as T
         break
 
       case 'is_not_null':
-        query = query.not(field, 'is', null)
+        query = query.not(field, 'is', null) as T
         break
     }
   }

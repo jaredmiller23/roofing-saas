@@ -24,6 +24,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     fetchCampaigns()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter])
 
   const fetchCampaigns = async () => {

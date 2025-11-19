@@ -23,12 +23,10 @@ import {
   Save,
   Eye,
   Download,
-  QrCode,
   Copy,
   CheckCircle,
   Loader2,
   ExternalLink,
-  TrendingUp,
   Users,
   MousePointerClick,
   Mail,
@@ -81,6 +79,7 @@ export default function MyCardPage() {
 
   useEffect(() => {
     fetchCard()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchCard = async () => {

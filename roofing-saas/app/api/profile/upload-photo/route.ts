@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const avatarUrl = urlData.publicUrl
 
     // Update user metadata with new avatar URL
-    const { data, error: updateError } = await supabase.auth.updateUser({
+    const { error: updateError } = await supabase.auth.updateUser({
       data: {
         ...user.user_metadata,
         avatar_url: avatarUrl,

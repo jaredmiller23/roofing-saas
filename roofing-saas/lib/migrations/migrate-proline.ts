@@ -11,9 +11,6 @@ import {
   type ProlineContact,
   type ProlineProject,
   type ProlineActivity,
-  CONTACT_FIELD_MAPPING,
-  PROJECT_FIELD_MAPPING,
-  ACTIVITY_FIELD_MAPPING,
   mapContactStatus,
   mapProjectStage,
   mapActivityType,
@@ -24,7 +21,6 @@ import {
   MIGRATION_DEFAULTS,
 } from './proline-field-mappings'
 import * as fs from 'fs'
-import * as path from 'path'
 // @ts-expect-error - papaparse not installed yet
 import Papa from 'papaparse'
 
@@ -361,15 +357,19 @@ export async function migrateProlineData(
 async function parseCsv<T>(filePath: string): Promise<T[]> {
   const fileContent = fs.readFileSync(filePath, 'utf-8')
 
+  interface PapaParseResult {
+    data: unknown[]
+  }
+
   return new Promise((resolve, reject) => {
     Papa.parse(fileContent, {
       header: true,
       skipEmptyLines: true,
       transformHeader: (header: string) => header.trim().toLowerCase().replace(/\s+/g, '_'),
-      complete: (results: any) => {
+      complete: (results: PapaParseResult) => {
         resolve(results.data as T[])
       },
-      error: (error: any) => {
+      error: (error: Error) => {
         reject(error)
       },
     })
@@ -380,7 +380,7 @@ async function parseCsv<T>(filePath: string): Promise<T[]> {
  * Check if contact already exists (duplicate detection)
  */
 async function checkContactDuplicate(
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   tenantId: string,
   contact: ProlineContact
 ): Promise<boolean> {
@@ -429,7 +429,7 @@ async function checkContactDuplicate(
 /**
  * Transform Proline contact to our schema
  */
-function transformContact(contact: ProlineContact, options: MigrationOptions): any {
+function transformContact(contact: ProlineContact, options: MigrationOptions): Record<string, unknown> {
   const { type, stage } = mapContactStatus(contact.status || '')
 
   // Store Proline ID in notes for relationship linking
@@ -467,7 +467,7 @@ function transformProject(
   project: ProlineProject,
   contactId: string,
   options: MigrationOptions
-): any {
+): Record<string, unknown> {
   const stage = mapProjectStage(project.status || '', project.stage)
 
   // Store Proline ID in notes for relationship linking
@@ -499,7 +499,7 @@ function transformActivity(
   contactId: string,
   projectId: string | null,
   options: MigrationOptions
-): any {
+): Record<string, unknown> {
   const activityType = mapActivityType(activity.type || '')
 
   return {

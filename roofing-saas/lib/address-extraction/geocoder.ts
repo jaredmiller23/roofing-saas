@@ -45,7 +45,22 @@ function parseGoogleGeocodingResult(result: Record<string, unknown>): Partial<Ge
     };
   }
 
-  const results = result.results as any[];
+  interface GoogleAddressComponent {
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }
+
+  interface GoogleGeocodingResult {
+    formatted_address: string;
+    place_id: string;
+    address_components: GoogleAddressComponent[];
+    geometry?: {
+      location_type?: string;
+    };
+  }
+
+  const results = result.results as GoogleGeocodingResult[];
   const firstResult = results?.[0];
   if (!firstResult) {
     return {

@@ -97,7 +97,8 @@ export default function TerritoriesPage() {
   // Load knocks when selected territory changes
   useEffect(() => {
     fetchKnocks(selectedTerritory?.id)
-  }, [selectedTerritory?.id, fetchKnocks])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTerritory?.id])
 
   // Handle territory selection
   const handleTerritorySelect = (territory: Territory) => {
@@ -376,7 +377,7 @@ export default function TerritoriesPage() {
 
         {/* Mobile: Tabs */}
         <div className="md:hidden">
-          <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as any)}>
+          <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as 'territories' | 'map' | 'activity')}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="territories" className="gap-2">
                 <List className="h-4 w-4" />

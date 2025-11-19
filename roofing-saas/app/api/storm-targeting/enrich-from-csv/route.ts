@@ -11,6 +11,16 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
 
 // =====================================================
+// TYPES
+// =====================================================
+
+interface ExtractedAddress {
+  id: string
+  full_address: string | null
+  street_address: string | null
+}
+
+// =====================================================
 // CSV PARSING
 // =====================================================
 
@@ -47,8 +57,8 @@ function normalizeAddress(address: string): string {
 
 function matchAddress(
   csvRow: Record<string, string>,
-  extractedAddresses: any[]
-): any | null {
+  extractedAddresses: ExtractedAddress[]
+): ExtractedAddress | null {
   // Try to find address field in CSV (various possible names)
   const addressFields = ['address', 'street', 'street_address', 'street address', 'property address'];
   let csvAddress = '';
@@ -71,7 +81,7 @@ function matchAddress(
 
     return fullNorm.includes(normalizedCsv) || normalizedCsv.includes(fullNorm) ||
            streetNorm.includes(normalizedCsv) || normalizedCsv.includes(streetNorm);
-  });
+  }) || null;
 }
 
 // =====================================================
@@ -135,7 +145,17 @@ export async function POST(request: NextRequest) {
 
     // Match and enrich
     let enrichedCount = 0;
-    const updates: any[] = [];
+    const updates: Array<{
+      id: string
+      owner_name: string | null
+      owner_phone: string | null
+      owner_email: string | null
+      property_value: number | null
+      year_built: number | null
+      is_enriched: boolean
+      enrichment_source: string
+      enriched_at: string
+    }> = [];
 
     for (const csvRow of csvRows) {
       const matchedAddress = matchAddress(csvRow, addresses);

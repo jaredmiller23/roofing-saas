@@ -68,8 +68,8 @@ export async function GET(request: NextRequest) {
 
     // Transform to UserForImpersonation format
     const users: UserForImpersonation[] = (tenantUsers || []).map(
-      (tu: any) => {
-        const userData = tu.users as any
+      (tu) => {
+        const userData = tu.users as { email?: string; raw_user_meta_data?: { first_name?: string; last_name?: string; name?: string }; last_sign_in_at?: string } | null
         const metadata = userData?.raw_user_meta_data || {}
 
         return {

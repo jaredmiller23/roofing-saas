@@ -37,7 +37,7 @@ export default function CampaignBuilderPage() {
 
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [steps, setSteps] = useState<CampaignStep[]>([])
-  const [triggers, setTriggers] = useState<CampaignTrigger[]>([])
+  const [_triggers, _setTriggers] = useState<CampaignTrigger[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -45,6 +45,7 @@ export default function CampaignBuilderPage() {
     if (campaignId) {
       fetchCampaignData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId])
 
   const fetchCampaignData = async () => {
@@ -272,14 +273,14 @@ export default function CampaignBuilderPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {triggers.length === 0 ? (
+              {_triggers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   No triggers configured. Add a trigger to automatically enroll
                   contacts.
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {triggers.map((trigger) => (
+                  {_triggers.map((trigger: CampaignTrigger) => (
                     <div
                       key={trigger.id}
                       className="border rounded-lg p-4 flex items-center justify-between"

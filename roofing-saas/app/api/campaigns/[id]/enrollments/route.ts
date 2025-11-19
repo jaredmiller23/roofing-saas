@@ -5,7 +5,6 @@ import type {
   CampaignEnrollment,
   EnrollContactRequest,
   EnrollContactResponse,
-  GetCampaignEnrollmentsRequest,
   GetCampaignEnrollmentsResponse,
   EnrollmentStatus,
 } from '@/lib/campaigns/types'

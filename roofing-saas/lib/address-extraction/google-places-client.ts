@@ -129,13 +129,21 @@ export class GooglePlacesClient {
     const places = data.places || [];
     console.log(`[Google Places] Found ${places.length} places`);
 
+    interface GooglePlace {
+      location?: {
+        latitude: number;
+        longitude: number;
+      };
+      formattedAddress?: string;
+    }
+
     // Convert to ExtractedAddress format
-    const addresses: ExtractedAddress[] = places.map((place: Record<string, unknown>) => {
-      const location = place.location as any;
+    const addresses: ExtractedAddress[] = places.map((place: GooglePlace) => {
+      const location = place.location;
       return {
         lat: location?.latitude || 0,
         lng: location?.longitude || 0,
-        fullAddress: place.formattedAddress as string,
+        fullAddress: place.formattedAddress || '',
         source: 'google_places' as const,
         confidence: 0.8,
         isResidential: true, // We searched for residential, so assume all are residential

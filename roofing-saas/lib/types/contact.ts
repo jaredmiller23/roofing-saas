@@ -61,6 +61,7 @@ export interface Contact {
   // Lead Management
   type: ContactType
   stage: ContactStage
+  substatus: string | null
   source: string | null
   source_details: Record<string, unknown> | null
   assigned_to: string | null
@@ -106,6 +107,7 @@ export interface CreateContactInput {
   address_zip?: string
   type?: ContactType
   stage?: ContactStage
+  substatus?: string
   source?: string
   assigned_to?: string
   property_type?: string

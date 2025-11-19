@@ -144,7 +144,7 @@ export async function GET(
         const latest = typeInteractions.length > 0 ? typeInteractions[0].created_at : null
 
         return {
-          interaction_type: type as any,
+          interaction_type: type as 'view' | 'vcard_download' | 'phone_click' | 'email_click' | 'website_click' | 'linkedin_click' | 'facebook_click' | 'instagram_click' | 'twitter_click' | 'contact_form_submit' | 'appointment_booked',
           count: data.count,
           unique_ips: data.unique_ips.size,
           latest_interaction: latest,

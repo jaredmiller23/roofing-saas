@@ -217,7 +217,7 @@ export function GlobalSearch() {
             {results.length === 0 && query && !loading && (
               <div className="p-8 text-center text-gray-500">
                 <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-sm">No results found for "{query}"</p>
+                <p className="text-sm">No results found for &ldquo;{query}&rdquo;</p>
               </div>
             )}
 
@@ -242,7 +242,7 @@ export function GlobalSearch() {
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
                     {config.label} ({typeResults.length})
                   </div>
-                  {typeResults.map((result, index) => {
+                  {typeResults.map((result) => {
                     const globalIndex = results.indexOf(result)
                     const isSelected = globalIndex === selectedIndex
 

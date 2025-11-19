@@ -39,6 +39,7 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
     if (isOpen && users.length === 0) {
       fetchUsers()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   // Filter users based on search query

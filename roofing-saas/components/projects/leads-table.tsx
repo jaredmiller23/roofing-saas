@@ -24,7 +24,7 @@ type SortField = 'name' | 'email' | 'phone' | 'stage' | 'value' | 'updated_at'
 type SortDirection = 'asc' | 'desc'
 
 export function LeadsTable() {
-  const router = useRouter()
+  const _router = useRouter()
   const [leads, setLeads] = useState<LeadWithProjects[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +37,7 @@ export function LeadsTable() {
 
   useEffect(() => {
     fetchLeads()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, sortField, sortDirection, stageFilter])
 
   async function fetchLeads() {

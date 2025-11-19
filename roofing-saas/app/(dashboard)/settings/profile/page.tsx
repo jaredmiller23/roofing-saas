@@ -29,7 +29,6 @@ import {
 } from 'lucide-react'
 import type {
   UserProfile,
-  UpdateProfileInput,
   ChangePasswordInput,
   PasswordStrength
 } from '@/lib/types/user-profile'

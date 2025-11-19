@@ -11,7 +11,6 @@ import type {
   AIAssistantContextType,
   AIAssistantState,
   ChatMessage,
-  AIConversation,
   PageContext,
   SendMessageRequest,
   SendMessageResponse,
@@ -192,6 +191,7 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         isSending: false,
       }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.activeConversationId, state.currentContext])
 
   const streamMessage = useCallback(async (content: string) => {

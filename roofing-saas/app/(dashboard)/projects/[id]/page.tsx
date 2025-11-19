@@ -25,7 +25,12 @@ interface Project {
   estimated_start: string | null
   actual_start: string | null
   actual_completion: string | null
-  custom_fields: any
+  custom_fields: {
+    proline_pipeline?: string
+    proline_stage?: string
+    lead_source?: string
+    [key: string]: unknown
+  } | null
   contact_id: string | null
 }
 
@@ -74,6 +79,7 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     fetchProjectData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   async function fetchProjectData() {

@@ -10,7 +10,6 @@ import type {
   CampaignStep,
   CampaignEnrollment,
   StepExecutionContext,
-  StepConfig,
   SendEmailStepConfig,
   SendSmsStepConfig,
   CreateTaskStepConfig,
@@ -336,7 +335,7 @@ async function executeCreateTask(
 }
 
 async function executeWait(
-  context: StepExecutionContext
+  _context: StepExecutionContext
 ): Promise<ExecutionResult> {
   // Wait step is handled by scheduling logic
   return { waited: true }
