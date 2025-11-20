@@ -18,7 +18,8 @@ import {
   ListChecks,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Megaphone
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -41,6 +42,7 @@ const navLinks: NavLink[] = [
   { href: '/projects', label: 'Sales & Projects', icon: Workflow },
   { href: '/tasks', label: 'Tasks', icon: CheckSquare },
   { href: '/call-logs', label: 'Call Logs', icon: Phone },
+  { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
   { href: '/settings', label: 'Settings', icon: Settings },
 
   // Secondary navigation
