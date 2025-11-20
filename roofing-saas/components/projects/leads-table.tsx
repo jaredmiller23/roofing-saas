@@ -49,9 +49,19 @@ export function LeadsTable() {
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
     try {
+      // Map frontend field names to database column names
+      const fieldMap: Record<SortField, string> = {
+        name: 'first_name',
+        email: 'email',
+        phone: 'phone',
+        stage: 'stage',
+        value: 'lead_score', // Sort by lead_score as a proxy for value
+        updated_at: 'updated_at',
+      }
+
       const queryParams = new URLSearchParams({
         page: page.toString(),
-        sort_by: sortField,
+        sort_by: fieldMap[sortField],
         sort_order: sortDirection,
         limit: '50',
       })
