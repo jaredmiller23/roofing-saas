@@ -1,1 +1,3 @@
-npm test
+cd roofing-saas
+npx lint-staged
+npm run typecheck
