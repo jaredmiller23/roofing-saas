@@ -11,7 +11,6 @@ import {
   Settings,
   Trophy,
   Calendar,
-  ClipboardList,
   Map,
   CloudLightning,
   ListChecks,
@@ -47,7 +46,6 @@ const navLinks: NavLink[] = [
   // Secondary navigation
   { href: '/incentives', label: 'Incentives', icon: Trophy },
   { href: '/events', label: 'Events', icon: Calendar },
-  { href: '/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/storm-targeting', label: 'Storm Targeting', icon: CloudLightning },
   { href: '/storm-targeting/leads', label: 'Storm Leads', icon: ListChecks },
 ]
