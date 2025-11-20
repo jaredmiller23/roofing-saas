@@ -43,7 +43,7 @@ const navSections: NavSection[] = [
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/projects', label: 'Sales & Projects', icon: Workflow },
+      { href: '/projects', label: 'Pipeline', icon: Workflow },
       { href: '/call-logs', label: 'Call Logs', icon: Phone },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
       { href: '/territories', label: 'Field Activity', icon: Map },
