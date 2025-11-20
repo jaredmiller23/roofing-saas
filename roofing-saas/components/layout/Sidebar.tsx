@@ -28,24 +28,47 @@ interface NavLink {
   icon: React.ElementType
 }
 
+interface NavSection {
+  label?: string
+  items: NavLink[]
+}
+
 interface SidebarProps {
   userEmail: string
   userRole?: string
 }
 
-const navLinks: NavLink[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/territories', label: 'Field Activity', icon: Map },
-  { href: '/projects', label: 'Sales & Projects', icon: Workflow },
-  { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/call-logs', label: 'Call Logs', icon: Phone },
-  { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
-  { href: '/settings', label: 'Settings', icon: Settings },
-
-  // Secondary navigation
-  { href: '/incentives', label: 'Incentives', icon: Trophy },
-  { href: '/events', label: 'Events', icon: Calendar },
-  { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
+const navSections: NavSection[] = [
+  {
+    label: 'CORE',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/projects', label: 'Sales & Projects', icon: Workflow },
+      { href: '/call-logs', label: 'Call Logs', icon: Phone },
+      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
+      { href: '/territories', label: 'Field Activity', icon: Map },
+    ]
+  },
+  {
+    label: 'GROWTH',
+    items: [
+      { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
+    ]
+  },
+  {
+    label: 'TEAM',
+    items: [
+      { href: '/incentives', label: 'Incentives', icon: Trophy },
+      { href: '/events', label: 'Events', icon: Calendar },
+    ]
+  },
+  {
+    // No label for system section - just divider
+    items: [
+      { href: '/settings', label: 'Settings', icon: Settings },
+    ]
+  },
 ]
 
 export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
@@ -119,27 +142,48 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {navLinks.map((link) => {
-            const Icon = link.icon
-            const active = isActive(link.href)
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
+          {navSections.map((section, sectionIndex) => (
+            <div key={sectionIndex}>
+              {/* Section Header */}
+              {section.label && (
+                <div className="px-4 pt-4 pb-2">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {section.label}
+                  </h3>
+                </div>
+              )}
 
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  active
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/50'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-gray-400'}`} />
-                <span className="text-sm font-medium">{link.label}</span>
-              </Link>
-            )
-          })}
+              {/* Section Items */}
+              <div className="space-y-1 mb-4">
+                {section.items.map((link) => {
+                  const Icon = link.icon
+                  const active = isActive(link.href)
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                        active
+                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/50'
+                          : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-gray-400'}`} />
+                      <span className="text-sm font-medium">{link.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {/* Divider after each section except last */}
+              {sectionIndex < navSections.length - 1 && (
+                <div className="border-t border-gray-800 my-2"></div>
+              )}
+            </div>
+          ))}
         </nav>
 
         {/* User Section */}

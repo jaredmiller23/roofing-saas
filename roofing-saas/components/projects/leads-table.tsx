@@ -23,22 +23,39 @@ interface LeadWithProjects extends Contact {
 type SortField = 'name' | 'email' | 'phone' | 'stage' | 'value' | 'updated_at'
 type SortDirection = 'asc' | 'desc'
 
-export function LeadsTable() {
-  const _router = useRouter()
+interface LeadsTableProps {
+  params?: { [key: string]: string | string[] | undefined }
+}
+
+export function LeadsTable({ params = {} }: LeadsTableProps) {
+  const router = useRouter()
   const [leads, setLeads] = useState<LeadWithProjects[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
-  const [sortField, setSortField] = useState<SortField>('updated_at')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
-  const [stageFilter, setStageFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
+
+  // Read from URL params instead of internal state
+  const page = params.page ? parseInt(params.page as string, 10) : 1
+  const sortField = (params.sort_by as SortField) || 'updated_at'
+  const sortDirection = (params.sort_order as SortDirection) || 'desc'
+  const stageFilter = (params.stage as string) || undefined
+  const searchQuery = (params.search as string) || undefined
+
+  // Helper to update URL params
+  const updateUrlParams = (newParams: { [key: string]: string | undefined }) => {
+    const currentParams = new URLSearchParams()
+    Object.entries({ ...params, ...newParams }).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        currentParams.set(key, String(value))
+      }
+    })
+    router.push(`/projects?${currentParams.toString()}`)
+  }
 
   useEffect(() => {
     fetchLeads()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sortField, sortDirection, stageFilter])
+  }, [page, sortField, sortDirection, stageFilter, searchQuery])
 
   async function fetchLeads() {
     setLoading(true)
@@ -66,7 +83,7 @@ export function LeadsTable() {
         limit: '50',
       })
 
-      if (stageFilter !== 'all') {
+      if (stageFilter) {
         queryParams.set('stage', stageFilter)
       }
 
@@ -145,8 +162,13 @@ export function LeadsTable() {
     const newDirection =
       sortField === field && sortDirection === 'asc' ? 'desc' : 'asc'
 
-    setSortField(field)
-    setSortDirection(newDirection)
+    // Update URL params to trigger new data fetch
+    const newParams = new URLSearchParams(params as Record<string, string>)
+    newParams.set('sort_by', field)
+    newParams.set('sort_order', newDirection)
+    newParams.set('page', '1') // Reset to first page on sort
+
+    router.push(`/projects?${newParams.toString()}`)
   }
 
   const formatCurrency = (value: number | null | undefined) => {
@@ -242,48 +264,9 @@ export function LeadsTable() {
 
   return (
     <div className="space-y-4">
-      {/* Filters and Stats */}
+      {/* Stats */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search by name, email, or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setPage(1)
-                  fetchLeads()
-                }
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Stage Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Stage:</label>
-            <select
-              value={stageFilter}
-              onChange={(e) => {
-                setStageFilter(e.target.value)
-                setPage(1)
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Stages</option>
-              <option value="lead">New Leads</option>
-              <option value="active">Active</option>
-              <option value="customer">Won</option>
-              <option value="lost">Lost</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="text-sm text-blue-600 font-medium">Total Leads</div>
             <div className="text-2xl font-bold text-blue-900">{total}</div>
@@ -459,7 +442,7 @@ export function LeadsTable() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => setPage(page - 1)}
+              onClick={() => updateUrlParams({ page: String(page - 1) })}
               disabled={page <= 1}
               className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
             >
@@ -469,7 +452,7 @@ export function LeadsTable() {
               Page {page}
             </span>
             <button
-              onClick={() => setPage(page + 1)}
+              onClick={() => updateUrlParams({ page: String(page + 1) })}
               disabled={leads.length < 50}
               className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
             >

@@ -38,7 +38,7 @@ export type FilterOperator =
   | 'is_null'
   | 'is_not_null'
 
-export type EntityType = 'contacts' | 'projects' | 'pipeline' | 'activities'
+export type EntityType = 'contacts' | 'projects' | 'pipeline' | 'activities' | 'call_logs' | 'tasks'
 
 // ============================================================================
 // FILTER CONFIG
