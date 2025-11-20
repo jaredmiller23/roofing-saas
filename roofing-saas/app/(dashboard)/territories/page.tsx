@@ -145,26 +145,26 @@ export default function TerritoriesPage() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
           <CardDescription>Total Knocks</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
         </CardHeader>
       </Card>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
           <CardDescription>Today</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
         </CardHeader>
       </Card>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
           <CardDescription>This Week</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
         </CardHeader>
       </Card>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
           <CardDescription>This Month</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
         </CardHeader>
       </Card>
     </div>
