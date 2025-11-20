@@ -4,6 +4,20 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Loader } from '@googlemaps/js-api-loader'
 
+// Singleton Google Maps Loader to prevent recreation on every render
+let googleMapsLoader: Loader | null = null
+
+function getGoogleMapsLoader() {
+  if (!googleMapsLoader) {
+    googleMapsLoader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      version: 'weekly',
+      libraries: ['drawing', 'geometry']
+    })
+  }
+  return googleMapsLoader
+}
+
 // Dynamically import the direct map component with no SSR
 const TerritoryMapDirect = dynamic(
   () => import('./TerritoryMapDirect'),
@@ -50,12 +64,15 @@ export function TerritoryMap(props: TerritoryMapProps) {
   useEffect(() => {
     setIsMounted(true)
 
-    // Load Google Maps API
-    const loader = new Loader({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-      version: 'weekly',
-      libraries: ['drawing', 'geometry']
-    })
+    // Check if Google Maps is already loaded
+    if (typeof google !== 'undefined' && google.maps) {
+      console.log('[TerritoryMapWrapper] Google Maps already loaded')
+      setIsLoaded(true)
+      return
+    }
+
+    // Load Google Maps API using singleton loader
+    const loader = getGoogleMapsLoader()
 
     loader.load()
       .then(() => {
