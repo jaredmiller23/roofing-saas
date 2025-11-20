@@ -300,7 +300,6 @@ export default function TerritoriesPage() {
           />
 
           <HousePinDropper
-            key={`pin-dropper-${selectedTerritory.id}`}
             map={map}
             territoryId={selectedTerritory.id}
             enabled={pinDropEnabled}
