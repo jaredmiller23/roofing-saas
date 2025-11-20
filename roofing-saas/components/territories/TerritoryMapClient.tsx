@@ -147,7 +147,11 @@ function TerritoryMapClient({
         console.error('Error fitting bounds:', error)
       }
     }
-  }, [map, territories, selectedTerritory, onTerritoryClick, disableTerritoryInteractions])
+    // Note: 'map' is intentionally excluded from deps to avoid infinite loop
+    // (map state changes would trigger re-render which updates map state again infinitely)
+    // The effect correctly runs when territories/selectedTerritory changes, which is what we want
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [territories, selectedTerritory, onTerritoryClick, disableTerritoryInteractions])
 
   // Convert GeoJSON coordinates to Google Maps format
   const convertGeoJSONToGoogleMaps = (boundary: TerritoryBoundary): google.maps.LatLng[][] => {
