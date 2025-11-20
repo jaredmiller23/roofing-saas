@@ -81,8 +81,6 @@ export async function PATCH(
         estimated_value,
         approved_value,
         final_value,
-        budget,
-        actual_cost,
         created_at,
         updated_at,
         created_by,
