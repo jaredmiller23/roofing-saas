@@ -321,19 +321,23 @@ function getCRMFunctionTools(): ChatCompletionTool[] {
               type: 'string',
               description: 'Phone number',
             },
-            address: {
+            mobile_phone: {
+              type: 'string',
+              description: 'Mobile phone number',
+            },
+            address_street: {
               type: 'string',
               description: 'Street address',
             },
-            city: {
+            address_city: {
               type: 'string',
               description: 'City',
             },
-            state: {
+            address_state: {
               type: 'string',
               description: 'State',
             },
-            zip: {
+            address_zip: {
               type: 'string',
               description: 'ZIP code',
             },
@@ -403,9 +407,9 @@ async function executeCRMFunction(
 
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, first_name, last_name, email, phone, address, city, state, zip, lead_source')
+        .select('id, first_name, last_name, email, phone, mobile_phone, address_street, address_city, address_state, address_zip, source, stage')
         .eq('tenant_id', tenantId)
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,address.ilike.%${query}%`)
+        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,mobile_phone.ilike.%${query}%,address_street.ilike.%${query}%,address_city.ilike.%${query}%`)
         .limit(limit as number)
 
       if (error) {
@@ -425,10 +429,11 @@ async function executeCRMFunction(
         last_name: string
         email?: string
         phone?: string
-        address?: string
-        city?: string
-        state?: string
-        zip?: string
+        mobile_phone?: string
+        address_street?: string
+        address_city?: string
+        address_state?: string
+        address_zip?: string
       }
 
       const { data, error } = await supabase
@@ -437,7 +442,8 @@ async function executeCRMFunction(
           tenant_id: tenantId,
           created_by: userId,
           ...contactData,
-          lead_source: 'AI Assistant',
+          source: 'AI Assistant',
+          stage: 'new',
         })
         .select()
         .single()
