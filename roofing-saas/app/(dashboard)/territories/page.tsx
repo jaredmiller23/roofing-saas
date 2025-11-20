@@ -140,8 +140,8 @@ export default function TerritoriesPage() {
       .join(' ')
   }
 
-  // Memoize stats cards JSX
-  const statsCardsJSX = useMemo(() => (
+  // Stats cards component - rendered directly to avoid hydration issues
+  const StatsCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card>
         <CardHeader className="pb-2">
@@ -168,7 +168,7 @@ export default function TerritoriesPage() {
         </CardHeader>
       </Card>
     </div>
-  ), [knockStats])
+  )
 
   // Memoize the rendered JSX to prevent recreating components on every render
   const activityFeedJSX = useMemo(() => (
@@ -331,7 +331,7 @@ export default function TerritoriesPage() {
         </div>
 
         {/* Stats Cards */}
-        {statsCardsJSX}
+        <StatsCards />
 
         {/* Desktop: Split View */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
