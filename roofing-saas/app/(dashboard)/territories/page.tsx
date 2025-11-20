@@ -292,7 +292,6 @@ export default function TerritoriesPage() {
       {selectedTerritory && selectedTerritory.boundary_data ? (
         <div className="relative rounded-lg overflow-hidden border border-gray-200">
           <TerritoryMap
-            key={`territory-map-${selectedTerritory.id}`}
             territories={territoriesArray}
             selectedTerritory={selectedTerritory}
             height="500px"
