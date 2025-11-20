@@ -12,8 +12,7 @@ import {
   Trophy,
   Calendar,
   Map,
-  CloudLightning,
-  ListChecks,
+  Zap,
   Menu,
   X,
   LogOut,
@@ -46,8 +45,7 @@ const navLinks: NavLink[] = [
   // Secondary navigation
   { href: '/incentives', label: 'Incentives', icon: Trophy },
   { href: '/events', label: 'Events', icon: Calendar },
-  { href: '/storm-targeting', label: 'Storm Targeting', icon: CloudLightning },
-  { href: '/storm-targeting/leads', label: 'Storm Leads', icon: ListChecks },
+  { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
 ]
 
 export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
