@@ -140,57 +140,38 @@ export default function TerritoriesPage() {
       .join(' ')
   }
 
-  // Stats Cards Component
-  const StatsCards = () => (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  // Memoize stats cards JSX
+  const statsCardsJSX = useMemo(() => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
-            Total Knocks
-          </CardTitle>
+          <CardDescription>Total Knocks</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{knockStats.total}</div>
-        </CardContent>
       </Card>
-
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
-            Today
-          </CardTitle>
+          <CardDescription>Today</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{knockStats.today}</div>
-        </CardContent>
       </Card>
-
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
-            This Week
-          </CardTitle>
+          <CardDescription>This Week</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{knockStats.week}</div>
-        </CardContent>
       </Card>
-
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
-            This Month
-          </CardTitle>
+          <CardDescription>This Month</CardDescription>
+          <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{knockStats.month}</div>
-        </CardContent>
       </Card>
     </div>
-  )
+  ), [knockStats])
 
-  // Activity Feed Component
-  const ActivityFeed = () => (
+  // Memoize the rendered JSX to prevent recreating components on every render
+  const activityFeedJSX = useMemo(() => (
     <Card>
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
@@ -266,10 +247,9 @@ export default function TerritoriesPage() {
         )}
       </CardContent>
     </Card>
-  )
+  ), [knocks, knocksLoading, knocksError, selectedTerritory])
 
-  // Map View Component
-  const MapView = () => (
+  const mapViewJSX = useMemo(() => (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
@@ -320,7 +300,7 @@ export default function TerritoriesPage() {
         </div>
       )}
     </div>
-  )
+  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks])
 
   return (
     <div className="p-4 md:p-8">
@@ -351,7 +331,7 @@ export default function TerritoriesPage() {
         </div>
 
         {/* Stats Cards */}
-        <StatsCards />
+        {statsCardsJSX}
 
         {/* Desktop: Split View */}
         <div className="hidden md:grid md:grid-cols-3 gap-6">
@@ -368,8 +348,8 @@ export default function TerritoriesPage() {
 
           {/* Right: Map + Activity (2/3 width) */}
           <div className="col-span-2 space-y-6">
-            <MapView />
-            <ActivityFeed />
+            {mapViewJSX}
+            {activityFeedJSX}
           </div>
         </div>
 
@@ -402,11 +382,11 @@ export default function TerritoriesPage() {
             </TabsContent>
 
             <TabsContent value="map" className="mt-6">
-              <MapView />
+              {mapViewJSX}
             </TabsContent>
 
             <TabsContent value="activity" className="mt-6">
-              <ActivityFeed />
+              {activityFeedJSX}
             </TabsContent>
           </Tabs>
         </div>
