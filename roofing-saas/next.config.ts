@@ -177,11 +177,8 @@ const nextConfig: NextConfig = {
   // Note: This only affects development mode, production is unaffected
   reactStrictMode: false,
 
-  eslint: {
-    // Skip ESLint during builds (lint hook handles this separately with configurable thresholds)
-    // This prevents build failures from non-critical linting issues like `any` types
-    ignoreDuringBuilds: true,
-  },
+  // Note: In Next.js 16, ESLint is handled separately via CLI
+  // Run: npx eslint . --fix
   typescript: {
     // Type checking is handled separately by tsc
     ignoreBuildErrors: false,

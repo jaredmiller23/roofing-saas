@@ -17,6 +17,7 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      "dist/**",
       "next-env.d.ts",
       // One-time scripts and archived code
       "scripts/**",
@@ -24,6 +25,8 @@ const eslintConfig = [
       "e2e/**",
       "**/*.spec.ts",
       "**/*.test.ts",
+      "playwright-report/**",
+      "test-results/**",
       // 3rd party type definitions
       "types/intuit-oauth.d.ts",
       "types/next-pwa.d.ts",

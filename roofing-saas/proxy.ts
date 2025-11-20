@@ -2,9 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Middleware for authentication and tenant context
+ * Proxy middleware for authentication and tenant context
  *
- * This middleware:
+ * This proxy:
  * 1. Refreshes the Supabase auth session
  * 2. Validates tenant access (future: subdomain routing)
  * 3. Protects authenticated routes
@@ -13,7 +13,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Note: For Phase 1, we're starting with a single tenant.
  * Multi-tenant subdomain routing will be added in a future phase.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })

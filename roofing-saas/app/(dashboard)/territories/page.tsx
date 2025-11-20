@@ -324,6 +324,9 @@ export default function TerritoriesPage() {
         </div>
       )}
     </div>
+    // Note: 'map' is intentionally excluded from deps to avoid infinite loop
+    // (map updates via onMapReady callback would trigger re-render infinitely)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks])
 
   return (
