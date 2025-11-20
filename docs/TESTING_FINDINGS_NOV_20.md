@@ -8,9 +8,10 @@
 
 ## 🎯 TESTING SUMMARY
 
-**Features Tested**: 3 of 5
-**Issues Found**: 4 critical
-**Successful Tests**: 1
+**Features Tested**: 3 of 5 November features + 1 Phase 3 feature
+**Issues Found**: 5 (4 November features + 1 Phase 3)
+**Fixed During Testing**: 2 (Campaign Builder navigation + Territory Drawing)
+**Remaining Issues**: 3 critical
 
 ---
 
@@ -143,11 +144,14 @@ Testing requires multiple users in system. Only one user exists currently.
 | Configurable Filters | ✅ | ✅ | ❌ | ✅ | ❌ No UI |
 | Substatus System | ✅ | ✅ | ❌ | ✅ | ❌ No UI |
 
-### Actual Success Rate
-- **Fully Working**: 0 / 5 (0%)
-- **Partially Working**: 1 / 5 (20%) - Campaigns after fix
+### Actual Success Rate (November Features)
+- **Fully Working**: 1 / 5 (20%) - Campaign Builder (after fix)
+- **Partially Working**: 0 / 5 (0%)
 - **Unusable**: 3 / 5 (60%) - AI Conversations, Filters, Substatus
 - **Cannot Test**: 1 / 5 (20%) - Admin Impersonation
+
+### Phase 3 Features Tested
+- **Territory Drawing**: ✅ FIXED - Was broken for 17 days, now working
 
 ---
 
@@ -202,6 +206,33 @@ Testing requires multiple users in system. Only one user exists currently.
 
 ### User's Verdict
 Testing revealed **major gaps** between "deployed" and "working".
+
+---
+
+## 🔴 FEATURE 6: TERRITORY DRAWING - FIXED ✅
+
+### Issue
+Territory creation page showed "Temporarily Disabled" warning since November 3, 2025.
+
+**User Report**: "Create Territory - This needs to be addressed: 'Territory Drawing Temporarily Disabled. The territory boundary editor is being migrated to Google Maps Drawing Manager...'"
+
+### Root Cause
+- Leaflet dependencies were removed on Nov 3 (commit 423d3fd)
+- Old editor was disabled but Google Maps migration never completed
+- Feature sat broken for 17 days - another "deployed but incomplete" issue
+
+### Fix Applied
+**Complete Google Maps DrawingManager implementation** (commit 31fa3a6):
+- Rewrote TerritoryMapEditor.tsx using Google Maps API
+- Based on proven storm-targeting implementation
+- Supports polygon and rectangle drawing with editable boundaries
+- Clean UI with instructions and boundary info
+
+### Result
+✅ **FIXED** - TypeScript: 0 errors, territory drawing now functional
+
+### Lesson Learned
+**Another "temporarily disabled" message that became permanent** - These temporary messages need timelines or they become technical debt.
 
 ---
 

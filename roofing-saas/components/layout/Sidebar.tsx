@@ -10,7 +10,6 @@ import {
   Phone,
   Settings,
   Trophy,
-  Building2,
   Calendar,
   ClipboardList,
   Map,
@@ -47,7 +46,6 @@ const navLinks: NavLink[] = [
 
   // Secondary navigation
   { href: '/incentives', label: 'Incentives', icon: Trophy },
-  { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/events', label: 'Events', icon: Calendar },
   { href: '/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/storm-targeting', label: 'Storm Targeting', icon: CloudLightning },
