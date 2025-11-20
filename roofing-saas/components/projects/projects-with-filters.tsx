@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 import type { ActiveFilter } from '@/lib/filters/types'
 import { FilterBar } from '@/components/filters/FilterBar'
@@ -11,7 +11,6 @@ import { ProjectsTable } from './projects-table'
  * Coordinates FilterBar and ProjectsTable
  */
 export function ProjectsWithFilters() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   // Create a stable string representation of search params
@@ -30,13 +29,14 @@ export function ProjectsWithFilters() {
   // Handle filter changes from FilterBar
   const handleFiltersChange = useCallback(
     (filters: ActiveFilter[]) => {
-      const newParams = new URLSearchParams(searchParams)
+      // Read searchParams fresh inside the callback to avoid dependency issues
+      const currentParams = new URLSearchParams(searchParamsString)
 
       // Clear existing filter params (but keep page, sort)
       const preserveKeys = ['page', 'sort_by', 'sort_order']
-      Array.from(newParams.keys()).forEach(key => {
+      Array.from(currentParams.keys()).forEach(key => {
         if (!preserveKeys.includes(key)) {
-          newParams.delete(key)
+          currentParams.delete(key)
         }
       })
 
@@ -46,16 +46,18 @@ export function ProjectsWithFilters() {
         const paramValue = formatFilterValue(filter)
 
         if (paramValue !== null) {
-          newParams.set(paramKey, paramValue)
+          currentParams.set(paramKey, paramValue)
         }
       })
 
       // Reset to page 1 when filters change
-      newParams.set('page', '1')
+      currentParams.set('page', '1')
 
-      router.push(`/projects?${newParams.toString()}`)
+      // Use native History API to avoid server component re-execution
+      // This prevents the infinite rendering loop caused by router.push
+      window.history.pushState(null, '', `/projects?${currentParams.toString()}`)
     },
-    [router, searchParams]
+    [searchParamsString]  // Use stable string dependency instead of searchParams object
   )
 
   return (
