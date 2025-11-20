@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
         *,
         project:projects(id, name),
         contact:contacts(id, first_name, last_name),
-        assigned_user:auth.users!assigned_to(id, email, raw_user_meta_data),
         parent_task:tasks!parent_task_id(id, title)
       `, { count: 'exact' })
       .eq('tenant_id', tenantId)

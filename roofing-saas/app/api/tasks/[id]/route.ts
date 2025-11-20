@@ -30,13 +30,11 @@ export async function GET(
         *,
         project:projects(id, name),
         contact:contacts(id, first_name, last_name, phone, email),
-        assigned_user:auth.users!assigned_to(id, email, raw_user_meta_data),
-        assigned_by_user:auth.users!assigned_by(id, email, raw_user_meta_data),
         parent_task:tasks!parent_task_id(id, title, status),
         subtasks:tasks!parent_task_id(id, title, status, priority),
-        comments:task_comments(id, comment, user_id, created_at, is_edited, user:auth.users(email, raw_user_meta_data)),
+        comments:task_comments(id, comment, user_id, created_at, is_edited),
         attachments:task_attachments(id, file_name, file_url, file_type, file_size, uploaded_at),
-        activity:task_activity(id, action, changes, created_at, user:auth.users(email, raw_user_meta_data))
+        activity:task_activity(id, action, changes, created_at)
       `)
       .eq('id', id)
       .eq('tenant_id', tenantId)

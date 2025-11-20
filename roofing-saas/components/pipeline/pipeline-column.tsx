@@ -1,8 +1,8 @@
 'use client'
 
 import { useDroppable } from '@dnd-kit/core'
-import { Contact } from '@/lib/types/contact'
-import { ContactCard } from './contact-card'
+import { Project } from '@/lib/types/api'
+import { ProjectCard } from './project-card'
 
 interface PipelineColumnProps {
   stage: {
@@ -10,10 +10,10 @@ interface PipelineColumnProps {
     name: string
     color: string
   }
-  contacts: Contact[]
+  projects: Project[]
 }
 
-export function PipelineColumn({ stage, contacts }: PipelineColumnProps) {
+export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: stage.id,
   })
@@ -28,7 +28,7 @@ export function PipelineColumn({ stage, contacts }: PipelineColumnProps) {
             <h3 className="font-semibold text-gray-900">{stage.name}</h3>
           </div>
           <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            {contacts.length}
+            {projects.length}
           </span>
         </div>
       </div>
@@ -42,13 +42,13 @@ export function PipelineColumn({ stage, contacts }: PipelineColumnProps) {
           ${isOver ? 'bg-blue-50 border-blue-300' : ''}
         `}
       >
-        {contacts.map((contact) => (
-          <ContactCard key={contact.id} contact={contact} />
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
         ))}
 
-        {contacts.length === 0 && (
+        {projects.length === 0 && (
           <div className="text-center py-8 text-gray-400 text-sm">
-            Drop contacts here
+            Drop opportunities here
           </div>
         )}
       </div>

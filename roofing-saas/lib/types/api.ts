@@ -123,6 +123,18 @@ export interface QuickBooksInvoice {
 // Project Types
 // ============================================
 
+export type PipelineStage =
+  | 'prospect'
+  | 'qualified'
+  | 'quote_sent'
+  | 'negotiation'
+  | 'won'
+  | 'production'
+  | 'complete'
+  | 'lost'
+
+export type LeadPriority = 'urgent' | 'high' | 'normal' | 'low'
+
 export interface Project {
   id: string
   tenant_id: string
@@ -133,6 +145,14 @@ export interface Project {
   name: string
   description?: string
   status: 'planning' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled'
+
+  // New unified pipeline fields (Phase 2)
+  pipeline_stage: PipelineStage
+  lead_source?: string
+  priority?: LeadPriority
+  lead_score?: number
+  estimated_close_date?: string
+
   start_date?: string
   end_date?: string
   budget?: number
@@ -140,6 +160,15 @@ export interface Project {
   notes?: string
   custom_fields?: Record<string, unknown>
   is_deleted: boolean
+
+  // Joined contact data
+  contact?: {
+    id: string
+    first_name: string
+    last_name: string
+    email?: string
+    phone?: string
+  }
 }
 
 // ============================================

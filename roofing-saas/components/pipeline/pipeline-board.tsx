@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Contact } from '@/lib/types/contact'
+import { Project, PipelineStage } from '@/lib/types/api'
 import {
   DndContext,
   DragEndEvent,
@@ -12,24 +12,28 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { PipelineColumn } from './pipeline-column'
-import { ContactCard } from './contact-card'
+import { ProjectCard } from './project-card'
 import { Search, Filter } from 'lucide-react'
 
-const STAGES = [
-  { id: 'lead', name: 'New Leads', color: 'bg-blue-500' },
-  { id: 'active', name: 'Active', color: 'bg-yellow-500' },
-  { id: 'customer', name: 'Won', color: 'bg-green-500' },
-  { id: 'lost', name: 'Lost', color: 'bg-gray-500' },
+const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
+  { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },
+  { id: 'qualified', name: 'Qualified', color: 'bg-blue-500' },
+  { id: 'quote_sent', name: 'Quote Sent', color: 'bg-purple-500' },
+  { id: 'negotiation', name: 'Negotiation', color: 'bg-orange-500' },
+  { id: 'won', name: 'Won', color: 'bg-green-500' },
+  { id: 'production', name: 'Production', color: 'bg-cyan-500' },
+  { id: 'complete', name: 'Complete', color: 'bg-emerald-600' },
+  { id: 'lost', name: 'Lost', color: 'bg-red-500' },
 ]
 
-const CONTACTS_PER_COLUMN = 50 // Limit for performance
+const PROJECTS_PER_COLUMN = 50 // Limit for performance
 
 export function PipelineBoard() {
-  const [contacts, setContacts] = useState<Contact[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeContact, setActiveContact] = useState<Contact | null>(null)
+  const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedStages, setSelectedStages] = useState<string[]>(STAGES.map(s => s.id))
+  const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -40,90 +44,98 @@ export function PipelineBoard() {
   )
 
   useEffect(() => {
-    fetchContacts()
+    fetchProjects()
   }, [])
 
-  async function fetchContacts() {
+  async function fetchProjects() {
     try {
-      // Fetch all contacts for pipeline view (increased limit to 2000)
-      const response = await fetch('/api/contacts?limit=2000')
+      // Fetch all projects for pipeline view (increased limit to 2000)
+      const response = await fetch('/api/projects?limit=2000')
       if (response.ok) {
         const result = await response.json()
-        // Handle new response format: { success, data: { contacts, ... } }
+        // Handle response format: { success, data: { projects, ... } } or { projects, ... }
         const data = result.data || result
-        setContacts(data.contacts || [])
+        setProjects(data.projects || [])
       }
     } catch (error) {
-      console.error('Failed to fetch contacts:', error)
+      console.error('Failed to fetch projects:', error)
     } finally {
       setLoading(false)
     }
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const contact = contacts.find((c) => c.id === event.active.id)
-    setActiveContact(contact || null)
+    const project = projects.find((p) => p.id === event.active.id)
+    setActiveProject(project || null)
   }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
-    setActiveContact(null)
+    setActiveProject(null)
 
     if (!over) return
 
-    const contactId = active.id as string
-    const newStage = over.id as string
-    const contact = contacts.find((c) => c.id === contactId)
+    const projectId = active.id as string
+    const newStage = over.id as PipelineStage
+    const project = projects.find((p) => p.id === projectId)
 
-    if (!contact || contact.stage === newStage) return
+    if (!project || project.pipeline_stage === newStage) return
 
     // Optimistic update
-    setContacts((prev) =>
-      prev.map((c) =>
-        c.id === contactId ? { ...c, stage: newStage as Contact['stage'] } : c
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === projectId ? { ...p, pipeline_stage: newStage } : p
       )
     )
 
     // Update on server
     try {
-      const response = await fetch(`/api/contacts/${contactId}`, {
+      const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: newStage }),
+        body: JSON.stringify({ pipeline_stage: newStage }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update contact')
+        throw new Error('Failed to update project')
       }
     } catch (error) {
-      console.error('Failed to update contact stage:', error)
+      console.error('Failed to update project stage:', error)
       // Revert on error
-      setContacts((prev) =>
-        prev.map((c) =>
-          c.id === contactId ? { ...c, stage: contact.stage } : c
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectId ? { ...p, pipeline_stage: project.pipeline_stage } : p
         )
       )
     }
   }
 
-  // Filter contacts based on search and selected stages
-  const filteredContacts = useMemo(() => {
-    return contacts.filter((contact) => {
+  // Filter projects based on search and selected stages
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
       // Filter by search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
-        const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase()
-        const email = contact.email?.toLowerCase() || ''
-        const phone = contact.phone?.toLowerCase() || ''
+        const projectName = project.name?.toLowerCase() || ''
+        const contactName = project.contact
+          ? `${project.contact.first_name} ${project.contact.last_name}`.toLowerCase()
+          : ''
+        const email = project.contact?.email?.toLowerCase() || ''
+        const phone = project.contact?.phone?.toLowerCase() || ''
 
-        if (!fullName.includes(query) && !email.includes(query) && !phone.includes(query)) {
+        if (
+          !projectName.includes(query) &&
+          !contactName.includes(query) &&
+          !email.includes(query) &&
+          !phone.includes(query)
+        ) {
           return false
         }
       }
 
       return true
     })
-  }, [contacts, searchQuery])
+  }, [projects, searchQuery])
 
   if (loading) {
     return (
@@ -133,23 +145,23 @@ export function PipelineBoard() {
     )
   }
 
-  const contactsByStage = STAGES.reduce(
+  const projectsByStage = STAGES.reduce(
     (acc, stage) => {
       if (!selectedStages.includes(stage.id)) {
         acc[stage.id] = []
         return acc
       }
 
-      const stageContacts = filteredContacts.filter((c) => c.stage === stage.id)
-      // Limit contacts per column for performance
-      acc[stage.id] = stageContacts.slice(0, CONTACTS_PER_COLUMN)
-      acc[`${stage.id}_total`] = stageContacts.length
+      const stageProjects = filteredProjects.filter((p) => p.pipeline_stage === stage.id)
+      // Limit projects per column for performance
+      acc[stage.id] = stageProjects.slice(0, PROJECTS_PER_COLUMN)
+      acc[`${stage.id}_total`] = stageProjects.length
       return acc
     },
-    {} as Record<string, Contact[] | number>
+    {} as Record<string, Project[] | number>
   )
 
-  const toggleStage = (stageId: string) => {
+  const toggleStage = (stageId: PipelineStage) => {
     setSelectedStages((prev) =>
       prev.includes(stageId)
         ? prev.filter((id) => id !== stageId)
@@ -167,7 +179,7 @@ export function PipelineBoard() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search contacts by name, email, or phone..."
+              placeholder="Search opportunities by name, contact, email, or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -207,9 +219,9 @@ export function PipelineBoard() {
 
         {/* Stats */}
         <div className="mt-3 flex items-center gap-6 text-sm text-gray-600">
-          <span>Total: {contacts.length} contacts</span>
+          <span>Total: {projects.length} opportunities</span>
           {searchQuery && (
-            <span>Filtered: {filteredContacts.length} contacts</span>
+            <span>Filtered: {filteredProjects.length} opportunities</span>
           )}
         </div>
       </div>
@@ -222,8 +234,8 @@ export function PipelineBoard() {
       >
         <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
           {STAGES.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
-            const stageContacts = contactsByStage[stage.id] as Contact[]
-            const totalInStage = contactsByStage[`${stage.id}_total`] as number
+            const stageProjects = projectsByStage[stage.id] as Project[]
+            const totalInStage = projectsByStage[`${stage.id}_total`] as number
 
             return (
               <div key={stage.id} className="flex flex-col min-w-[300px]">
@@ -232,22 +244,22 @@ export function PipelineBoard() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-gray-700">{stage.name}</h3>
                     <span className="text-xs text-gray-500">
-                      {stageContacts.length}
-                      {totalInStage > CONTACTS_PER_COLUMN && ` of ${totalInStage}`}
+                      {stageProjects.length}
+                      {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
                     </span>
                   </div>
                 </div>
 
                 <PipelineColumn
                   stage={stage}
-                  contacts={stageContacts || []}
+                  projects={stageProjects || []}
                 />
 
                 {/* Show more indicator */}
-                {totalInStage > CONTACTS_PER_COLUMN && (
+                {totalInStage > PROJECTS_PER_COLUMN && (
                   <div className="mt-2 text-center">
                     <p className="text-xs text-gray-500">
-                      + {totalInStage - CONTACTS_PER_COLUMN} more (use search to find)
+                      + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
                     </p>
                   </div>
                 )}
@@ -257,7 +269,7 @@ export function PipelineBoard() {
         </div>
 
         <DragOverlay>
-          {activeContact ? <ContactCard contact={activeContact} isDragging /> : null}
+          {activeProject ? <ProjectCard project={activeProject} isDragging /> : null}
         </DragOverlay>
       </DndContext>
     </div>

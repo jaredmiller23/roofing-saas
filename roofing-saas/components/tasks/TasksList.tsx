@@ -3,19 +3,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   CheckCircle2,
   Circle,
   Clock,
   AlertCircle,
-  Search,
   Plus,
   Eye,
   Edit,
-  Trash2,
-  UserCircle
+  Trash2
 } from 'lucide-react'
 
 interface Task {
@@ -31,58 +28,61 @@ interface Task {
   actual_hours: number | null
   tags: string[] | null
   created_at: string
+  assigned_to: string | null
   project?: { id: string; name: string }
   contact?: { id: string; first_name: string; last_name: string }
-  assigned_user?: { id: string; email: string; raw_user_meta_data?: { full_name?: string } }
   parent_task?: { id: string; title: string }
 }
 
-export function TasksList() {
+interface TasksListProps {
+  params?: { [key: string]: string | string[] | undefined }
+}
+
+export function TasksList({ params = {} }: TasksListProps) {
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [priorityFilter, setPriorityFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
 
-  const loadTasks = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const params = new URLSearchParams()
-
-      if (statusFilter && statusFilter !== 'all') {
-        params.append('status', statusFilter)
-      }
-      if (priorityFilter && priorityFilter !== 'all') {
-        params.append('priority', priorityFilter)
-      }
-      if (searchQuery) {
-        params.append('search', searchQuery)
-      }
-
-      const res = await fetch(`/api/tasks?${params.toString()}`)
-      const data = await res.json()
-
-      if (!res.ok) {
-        // Handle error response format: { success: false, error: { code, message, details } }
-        const errorMessage = typeof data.error === 'string'
-          ? data.error
-          : data.error?.message || data.message || 'Failed to load tasks'
-        throw new Error(errorMessage)
-      }
-
-      setTasks(data.tasks || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [statusFilter, priorityFilter, searchQuery])
+  // Create a stable string representation of params for dependencies
+  const paramsString = JSON.stringify(params)
 
   useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const urlParams = new URLSearchParams()
+
+        // Add all params from URL to API request
+        const currentParams = JSON.parse(paramsString)
+        Object.entries(currentParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            urlParams.append(key, String(value))
+          }
+        })
+
+        const res = await fetch(`/api/tasks?${urlParams.toString()}`)
+        const data = await res.json()
+
+        if (!res.ok) {
+          // Handle error response format: { success: false, error: { code, message, details } }
+          const errorMessage = typeof data.error === 'string'
+            ? data.error
+            : data.error?.message || data.message || 'Failed to load tasks'
+          throw new Error(errorMessage)
+        }
+
+        setTasks(data.tasks || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load tasks')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     loadTasks()
-  }, [loadTasks])
+  }, [paramsString])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this task?')) {
@@ -98,7 +98,8 @@ export function TasksList() {
         throw new Error('Failed to delete task')
       }
 
-      loadTasks()
+      // Remove the deleted task from state
+      setTasks(tasks.filter(task => task.id !== id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete task')
     }
@@ -161,128 +162,40 @@ export function TasksList() {
     )
   }
 
-  const filteredTasks = tasks.filter(task => {
-    if (!searchQuery) return true
-    const query = searchQuery.toLowerCase()
-    return (
-      task.title.toLowerCase().includes(query) ||
-      task.description?.toLowerCase().includes(query) ||
-      task.project?.name.toLowerCase().includes(query)
-    )
-  })
-
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <CheckCircle2 className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => router.push('/tasks/board')}
-              >
-                Board View
-              </Button>
-              <Button
-                onClick={() => router.push('/tasks/new')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Task
-              </Button>
-            </div>
-          </div>
-          <p className="text-gray-600">
-            Manage tasks and deadlines for projects and contacts
-          </p>
+    <div>
+      {error && (
+        <Alert className="mb-6 bg-red-50 border-red-200">
+          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Tasks List */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tasks...</p>
         </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search tasks..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="md:w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="todo">To Do</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div className="md:w-48">
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Priority</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {error && (
-          <Alert className="mb-6 bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Tasks List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading tasks...</p>
-          </div>
-        ) : filteredTasks.length === 0 ? (
+      ) : tasks.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <CheckCircle2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               No tasks found
             </h3>
             <p className="text-gray-600 mb-6">
-              {searchQuery
-                ? 'Try adjusting your search or filters'
-                : 'Get started by creating your first task'}
+              Try adjusting your search or filters
             </p>
-            {!searchQuery && (
-              <Button
-                onClick={() => router.push('/tasks/new')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Task
-              </Button>
-            )}
+            <Button
+              onClick={() => router.push('/tasks/new')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Task
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredTasks.map((task) => (
+            {tasks.map((task) => (
               <div
                 key={task.id}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -314,12 +227,6 @@ export function TasksList() {
                           <div>
                             <span className="font-medium">Contact:</span>{' '}
                             <span>{task.contact.first_name} {task.contact.last_name}</span>
-                          </div>
-                        )}
-                        {task.assigned_user && (
-                          <div className="flex items-center gap-1">
-                            <UserCircle className="h-4 w-4" />
-                            <span>{task.assigned_user.raw_user_meta_data?.full_name || task.assigned_user.email}</span>
                           </div>
                         )}
                         {task.due_date && (
@@ -379,7 +286,6 @@ export function TasksList() {
             ))}
           </div>
         )}
-      </div>
     </div>
   )
 }

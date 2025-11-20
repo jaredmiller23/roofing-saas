@@ -1,29 +1,24 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { CallLogsTable } from '@/components/call-logs/call-logs-table'
+import { CallLogsWithFilters } from '@/components/call-logs/call-logs-with-filters'
 
 /**
  * Call Logs list page
  *
  * Features:
+ * - Configurable FilterBar integration
  * - List all call logs with Twilio integration
  * - Filter by direction, outcome, disposition
  * - View call recordings and transcriptions
  * - Track follow-ups
  */
-export default async function CallLogsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function CallLogsPage() {
   const user = await getCurrentUser()
 
   if (!user) {
     redirect('/login')
   }
-
-  const params = await searchParams
 
   return (
     <div className="p-8">
@@ -45,9 +40,9 @@ export default async function CallLogsPage({
           </Link>
         </div>
 
-        {/* Table */}
+        {/* FilterBar + CallLogsTable */}
         <div className="mt-6">
-          <CallLogsTable params={params} />
+          <CallLogsWithFilters />
         </div>
       </div>
     </div>

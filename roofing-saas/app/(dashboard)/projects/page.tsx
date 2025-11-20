@@ -133,7 +133,8 @@ export default function ProjectsPage() {
           {/* KANBAN VIEW */}
           {viewMode === 'kanban' && (
             <div className="h-full overflow-x-auto overflow-y-hidden bg-gray-100" data-testid="kanban-view">
-              <PipelineBoard quickFilter={quickFilter} />
+              {/* Note: quickFilter integration coming in Phase 3 */}
+              <PipelineBoard />
             </div>
           )}
 
@@ -141,7 +142,8 @@ export default function ProjectsPage() {
           {viewMode === 'table' && (
             <div className="h-full overflow-auto p-4 md:p-8" data-testid="table-view">
               <div className="max-w-7xl mx-auto">
-                <LeadsWithFilters quickFilter={quickFilter} />
+                {/* Note: quickFilter integration coming in Phase 3 */}
+                <LeadsWithFilters />
               </div>
             </div>
           )}
