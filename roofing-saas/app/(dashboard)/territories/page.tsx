@@ -140,35 +140,59 @@ export default function TerritoriesPage() {
       .join(' ')
   }
 
-  // Stats cards component - rendered directly to avoid hydration issues
-  const StatsCards = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardDescription>Total Knocks</CardDescription>
-          <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardDescription>Today</CardDescription>
-          <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardDescription>This Week</CardDescription>
-          <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
-        </CardHeader>
-      </Card>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardDescription>This Month</CardDescription>
-          <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
-        </CardHeader>
-      </Card>
-    </div>
-  )
+  // Client-side only rendering for stats cards to avoid hydration mismatch
+  // This is a known issue with shadcn-ui Card components in Next.js 15/React 19
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const StatsCards = () => {
+    if (!mounted) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-6 bg-gray-200 rounded animate-pulse mb-2" />
+                <div className="h-8 bg-gray-200 rounded animate-pulse" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Total Knocks</CardDescription>
+            <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Today</CardDescription>
+            <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>This Week</CardDescription>
+            <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>This Month</CardDescription>
+            <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
 
   // Memoize the rendered JSX to prevent recreating components on every render
   const activityFeedJSX = useMemo(() => (
