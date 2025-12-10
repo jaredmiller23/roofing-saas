@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
 import { LeadsWithFilters } from '@/components/projects/leads-with-filters'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, Table, Plus, Filter } from 'lucide-react'
+import { LayoutGrid, Table, Plus } from 'lucide-react'
 
 /**
  * Unified Pipeline Page
@@ -16,13 +16,14 @@ import { LayoutGrid, Table, Plus, Filter } from 'lucide-react'
  *
  * Features:
  * - View toggle: Kanban vs Table
- * - Kanban: Drag-drop through pipeline stages
- * - Table: Detailed list with configurable filters
- * - Quick filter presets for common views
+ * - Kanban: Drag-drop through pipeline stages with quick filters
+ * - Table: Detailed list with configurable filters via FilterBar
+ *
+ * Note: Each view (Kanban/Table) has its own built-in filtering system.
+ * Kanban has quick filter chips at the top, Table has FilterBar component.
  */
 export default function ProjectsPage() {
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban')
-  const [quickFilter, setQuickFilter] = useState<'all' | 'active' | 'production' | 'closed'>('all')
 
   return (
     <div className="h-[calc(100vh-4rem)] overflow-hidden">
@@ -78,71 +79,21 @@ export default function ProjectsPage() {
               </Link>
             </div>
           </div>
-
-          {/* Quick Filter Chips */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={() => setQuickFilter('all')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                quickFilter === 'all'
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="h-3 w-3" />
-              All Opportunities
-            </button>
-            <button
-              onClick={() => setQuickFilter('active')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                quickFilter === 'active'
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="h-3 w-3" />
-              Active Opportunities
-            </button>
-            <button
-              onClick={() => setQuickFilter('production')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                quickFilter === 'production'
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="h-3 w-3" />
-              In Production
-            </button>
-            <button
-              onClick={() => setQuickFilter('closed')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                quickFilter === 'closed'
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              <Filter className="h-3 w-3" />
-              Closed
-            </button>
-          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
-          {/* KANBAN VIEW */}
+          {/* KANBAN VIEW - Has built-in quick filters and stage toggles */}
           {viewMode === 'kanban' && (
             <div className="h-full overflow-x-auto overflow-y-hidden bg-gray-100" data-testid="kanban-view">
-              {/* Note: quickFilter integration coming in Phase 3 */}
               <PipelineBoard />
             </div>
           )}
 
-          {/* TABLE VIEW */}
+          {/* TABLE VIEW - Has built-in FilterBar with configurable filters */}
           {viewMode === 'table' && (
             <div className="h-full overflow-auto p-4 md:p-8" data-testid="table-view">
               <div className="max-w-7xl mx-auto">
-                {/* Note: quickFilter integration coming in Phase 3 */}
                 <LeadsWithFilters />
               </div>
             </div>
