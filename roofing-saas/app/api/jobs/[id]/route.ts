@@ -54,6 +54,7 @@ export async function GET(
 /**
  * PATCH /api/jobs/[id]
  * Update a job
+ * Workflow: When job status → "completed", project moves to "complete" stage
  */
 export async function PATCH(
   request: NextRequest,
@@ -74,12 +75,30 @@ export async function PATCH(
     const body = await request.json()
     const supabase = await createClient()
 
+    // First, fetch the current job to check for status change
+    const { data: existingJob } = await supabase
+      .from('jobs')
+      .select('id, project_id, status')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .single()
+
+    // Update the job
+    const updateData: Record<string, unknown> = {
+      ...body,
+      updated_at: new Date().toISOString(),
+    }
+
+    // If completing job, set completion date
+    if (body.status === 'completed' && existingJob?.status !== 'completed') {
+      updateData.completion_date = new Date().toISOString().split('T')[0]
+      updateData.completion_percentage = 100
+    }
+
     const { data, error } = await supabase
       .from('jobs')
-      .update({
-        ...body,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
@@ -95,7 +114,40 @@ export async function PATCH(
       return NextResponse.json({ error: 'Job not found' }, { status: 404 })
     }
 
-    return NextResponse.json(data)
+    // Workflow automation: When job is marked complete, update project to "complete" stage
+    let projectUpdated = false
+    if (
+      body.status === 'completed' &&
+      existingJob?.status !== 'completed' &&
+      existingJob?.project_id
+    ) {
+      const { error: projectError } = await supabase
+        .from('projects')
+        .update({
+          pipeline_stage: 'complete',
+          status: 'completed',
+          actual_completion: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingJob.project_id)
+        .eq('tenant_id', tenantId)
+        .eq('pipeline_stage', 'production') // Only update if still in production
+
+      if (projectError) {
+        console.error('Error updating project after job completion:', projectError)
+        // Don't fail the job update, just log the error
+      } else {
+        projectUpdated = true
+        console.log(`[Workflow] Job ${id} completed → Project ${existingJob.project_id} moved to "complete" stage`)
+      }
+    }
+
+    return NextResponse.json({
+      ...data,
+      workflow: projectUpdated
+        ? { project_moved_to_complete: true }
+        : undefined,
+    })
   } catch (error) {
     console.error('Error in PATCH /api/jobs/[id]:', error)
     return NextResponse.json(
