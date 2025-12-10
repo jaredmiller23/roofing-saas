@@ -45,6 +45,16 @@ const QUICK_FILTERS: Array<{ id: QuickFilter; name: string; stages: PipelineStag
 
 const PROJECTS_PER_COLUMN = 50 // Limit for performance
 
+// Format currency for display
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
 interface ValidationError {
   message: string
   projectName: string
@@ -203,6 +213,17 @@ export function PipelineBoard() {
     })
   }, [projects, searchQuery])
 
+  // Calculate total pipeline value for visible projects
+  // Must be called unconditionally (before loading check) to satisfy React hooks rules
+  const totalPipelineValue = useMemo(() => {
+    return filteredProjects
+      .filter(p => selectedStages.includes(p.pipeline_stage))
+      .reduce((sum, p) => {
+        const value = p.final_value || p.approved_value || p.estimated_value
+        return sum + (value || 0)
+      }, 0)
+  }, [filteredProjects, selectedStages])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -242,6 +263,16 @@ export function PipelineBoard() {
     if (filter) {
       setSelectedStages(filter.stages)
     }
+  }
+
+  // Calculate value for a stage
+  const getStageValue = (stageId: PipelineStage) => {
+    const stageProjects = projectsByStage[stageId] as Project[]
+    if (!stageProjects || stageProjects.length === 0) return 0
+    return stageProjects.reduce((sum, project) => {
+      const value = project.final_value || project.approved_value || project.estimated_value
+      return sum + (value || 0)
+    }, 0)
   }
 
   return (
@@ -353,6 +384,12 @@ export function PipelineBoard() {
           {(searchQuery || quickFilter !== 'all') && (
             <span>Showing: {filteredProjects.filter(p => selectedStages.includes(p.pipeline_stage)).length} opportunities</span>
           )}
+          <span>
+            Pipeline Value:{' '}
+            <span className="font-semibold text-green-700">
+              {formatCurrency(totalPipelineValue)}
+            </span>
+          </span>
         </div>
       </div>
 
@@ -367,17 +404,24 @@ export function PipelineBoard() {
             const stageProjects = projectsByStage[stage.id] as Project[]
             const totalInStage = projectsByStage[`${stage.id}_total`] as number
 
+            const stageValue = getStageValue(stage.id)
+
             return (
               <div key={stage.id} className="flex flex-col min-w-[300px]">
-                {/* Column Header with Count */}
+                {/* Column Header with Count and Value */}
                 <div className="mb-2 px-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-sm font-semibold text-gray-700">{stage.name}</h3>
                     <span className="text-xs text-gray-500">
                       {stageProjects.length}
                       {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
                     </span>
                   </div>
+                  {stageValue > 0 && (
+                    <div className="text-xs font-semibold text-green-700">
+                      {formatCurrency(stageValue)}
+                    </div>
+                  )}
                 </div>
 
                 <PipelineColumn
