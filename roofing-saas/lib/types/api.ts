@@ -153,6 +153,12 @@ export interface Project {
   lead_score?: number
   estimated_close_date?: string
 
+  // Stage tracking (for days-in-stage display)
+  stage_changed_at?: string
+
+  // Insurance adjuster reference
+  adjuster_contact_id?: string
+
   // Financial fields
   estimated_value?: number | null
   approved_value?: number | null
@@ -173,6 +179,16 @@ export interface Project {
     last_name: string
     email?: string
     phone?: string
+  }
+
+  // Joined adjuster data (when adjuster_contact_id is populated)
+  adjuster?: {
+    id: string
+    first_name: string
+    last_name: string
+    company?: string
+    phone?: string
+    email?: string
   }
 }
 

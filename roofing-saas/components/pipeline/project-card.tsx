@@ -152,6 +152,25 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
     return `${diffInWeeks}w ago`
   }
 
+  // Calculate days in current pipeline stage
+  const getDaysInStage = (stageChangedAt?: string) => {
+    if (!stageChangedAt) return null
+    const date = new Date(stageChangedAt)
+    const now = new Date()
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    return diffInDays
+  }
+
+  // Get color for days-in-stage badge based on urgency
+  const getDaysInStageColor = (days: number) => {
+    if (days <= 3) return 'bg-green-100 text-green-700' // Fresh
+    if (days <= 7) return 'bg-yellow-100 text-yellow-700' // Needs attention
+    if (days <= 14) return 'bg-orange-100 text-orange-700' // Getting stale
+    return 'bg-red-100 text-red-700' // Urgent
+  }
+
+  const daysInStage = getDaysInStage(project.stage_changed_at)
+
   const getLeadScoreColor = (score?: number) => {
     if (!score) return 'text-gray-600 bg-gray-50'
     if (score >= 80) return 'text-green-600 bg-green-50'
@@ -277,7 +296,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         )}
       </div>
 
-      {/* Priority + Last Updated */}
+      {/* Priority + Days in Stage + Last Updated */}
       <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {project.priority && getPriorityBadge(project.priority) && (
@@ -287,9 +306,18 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
               {project.priority}
             </span>
           )}
+          {/* Days in Stage Badge */}
+          {daysInStage !== null && (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded ${getDaysInStageColor(daysInStage)}`}
+              title={`${daysInStage} day${daysInStage !== 1 ? 's' : ''} in this stage`}
+            >
+              <Clock className="h-3 w-3" />
+              {daysInStage}d
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Clock className="h-3 w-3" />
+        <div className="flex items-center gap-1 text-xs text-gray-500" title="Last updated">
           {getTimeSince(project.updated_at)}
         </div>
       </div>

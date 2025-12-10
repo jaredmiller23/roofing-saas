@@ -51,16 +51,26 @@ export async function GET(request: NextRequest) {
         description,
         custom_fields,
         pipeline_stage,
+        stage_changed_at,
         lead_source,
         priority,
         lead_score,
         estimated_close_date,
+        adjuster_contact_id,
         contact:contact_id (
           id,
           first_name,
           last_name,
           email,
           phone
+        ),
+        adjuster:adjuster_contact_id (
+          id,
+          first_name,
+          last_name,
+          company,
+          phone,
+          email
         )
       `, { count: 'exact' })
       .eq('tenant_id', tenantId)

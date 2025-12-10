@@ -69,6 +69,7 @@ export async function GET(
         scope_of_work,
         custom_fields,
         pipeline_stage,
+        stage_changed_at,
         lead_source,
         priority,
         lead_score,
@@ -76,6 +77,7 @@ export async function GET(
         actual_start,
         actual_completion,
         estimated_close_date,
+        adjuster_contact_id,
         contact:contact_id (
           id,
           first_name,
@@ -86,6 +88,14 @@ export async function GET(
           address_city,
           address_state,
           address_zip
+        ),
+        adjuster:adjuster_contact_id (
+          id,
+          first_name,
+          last_name,
+          company,
+          phone,
+          email
         )
       `)
       .eq('id', id)
@@ -228,16 +238,26 @@ export async function PATCH(
         description,
         custom_fields,
         pipeline_stage,
+        stage_changed_at,
         lead_source,
         priority,
         lead_score,
         estimated_close_date,
+        adjuster_contact_id,
         contact:contact_id (
           id,
           first_name,
           last_name,
           email,
           phone
+        ),
+        adjuster:adjuster_contact_id (
+          id,
+          first_name,
+          last_name,
+          company,
+          phone,
+          email
         )
       `)
       .single()
