@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { Project } from '@/lib/types/api'
 import Link from 'next/link'
-import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X } from 'lucide-react'
+import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { PipelineStage } from '@/lib/types/api'
 
@@ -20,6 +20,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   const router = useRouter()
   const [startingProduction, setStartingProduction] = useState(false)
   const [markingLost, setMarkingLost] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: project.id,
   })
@@ -90,6 +91,35 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       alert('Failed to mark as lost. Please try again.')
     } finally {
       setMarkingLost(false)
+    }
+  }
+
+  const handleReactivate = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    if (reactivating) return
+
+    try {
+      setReactivating(true)
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pipeline_stage: 'prospect' }),
+      })
+
+      if (response.ok) {
+        // Refresh the page to show updated pipeline
+        router.refresh()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to reactivate opportunity')
+      }
+    } catch (error) {
+      console.error('Error reactivating:', error)
+      alert('Failed to reactivate. Please try again.')
+    } finally {
+      setReactivating(false)
     }
   }
 
@@ -304,6 +334,29 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
               <>
                 <X className="h-4 w-4" />
                 Mark as Lost
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Reactivate Button - Only for lost deals */}
+      {project.pipeline_stage === 'lost' && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <button
+            onClick={handleReactivate}
+            disabled={reactivating}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md text-sm font-medium transition-colors"
+          >
+            {reactivating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                Reactivating...
+              </>
+            ) : (
+              <>
+                <RotateCcw className="h-4 w-4" />
+                Reactivate
               </>
             )}
           </button>
