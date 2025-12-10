@@ -3,7 +3,18 @@ import { test, expect, type Page } from '@playwright/test'
 /**
  * Pipeline Page E2E Tests
  *
- * These tests verify the pipeline kanban board functionality
+ * These tests verify the pipeline kanban board functionality at /projects
+ * (Note: /pipeline redirects to /projects)
+ *
+ * Current Pipeline Stages (8 total):
+ * - Prospect
+ * - Qualified
+ * - Quote Sent
+ * - Negotiation
+ * - Won
+ * - Production
+ * - Complete
+ * - Lost
  */
 
 // Helper to create a test user and log in
@@ -16,14 +27,23 @@ async function login(page: Page) {
   // 3. Navigate to pipeline
 
   // Since we need authentication, we'll skip for now and just check if we redirect to login
-  await page.goto('/pipeline')
+  await page.goto('/projects')
 }
 
 test.describe('Pipeline Page', () => {
   test('should redirect to login when not authenticated', async ({ page }) => {
+    // Go to projects page (where pipeline lives)
+    await page.goto('/projects')
+
+    // Should redirect to login page when not authenticated
+    await expect(page).toHaveURL(/\/login/)
+  })
+
+  test('should redirect /pipeline to /projects then to login', async ({ page }) => {
+    // Test the legacy /pipeline URL still works (redirects to /projects)
     await page.goto('/pipeline')
 
-    // Should redirect to login page
+    // Should eventually end up at login (via /projects redirect)
     await expect(page).toHaveURL(/\/login/)
   })
 
@@ -33,22 +53,35 @@ test.describe('Pipeline Page', () => {
     test.skip()
   })
 
-  test('should display all 7 pipeline stages', async ({ page }) => {
+  test('should display all 8 pipeline stages', async ({ page }) => {
     // TODO: Implement with authentication
     test.skip()
 
-    // Expected stages:
-    // - New
-    // - Contacted
+    // Expected stages (8 total):
+    // - Prospect
     // - Qualified
-    // - Proposal
+    // - Quote Sent
     // - Negotiation
     // - Won
+    // - Production
+    // - Complete
     // - Lost
   })
 
-  test('should allow dragging contacts between stages', async ({ page }) => {
+  test('should allow dragging projects between stages', async ({ page }) => {
     // TODO: Implement drag-and-drop test with authentication
+    test.skip()
+  })
+
+  test('should show pipeline value statistics', async ({ page }) => {
+    // TODO: Implement with authentication
+    // Test that total pipeline value and per-stage values are displayed
+    test.skip()
+  })
+
+  test('should support quick filter chips', async ({ page }) => {
+    // TODO: Implement with authentication
+    // Test: All, Active Sales, In Production, Closed filters
     test.skip()
   })
 })
@@ -67,8 +100,8 @@ test.describe('Pipeline Page - Smoke Tests', () => {
       }
     })
 
-    // Navigate to pipeline - will redirect to login
-    const response = await page.goto('/pipeline', { waitUntil: 'networkidle' })
+    // Navigate to projects - will redirect to login
+    const response = await page.goto('/projects', { waitUntil: 'networkidle' })
 
     // Check HTTP response
     expect(response?.status()).not.toBe(500)
@@ -110,5 +143,16 @@ test.describe('Pipeline Page - Smoke Tests', () => {
     await expect(emailInput).toBeVisible()
     await expect(passwordInput).toBeVisible()
     await expect(submitButton).toBeVisible()
+  })
+
+  test('should handle /pipeline redirect without errors', async ({ page }) => {
+    const response = await page.goto('/pipeline', { waitUntil: 'networkidle' })
+
+    // Should handle redirect chain successfully
+    expect(response?.status()).not.toBe(500)
+    expect(response?.status()).toBeLessThan(500)
+
+    // Should end up at login
+    await expect(page).toHaveURL(/\/login/)
   })
 })
