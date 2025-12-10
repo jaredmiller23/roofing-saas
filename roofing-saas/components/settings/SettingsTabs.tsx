@@ -9,6 +9,7 @@ import { TemplateSettings } from './TemplateSettings'
 import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
 import { FilterSettings } from './FilterSettings'
+import { AdminSettings } from './AdminSettings'
 import {
   Settings,
   Palette,
@@ -16,7 +17,8 @@ import {
   FileText,
   Shield,
   Tag,
-  Filter
+  Filter,
+  UserCog
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -81,6 +83,13 @@ export function SettingsTabs() {
               <Filter className="h-4 w-4" />
               Filters
             </TabsTrigger>
+            <TabsTrigger
+              value="admin"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <UserCog className="h-4 w-4" />
+              Admin
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -109,6 +118,10 @@ export function SettingsTabs() {
 
           <TabsContent value="filters">
             <FilterSettings />
+          </TabsContent>
+
+          <TabsContent value="admin">
+            <AdminSettings />
           </TabsContent>
         </Tabs>
       </div>
