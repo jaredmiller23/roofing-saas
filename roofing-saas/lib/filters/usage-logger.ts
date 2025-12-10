@@ -5,6 +5,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import type { EntityType, FilterCriterion } from './types'
 
 export interface LogFilterUsageParams {
@@ -65,13 +66,13 @@ export async function logFilterUsage(
       .single()
 
     if (error) {
-      console.error('Error logging filter usage:', error)
+      logger.error('Error logging filter usage', { error: error.message })
       return null
     }
 
     return data?.id || null
   } catch (error) {
-    console.error('Error in logFilterUsage:', error)
+    logger.error('Error in logFilterUsage', { error: error instanceof Error ? error.message : String(error) })
     return null
   }
 }

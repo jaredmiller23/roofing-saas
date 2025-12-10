@@ -12,6 +12,7 @@ import type {
   ExtractedAddress,
   AddressExtractionResult,
 } from './types';
+import { logger } from '@/lib/logger';
 
 // =====================================================
 // CONSTANTS
@@ -246,8 +247,8 @@ export class OverpassClient {
 
     const endpoint = this.getEndpoint();
 
-    console.log(`[Overpass] Using endpoint: ${endpoint}`);
-    console.log(`[Overpass] Query (first 500 chars):`, query.substring(0, 500));
+    logger.debug(`Overpass API using endpoint: ${endpoint}`);
+    logger.debug('Overpass query preview', { query: query.substring(0, 500) });
 
     try {
       const response = await fetch(endpoint, {
@@ -261,18 +262,18 @@ export class OverpassClient {
 
       if (!response.ok) {
         const responseText = await response.text();
-        console.error(`Overpass API error response (${response.status}):`, responseText.substring(0, 500));
+        logger.error(`Overpass API error response (${response.status})`, { response: responseText.substring(0, 500) });
 
         if (response.status === 429 && retryCount < MAX_RETRIES) {
           // Rate limited - wait longer and retry
-          console.warn(`Overpass API rate limited, retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          logger.warn(`Overpass API rate limited, retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           await new Promise((resolve) => setTimeout(resolve, 5000 * (retryCount + 1)));
           return this.executeQuery(query, retryCount + 1);
         }
 
         if (response.status === 504 && retryCount < MAX_RETRIES) {
           // Timeout - try shorter timeout or different endpoint
-          console.warn(`Overpass API timeout, retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          logger.warn(`Overpass API timeout, retrying... (${retryCount + 1}/${MAX_RETRIES})`);
           await new Promise((resolve) => setTimeout(resolve, 2000));
           return this.executeQuery(query, retryCount + 1);
         }
@@ -285,7 +286,7 @@ export class OverpassClient {
 
       // Check if response is XML (error response)
       if (responseText.trim().startsWith('<?xml') || responseText.trim().startsWith('<')) {
-        console.error('Overpass API returned XML instead of JSON:', responseText.substring(0, 500));
+        logger.error('Overpass API returned XML instead of JSON', { response: responseText.substring(0, 500) });
         throw new Error('Overpass API query error. The query syntax may be invalid.');
       }
 
@@ -293,7 +294,7 @@ export class OverpassClient {
       return data;
     } catch (error) {
       if (retryCount < MAX_RETRIES) {
-        console.warn(`Overpass API request failed, retrying... (${retryCount + 1}/${MAX_RETRIES})`, error);
+        logger.warn(`Overpass API request failed, retrying... (${retryCount + 1}/${MAX_RETRIES})`, { error: error instanceof Error ? error.message : String(error) });
         await new Promise((resolve) => setTimeout(resolve, 2000 * (retryCount + 1)));
         return this.executeQuery(query, retryCount + 1);
       }
@@ -373,36 +374,33 @@ export class OverpassClient {
     const startTime = Date.now();
 
     // Log polygon details
-    console.log('=== ADDRESS EXTRACTION DEBUG ===');
-    console.log('Polygon coordinates:', polygon.coordinates);
-    console.log('Polygon points count:', polygon.coordinates.length);
-    console.log('Bounding box:', calculateBoundingBox(polygon));
+    logger.debug('Address extraction started', {
+      pointsCount: polygon.coordinates.length,
+      boundingBox: calculateBoundingBox(polygon),
+    });
 
     // Build and execute query
     const query = this.buildQuery(polygon);
-    console.log('Overpass QL query:', query);
-    console.log('Executing Overpass API query...');
+    logger.debug('Executing Overpass API query');
 
     const response = await this.executeQuery(query);
-    console.log(`Overpass API returned ${response.elements.length} buildings`);
-    console.log('Raw response sample:', response.elements.slice(0, 3));
+    logger.debug(`Overpass API returned ${response.elements.length} buildings`);
 
     // Parse buildings
     const allBuildings = this.parseBuildings(response);
-    console.log(`Parsed ${allBuildings.length} buildings with coordinates`);
-    if (allBuildings.length > 0) {
-      console.log('Sample building data:', allBuildings[0]);
-      console.log('All building types:', [...new Set(allBuildings.map(b => b.buildingType))]);
-      console.log('All property types:', [...new Set(allBuildings.map(b => b.propertyType))]);
-    }
+    logger.debug(`Parsed ${allBuildings.length} buildings with coordinates`, {
+      buildingTypes: [...new Set(allBuildings.map(b => b.buildingType))],
+      propertyTypes: [...new Set(allBuildings.map(b => b.propertyType))],
+    });
 
     // Filter to residential only
     const residentialBuildings = this.filterResidential(allBuildings);
-    console.log(`Filtered to ${residentialBuildings.length} residential buildings`);
+    logger.debug(`Filtered to ${residentialBuildings.length} residential buildings`);
 
     if (allBuildings.length > 0 && residentialBuildings.length === 0) {
-      console.warn('⚠️ WARNING: All buildings were filtered out as non-residential!');
-      console.warn('Building tags found:', allBuildings.map(b => b.tags.building || 'none').slice(0, 10));
+      logger.warn('All buildings were filtered out as non-residential', {
+        buildingTags: allBuildings.map(b => b.tags.building || 'none').slice(0, 10),
+      });
     }
 
     // Convert to addresses
@@ -426,7 +424,7 @@ export class OverpassClient {
       areaSquareMiles,
     };
 
-    console.log('Address extraction complete:', {
+    logger.info('Address extraction complete', {
       residential: result.stats.residentialCount,
       total: result.stats.totalBuildings,
       area: areaSquareMiles.toFixed(2) + ' sq mi',
