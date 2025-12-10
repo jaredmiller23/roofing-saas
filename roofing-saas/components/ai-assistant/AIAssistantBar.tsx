@@ -14,11 +14,13 @@ import {
   MicOff,
   X,
   Settings,
-  Sparkles
+  Sparkles,
+  History,
 } from 'lucide-react'
 import { ChatHistory } from './ChatHistory'
 import { ChatInput } from './ChatInput'
 import { QuickActionsMenu } from './QuickActionsMenu'
+import { ConversationList } from './ConversationList'
 import { useAIAssistant } from '@/lib/ai-assistant/context'
 
 export function AIAssistantBar() {
@@ -31,9 +33,17 @@ export function AIAssistantBar() {
     startVoiceSession,
     endVoiceSession,
     messages,
+    loadConversations,
   } = useAIAssistant()
 
   const [showSettings, setShowSettings] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+
+  const handleOpenHistory = async () => {
+    setShowHistory(true)
+    setShowSettings(false)
+    await loadConversations()
+  }
 
   // Don't render if minimized to icon only
   if (isMinimized) {
@@ -147,10 +157,30 @@ export function AIAssistantBar() {
 
               {/* Header actions */}
               <div className="flex items-center gap-1">
+                {/* History */}
+                <button
+                  onClick={handleOpenHistory}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showHistory
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                  title="Conversation history"
+                >
+                  <History className="h-4 w-4" />
+                </button>
+
                 {/* Settings */}
                 <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => {
+                    setShowSettings(!showSettings)
+                    setShowHistory(false)
+                  }}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showSettings
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
                   title="Settings"
                 >
                   <Settings className="h-4 w-4" />
@@ -193,6 +223,13 @@ export function AIAssistantBar() {
                     </button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Conversation history panel (if open) */}
+            {showHistory && (
+              <div className="flex-shrink-0 border-b border-gray-200" style={{ maxHeight: '300px' }}>
+                <ConversationList onClose={() => setShowHistory(false)} />
               </div>
             )}
 

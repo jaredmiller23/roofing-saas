@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Save, X } from 'lucide-react'
 import type {
@@ -28,18 +28,7 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
   const [selectedConfig, setSelectedConfig] = useState<FilterConfig | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch filter configs and saved filters
-  useEffect(() => {
-    fetchConfigs()
-    fetchSavedFilters()
-  }, [entity_type])
-
-  // Notify parent when active filters change
-  useEffect(() => {
-    onFiltersChange(activeFilters)
-  }, [activeFilters, onFiltersChange])
-
-  const fetchConfigs = async () => {
+  const fetchConfigs = useCallback(async () => {
     try {
       const response = await fetch(`/api/filters/configs?entity_type=${entity_type}`)
       const data = await response.json()
@@ -49,9 +38,9 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [entity_type])
 
-  const fetchSavedFilters = async () => {
+  const fetchSavedFilters = useCallback(async () => {
     try {
       const response = await fetch(`/api/filters/saved?entity_type=${entity_type}`)
       const data = await response.json()
@@ -59,7 +48,18 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
     } catch (error) {
       console.error('Error fetching saved filters:', error)
     }
-  }
+  }, [entity_type])
+
+  // Fetch filter configs and saved filters
+  useEffect(() => {
+    fetchConfigs()
+    fetchSavedFilters()
+  }, [fetchConfigs, fetchSavedFilters])
+
+  // Notify parent when active filters change
+  useEffect(() => {
+    onFiltersChange(activeFilters)
+  }, [activeFilters, onFiltersChange])
 
   const handleAddFilter = (config: FilterConfig) => {
     setSelectedConfig(config)

@@ -107,6 +107,42 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, currentContext: context }))
   }, [pathname])
 
+  // Load conversations on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const loadInitialData = async () => {
+      try {
+        // Load conversations list
+        const response = await fetch('/api/ai/conversations')
+        if (response.ok) {
+          const data: ListConversationsResponse = await response.json()
+          setState(prev => ({
+            ...prev,
+            conversations: data.conversations,
+          }))
+        }
+
+        // If we have an active conversation ID from localStorage, load its messages
+        const activeId = localStorage.getItem(STORAGE_KEYS.ACTIVE_CONVERSATION_ID)
+        if (activeId) {
+          const messagesResponse = await fetch(`/api/ai/conversations/${activeId}/messages`)
+          if (messagesResponse.ok) {
+            const messagesData: ListMessagesResponse = await messagesResponse.json()
+            setState(prev => ({
+              ...prev,
+              messages: messagesData.messages,
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load initial AI assistant data:', error)
+      }
+    }
+
+    loadInitialData()
+  }, [])
+
   // UI Actions
   const toggleExpanded = useCallback(() => {
     setState(prev => ({ ...prev, isExpanded: !prev.isExpanded, isMinimized: false }))
@@ -342,6 +378,33 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const searchConversations = useCallback(async (query: string) => {
+    setState(prev => ({ ...prev, isLoadingConversations: true, error: null }))
+
+    try {
+      const response = await fetch(`/api/ai/conversations?search=${encodeURIComponent(query)}`)
+
+      if (!response.ok) {
+        throw new Error(`Failed to search conversations: ${response.statusText}`)
+      }
+
+      const data: ListConversationsResponse = await response.json()
+
+      setState(prev => ({
+        ...prev,
+        conversations: data.conversations,
+        isLoadingConversations: false,
+      }))
+    } catch (error) {
+      console.error('Failed to search conversations:', error)
+      setState(prev => ({
+        ...prev,
+        error: (error as Error).message,
+        isLoadingConversations: false,
+      }))
+    }
+  }, [])
+
   // Context Actions
   const setCurrentContext = useCallback((context: PageContext | null) => {
     setState(prev => ({ ...prev, currentContext: context }))
@@ -373,6 +436,7 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
     startNewConversation,
     deleteConversation,
     archiveConversation,
+    searchConversations,
     setCurrentContext,
     executeQuickAction,
     clearError,

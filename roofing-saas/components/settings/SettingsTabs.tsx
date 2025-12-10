@@ -7,12 +7,16 @@ import { BrandingSettings } from './BrandingSettings'
 import { PipelineSettings } from './PipelineSettings'
 import { TemplateSettings } from './TemplateSettings'
 import { RoleSettings } from './RoleSettings'
+import { SubstatusSettings } from './SubstatusSettings'
+import { FilterSettings } from './FilterSettings'
 import {
   Settings,
   Palette,
   Workflow,
   FileText,
-  Shield
+  Shield,
+  Tag,
+  Filter
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -63,6 +67,20 @@ export function SettingsTabs() {
               <Shield className="h-4 w-4" />
               Roles
             </TabsTrigger>
+            <TabsTrigger
+              value="substatus"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <Tag className="h-4 w-4" />
+              Substatus
+            </TabsTrigger>
+            <TabsTrigger
+              value="filters"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -83,6 +101,14 @@ export function SettingsTabs() {
 
           <TabsContent value="roles">
             <RoleSettings />
+          </TabsContent>
+
+          <TabsContent value="substatus">
+            <SubstatusSettings />
+          </TabsContent>
+
+          <TabsContent value="filters">
+            <FilterSettings />
           </TabsContent>
         </Tabs>
       </div>

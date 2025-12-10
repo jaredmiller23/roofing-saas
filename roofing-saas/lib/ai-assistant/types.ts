@@ -113,6 +113,7 @@ export interface AIAssistantActions {
   startNewConversation: (title?: string) => Promise<string>
   deleteConversation: (id: string) => Promise<void>
   archiveConversation: (id: string) => Promise<void>
+  searchConversations: (query: string) => Promise<void>
 
   // Context Actions
   setCurrentContext: (context: PageContext | null) => void

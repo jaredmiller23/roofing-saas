@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
+import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
 
 /**
  * Contact detail page
@@ -59,13 +60,18 @@ export default async function ContactDetailPage({
             <h1 className="text-3xl font-bold text-gray-900">
               {contact.first_name} {contact.last_name}
             </h1>
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2 items-center">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full capitalize">
                 {contact.type}
               </span>
               <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full capitalize">
                 {contact.stage}
               </span>
+              <ContactSubstatusManager
+                contactId={contact.id}
+                stage={contact.stage || 'new'}
+                currentSubstatus={contact.substatus}
+              />
             </div>
           </div>
 
