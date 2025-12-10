@@ -47,19 +47,20 @@ export async function executeStep(
 
 /**
  * Send SMS step
+ * Note: Template variables like {{trigger.contact_name}} are already resolved
+ * by the workflow engine's replaceVariables() before reaching this executor.
  */
 async function executeSendSMS(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
-    const { to, body, template_id } = config
+    const { to, body } = config
 
-    if (!to || (!body && !template_id)) {
-      throw new Error('Missing required fields: to, body or template_id')
+    if (!to || !body) {
+      throw new Error('Missing required fields: to, body')
     }
 
     const result = await sendSMS({
       to: to as string,
-      body: (body || '') as string,
-      // TODO: Handle template_id if provided
+      body: body as string,
     })
 
     return {
@@ -76,13 +77,15 @@ async function executeSendSMS(config: Record<string, unknown>): Promise<Record<s
 
 /**
  * Send Email step
+ * Note: Template variables like {{trigger.contact_name}} are already resolved
+ * by the workflow engine's replaceVariables() before reaching this executor.
  */
 async function executeSendEmail(config: Record<string, unknown>): Promise<Record<string, unknown>> {
   try {
-    const { to, subject, html, text, template_id } = config
+    const { to, subject, html, text } = config
 
-    if (!to || !subject || (!html && !text && !template_id)) {
-      throw new Error('Missing required fields: to, subject, and content')
+    if (!to || !subject || (!html && !text)) {
+      throw new Error('Missing required fields: to, subject, and content (html or text)')
     }
 
     const result = await sendEmail({
@@ -90,7 +93,6 @@ async function executeSendEmail(config: Record<string, unknown>): Promise<Record
       subject: subject as string,
       html: (html as string) || undefined,
       text: (text as string) || undefined,
-      // TODO: Handle template_id if provided
     })
 
     return {

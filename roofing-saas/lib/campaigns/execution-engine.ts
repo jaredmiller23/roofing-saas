@@ -6,6 +6,10 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
+import { resendClient, isResendConfigured, getFromAddress } from '@/lib/resend/client'
+import { sendSMS, replaceTemplateVariables } from '@/lib/twilio/sms'
+import { isTwilioConfigured } from '@/lib/twilio/client'
 import type {
   CampaignStep,
   CampaignEnrollment,
@@ -65,7 +69,7 @@ export async function processPendingExecutions(): Promise<{
     .eq('campaign_enrollments.status', 'active')
 
   if (error || !pendingExecutions) {
-    console.error('Error fetching pending executions:', error)
+    logger.error('Error fetching pending executions', { error: error?.message })
     return { processed: 0, succeeded: 0, failed: 0 }
   }
 
@@ -77,7 +81,7 @@ export async function processPendingExecutions(): Promise<{
       await executeStep(execution.id)
       succeeded++
     } catch (error) {
-      console.error(`Error executing step ${execution.id}:`, error)
+      logger.error(`Error executing step ${execution.id}`, { error: error instanceof Error ? error.message : String(error) })
       failed++
     }
   }
@@ -261,18 +265,71 @@ async function executeSendEmail(
   context: StepExecutionContext,
   config: SendEmailStepConfig
 ): Promise<ExecutionResult> {
-  // TODO: Integrate with Resend/SendGrid
-  // For now, return mock result
-  console.log('Sending email:', {
-    to: context.contact.email,
-    subject: config.subject,
+  const { contact } = context
+
+  // Validate email exists
+  if (!contact.email) {
+    throw new Error('Contact has no email address')
+  }
+
+  // Check if Resend is configured
+  if (!isResendConfigured() || !resendClient) {
+    logger.warn('Resend not configured, skipping email send', {
+      contact_id: contact.id,
+      subject: config.subject,
+    })
+    return {
+      skipped: true,
+      reason: 'Email provider not configured',
+      sent_at: new Date().toISOString(),
+    }
+  }
+
+  // Build template variables from contact data
+  const firstName = String(contact.first_name || '')
+  const lastName = String(contact.last_name || '')
+  const fullName = String(contact.full_name || `${firstName} ${lastName}`.trim())
+
+  const variables: Record<string, string> = {
+    'contact.first_name': firstName,
+    'contact.last_name': lastName,
+    'contact.full_name': fullName,
+    'contact.email': contact.email || '',
+    'contact.phone': contact.phone || '',
+    'contact.company': String(contact.company || ''),
+    'contact.address': String(contact.address || ''),
+    ...((config.personalization as Record<string, string>) || {}),
+  }
+
+  // Replace template variables in subject and body
+  const subject = replaceTemplateVariables(config.subject || 'No Subject', variables)
+  const body = replaceTemplateVariables(config.body || '', variables)
+
+  logger.info('Sending campaign email', {
+    to: contact.email,
+    subject,
     template_id: config.template_id,
   })
 
-  return {
-    email_id: `email_${Date.now()}`,
-    sent_at: new Date().toISOString(),
-    provider: 'resend',
+  try {
+    const result = await resendClient.emails.send({
+      from: getFromAddress(),
+      to: contact.email,
+      subject,
+      html: body,
+    })
+
+    return {
+      email_id: result.data?.id || `email_${Date.now()}`,
+      sent_at: new Date().toISOString(),
+      provider: 'resend',
+    }
+  } catch (error) {
+    logger.error('Failed to send campaign email', {
+      error: error instanceof Error ? error.message : String(error),
+      contact_id: contact.id,
+    })
+    throw new Error(`Email send failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
@@ -280,18 +337,69 @@ async function executeSendSms(
   context: StepExecutionContext,
   config: SendSmsStepConfig
 ): Promise<ExecutionResult> {
-  // TODO: Integrate with Twilio
-  // For now, return mock result
-  console.log('Sending SMS:', {
-    to: context.contact.phone,
-    message: config.message,
+  const { contact } = context
+
+  // Validate phone exists
+  if (!contact.phone) {
+    throw new Error('Contact has no phone number')
+  }
+
+  // Check if Twilio is configured
+  if (!isTwilioConfigured()) {
+    logger.warn('Twilio not configured, skipping SMS send', {
+      contact_id: contact.id,
+      message_preview: config.message?.substring(0, 50),
+    })
+    return {
+      skipped: true,
+      reason: 'SMS provider not configured',
+      sent_at: new Date().toISOString(),
+    }
+  }
+
+  // Build template variables from contact data
+  const firstName = String(contact.first_name || '')
+  const lastName = String(contact.last_name || '')
+  const fullName = String(contact.full_name || `${firstName} ${lastName}`.trim())
+
+  const variables: Record<string, string> = {
+    'contact.first_name': firstName,
+    'contact.last_name': lastName,
+    'contact.full_name': fullName,
+    'contact.email': contact.email || '',
+    'contact.phone': contact.phone,
+    'contact.company': String(contact.company || ''),
+    'contact.address': String(contact.address || ''),
+    ...((config.personalization as Record<string, string>) || {}),
+  }
+
+  // Replace template variables in message
+  const message = replaceTemplateVariables(config.message || '', variables)
+
+  logger.info('Sending campaign SMS', {
+    to: contact.phone,
+    message_preview: message.substring(0, 50),
     template_id: config.template_id,
   })
 
-  return {
-    sms_id: `sms_${Date.now()}`,
-    sent_at: new Date().toISOString(),
-    provider: 'twilio',
+  try {
+    // sendSMS throws on error, returns SMSResponse on success
+    const result = await sendSMS({
+      to: contact.phone,
+      body: message,
+    })
+
+    return {
+      sms_id: result.sid,
+      sent_at: new Date().toISOString(),
+      provider: 'twilio',
+    }
+  } catch (error) {
+    logger.error('Failed to send campaign SMS', {
+      error: error instanceof Error ? error.message : String(error),
+      contact_id: contact.id,
+    })
+    throw new Error(`SMS send failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
@@ -409,7 +517,7 @@ async function executeNotify(
   config: NotifyStepConfig
 ): Promise<ExecutionResult> {
   // TODO: Implement notification system
-  console.log('Notifying users:', {
+  logger.info('Notifying users', {
     users: config.notify_users,
     message: config.message,
   })
