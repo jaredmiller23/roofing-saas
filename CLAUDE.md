@@ -12,94 +12,54 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 **Phase 2 Completed**: October 1, 2025
 **Phase 3 Started**: October 1, 2025 (6:30 PM)
 **Phase 4 Started**: October 2, 2025
-**Current Date**: November 20, 2025
+**Current Date**: December 10, 2025
 **Current Phase**: Phase 4 - Validation & Stabilization
-**Status**: Phases 1-3 Complete ✅ | Phase 4: 5 features deployed Nov 19 (UNTESTED) ⚠️
-**Phase 4 Complete**: E-Signature ✅, TypeScript Cleanup ✅, Voice Provider System ✅
-**Phase 4 Needs Validation**: Campaign Builder, Admin Impersonation, AI Conversations, Configurable Filters (backend-only), Substatus System (backend-only)
-**Latest Update**: November 20 cleanup - ESLint fixed, documentation consolidated, drift identified
+**Status**: Phases 1-3 Complete ✅ | Phase 4: Major progress, UI integrations complete ✅
+**Phase 4 Complete**: E-Signature ✅, TypeScript Cleanup ✅, Voice Provider System ✅, Substatus System ✅, Configurable Filters ✅, AI Conversations ✅
+**Phase 4 Needs Validation**: Campaign Builder, Admin Impersonation (API-only, needs UI)
+**Latest Update**: December 10 - Claude rules setup, Substatus/Filters UI integrated, AI Conversations persistence verified
 
-## 🌟 ENHANCED CAPABILITIES (October 1, 2025)
+## 🌟 CLAUDE CAPABILITIES (December 2025)
 
-### Claude Code v2 Features - USE PROACTIVELY
-- **Checkpoints** (Esc×2): Experiment boldly, rewind if needed
-- **Subagents**: Delegate research before implementation
-- **Hooks**: Automated linting, type checking, testing
+### Current Model: Claude Opus 4.5
+- **Released**: November 24, 2025
+- **The most capable frontier model** - powers this CLI
+- **Context window compaction**: Automatic summarization for longer sessions
+- **AI Safety Level 3**: Enterprise-grade security
+
+### Claude Code 2.0 Features
+- **Checkpoints** (Esc×2): Instant state tracking, rewind code/conversation
+- **Subagents**: Specialized agents (Explore, Plan, General-purpose)
+- **Hooks**: Event-triggered shell commands (PreToolUse, PostToolUse, Stop)
 - **Background Tasks**: Long-running tests while building
-- **Parallel Execution**: 2-3x faster research and development
+- **Parallel Execution**: Multiple agents working simultaneously
 
-### Sonnet 4.5 Capabilities - LEVERAGE FULLY
-- **30-Hour Sprints**: Complete phases like AI Voice Assistant
-- **Parallel Research**: Multiple deep dives simultaneously
-- **Enhanced Planning**: Optimal architecture decisions
-- **Domain Expertise**: Superior roofing business logic
-- **Best Coding Model**: Industry-leading code quality
+### Extended Thinking
+- **Keywords**: `think` (4K tokens), `think hard` (10K), `ultrathink` (32K)
+- **Interleaved**: Can use tools DURING thinking
+- **Use for**: Architecture decisions, security analysis, complex debugging
 
-## 🚀 NOVEMBER 2025 UPDATES - NEW SUPERPOWERS
+### Persistent Memory System (4-Tier Hierarchy)
+1. **Enterprise policy** (org-wide)
+2. **Project memory**: `./CLAUDE.md`
+3. **Project rules**: `.claude/rules/*.md` ← NEW: Modular rules
+4. **User memory**: `~/.claude/CLAUDE.md`
+5. **Local memory**: `./CLAUDE.local.md` (private, gitignored)
 
-### Extended Thinking (NEW)
-- **What**: Deeper reasoning mode for complex decisions
-- **When to Use**:
-  - Architecture decisions (AI Voice pipeline, data models)
-  - Security & compliance analysis (TCPA, RLS policies)
-  - Performance optimization strategies
-  - Complex data migrations & transformations
-- **How**: Available on-demand for complex reasoning tasks
-- **Benefit**: Better decisions on critical path items
-- **Guide**: See `/docs/guides/EXTENDED_THINKING_GUIDE.md`
+### Agent Skills
+- **Location**: `.claude/skills/skill-name/SKILL.md`
+- **Available**: roofing-business, playwright-testing, quickbooks, compliance
+- **Auto-invoked**: Model decides when to use them
 
-### Memory API (NEW - 500K Tokens)
-- **What**: Persistent context across sessions (~1,000 pages)
-- **Availability**: Max, Enterprise, Team plans (rolling out to Pro)
-- **Use For**:
-  - Project architecture & design decisions
-  - Coding patterns & preferences
-  - Business rules & constraints
-  - Integration credentials context
-- **Benefit**: Stop repeating context every session
-- **Guide**: See `/docs/guides/MEMORY_API_USAGE.md`
+### Context Compaction
+- **Auto-compact**: Triggers at ~95% context capacity
+- **Manual**: `/compact` command with custom instructions
+- **Best practice**: Compact at 85-90%, don't wait for auto
 
-### Agent Skills (BETA)
-- **What**: Domain-specific knowledge packages
-- **Current Skills**:
-  - `roofing-business`: Industry terms, workflows, compliance basics
-  - `quickbooks`: API patterns, accounting rules, OAuth flows
-  - `compliance`: TCPA, call recording laws, data retention
-- **How It Works**: Organized folders with instructions/scripts/resources
-- **When to Use**: Automatically loaded for domain-specific tasks
-- **Benefit**: Consistent business logic, reduced context repetition
-- **Guide**: See `/docs/guides/AGENT_SKILLS_SETUP.md`
-
-### Enhanced Checkpoints (UPDATED)
-- **What**: Esc×2 or `/rewind` to instantly restore code/conversation state
-- **Improvements**: Better state management, more reliable rewinding
-- **Best Practices**:
-  - Before major refactors
-  - When experimenting with architecture
-  - Testing new integrations (Twilio, QuickBooks)
-  - Complex data transformations
-- **Benefit**: Fearless experimentation
-- **Guide**: See `/docs/guides/CHECKPOINT_WORKFLOWS.md`
-
-### Context Editing (NEW)
-- **What**: Automatic thinking block clearing (`clear_thinking_20251015`)
-- **Benefit**: Reduced token usage in long sessions
-- **How**: Automatically manages internal reasoning blocks
-- **Impact**: More efficient long-running development sessions
-
-### Claude Code for Web (October 2025)
-- **What**: Browser-based async coding agent
-- **Use Cases**:
-  - Long-running data migrations
-  - Batch processing setup
-  - Async code reviews
-- **Benefit**: Start tasks, come back later
-- **Same Features**: Checkpoints, sandboxing, all CLI capabilities
-
-### Enhanced Security
-- **Filesystem Sandboxing**: Safer file operations with intelligent guardrails
-- **Network Sandboxing**: Controlled external API access
-- **Benefit**: Reduced permission prompts, safer autonomous work
+### Claude Code for Web
+- **URL**: claude.ai/code
+- **Use for**: Long-running migrations, async code reviews
+- **Same features**: Checkpoints, sandboxing, all CLI capabilities
 
 ### Key Context
 - **Real client** with active roofing operations
@@ -187,26 +147,27 @@ mcp__archon__manage_task("create",
 Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 ```
 
-### ✅ ARCHON OPERATIONAL STATUS (November 20, 2025)
+### ✅ ARCHON OPERATIONAL STATUS (December 10, 2025)
 **Status**: 100% Operational - Technical ✅ Process ✅
 
 **Health Check**: All systems functioning
 - MCP Server: Running and healthy
 - All tools: Accessible and functional
 - Database: Connected
-- Tasks: Current priority - validate November 19 features
+- Knowledge Base: 35+ documentation sources
 
-**Critical Updates (Nov 20)**:
-- git-secrets: VERIFIED WORKING (investigation report was incorrect)
-- ESLint: FIXED (migrated to pure flat config)
-- Pre-commit hooks: RESTORED and working
-- Documentation: CONSOLIDATED (root: 30→5 files)
-- November features: 5 deployed (NOT 6), needs testing
+**December 10 Updates**:
+- Claude rules: Created `.claude/rules/` directory with modular rules
+- Substatus System: UI fully integrated into Settings and Contact pages
+- Configurable Filters: UI integrated into Settings
+- AI Conversations: Persistence verified working (2 conversations, 8 messages in DB)
+- Pre-commit hooks: Working (ESLint + TypeScript checks)
+- Build status: ✅ 0 errors
 
-**Workflow Documentation**:
-- Session checklists: `/docs/ARCHON_SESSION_CHECKLISTS.md`
-- Implementation guide: `/docs/ARCHON_WORKFLOW_IMPLEMENTATION.md`
-- Recent cleanup: `/docs/sessions/SESSION_2025-11-20_CLEANUP_AND_INVESTIGATION.md`
+**Claude Rules Added**:
+- `supabase-patterns.md` - RLS, auth helpers, query conventions
+- `component-standards.md` - UI patterns, shadcn usage
+- `testing-requirements.md` - Playwright E2E patterns
 
 **Quick Health Check**: `mcp__archon__health_check`
 
