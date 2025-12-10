@@ -13,11 +13,12 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 **Phase 3 Started**: October 1, 2025 (6:30 PM)
 **Phase 4 Started**: October 2, 2025
 **Current Date**: December 10, 2025
-**Current Phase**: Phase 4 - Validation & Stabilization
-**Status**: Phases 1-3 Complete ✅ | Phase 4: Major progress, UI integrations complete ✅
+**Current Phase**: Phase 5 - Workflow Automation & Polish
+**Status**: Phases 1-4 Complete ✅ | Phase 5: In Progress 🔄
 **Phase 4 Complete**: E-Signature ✅, TypeScript Cleanup ✅, Voice Provider System ✅, Substatus System ✅, Configurable Filters ✅, AI Conversations ✅
 **Phase 4 Needs Validation**: Campaign Builder, Admin Impersonation (API-only, needs UI)
-**Latest Update**: December 10 - Claude rules setup, Substatus/Filters UI integrated, AI Conversations persistence verified
+**Phase 5 Progress**: Pipeline consolidation ✅, Value statistics ✅, Orphaned component cleanup ✅, E2E test improvements ✅
+**Latest Update**: December 10 - Phase 5 started: Pipeline enhancements, 3,700+ lines cleaned up, E2E tests fixed
 
 ## 🌟 CLAUDE CAPABILITIES (December 2025)
 
@@ -157,10 +158,18 @@ Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 - Knowledge Base: 35+ documentation sources
 
 **December 10 Updates**:
-- Claude rules: Created `.claude/rules/` directory with modular rules
-- Substatus System: UI fully integrated into Settings and Contact pages
-- Configurable Filters: UI integrated into Settings
-- AI Conversations: Persistence verified working (2 conversations, 8 messages in DB)
+- **Phase 5 Started**: Workflow Automation & Polish
+- Pipeline Consolidation: Unified at `/projects`, `/pipeline` redirects properly
+- Pipeline Value Statistics: Total value shown per stage and overall
+- 8 Pipeline Stages: Prospect → Qualified → Quote Sent → Negotiation → Won → Production → Complete → Lost
+- Orphaned Component Cleanup: ~3,700+ lines removed
+  - Removed duplicate project components (Kanban, Card, Column)
+  - Removed 10+ unused components from various modules
+  - Cleaner, more maintainable codebase
+- E2E Test Improvements:
+  - Fixed auth isolation (unauthenticated vs authenticated tests)
+  - All 17 Pipeline tests now pass
+  - Proper `storageState` handling for test scenarios
 - Pre-commit hooks: Working (ESLint + TypeScript checks)
 - Build status: ✅ 0 errors
 
@@ -229,16 +238,24 @@ Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
   - **Quality**: 0 TypeScript errors, 0 ESLint errors, 0 warnings
   - **Documentation**: See `docs/sessions/SESSION_2025-10-04_TYPESCRIPT_CLEANUP.md`
 
-### ⏳ Next Steps (Phase 4 Continuation)
+### 🔄 Phase 5 In Progress (December 10, 2025)
+- **Pipeline Consolidation**: Single view at `/projects` with Kanban/Table toggle
+- **Value Statistics**: Pipeline value per stage and total visible
+- **8-Stage Pipeline**: Full sales workflow from Prospect to Complete/Lost
+- **Codebase Cleanup**: ~3,700+ lines of orphaned code removed
+- **E2E Tests**: All 17 Pipeline tests passing with proper auth isolation
+
+### ⏳ Next Steps (Phase 5 Continuation)
 **Check Archon for current priorities**:
 1. 📋 Run `mcp__archon__find_tasks(filter_by="status", filter_value="todo")`
 2. 🎯 Review pending tasks and prioritize with user
-3. 💡 Potential areas for development:
-   - Job budgeting/P&L system
-   - Order management tool
-   - Additional Phase 4 features
-   - Performance optimizations
-   - UI/UX enhancements
+3. 💡 Phase 5 Focus Areas:
+   - Workflow automation ("Start Production" when pipeline_stage = won)
+   - Stage transition validation (prevent skipping stages)
+   - Auto-status updates on job completion
+   - UX polish and terminology cleanup
+   - Admin Impersonation UI (backend complete)
+   - Campaign Builder validation
 
 ## 📁 PROJECT STRUCTURE (TO BE CREATED)
 
