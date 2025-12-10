@@ -33,6 +33,16 @@ const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'lost', name: 'Lost', color: 'bg-red-500' },
 ]
 
+// Quick filter categories
+type QuickFilter = 'all' | 'active' | 'production' | 'closed'
+
+const QUICK_FILTERS: Array<{ id: QuickFilter; name: string; stages: PipelineStage[] }> = [
+  { id: 'all', name: 'All', stages: STAGES.map(s => s.id) },
+  { id: 'active', name: 'Active Sales', stages: ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won'] },
+  { id: 'production', name: 'In Production', stages: ['production'] },
+  { id: 'closed', name: 'Closed', stages: ['complete', 'lost'] },
+]
+
 const PROJECTS_PER_COLUMN = 50 // Limit for performance
 
 interface ValidationError {
@@ -49,6 +59,7 @@ export function PipelineBoard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
   const [validationError, setValidationError] = useState<ValidationError | null>(null)
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -217,11 +228,20 @@ export function PipelineBoard() {
   )
 
   const toggleStage = (stageId: PipelineStage) => {
+    setQuickFilter('all') // Reset quick filter when manually toggling stages
     setSelectedStages((prev) =>
       prev.includes(stageId)
         ? prev.filter((id) => id !== stageId)
         : [...prev, stageId]
     )
+  }
+
+  const handleQuickFilter = (filterId: QuickFilter) => {
+    setQuickFilter(filterId)
+    const filter = QUICK_FILTERS.find(f => f.id === filterId)
+    if (filter) {
+      setSelectedStages(filter.stages)
+    }
   }
 
   return (
@@ -256,30 +276,56 @@ export function PipelineBoard() {
 
       {/* Header with Search and Filters */}
       <div className="p-4 bg-white border-b border-gray-200">
-        <div className="flex items-center gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search opportunities by name, contact, email, or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        <div className="flex flex-col gap-3">
+          {/* Top row: Search and Quick Filters */}
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search opportunities by name, contact, email, or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Quick Filter Chips */}
+            <div className="flex items-center gap-2">
+              {QUICK_FILTERS.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => handleQuickFilter(filter.id)}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                    quickFilter === filter.id
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter.name}
+                  <span className={`ml-1.5 text-xs ${
+                    quickFilter === filter.id ? 'text-blue-200' : 'text-gray-400'
+                  }`}>
+                    ({projects.filter(p => filter.stages.includes(p.pipeline_stage)).length})
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Stage Filter Toggles */}
+          {/* Bottom row: Stage Toggles */}
           <div className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-gray-500" />
+            <Filter className="h-4 w-4 text-gray-400" />
+            <span className="text-xs text-gray-500 mr-1">Stages:</span>
             {STAGES.map((stage) => (
               <button
                 key={stage.id}
                 onClick={() => toggleStage(stage.id)}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
                   selectedStages.includes(stage.id)
                     ? `${stage.color} text-white`
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               >
                 {stage.name}
@@ -291,8 +337,9 @@ export function PipelineBoard() {
                 onClick={() => {
                   setSearchQuery('')
                   setSelectedStages(STAGES.map(s => s.id))
+                  setQuickFilter('all')
                 }}
-                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 font-medium underline ml-2"
+                className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 font-medium underline ml-1"
               >
                 Reset
               </button>
@@ -303,8 +350,8 @@ export function PipelineBoard() {
         {/* Stats */}
         <div className="mt-3 flex items-center gap-6 text-sm text-gray-600">
           <span>Total: {projects.length} opportunities</span>
-          {searchQuery && (
-            <span>Filtered: {filteredProjects.length} opportunities</span>
+          {(searchQuery || quickFilter !== 'all') && (
+            <span>Showing: {filteredProjects.filter(p => selectedStages.includes(p.pipeline_stage)).length} opportunities</span>
           )}
         </div>
       </div>
