@@ -10,6 +10,108 @@ import type { PipelineStage } from '@/lib/types/api'
 export const dynamic = 'force-dynamic'
 
 /**
+ * GET /api/projects/[id]
+ * Fetch a single project by ID
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+    }
+
+    const supabase = await createClient()
+    const resolvedParams = await params
+    const id = resolvedParams.id
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Project ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json(
+        { error: 'Invalid project ID format' },
+        { status: 400 }
+      )
+    }
+
+    // Fetch project with contact details
+    const { data: project, error: fetchError } = await supabase
+      .from('projects')
+      .select(`
+        id,
+        name,
+        project_number,
+        contact_id,
+        status,
+        type,
+        estimated_value,
+        approved_value,
+        final_value,
+        profit_margin,
+        created_at,
+        updated_at,
+        created_by,
+        description,
+        scope_of_work,
+        custom_fields,
+        pipeline_stage,
+        lead_source,
+        priority,
+        lead_score,
+        estimated_start,
+        actual_start,
+        actual_completion,
+        estimated_close_date,
+        contact:contact_id (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          address_street,
+          address_city,
+          address_state,
+          address_zip
+        )
+      `)
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .single()
+
+    if (fetchError || !project) {
+      console.error('[API] Error fetching project:', fetchError)
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ project })
+  } catch (error) {
+    console.error('[API] Projects GET error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * PATCH /api/projects/[id]
  * Update a project's details (including pipeline_stage)
  * Includes validation for pipeline stage transitions
