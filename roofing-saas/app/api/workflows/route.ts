@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
 import {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     let query = supabase
       .from('workflows')
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { steps, ...workflowData } = validatedData.data
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Create workflow
     const { data: workflow, error } = await supabase
@@ -167,7 +167,14 @@ export async function POST(request: NextRequest) {
     return createdResponse({ workflow })
   } catch (error) {
     const duration = Date.now() - startTime
-    logger.error('Create workflow error', { error, duration })
+    const err = error as Error & { code?: string; details?: string; hint?: string }
+    logger.error('Create workflow error', {
+      message: err.message,
+      code: err.code,
+      details: err.details,
+      hint: err.hint,
+      duration
+    })
     return errorResponse(error as Error)
   }
 }

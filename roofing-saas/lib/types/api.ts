@@ -159,6 +159,10 @@ export interface Project {
   // Insurance adjuster reference
   adjuster_contact_id?: string
 
+  // Claims integration fields (links to external Claims Management Module)
+  claim_id?: string          // Reference to claim in Claims Agent module
+  storm_event_id?: string    // Which storm event led to this project (for causation)
+
   // Financial fields
   estimated_value?: number | null
   approved_value?: number | null
@@ -189,6 +193,17 @@ export interface Project {
     company?: string
     phone?: string
     email?: string
+  }
+
+  // Joined storm event data (when storm_event_id is populated)
+  storm_event?: {
+    id: string
+    event_date: string
+    event_type: 'hail' | 'tornado' | 'thunderstorm_wind' | 'flood' | 'other'
+    magnitude?: number
+    state: string
+    county?: string
+    city?: string
   }
 }
 
