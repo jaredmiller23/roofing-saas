@@ -10,6 +10,7 @@ import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
 import { FilterSettings } from './FilterSettings'
 import { AdminSettings } from './AdminSettings'
+import { AutomationSettings } from './AutomationSettings'
 import {
   Settings,
   Palette,
@@ -18,7 +19,8 @@ import {
   Shield,
   Tag,
   Filter,
-  UserCog
+  UserCog,
+  Zap
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -90,6 +92,13 @@ export function SettingsTabs() {
               <UserCog className="h-4 w-4" />
               Admin
             </TabsTrigger>
+            <TabsTrigger
+              value="automations"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <Zap className="h-4 w-4" />
+              Automations
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -122,6 +131,10 @@ export function SettingsTabs() {
 
           <TabsContent value="admin">
             <AdminSettings />
+          </TabsContent>
+
+          <TabsContent value="automations">
+            <AutomationSettings />
           </TabsContent>
         </Tabs>
       </div>
