@@ -231,10 +231,161 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
   }, [state.activeConversationId, state.currentContext])
 
   const streamMessage = useCallback(async (content: string) => {
-    // TODO: Implement streaming with Server-Sent Events
-    // For now, use regular sendMessage
-    await sendMessage(content)
-  }, [sendMessage])
+    setState(prev => ({ ...prev, isSending: true, error: null }))
+
+    try {
+      // Optimistically add user message with temp ID
+      const tempUserMessageId = `temp-user-${Date.now()}`
+      const tempAssistantMessageId = `temp-assistant-${Date.now()}`
+
+      const tempUserMessage: ChatMessage = {
+        id: tempUserMessageId,
+        conversation_id: state.activeConversationId || '',
+        role: 'user',
+        content,
+        metadata: {
+          context: state.currentContext || undefined,
+        },
+        created_at: new Date().toISOString(),
+      }
+
+      // Add streaming assistant message placeholder
+      const tempAssistantMessage: ChatMessage = {
+        id: tempAssistantMessageId,
+        conversation_id: state.activeConversationId || '',
+        role: 'assistant',
+        content: '',
+        metadata: {},
+        created_at: new Date().toISOString(),
+        isStreaming: true,
+      }
+
+      setState(prev => ({
+        ...prev,
+        messages: [...prev.messages, tempUserMessage, tempAssistantMessage],
+      }))
+
+      // Call streaming endpoint
+      const response = await fetch('/api/ai/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversation_id: state.activeConversationId,
+          content,
+          context: state.currentContext,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to send message: ${response.statusText}`)
+      }
+
+      if (!response.body) {
+        throw new Error('No response body for streaming')
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let streamedContent = ''
+      let finalConversationId = state.activeConversationId
+      let finalUserMessage: ChatMessage | null = null
+      let finalAssistantMessage: ChatMessage | null = null
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              if (data.type === 'conversation_id') {
+                finalConversationId = data.conversation_id
+                finalUserMessage = data.user_message
+
+                // Update conversation ID if it was created
+                if (!state.activeConversationId && finalConversationId) {
+                  setState(prev => ({
+                    ...prev,
+                    activeConversationId: finalConversationId,
+                  }))
+                }
+              } else if (data.type === 'content') {
+                streamedContent += data.content
+
+                // Update the streaming message content
+                setState(prev => ({
+                  ...prev,
+                  messages: prev.messages.map(m =>
+                    m.id === tempAssistantMessageId
+                      ? { ...m, content: streamedContent }
+                      : m
+                  ),
+                }))
+              } else if (data.type === 'done') {
+                finalAssistantMessage = data.assistant_message
+              } else if (data.type === 'error') {
+                throw new Error(data.error)
+              }
+            } catch (parseError) {
+              // Ignore JSON parse errors for incomplete chunks
+              if (!(parseError instanceof SyntaxError)) {
+                throw parseError
+              }
+            }
+          }
+        }
+      }
+
+      // Replace temp messages with final messages
+      setState(prev => ({
+        ...prev,
+        messages: prev.messages.map(m => {
+          if (m.id === tempUserMessageId && finalUserMessage) {
+            return finalUserMessage
+          }
+          if (m.id === tempAssistantMessageId && finalAssistantMessage) {
+            return { ...finalAssistantMessage, isStreaming: false }
+          }
+          return m
+        }),
+        isSending: false,
+      }))
+
+      // If a new conversation was created, reload conversations list
+      if (!state.activeConversationId && finalConversationId) {
+        // Reload conversations list to include the new conversation
+        try {
+          const convResponse = await fetch('/api/ai/conversations')
+          if (convResponse.ok) {
+            const convData = await convResponse.json()
+            setState(prev => ({
+              ...prev,
+              conversations: convData.conversations,
+            }))
+          }
+        } catch {
+          // Non-critical, don't fail the whole operation
+          console.warn('Failed to reload conversations after new conversation created')
+        }
+      }
+    } catch (error) {
+      console.error('Failed to stream message:', error)
+      setState(prev => ({
+        ...prev,
+        error: (error as Error).message,
+        isSending: false,
+        // Remove the streaming message on error
+        messages: prev.messages.filter(m => !m.isStreaming),
+      }))
+    }
+  }, [state.activeConversationId, state.currentContext])
 
   // Voice Actions
   const startVoiceSession = useCallback(async () => {
@@ -413,8 +564,38 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
   // Quick Actions
   const executeQuickAction = useCallback(async (actionId: string) => {
     console.log('Executing quick action:', actionId)
-    // TODO: Implement quick action handlers
-  }, [])
+
+    // Generate prompt based on action type and send as message
+    const actionPrompts: Record<string, string> = {
+      create_contact: 'I want to create a new contact. Please help me with the details.',
+      search_crm: 'Search the CRM for recent activity and give me a summary.',
+      add_note: state.currentContext?.entity_id
+        ? `Add a note to the current ${state.currentContext.entity_type || 'record'}.`
+        : 'I want to add a note. Which contact or project should I add it to?',
+      log_knock: 'Log a door knock at my current location.',
+      check_pipeline: 'Show me the current pipeline status and any deals that need attention.',
+      make_call: state.currentContext?.entity_type === 'contact'
+        ? `Help me prepare for a call with this contact.`
+        : 'I want to make a call. Which contact should I call?',
+      send_sms: state.currentContext?.entity_type === 'contact'
+        ? `Help me send an SMS to this contact.`
+        : 'I want to send an SMS. Which contact should I message?',
+      get_weather: 'What\'s the current weather? Is it a good day for door knocking?',
+    }
+
+    const prompt = actionPrompts[actionId]
+    if (prompt) {
+      // Open the assistant if not expanded
+      if (!state.isExpanded) {
+        setState(prev => ({ ...prev, isExpanded: true, isMinimized: false }))
+      }
+
+      // Send the message using streaming
+      await streamMessage(prompt)
+    } else {
+      console.warn('Unknown quick action:', actionId)
+    }
+  }, [state.currentContext, state.isExpanded, streamMessage])
 
   // Error Handling
   const clearError = useCallback(() => {
