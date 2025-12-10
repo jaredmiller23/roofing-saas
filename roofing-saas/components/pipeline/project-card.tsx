@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { Project } from '@/lib/types/api'
 import Link from 'next/link'
-import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User } from 'lucide-react'
+import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface ProjectCardProps {
   project: Project
@@ -11,9 +13,46 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
+  const router = useRouter()
+  const [startingProduction, setStartingProduction] = useState(false)
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: project.id,
   })
+
+  const handleStartProduction = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    if (startingProduction) return
+
+    try {
+      setStartingProduction(true)
+      const response = await fetch(`/api/projects/${project.id}/start-production`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_type: 'roof_replacement' }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Navigate to the newly created job
+        if (data.job?.id) {
+          router.push(`/jobs/${data.job.id}`)
+        } else {
+          // Refresh the page to show updated pipeline
+          router.refresh()
+        }
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to start production')
+      }
+    } catch (error) {
+      console.error('Error starting production:', error)
+      alert('Failed to start production. Please try again.')
+    } finally {
+      setStartingProduction(false)
+    }
+  }
 
   const style = transform
     ? {
@@ -185,6 +224,29 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           {getTimeSince(project.updated_at)}
         </div>
       </div>
+
+      {/* Start Production Button - Only for Won stage */}
+      {project.pipeline_stage === 'won' && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <button
+            onClick={handleStartProduction}
+            disabled={startingProduction}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-md text-sm font-medium transition-colors"
+          >
+            {startingProduction ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                Starting...
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Start Production
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Quick Actions - Mobile Friendly */}
       {(contactPhone || contactEmail) && (
