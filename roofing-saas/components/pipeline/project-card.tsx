@@ -4,17 +4,22 @@ import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { Project } from '@/lib/types/api'
 import Link from 'next/link'
-import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play } from 'lucide-react'
+import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import type { PipelineStage } from '@/lib/types/api'
 
 interface ProjectCardProps {
   project: Project
   isDragging?: boolean
 }
 
+// Active sales stages where Mark Lost button should appear
+const ACTIVE_SALES_STAGES: PipelineStage[] = ['prospect', 'qualified', 'quote_sent', 'negotiation']
+
 export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   const router = useRouter()
   const [startingProduction, setStartingProduction] = useState(false)
+  const [markingLost, setMarkingLost] = useState(false)
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: project.id,
   })
@@ -51,6 +56,40 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       alert('Failed to start production. Please try again.')
     } finally {
       setStartingProduction(false)
+    }
+  }
+
+  const handleMarkLost = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    if (markingLost) return
+
+    // Confirm before marking as lost
+    if (!confirm('Are you sure you want to mark this opportunity as lost?')) {
+      return
+    }
+
+    try {
+      setMarkingLost(true)
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pipeline_stage: 'lost' }),
+      })
+
+      if (response.ok) {
+        // Refresh the page to show updated pipeline
+        router.refresh()
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to mark as lost')
+      }
+    } catch (error) {
+      console.error('Error marking as lost:', error)
+      alert('Failed to mark as lost. Please try again.')
+    } finally {
+      setMarkingLost(false)
     }
   }
 
@@ -242,6 +281,29 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
               <>
                 <Play className="h-4 w-4" />
                 Start Production
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Mark Lost Button - Only for active sales stages */}
+      {ACTIVE_SALES_STAGES.includes(project.pipeline_stage as PipelineStage) && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <button
+            onClick={handleMarkLost}
+            disabled={markingLost}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 disabled:bg-gray-50 text-gray-600 rounded-md text-sm font-medium transition-colors"
+          >
+            {markingLost ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <X className="h-4 w-4" />
+                Mark as Lost
               </>
             )}
           </button>
