@@ -5,6 +5,7 @@ import {
   validateCompleteTransition,
   getStatusForPipelineStage,
 } from '@/lib/pipeline/validation'
+import { triggerWorkflow } from '@/lib/automation/engine'
 import type { PipelineStage } from '@/lib/types/api'
 
 export const dynamic = 'force-dynamic'
@@ -268,6 +269,36 @@ export async function PATCH(
         { error: 'Failed to update project' },
         { status: 500 }
       )
+    }
+
+    // Trigger workflow automation if pipeline stage changed
+    if (body.pipeline_stage && body.pipeline_stage !== existingProject.pipeline_stage) {
+      const previousStage = existingProject.pipeline_stage as PipelineStage
+      const newStage = body.pipeline_stage as PipelineStage
+
+      const triggerData = {
+        project_id: id,
+        project_name: updatedProject?.name,
+        previous_stage: previousStage,
+        new_stage: newStage,
+        contact_id: updatedProject?.contact_id,
+        estimated_value: updatedProject?.estimated_value,
+        approved_value: updatedProject?.approved_value,
+        changed_by: user.id,
+        changed_at: new Date().toISOString(),
+      }
+
+      // Fire general stage change workflow (async - don't block response)
+      triggerWorkflow(tenantId, 'pipeline_stage_changed', triggerData).catch((error) => {
+        console.error('[API] Workflow trigger (pipeline_stage_changed) failed:', error)
+      })
+
+      // Fire specific 'project_won' trigger when moving to won stage
+      if (newStage === 'won') {
+        triggerWorkflow(tenantId, 'project_won', triggerData).catch((error) => {
+          console.error('[API] Workflow trigger (project_won) failed:', error)
+        })
+      }
     }
 
     return NextResponse.json({

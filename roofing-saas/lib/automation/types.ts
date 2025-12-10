@@ -9,6 +9,9 @@ export type TriggerType =
   | 'contact_updated'
   | 'project_created'
   | 'project_status_changed'
+  | 'pipeline_stage_changed' // Specific trigger for pipeline stage transitions
+  | 'project_won'            // Triggered when project moves to 'won' stage
+  | 'job_completed'          // Triggered when a job is marked complete
   | 'call_missed'
   | 'call_completed'
   | 'email_opened'

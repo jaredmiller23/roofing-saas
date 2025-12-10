@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { triggerWorkflow } from '@/lib/automation/engine'
 
 /**
  * GET /api/jobs/[id]
@@ -140,6 +141,17 @@ export async function PATCH(
         projectUpdated = true
         console.log(`[Workflow] Job ${id} completed → Project ${existingJob.project_id} moved to "complete" stage`)
       }
+
+      // Trigger job_completed workflow for automations (surveys, follow-ups, etc.)
+      triggerWorkflow(tenantId, 'job_completed', {
+        job_id: id,
+        job_number: data.job_number,
+        project_id: existingJob.project_id,
+        completion_date: data.completion_date,
+        completed_by: user.id,
+      }).catch((error) => {
+        console.error('[API] Workflow trigger (job_completed) failed:', error)
+      })
     }
 
     return NextResponse.json({
