@@ -144,7 +144,7 @@ export interface Project {
   updated_at: string
   name: string
   description?: string
-  status: 'planning' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled'
+  status: string // 'estimate' | 'proposal' | 'approved' | 'in_progress' | 'completed' | 'cancelled'
 
   // New unified pipeline fields (Phase 2)
   pipeline_stage: PipelineStage
@@ -152,6 +152,11 @@ export interface Project {
   priority?: LeadPriority
   lead_score?: number
   estimated_close_date?: string
+
+  // Financial fields
+  estimated_value?: number | null
+  approved_value?: number | null
+  final_value?: number | null
 
   start_date?: string
   end_date?: string

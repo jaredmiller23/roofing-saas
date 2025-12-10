@@ -1,18 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
+import type { PipelineStage } from '@/lib/types/api'
 
 interface Project {
   id: string
   name: string
   project_number: string | null
   status: string
+  pipeline_stage: PipelineStage
   type: string | null
   estimated_value: number | null
   approved_value: number | null
@@ -68,6 +71,7 @@ interface Activity {
 
 export default function ProjectDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const projectId = params.id as string
 
   const [project, setProject] = useState<Project | null>(null)
@@ -76,6 +80,7 @@ export default function ProjectDetailPage() {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [startingProduction, setStartingProduction] = useState(false)
 
   useEffect(() => {
     fetchProjectData()
@@ -140,6 +145,40 @@ export default function ProjectDetailPage() {
       day: 'numeric',
       year: 'numeric',
     })
+  }
+
+  async function handleStartProduction() {
+    if (!project) return
+
+    try {
+      setStartingProduction(true)
+      const response = await fetch(`/api/projects/${projectId}/start-production`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_type: 'roof_replacement',
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Refresh project data to show updated stage
+        await fetchProjectData()
+        // Navigate to the newly created job
+        if (data.job?.id) {
+          router.push(`/jobs/${data.job.id}`)
+        }
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to start production:', errorData.error)
+        alert(errorData.error || 'Failed to start production')
+      }
+    } catch (error) {
+      console.error('Error starting production:', error)
+      alert('Failed to start production. Please try again.')
+    } finally {
+      setStartingProduction(false)
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -210,6 +249,38 @@ export default function ProjectDetailPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {getStatusBadge(project.status)}
+              {project.pipeline_stage === 'won' && (
+                <Button
+                  size="sm"
+                  className="gap-2 bg-green-600 hover:bg-green-700"
+                  onClick={handleStartProduction}
+                  disabled={startingProduction}
+                >
+                  {startingProduction ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      Start Production
+                    </>
+                  )}
+                </Button>
+              )}
+              {project.pipeline_stage === 'production' && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                  <div className="animate-pulse h-2 w-2 bg-yellow-500 rounded-full" />
+                  In Production
+                </div>
+              )}
+              {project.pipeline_stage === 'complete' && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  <CheckCircle className="h-4 w-4" />
+                  Complete
+                </div>
+              )}
               <Link href={`/projects/${projectId}/costing`}>
                 <Button variant="outline" size="sm" className="gap-2">
                   <DollarSign className="h-4 w-4" />
@@ -356,31 +427,56 @@ export default function ProjectDetailPage() {
               {/* Sidebar */}
               <div className="space-y-6">
                 {/* Pipeline Status */}
-                {(pipeline || stage) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Pipeline Status</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {pipeline && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-500 mb-2 block">Pipeline</label>
-                          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                            {pipeline}
-                          </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pipeline Status</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-500 mb-2 block">Current Stage</label>
+                      <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
+                        project.pipeline_stage === 'won' ? 'bg-green-100 text-green-800 border border-green-200' :
+                        project.pipeline_stage === 'production' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                        project.pipeline_stage === 'complete' ? 'bg-green-100 text-green-800 border border-green-200' :
+                        project.pipeline_stage === 'lost' ? 'bg-red-100 text-red-800 border border-red-200' :
+                        'bg-blue-100 text-blue-800 border border-blue-200'
+                      }`}>
+                        {STAGE_DISPLAY_NAMES[project.pipeline_stage] || project.pipeline_stage}
+                      </div>
+                    </div>
+
+                    {/* Stage-specific actions/info */}
+                    {project.pipeline_stage === 'won' && jobs.length === 0 && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-800 font-medium">Ready to start production!</p>
+                        <p className="text-xs text-green-600 mt-1">
+                          Click &quot;Start Production&quot; to create a job and begin work.
+                        </p>
+                      </div>
+                    )}
+
+                    {project.pipeline_stage === 'production' && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800 font-medium">Production in progress</p>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          {jobs.length} job{jobs.length !== 1 ? 's' : ''} associated with this project.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Legacy pipeline info if exists */}
+                    {(pipeline || stage) && (
+                      <div className="pt-3 border-t border-gray-200">
+                        <label className="text-xs font-medium text-gray-400 mb-2 block">Legacy Pipeline</label>
+                        <div className="text-xs text-gray-500">
+                          {pipeline && <span>{pipeline}</span>}
+                          {pipeline && stage && <span> → </span>}
+                          {stage && <span>{stage}</span>}
                         </div>
-                      )}
-                      {stage && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-500 mb-2 block">Stage</label>
-                          <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                            {stage}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Timeline */}
                 <Card>

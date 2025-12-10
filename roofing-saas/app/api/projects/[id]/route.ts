@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import {
+  validateCompleteTransition,
+  getStatusForPipelineStage,
+} from '@/lib/pipeline/validation'
+import type { PipelineStage } from '@/lib/types/api'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * PATCH /api/projects/[id]
  * Update a project's details (including pipeline_stage)
+ * Includes validation for pipeline stage transitions
  */
 export async function PATCH(
   request: NextRequest,
@@ -46,10 +52,10 @@ export async function PATCH(
       )
     }
 
-    // Check if the project exists and user has permission to edit
+    // Fetch full project data for validation (need current stage and values)
     const { data: existingProject, error: fetchError } = await supabase
       .from('projects')
-      .select('id')
+      .select('id, pipeline_stage, estimated_value, approved_value, status')
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
@@ -62,11 +68,44 @@ export async function PATCH(
       )
     }
 
-    // Update the project with provided fields
+    // Prepare update data
+    const updateData: Record<string, unknown> = { ...body }
+
+    // Pipeline stage transition validation
+    if (body.pipeline_stage && body.pipeline_stage !== existingProject.pipeline_stage) {
+      const currentStage = existingProject.pipeline_stage as PipelineStage
+      const newStage = body.pipeline_stage as PipelineStage
+
+      // Combine existing and new values for validation
+      const projectForValidation = {
+        estimated_value: body.estimated_value ?? existingProject.estimated_value,
+        approved_value: body.approved_value ?? existingProject.approved_value,
+      }
+
+      // Validate the transition
+      const validation = validateCompleteTransition(currentStage, newStage, projectForValidation)
+      if (!validation.valid) {
+        return NextResponse.json(
+          {
+            error: validation.error,
+            code: 'INVALID_STAGE_TRANSITION',
+            current_stage: currentStage,
+            requested_stage: newStage,
+          },
+          { status: 400 }
+        )
+      }
+
+      // Auto-sync status based on pipeline stage
+      const autoStatus = getStatusForPipelineStage(newStage)
+      updateData.status = autoStatus
+    }
+
+    // Update the project with provided fields (use updateData which may include auto-synced status)
     const { data: updatedProject, error: updateError } = await supabase
       .from('projects')
       .update({
-        ...body,
+        ...updateData,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

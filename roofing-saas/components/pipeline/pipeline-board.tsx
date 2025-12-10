@@ -13,7 +13,14 @@ import {
 } from '@dnd-kit/core'
 import { PipelineColumn } from './pipeline-column'
 import { ProjectCard } from './project-card'
-import { Search, Filter } from 'lucide-react'
+import { Search, Filter, AlertCircle, X } from 'lucide-react'
+import {
+  isValidStageTransition,
+  getTransitionError,
+  validateStageRequirements,
+  formatMissingFieldsError,
+  STAGE_DISPLAY_NAMES,
+} from '@/lib/pipeline/validation'
 
 const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },
@@ -28,12 +35,20 @@ const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
 
 const PROJECTS_PER_COLUMN = 50 // Limit for performance
 
+interface ValidationError {
+  message: string
+  projectName: string
+  fromStage: string
+  toStage: string
+}
+
 export function PipelineBoard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
+  const [validationError, setValidationError] = useState<ValidationError | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -81,6 +96,37 @@ export function PipelineBoard() {
 
     if (!project || project.pipeline_stage === newStage) return
 
+    const currentStage = project.pipeline_stage as PipelineStage
+
+    // Client-side validation
+    if (!isValidStageTransition(currentStage, newStage)) {
+      setValidationError({
+        message: getTransitionError(currentStage, newStage),
+        projectName: project.name || 'Unnamed Project',
+        fromStage: STAGE_DISPLAY_NAMES[currentStage],
+        toStage: STAGE_DISPLAY_NAMES[newStage],
+      })
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => setValidationError(null), 5000)
+      return
+    }
+
+    // Check required fields
+    const requirements = validateStageRequirements(newStage, {
+      estimated_value: project.estimated_value,
+      approved_value: project.approved_value,
+    })
+    if (!requirements.valid) {
+      setValidationError({
+        message: formatMissingFieldsError(requirements.missingFields),
+        projectName: project.name || 'Unnamed Project',
+        fromStage: STAGE_DISPLAY_NAMES[currentStage],
+        toStage: STAGE_DISPLAY_NAMES[newStage],
+      })
+      setTimeout(() => setValidationError(null), 5000)
+      return
+    }
+
     // Optimistic update
     setProjects((prev) =>
       prev.map((p) =>
@@ -97,7 +143,16 @@ export function PipelineBoard() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update project')
+        const errorData = await response.json()
+        // Show server validation error
+        setValidationError({
+          message: errorData.error || 'Failed to update project',
+          projectName: project.name || 'Unnamed Project',
+          fromStage: STAGE_DISPLAY_NAMES[currentStage],
+          toStage: STAGE_DISPLAY_NAMES[newStage],
+        })
+        setTimeout(() => setValidationError(null), 5000)
+        throw new Error(errorData.error || 'Failed to update project')
       }
     } catch (error) {
       console.error('Failed to update project stage:', error)
@@ -171,6 +226,34 @@ export function PipelineBoard() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Validation Error Banner */}
+      {validationError && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+          <div className="mx-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <h4 className="text-sm font-semibold text-red-800">
+                    Cannot Move &quot;{validationError.projectName}&quot;
+                  </h4>
+                  <button
+                    onClick={() => setValidationError(null)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="text-sm text-red-700 mt-1">{validationError.message}</p>
+                <p className="text-xs text-red-500 mt-2">
+                  {validationError.fromStage} → {validationError.toStage}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header with Search and Filters */}
       <div className="p-4 bg-white border-b border-gray-200">
         <div className="flex items-center gap-4">
