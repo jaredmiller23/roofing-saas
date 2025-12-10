@@ -166,8 +166,10 @@ export function AutomationSettings() {
     try {
       const response = await fetch('/api/workflows')
       if (response.ok) {
-        const data = await response.json()
-        setWorkflows(data.workflows || [])
+        const result = await response.json()
+        // API returns { success, data: { workflows, ... }, pagination }
+        const workflows = result.data?.workflows || result.workflows || []
+        setWorkflows(workflows)
       }
     } catch (error) {
       console.error('Failed to fetch workflows:', error)
