@@ -136,14 +136,14 @@ def create_client(project_dir: Path, model: str) -> ClaudeSDKClient:
                 "Glob(./**)",
                 "Grep(./**)",
                 # CRITICAL: Allow READ + WRITE + EDIT for original PRD (for updating discrepancies)
-                "Read(/Users/ccai/24 Harness/Test PRD/**)",
-                "Write(/Users/ccai/24 Harness/Test PRD/**)",
-                "Edit(/Users/ccai/24 Harness/Test PRD/**)",
-                "Glob(/Users/ccai/24 Harness/Test PRD/**)",
-                "Grep(/Users/ccai/24 Harness/Test PRD/**)",
+                "Read(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+                "Write(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+                "Edit(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+                "Glob(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+                "Grep(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
                 # Read-only access to source code for analysis
-                "Read(/Users/ccai/roofing saas/**)",
-                "Glob(/Users/ccai/roofing saas/**)",
+                "Read(/Users/ccai/roofing saas/roofing-saas/**)",
+                "Glob(/Users/ccai/roofing saas/roofing-saas/**)",
                 "Grep(/Users/ccai/roofing saas/**)",
                 # Bash permission granted here, but actual commands are validated
                 # by the bash_security_hook (see security.py for allowed commands)
@@ -167,8 +167,8 @@ def create_client(project_dir: Path, model: str) -> ClaudeSDKClient:
     print(f"Created security settings at {settings_file}")
     print("   - Sandbox enabled (OS-level bash isolation)")
     print(f"   - Modernization output: {project_dir.resolve()}")
-    print("   - PRD updates allowed: /Users/ccai/24 Harness/Test PRD/")
-    print("   - Source code (read-only): /Users/ccai/roofing saas/")
+    print("   - PRD updates allowed: /Users/ccai/roofing saas/roofing-saas/docs/PRD/")
+    print("   - Source code (read-only): /Users/ccai/roofing saas/roofing-saas/")
     print("   - Bash commands restricted to allowlist (see security.py)")
     print("   - MCP servers: puppeteer (research), archon (tasks + RAG)")
     print()
@@ -184,8 +184,8 @@ def create_client(project_dir: Path, model: str) -> ClaudeSDKClient:
                 "You have access to:\n"
                 "- Archon for task management and tracking analysis progress\n"
                 "- Archon's knowledge base (RAG) for historical tech documentation\n"
-                "- The original PRD at /Users/ccai/24 Harness/Test PRD/\n"
-                "- The live source code at /Users/ccai/roofing saas/\n"
+                "- The original PRD at /Users/ccai/roofing saas/roofing-saas/docs/PRD/\n"
+                "- The live source code at /Users/ccai/roofing saas/roofing-saas/\n"
                 "- Puppeteer for web research (framework docs, architecture patterns, new tech)\n\n"
 
                 "Your approach for EACH section:\n"
