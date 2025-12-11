@@ -27,7 +27,7 @@ export default async function DashboardLayout({
   const userRole = await getUserRole(user.id)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
 

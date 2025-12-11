@@ -58,7 +58,7 @@ export default function InspectionPage() {
   const handleComplete = async (state: InspectionState) => {
     try {
       // Submit inspection to API
-      const res = await fetch(`/api/claims/${projectId}/inspection`, {
+      const res = await fetch(`/api/projects/${projectId}/claims/inspection`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(state),
