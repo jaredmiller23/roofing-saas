@@ -54,16 +54,16 @@ Prerequisites:
   - Archon Docker containers must be running
   - Claude Code CLI installed with OAuth token set up
   - Puppeteer MCP server available (auto-launched via npx)
-  - Original PRD at /Users/ccai/24 Harness/Test PRD/
-  - Source code at /Users/ccai/roofing saas/
+  - Original PRD at /Users/ccai/roofing saas/roofing-saas/docs/PRD/
+  - Source code at /Users/ccai/roofing saas/roofing-saas/
         """,
     )
 
     parser.add_argument(
         "--project-dir",
         type=Path,
-        default=Path("./PRD Modernization Analysis"),
-        help="Directory for modernization analysis output (default: ./PRD Modernization Analysis)",
+        default=Path("../docs/modernization-analysis"),
+        help="Directory for modernization analysis output (default: ../docs/modernization-analysis)",
     )
 
     parser.add_argument(
@@ -131,7 +131,7 @@ def check_prerequisites() -> bool:
         return False
 
     # Check if original PRD exists
-    prd_dir = Path("/Users/ccai/24 Harness/Test PRD")
+    prd_dir = Path("/Users/ccai/roofing saas/roofing-saas/docs/PRD")
     if not prd_dir.exists():
         print(f"\nError: Original PRD directory not found at {prd_dir}")
         print("The modernization harness requires the original PRD to analyze.")

@@ -59,7 +59,7 @@ Your job is to set up the analysis structure and create tasks for all future age
 You have access to:
 - Archon for task management via MCP tools
 - Archon's knowledge base (RAG) for reference documentation
-- The original PRD at /Users/ccai/24 Harness/Test PRD/
+- The original PRD at /Users/ccai/roofing saas/roofing-saas/docs/PRD/
 - The Roofing SAAS source code at /Users/ccai/roofing saas/
 - Puppeteer for web research
 

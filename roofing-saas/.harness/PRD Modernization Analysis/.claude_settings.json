@@ -1,0 +1,48 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+      "Write(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+      "Edit(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+      "Glob(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+      "Grep(/Users/ccai/roofing saas/roofing-saas/docs/PRD/**)",
+      "Read(/Users/ccai/roofing saas/roofing-saas/**)",
+      "Glob(/Users/ccai/roofing saas/roofing-saas/**)",
+      "Grep(/Users/ccai/roofing saas/**)",
+      "Bash(*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_select",
+      "mcp__puppeteer__puppeteer_hover",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__puppeteer__puppeteer_get_visible_text",
+      "mcp__puppeteer__puppeteer_get_visible_html",
+      "mcp__archon__find_tasks",
+      "mcp__archon__manage_task",
+      "mcp__archon__find_projects",
+      "mcp__archon__manage_project",
+      "mcp__archon__find_documents",
+      "mcp__archon__manage_document",
+      "mcp__archon__find_versions",
+      "mcp__archon__manage_version",
+      "mcp__archon__rag_search_knowledge_base",
+      "mcp__archon__rag_search_code_examples",
+      "mcp__archon__rag_get_available_sources",
+      "mcp__archon__get_project_features",
+      "mcp__archon__health_check",
+      "mcp__archon__session_info"
+    ]
+  }
+}

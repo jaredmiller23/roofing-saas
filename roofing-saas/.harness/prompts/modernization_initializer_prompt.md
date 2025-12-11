@@ -11,7 +11,7 @@ Your job is to:
 
 You have access to:
 - **Archon MCP** for task management and knowledge base (RAG)
-- **The existing PRD** at `/Users/ccai/24 Harness/Test PRD/`
+- **The existing PRD** at `/Users/ccai/roofing saas/roofing-saas/docs/PRD/`
 - **The Roofing SAAS source code** at `/Users/ccai/roofing saas/`
 - **Puppeteer** for browser automation and web research
 - **File operations** (Read, Write, Edit, Glob, Grep)
@@ -24,13 +24,13 @@ Start by understanding what's already been documented:
 
 ```bash
 # 1. Read the master index to understand the 32 sections
-cat "/Users/ccai/24 Harness/Test PRD/INDEX.md"
+cat "/Users/ccai/roofing saas/roofing-saas/docs/PRD/INDEX.md"
 
 # 2. List all PRD sections to see file names
-ls -la "/Users/ccai/24 Harness/Test PRD/"
+ls -la "/Users/ccai/roofing saas/roofing-saas/docs/PRD/"
 
 # 3. Get a sense of the content (read one example)
-cat "/Users/ccai/24 Harness/Test PRD/01-TECHNICAL-ARCHITECTURE.md" | head -100
+cat "/Users/ccai/roofing saas/roofing-saas/docs/PRD/01-TECHNICAL-ARCHITECTURE.md" | head -100
 ```
 
 Take note of:
@@ -280,7 +280,7 @@ Create the INDEX.md file as a template (agents will update it as they complete a
 # Roofing SAAS - Modernization Analysis
 
 > **Project**: Tennessee Roofing Company CRM Modernization
-> **Original PRD**: /Users/ccai/24 Harness/Test PRD/
+> **Original PRD**: /Users/ccai/roofing saas/roofing-saas/docs/PRD/
 > **Source Code**: /Users/ccai/roofing saas/
 > **Analysis Date**: December 2025
 > **Project Started**: September 2025
@@ -324,7 +324,7 @@ Create `.modernization_project.json` in your working directory with:
   "project_name": "Roofing SAAS Modernization Analysis",
   "meta_task_id": "[META task ID from step 3]",
   "total_tasks": 33,
-  "prd_source_dir": "/Users/ccai/24 Harness/Test PRD",
+  "prd_source_dir": "/Users/ccai/roofing saas/roofing-saas/docs/PRD",
   "source_code_dir": "/Users/ccai/roofing saas",
   "output_directory": "./",
   "sections_analyzed": 0,

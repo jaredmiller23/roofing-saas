@@ -5,7 +5,7 @@ This is a FRESH context window - you have no memory of previous sessions.
 
 You have access to:
 - **Archon MCP** for task management and knowledge base (RAG)
-- **The existing PRD** at `/Users/ccai/24 Harness/Test PRD/`
+- **The existing PRD** at `/Users/ccai/roofing saas/roofing-saas/docs/PRD/`
 - **The Roofing SAAS source code** at `/Users/ccai/roofing saas/`
 - **Puppeteer** for browser automation and web research
 - **File operations** (Read, Write, Edit, Glob, Grep)
@@ -91,11 +91,11 @@ This phase ensures the PRD accurately reflects the current codebase.
 
 ### 1.1 Read the Existing PRD Section
 
-Based on your task, read the corresponding PRD file from `/Users/ccai/24 Harness/Test PRD/`
+Based on your task, read the corresponding PRD file from `/Users/ccai/roofing saas/roofing-saas/docs/PRD/`
 
 For example, if your task is "Modernize: Technical Architecture":
 ```bash
-cat "/Users/ccai/24 Harness/Test PRD/01-TECHNICAL-ARCHITECTURE.md"
+cat "/Users/ccai/roofing saas/roofing-saas/docs/PRD/01-TECHNICAL-ARCHITECTURE.md"
 ```
 
 Take detailed notes on:
@@ -157,7 +157,7 @@ Compare PRD vs actual code and identify:
 
 For example:
 ```
-Use Edit tool on /Users/ccai/24 Harness/Test PRD/01-TECHNICAL-ARCHITECTURE.md
+Use Edit tool on /Users/ccai/roofing saas/roofing-saas/docs/PRD/01-TECHNICAL-ARCHITECTURE.md
 ```
 
 Update sections to reflect current reality:
