@@ -287,6 +287,12 @@ export default function ProjectDetailPage() {
                   Job Costing
                 </Button>
               </Link>
+              <Link href={`/projects/${projectId}/claims`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Claims
+                </Button>
+              </Link>
               <Link href={`/projects/${projectId}/edit`}>
                 <Button size="sm">Edit Project</Button>
               </Link>
