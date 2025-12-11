@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<ClaimStatus, string> = {
   'under_review': 'bg-purple-500',
   'approved': 'bg-green-500',
   'paid': 'bg-emerald-500',
-  'closed': 'bg-gray-500',
+  'closed': 'bg-background0',
   'disputed': 'bg-red-500',
   'supplement_filed': 'bg-orange-500',
   'escalated': 'bg-pink-500',
@@ -101,7 +101,7 @@ export default function ClaimDetailPage() {
 
   const handleExportPackage = async () => {
     try {
-      const res = await fetch(`/api/claims/export/${projectId}`)
+      const res = await fetch(`/api/projects/${projectId}/claims/export`)
       if (res.ok) {
         const blob = await res.blob()
         const url = window.URL.createObjectURL(blob)

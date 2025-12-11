@@ -157,7 +157,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Job Costing</h1>
+              <h1 className="text-3xl font-bold text-foreground">Job Costing</h1>
               <p className="text-sm text-gray-500 mt-1">
                 {project.name} • Project #{project.project_number}
               </p>
@@ -174,7 +174,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
               <h3 className="text-sm font-medium text-gray-500">Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(revenue)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(revenue)}</p>
           </div>
 
           {/* Estimated Cost Card */}
@@ -182,7 +182,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-gray-500">Estimated Cost</h3>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalEstimatedCost)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalEstimatedCost)}</p>
             <p className="text-sm text-gray-500 mt-1">
               Margin: {estimatedMargin.toFixed(1)}%
             </p>
@@ -194,7 +194,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
               <h3 className="text-sm font-medium text-gray-500">Actual Cost</h3>
               <AlertCircle className="h-5 w-5 text-orange-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalActualCost)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalActualCost)}</p>
             <p className={`text-sm mt-1 ${getVarianceColor(costVariance)}`}>
               {costVariance >= 0 ? '+' : ''}{formatCurrency(costVariance)} variance
             </p>
@@ -222,7 +222,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
         {/* Budget vs Actual Breakdown */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Budget vs Actual Breakdown</h2>
+            <h2 className="text-xl font-semibold text-foreground">Budget vs Actual Breakdown</h2>
           </div>
           <div className="p-6">
             <div className="space-y-6">
@@ -236,7 +236,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
                   <div key={category.name} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900">{category.name}</h3>
+                        <h3 className="text-sm font-medium text-foreground">{category.name}</h3>
                         <p className="text-xs text-gray-500">
                           Budget: {formatCurrency(category.estimated)} •
                           Actual: {formatCurrency(category.actual)}
@@ -271,7 +271,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">Total</h3>
+                    <h3 className="text-base font-semibold text-foreground">Total</h3>
                     <p className="text-sm text-gray-500">
                       Budget: {formatCurrency(totalEstimatedCost)} •
                       Actual: {formatCurrency(totalActualCost)}

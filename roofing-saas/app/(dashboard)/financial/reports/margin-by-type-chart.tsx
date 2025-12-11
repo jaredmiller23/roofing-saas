@@ -42,7 +42,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Profit Margin by Job Type</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">Profit Margin by Job Type</h3>
 
       <div className="space-y-4">
         {chartData.map((data, index) => (
@@ -54,7 +54,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
                   {formatCurrency(data.profit)} profit
                 </span>
               </div>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-foreground">
                 {data.margin.toFixed(1)}%
               </span>
             </div>

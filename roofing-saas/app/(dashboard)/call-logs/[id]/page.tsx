@@ -64,7 +64,7 @@ export default async function CallLogDetailPage({
         <div className="mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Call Log Details</h1>
+              <h1 className="text-3xl font-bold text-foreground">Call Log Details</h1>
               <p className="text-gray-600 mt-1">
                 {call.started_at ? new Date(call.started_at).toLocaleString() : 'Not started'}
               </p>
@@ -82,7 +82,7 @@ export default async function CallLogDetailPage({
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Phone className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Call Information</h2>
+            <h2 className="text-lg font-semibold text-foreground">Call Information</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -94,32 +94,32 @@ export default async function CallLogDetailPage({
                 ) : (
                   <PhoneOutgoing className="h-5 w-5 text-green-600" />
                 )}
-                <span className="text-gray-900 capitalize">{call.direction}</span>
+                <span className="text-foreground capitalize">{call.direction}</span>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
-              <p className="text-gray-900">{call.phone_number}</p>
+              <p className="text-foreground">{call.phone_number}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Duration</label>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-900">{formatDuration(call.duration)}</span>
+                <span className="text-foreground">{formatDuration(call.duration)}</span>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Outcome</label>
-              <p className="text-gray-900 capitalize">{call.outcome || 'N/A'}</p>
+              <p className="text-foreground capitalize">{call.outcome || 'N/A'}</p>
             </div>
 
             {call.disposition && (
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Disposition</label>
-                <p className="text-gray-900">{call.disposition}</p>
+                <p className="text-foreground">{call.disposition}</p>
               </div>
             )}
           </div>
@@ -130,7 +130,7 @@ export default async function CallLogDetailPage({
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Mic className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Call Recording</h2>
+              <h2 className="text-lg font-semibold text-foreground">Call Recording</h2>
             </div>
             <AudioPlayer
               recordingUrl={call.recording_url}
@@ -144,9 +144,9 @@ export default async function CallLogDetailPage({
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Notes</h2>
+              <h2 className="text-lg font-semibold text-foreground">Notes</h2>
             </div>
-            <p className="text-gray-900 whitespace-pre-wrap">{call.notes}</p>
+            <p className="text-foreground whitespace-pre-wrap">{call.notes}</p>
           </div>
         )}
 
@@ -154,7 +154,7 @@ export default async function CallLogDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/call-logs"
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background"
           >
             Back to Call Logs
           </Link>

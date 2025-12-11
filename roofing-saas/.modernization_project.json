@@ -9,11 +9,11 @@
   "prd_source_dir": "/Users/ccai/roofing saas/roofing-saas/docs/PRD",
   "source_code_dir": "/Users/ccai/roofing saas/roofing-saas",
   "output_directory": "/Users/ccai/roofing saas/roofing-saas/docs/modernization-analysis",
-  "sections_analyzed": 0,
-  "sections_with_discrepancies": 0,
-  "total_recommendations": 0,
-  "total_research_urls": 1,
-  "total_screenshots": 1,
+  "sections_analyzed": 1,
+  "sections_with_discrepancies": 1,
+  "total_recommendations": 6,
+  "total_research_urls": 8,
+  "total_screenshots": 7,
   "sessions": [
     {
       "session": 1,

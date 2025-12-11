@@ -110,7 +110,7 @@ export default function NewSignatureDocumentPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Alert className="max-w-md bg-green-50 border-green-200">
           <AlertDescription className="text-green-900">
             Document created successfully! Redirecting...
@@ -121,7 +121,7 @@ export default function NewSignatureDocumentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -137,7 +137,7 @@ export default function NewSignatureDocumentPage() {
             <div className="p-2 bg-blue-600 rounded-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Create Signature Document</h1>
+            <h1 className="text-3xl font-bold text-foreground">Create Signature Document</h1>
           </div>
           <p className="text-gray-600">
             Create a new document that requires signatures

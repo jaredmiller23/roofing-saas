@@ -61,11 +61,11 @@ export default async function TaskDetailPage({
 
   const getPriorityColor = (priority: string | null) => {
     const colors: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800',
+      low: 'bg-muted text-gray-800',
       medium: 'bg-yellow-100 text-yellow-800',
       high: 'bg-red-100 text-red-800',
     }
-    return priority ? colors[priority] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800'
+    return priority ? colors[priority] || 'bg-muted text-gray-800' : 'bg-muted text-gray-800'
   }
 
   const getStatusLabel = (status: string | null) => {
@@ -80,12 +80,12 @@ export default async function TaskDetailPage({
 
   const getStatusColor = (status: string | null) => {
     const colors: Record<string, string> = {
-      todo: 'bg-gray-100 text-gray-800',
+      todo: 'bg-muted text-gray-800',
       in_progress: 'bg-blue-100 text-blue-800',
       completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     }
-    return status ? colors[status] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800'
+    return status ? colors[status] || 'bg-muted text-gray-800' : 'bg-muted text-gray-800'
   }
 
   return (
@@ -102,7 +102,7 @@ export default async function TaskDetailPage({
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {task.title}
               </h1>
               <div className="flex gap-2 mt-2">
@@ -125,7 +125,7 @@ export default async function TaskDetailPage({
             </Link>
             <Link
               href="/tasks"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-background"
             >
               Back
             </Link>
@@ -134,18 +134,18 @@ export default async function TaskDetailPage({
 
         {/* Task Details */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-500">Due Date</label>
-              <p className="mt-1 text-gray-900">
+              <p className="mt-1 text-foreground">
                 {task.due_date ? new Date(task.due_date).toLocaleDateString() : '-'}
               </p>
             </div>
             {task.completed_at && (
               <div>
                 <label className="block text-sm font-medium text-gray-500">Completed At</label>
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-foreground">
                   {new Date(task.completed_at).toLocaleString()}
                 </p>
               </div>
@@ -156,8 +156,8 @@ export default async function TaskDetailPage({
         {/* Description */}
         {task.description && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Description</h2>
-            <p className="text-gray-900 whitespace-pre-wrap">{task.description}</p>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
+            <p className="text-foreground whitespace-pre-wrap">{task.description}</p>
           </div>
         )}
       </div>

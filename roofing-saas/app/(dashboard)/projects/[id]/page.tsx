@@ -196,7 +196,7 @@ export default function ProjectDetailPage() {
     }
 
     return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status as keyof typeof colors] || 'bg-muted text-gray-800'}`}>
         {status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
       </span>
     )
@@ -242,7 +242,7 @@ export default function ProjectDetailPage() {
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
               {project.project_number && (
                 <p className="text-sm text-gray-500 mt-1">Project #{project.project_number}</p>
               )}
@@ -339,21 +339,21 @@ export default function ProjectDetailPage() {
                   <CardContent className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">Description</label>
-                      <p className="text-gray-900 mt-1">{project.description || 'No description provided'}</p>
+                      <p className="text-foreground mt-1">{project.description || 'No description provided'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Scope of Work</label>
-                      <p className="text-gray-900 mt-1">{project.scope_of_work || 'No scope defined'}</p>
+                      <p className="text-foreground mt-1">{project.scope_of_work || 'No scope defined'}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-gray-500">Type</label>
-                        <p className="text-gray-900">{project.type || '—'}</p>
+                        <p className="text-foreground">{project.type || '—'}</p>
                       </div>
                       {customFields?.lead_source && (
                         <div>
                           <label className="text-sm font-medium text-gray-500">Lead Source</label>
-                          <p className="text-gray-900">{customFields.lead_source}</p>
+                          <p className="text-foreground">{customFields.lead_source}</p>
                         </div>
                       )}
                     </div>
@@ -369,11 +369,11 @@ export default function ProjectDetailPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-gray-500">Estimated Value</label>
-                        <p className="text-lg font-semibold text-gray-900">{formatCurrency(project.estimated_value)}</p>
+                        <p className="text-lg font-semibold text-foreground">{formatCurrency(project.estimated_value)}</p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500">Approved Value</label>
-                        <p className="text-lg font-semibold text-gray-900">{formatCurrency(project.approved_value)}</p>
+                        <p className="text-lg font-semibold text-foreground">{formatCurrency(project.approved_value)}</p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500">Final Value</label>
@@ -382,7 +382,7 @@ export default function ProjectDetailPage() {
                       {project.profit_margin && (
                         <div>
                           <label className="text-sm font-medium text-gray-500">Profit Margin</label>
-                          <p className="text-lg font-semibold text-gray-900">
+                          <p className="text-lg font-semibold text-foreground">
                             {(project.profit_margin * 100).toFixed(1)}%
                           </p>
                         </div>
@@ -401,7 +401,7 @@ export default function ProjectDetailPage() {
                     {activities.length > 0 ? (
                       <div className="space-y-3">
                         {activities.map((activity) => (
-                          <div key={activity.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
+                          <div key={activity.id} className="border border-gray-200 rounded-lg p-3 hover:bg-background">
                             <div className="flex items-start justify-between mb-1">
                               <div>
                                 {activity.subject && (
@@ -410,7 +410,7 @@ export default function ProjectDetailPage() {
                                 <p className="text-xs text-gray-500">{formatDate(activity.created_at)}</p>
                               </div>
                               {activity.type && (
-                                <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded capitalize">
+                                <span className="text-xs px-2 py-0.5 bg-muted text-gray-700 rounded capitalize">
                                   {activity.type.replace('_', ' ')}
                                 </span>
                               )}
@@ -492,28 +492,28 @@ export default function ProjectDetailPage() {
                   <CardContent className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-gray-500">Created</label>
-                      <p className="text-gray-900">{formatDate(project.created_at)}</p>
+                      <p className="text-foreground">{formatDate(project.created_at)}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Last Updated</label>
-                      <p className="text-gray-900">{formatDate(project.updated_at)}</p>
+                      <p className="text-foreground">{formatDate(project.updated_at)}</p>
                     </div>
                     {project.estimated_start && (
                       <div>
                         <label className="text-sm font-medium text-gray-500">Estimated Start</label>
-                        <p className="text-gray-900">{formatDate(project.estimated_start)}</p>
+                        <p className="text-foreground">{formatDate(project.estimated_start)}</p>
                       </div>
                     )}
                     {project.actual_start && (
                       <div>
                         <label className="text-sm font-medium text-gray-500">Actual Start</label>
-                        <p className="text-gray-900">{formatDate(project.actual_start)}</p>
+                        <p className="text-foreground">{formatDate(project.actual_start)}</p>
                       </div>
                     )}
                     {project.actual_completion && (
                       <div>
                         <label className="text-sm font-medium text-gray-500">Completion</label>
-                        <p className="text-gray-900">{formatDate(project.actual_completion)}</p>
+                        <p className="text-foreground">{formatDate(project.actual_completion)}</p>
                       </div>
                     )}
                   </CardContent>
@@ -526,7 +526,7 @@ export default function ProjectDetailPage() {
           <TabsContent value="jobs" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Production Jobs</h2>
+                <h2 className="text-xl font-semibold text-foreground">Production Jobs</h2>
                 <p className="text-sm text-gray-600">Jobs and work orders for this project</p>
               </div>
               <Link href={`/jobs/new?project_id=${projectId}`}>
@@ -583,7 +583,7 @@ export default function ProjectDetailPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Briefcase className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">No jobs yet</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-1">No jobs yet</h3>
                   <p className="text-sm text-gray-500 mb-4">
                     Create a job to schedule production work for this project
                   </p>
@@ -598,14 +598,14 @@ export default function ProjectDetailPage() {
           {/* Files Tab */}
           <TabsContent value="files" className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Project Files & Photos</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Project Files & Photos</h2>
               <p className="text-sm text-gray-600">Documents, photos, and attachments</p>
             </div>
 
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">Files integration coming soon</h3>
+                <h3 className="text-lg font-medium text-foreground mb-1">Files integration coming soon</h3>
                 <p className="text-sm text-gray-500">
                   Upload and manage project documents, photos, and files
                 </p>
@@ -630,7 +630,7 @@ export default function ProjectDetailPage() {
                         <Phone className="h-5 w-5 text-gray-400" />
                         <div>
                           <label className="text-sm font-medium text-gray-500">Phone</label>
-                          <p className="text-gray-900">{contact.phone}</p>
+                          <p className="text-foreground">{contact.phone}</p>
                         </div>
                       </div>
                     )}
@@ -639,7 +639,7 @@ export default function ProjectDetailPage() {
                         <Mail className="h-5 w-5 text-gray-400" />
                         <div>
                           <label className="text-sm font-medium text-gray-500">Email</label>
-                          <p className="text-gray-900">{contact.email}</p>
+                          <p className="text-foreground">{contact.email}</p>
                         </div>
                       </div>
                     )}
@@ -648,7 +648,7 @@ export default function ProjectDetailPage() {
                         <MapPin className="h-5 w-5 text-gray-400 mt-1" />
                         <div>
                           <label className="text-sm font-medium text-gray-500">Address</label>
-                          <p className="text-gray-900">
+                          <p className="text-foreground">
                             {contact.address_street}
                             <br />
                             {contact.address_city}, {contact.address_state} {contact.address_zip}
@@ -694,7 +694,7 @@ export default function ProjectDetailPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <User className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">No contact linked</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-1">No contact linked</h3>
                   <p className="text-sm text-gray-500">
                     Link a contact to this project to track customer information
                   </p>

@@ -410,7 +410,7 @@ export default function ProfileSettingsPage() {
                     type="email"
                     value={profile?.email || ''}
                     disabled
-                    className="bg-gray-50"
+                    className="bg-background"
                   />
                   <p className="text-xs text-gray-500">
                     Email cannot be changed. Contact support if needed.
@@ -528,7 +528,7 @@ export default function ProfileSettingsPage() {
                   )}
 
                   {/* Password Requirements */}
-                  <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                  <div className="mt-3 p-3 bg-background rounded-md">
                     <p className="text-xs font-medium text-gray-700 mb-2">Password must contain:</p>
                     <ul className="text-xs text-gray-600 space-y-1">
                       <li className="flex items-center gap-2">

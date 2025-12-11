@@ -7,22 +7,22 @@ import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboar
 
 // Lazy load gamification components to reduce initial bundle
 const PointsDisplay = dynamic(() => import('@/components/gamification/PointsDisplay').then(mod => ({ default: mod.PointsDisplay })), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
   ssr: false
 })
 
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
-  loading: () => <div className="h-96 bg-gray-100 rounded-lg animate-pulse" />,
+  loading: () => <div className="h-96 bg-muted rounded-lg animate-pulse" />,
   ssr: false
 })
 
 const ActivityFeed = dynamic(() => import('@/components/dashboard/ActivityFeed').then(mod => ({ default: mod.ActivityFeed })), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
   ssr: false
 })
 
 const WeeklyChallengeWidget = dynamic(() => import('@/components/dashboard/WeeklyChallengeWidget').then(mod => ({ default: mod.WeeklyChallengeWidget })), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse" />,
+  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
   ssr: false
 })
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         {/* Header with Scope Filter */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Welcome back!
             </h1>
           </div>
@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
         {/* Leaderboards */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Team Performance</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Team Performance</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Leaderboard
               period="weekly"

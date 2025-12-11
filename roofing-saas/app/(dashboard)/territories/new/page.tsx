@@ -38,7 +38,7 @@ export default function NewTerritoryPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create Territory</h1>
+            <h1 className="text-3xl font-bold text-foreground">Create Territory</h1>
             <p className="text-gray-600 mt-1">
               Draw territory boundaries and add details
             </p>
@@ -46,7 +46,7 @@ export default function NewTerritoryPage() {
 
           <Link
             href="/territories"
-            className="text-gray-600 hover:text-gray-900 font-medium"
+            className="text-gray-600 hover:text-foreground font-medium"
           >
             ← Back to Territories
           </Link>
@@ -55,7 +55,7 @@ export default function NewTerritoryPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Map Editor */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Draw Territory Boundary
             </h2>
             <TerritoryMapEditor
@@ -67,7 +67,7 @@ export default function NewTerritoryPage() {
 
           {/* Right: Territory Form */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
               Territory Details
             </h2>
             <TerritoryForm

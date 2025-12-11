@@ -9,12 +9,12 @@ import { Calendar, List } from 'lucide-react'
 
 // Lazy load calendar components to reduce initial bundle
 const StandardCalendar = dynamic(() => import('@/components/calendar/StandardCalendar').then(mod => ({ default: mod.StandardCalendar })), {
-  loading: () => <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
   ssr: false
 })
 
 const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalendar').then(mod => ({ default: mod.GoogleCalendar })), {
-  loading: () => <div className="h-[600px] bg-gray-100 rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
   ssr: false
 })
 
@@ -84,7 +84,7 @@ export default function EventsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Events & Calendar</h1>
+            <h1 className="text-3xl font-bold text-foreground">Events & Calendar</h1>
             <p className="text-gray-600 mt-1">
               Manage appointments, inspections, and meetings
             </p>
@@ -100,13 +100,13 @@ export default function EventsPage() {
 
         {/* View Toggle */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
             <button
               onClick={() => setView('calendar')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'calendar'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-gray-600 hover:text-foreground'
               }`}
             >
               <Calendar className="h-4 w-4" />
@@ -116,8 +116,8 @@ export default function EventsPage() {
               onClick={() => setView('list')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-gray-600 hover:text-foreground'
               }`}
             >
               <List className="h-4 w-4" />
@@ -126,13 +126,13 @@ export default function EventsPage() {
           </div>
 
           {view === 'calendar' && (
-            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+            <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
               <button
                 onClick={() => handleCalendarTypeChange('standard')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'standard'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-foreground shadow-sm'
+                    : 'text-gray-600 hover:text-foreground'
                 }`}
               >
                 Standard Calendar
@@ -141,8 +141,8 @@ export default function EventsPage() {
                 onClick={() => handleCalendarTypeChange('google')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'google'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-foreground shadow-sm'
+                    : 'text-gray-600 hover:text-foreground'
                 }`}
               >
                 Google Calendar

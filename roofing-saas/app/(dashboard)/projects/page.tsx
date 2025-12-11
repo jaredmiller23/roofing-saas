@@ -32,7 +32,7 @@ export default function ProjectsPage() {
         <div className="px-4 md:px-8 py-4 md:py-6 bg-white border-b border-gray-200">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                 Pipeline
               </h1>
               <p className="text-sm md:text-base text-gray-600 mt-1">
@@ -43,14 +43,14 @@ export default function ProjectsPage() {
             {/* Controls */}
             <div className="flex flex-col sm:flex-row gap-3">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 p-1 rounded-lg" data-testid="view-mode-toggle">
+              <div className="flex bg-muted p-1 rounded-lg" data-testid="view-mode-toggle">
                 <button
                   data-testid="kanban-view-button"
                   onClick={() => setViewMode('kanban')}
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'kanban'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-foreground shadow-sm'
+                      : 'text-gray-600 hover:text-foreground'
                   }`}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -61,8 +61,8 @@ export default function ProjectsPage() {
                   onClick={() => setViewMode('table')}
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'table'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-foreground shadow-sm'
+                      : 'text-gray-600 hover:text-foreground'
                   }`}
                 >
                   <Table className="h-4 w-4" />
@@ -85,7 +85,7 @@ export default function ProjectsPage() {
         <div className="flex-1 overflow-hidden">
           {/* KANBAN VIEW - Has built-in quick filters and stage toggles */}
           {viewMode === 'kanban' && (
-            <div className="h-full overflow-x-auto overflow-y-hidden bg-gray-100" data-testid="kanban-view">
+            <div className="h-full overflow-x-auto overflow-y-hidden bg-muted" data-testid="kanban-view">
               <PipelineBoard />
             </div>
           )}

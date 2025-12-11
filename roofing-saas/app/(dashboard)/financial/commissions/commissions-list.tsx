@@ -66,7 +66,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
       paid: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     }
-    return badges[status] || 'bg-gray-100 text-gray-800'
+    return badges[status] || 'bg-muted text-gray-800'
   }
 
   const handleApprove = (commissionId: string) => {
@@ -98,7 +98,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
     return (
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Commissions</h2>
+          <h2 className="text-xl font-semibold text-foreground">Recent Commissions</h2>
         </div>
         <div className="p-12 text-center text-gray-500">
           <p className="text-lg">No commissions recorded yet</p>
@@ -111,7 +111,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Recent Commissions</h2>
+        <h2 className="text-xl font-semibold text-foreground">Recent Commissions</h2>
       </div>
 
       {error && (
@@ -122,7 +122,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-background">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
@@ -137,16 +137,16 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
             {commissions.map((commission) => {
               const project = commission.project?.[0]
               return (
-                <tr key={commission.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={commission.id} className="hover:bg-background">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                     {formatDate(commission.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 capitalize">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-muted text-gray-800 capitalize">
                       {commission.commission_type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-foreground">
                     {project ? (
                       <div>
                         <p className="font-medium truncate max-w-xs">{project.name}</p>
@@ -156,10 +156,10 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                       <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">
                     {formatCurrency(commission.base_amount)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
                     {formatCurrency(commission.final_amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">

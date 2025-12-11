@@ -54,7 +54,7 @@ export default async function EditContactPage({
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Edit Contact</h1>
+          <h1 className="text-3xl font-bold text-foreground">Edit Contact</h1>
           <p className="text-gray-600 mt-1">
             Update contact information for {contact.first_name} {contact.last_name}
           </p>

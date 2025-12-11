@@ -1,7 +1,7 @@
 /**
  * Claims Export API
  *
- * GET /api/claims/export/[projectId]
+ * GET /api/projects/[id]/claims/export
  * Export a claim package for a project.
  * Returns all relevant data including photos, documents, and storm causation.
  */
@@ -13,7 +13,7 @@ import { generateClaimExportPackage } from '@/lib/claims/sync-service'
 
 interface RouteParams {
   params: Promise<{
-    projectId: string
+    id: string
   }>
 }
 
@@ -23,7 +23,7 @@ export async function GET(
 ) {
   try {
     const supabase = await createClient()
-    const { projectId } = await params
+    const { id: projectId } = await params
 
     // Verify authentication
     const {

@@ -21,17 +21,17 @@ export default async function NewKnockPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Mobile Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center gap-3">
           <Link
             href="/knocks"
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 -ml-2 hover:bg-muted rounded-md transition-colors"
           >
             <ArrowLeft className="h-5 w-5 text-gray-600" />
           </Link>
-          <h1 className="text-lg font-semibold text-gray-900">Log Knock</h1>
+          <h1 className="text-lg font-semibold text-foreground">Log Knock</h1>
         </div>
       </div>
 

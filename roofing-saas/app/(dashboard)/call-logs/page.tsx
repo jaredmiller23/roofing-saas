@@ -26,7 +26,7 @@ export default async function CallLogsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Call Logs</h1>
+            <h1 className="text-3xl font-bold text-foreground">Call Logs</h1>
             <p className="text-gray-600 mt-1">
               View call history, recordings, and transcriptions
             </p>

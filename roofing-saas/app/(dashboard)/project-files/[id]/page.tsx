@@ -64,7 +64,7 @@ export default async function ProjectFileDetailPage({
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {file.file_name}
               </h1>
               <p className="text-gray-600 mt-1">
@@ -82,7 +82,7 @@ export default async function ProjectFileDetailPage({
             </Link>
             <Link
               href="/project-files"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-background"
             >
               Back
             </Link>
@@ -91,7 +91,7 @@ export default async function ProjectFileDetailPage({
 
         {/* File Preview/Link */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">File</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">File</h2>
           <a
             href={file.file_url}
             target="_blank"
@@ -105,8 +105,8 @@ export default async function ProjectFileDetailPage({
         {/* Description */}
         {file.description && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Description</h2>
-            <p className="text-gray-900 whitespace-pre-wrap">{file.description}</p>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
+            <p className="text-foreground whitespace-pre-wrap">{file.description}</p>
           </div>
         )}
       </div>

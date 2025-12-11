@@ -89,7 +89,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
   return (
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Revenue Forecasting</h2>
+        <h2 className="text-xl font-semibold text-foreground">Revenue Forecasting</h2>
         <p className="text-sm text-gray-500 mt-1">Pipeline-based revenue prediction with confidence intervals</p>
       </div>
 
@@ -120,7 +120,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
           <h3 className="text-sm font-semibold text-gray-700 mb-3">3-Month Revenue Projection</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-background">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Low Estimate</th>
@@ -131,10 +131,10 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {forecast.forecasts.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.month}</td>
+                  <tr key={index} className="hover:bg-background">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{item.month}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-right">{formatCompact(item.lowEstimate)}</td>
-                    <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right">{formatCompact(item.projected)}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{formatCompact(item.projected)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-right">{formatCompact(item.highEstimate)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

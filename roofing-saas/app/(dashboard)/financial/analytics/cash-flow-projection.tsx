@@ -95,7 +95,7 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
   return (
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Cash Flow Projection</h2>
+        <h2 className="text-xl font-semibold text-foreground">Cash Flow Projection</h2>
         <p className="text-sm text-gray-500 mt-1">Expected collections and payment schedule</p>
       </div>
 
@@ -135,7 +135,7 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
           <h3 className="text-sm font-semibold text-gray-700 mb-3">3-Month Cash Flow Forecast</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-background">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Expected In</th>
@@ -146,8 +146,8 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {cashFlow.projections.map((projection, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{projection.month}</td>
+                  <tr key={index} className="hover:bg-background">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{projection.month}</td>
                     <td className="px-4 py-3 text-sm text-green-600 text-right font-medium">
                       +{formatCurrency(projection.cashIn)}
                     </td>

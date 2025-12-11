@@ -229,12 +229,12 @@ export default function TerritoriesPage() {
             {knocks.map((knock) => (
               <div
                 key={knock.id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 rounded-lg p-4 hover:bg-background transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-foreground">
                         {formatDisposition(knock.disposition)}
                       </span>
                       <span className="text-xs text-gray-500">
@@ -276,7 +276,7 @@ export default function TerritoriesPage() {
   const mapViewJSX = useMemo(() => (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-foreground">
           {selectedTerritory ? selectedTerritory.name : 'Territory Map'}
         </h2>
 
@@ -335,7 +335,7 @@ export default function TerritoriesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Territories & Activity</h1>
+            <h1 className="text-3xl font-bold text-foreground">Territories & Activity</h1>
             <p className="text-gray-600 mt-1">
               Manage territories and track door-knocking activities
             </p>

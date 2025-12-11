@@ -68,7 +68,7 @@ export default function VoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -76,7 +76,7 @@ export default function VoicePage() {
             <div className="p-2 bg-blue-600 rounded-lg">
               <Mic className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">AI Voice Assistant</h1>
+            <h1 className="text-3xl font-bold text-foreground">AI Voice Assistant</h1>
           </div>
           <p className="text-gray-600">
             Talk to your CRM - Create contacts, log knocks, search records, and more using your voice
@@ -119,7 +119,7 @@ export default function VoicePage() {
 
         {/* Context Selection (Optional) */}
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Optional Context
           </h2>
           <p className="text-sm text-gray-600 mb-4">
@@ -181,33 +181,33 @@ export default function VoicePage() {
 
         {/* Technical Details */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Technical Details
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-gray-600 font-medium">Provider</p>
-              <p className="text-gray-900">OpenAI Realtime API</p>
+              <p className="text-foreground">OpenAI Realtime API</p>
             </div>
             <div>
               <p className="text-gray-600 font-medium">Model</p>
-              <p className="text-gray-900">gpt-4o-realtime-preview</p>
+              <p className="text-foreground">gpt-4o-realtime-preview</p>
             </div>
             <div>
               <p className="text-gray-600 font-medium">Voice</p>
-              <p className="text-gray-900">Alloy</p>
+              <p className="text-foreground">Alloy</p>
             </div>
             <div>
               <p className="text-gray-600 font-medium">Cost</p>
-              <p className="text-gray-900">~$0.30/minute</p>
+              <p className="text-foreground">~$0.30/minute</p>
             </div>
             <div>
               <p className="text-gray-600 font-medium">Target Latency</p>
-              <p className="text-gray-900">&lt;2 seconds</p>
+              <p className="text-foreground">&lt;2 seconds</p>
             </div>
             <div>
               <p className="text-gray-600 font-medium">Functions Available</p>
-              <p className="text-gray-900">10 CRM + Intelligence</p>
+              <p className="text-foreground">10 CRM + Intelligence</p>
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export default function VoicePage() {
 
         {/* Coming Soon */}
         <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Coming Soon: Phase 4.2 & 4.3
           </h3>
           <ul className="space-y-2 text-sm text-gray-700">

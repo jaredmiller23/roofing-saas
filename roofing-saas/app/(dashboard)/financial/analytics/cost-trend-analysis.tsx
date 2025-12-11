@@ -98,7 +98,7 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
   return (
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Cost Trend Analysis</h2>
+        <h2 className="text-xl font-semibold text-foreground">Cost Trend Analysis</h2>
         <p className="text-sm text-gray-500 mt-1">Month-over-month cost changes and vendor analysis</p>
       </div>
 
@@ -108,10 +108,10 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Cost Trends by Category</h3>
           <div className="space-y-3">
             {analysis.trends.map((trend, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-background rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-900 capitalize">{trend.type}</span>
+                    <span className="text-sm font-medium text-foreground capitalize">{trend.type}</span>
                     {trend.percentChange !== 0 && (
                       <div className={`flex items-center gap-1 ${
                         trend.percentChange > 0 ? 'text-red-600' : 'text-green-600'
@@ -154,7 +154,7 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Top Vendors by Spend</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-background">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
@@ -168,10 +168,10 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
                   const percentage = totalSpend > 0 ? (vendor.amount / totalSpend) * 100 : 0
 
                   return (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">#{index + 1}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{vendor.vendor}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+                    <tr key={index} className="hover:bg-background">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">#{index + 1}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{vendor.vendor}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">
                         {formatCurrency(vendor.amount)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 text-right">

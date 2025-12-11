@@ -4,12 +4,12 @@ import { getCurrentUser } from '@/lib/auth/session'
 import type { ClaimData } from '@/lib/claims/types'
 
 /**
- * GET /api/claims/[claimId]
+ * GET /api/claims/[id]
  * Get a single claim by ID
  */
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ claimId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { claimId } = await context.params
+    const { id: claimId } = await context.params
     const supabase = await createClient()
 
     // Get user's tenant
@@ -54,7 +54,7 @@ export async function GET(
       claim: data as ClaimData,
     })
   } catch (error) {
-    console.error('Error in GET /api/claims/[claimId]:', error)
+    console.error('Error in GET /api/claims/[id]:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

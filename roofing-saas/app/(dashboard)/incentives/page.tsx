@@ -26,7 +26,7 @@ export default async function IncentivesPage() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Incentives & Gamification</h1>
+          <h1 className="text-3xl font-bold text-foreground">Incentives & Gamification</h1>
           <p className="text-gray-600 mt-2">
             Track your performance, compete with teammates, and earn rewards
           </p>
@@ -53,21 +53,21 @@ export default async function IncentivesPage() {
                 <div className="flex items-center gap-3 p-2 bg-yellow-50 rounded-lg">
                   <Trophy className="h-5 w-5 text-yellow-600" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Top Performer</p>
+                    <p className="text-sm font-medium text-foreground">Top Performer</p>
                     <p className="text-xs text-gray-600">Ranked #1 this week</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
                   <Target className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Goal Crusher</p>
+                    <p className="text-sm font-medium text-foreground">Goal Crusher</p>
                     <p className="text-xs text-gray-600">Hit weekly target</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
                   <Zap className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Streak Master</p>
+                    <p className="text-sm font-medium text-foreground">Streak Master</p>
                     <p className="text-xs text-gray-600">5 days in a row</p>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ export default async function IncentivesPage() {
                   <Trophy className="h-8 w-8 text-purple-600" />
                   <span className="text-2xl font-bold text-purple-900">1st</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">Weekly Winner</h3>
+                <h3 className="font-semibold text-foreground mb-1">Weekly Winner</h3>
                 <p className="text-sm text-gray-600 mb-3">$500 bonus + paid day off</p>
                 <div className="text-xs text-purple-600 font-medium">Most knocks this week</div>
               </div>
@@ -104,7 +104,7 @@ export default async function IncentivesPage() {
                   <Target className="h-8 w-8 text-blue-600" />
                   <span className="text-2xl font-bold text-blue-900">2nd</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">Sales Champion</h3>
+                <h3 className="font-semibold text-foreground mb-1">Sales Champion</h3>
                 <p className="text-sm text-gray-600 mb-3">$300 bonus + gift card</p>
                 <div className="text-xs text-blue-600 font-medium">Most sales this week</div>
               </div>
@@ -114,7 +114,7 @@ export default async function IncentivesPage() {
                   <TrendingUp className="h-8 w-8 text-green-600" />
                   <span className="text-2xl font-bold text-green-900">3rd</span>
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">Consistency Award</h3>
+                <h3 className="font-semibold text-foreground mb-1">Consistency Award</h3>
                 <p className="text-sm text-gray-600 mb-3">$150 bonus</p>
                 <div className="text-xs text-green-600 font-medium">Hit daily goals all week</div>
               </div>
@@ -124,7 +124,7 @@ export default async function IncentivesPage() {
 
         {/* Leaderboards */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-xl font-semibold text-foreground mb-4">
             Team Leaderboards
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -102,7 +102,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
   return (
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Margin Analysis</h2>
+        <h2 className="text-xl font-semibold text-foreground">Margin Analysis</h2>
         <p className="text-sm text-gray-500 mt-1">Profitability breakdown by job type and performance</p>
       </div>
 
@@ -118,7 +118,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
 
           <div className="text-center">
             <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-foreground">
               {formatCurrency(analysis.totalRevenue)}
             </p>
           </div>
@@ -160,7 +160,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
               {analysis.bestPerformers.map((project, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -184,7 +184,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
               {analysis.worstPerformers.map((project, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}
                     </p>
                     <p className="text-xs text-gray-500">

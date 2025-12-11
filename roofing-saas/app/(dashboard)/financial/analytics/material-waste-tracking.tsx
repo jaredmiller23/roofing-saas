@@ -138,31 +138,31 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
   return (
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Material Waste Tracking</h2>
+        <h2 className="text-xl font-semibold text-foreground">Material Waste Tracking</h2>
         <p className="text-sm text-gray-500 mt-1">Waste analysis and supplier accuracy comparison</p>
       </div>
 
       <div className="p-6">
         {/* Overall Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
+          <div className="text-center p-3 bg-background rounded-lg">
             <p className="text-xs font-medium text-gray-500 mb-1">Total Purchased</p>
-            <p className="text-xl font-bold text-gray-900">{analysis.totalPurchased.toFixed(0)}</p>
+            <p className="text-xl font-bold text-foreground">{analysis.totalPurchased.toFixed(0)}</p>
           </div>
 
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
+          <div className="text-center p-3 bg-background rounded-lg">
             <p className="text-xs font-medium text-gray-500 mb-1">Total Wasted</p>
             <p className="text-xl font-bold text-red-600">{analysis.totalWasted.toFixed(0)}</p>
           </div>
 
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
+          <div className="text-center p-3 bg-background rounded-lg">
             <p className="text-xs font-medium text-gray-500 mb-1">Waste %</p>
             <p className={`text-xl font-bold ${getWasteColor(analysis.overallWastePercent)}`}>
               {analysis.overallWastePercent.toFixed(1)}%
             </p>
           </div>
 
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
+          <div className="text-center p-3 bg-background rounded-lg">
             <p className="text-xs font-medium text-gray-500 mb-1">Waste Cost</p>
             <p className="text-xl font-bold text-red-600">{formatCurrency(analysis.wasteCost)}</p>
           </div>
@@ -173,7 +173,7 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Waste by Material Type</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-background">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Purchased</th>
@@ -184,8 +184,8 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {analysis.wasteByType.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.type}</td>
+                  <tr key={index} className="hover:bg-background">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{item.type}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.purchased.toFixed(0)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.wasted.toFixed(0)}</td>
                     <td className={`px-4 py-3 text-sm font-semibold text-right ${getWasteColor(item.wastePercent)}`}>
@@ -206,9 +206,9 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Supplier Accuracy Comparison</h3>
           <div className="space-y-3">
             {analysis.supplierAccuracy.map((supplier, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-background rounded-lg">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{supplier.supplier}</p>
+                  <p className="text-sm font-medium text-foreground">{supplier.supplier}</p>
                   <p className="text-xs text-gray-500">
                     Purchased: {supplier.purchased.toFixed(0)} | Wasted: {supplier.wasted.toFixed(0)}
                   </p>

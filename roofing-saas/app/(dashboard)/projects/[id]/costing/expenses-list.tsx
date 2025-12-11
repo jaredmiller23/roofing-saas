@@ -47,10 +47,10 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
       equipment: 'bg-orange-100 text-orange-800',
       subcontractor: 'bg-green-100 text-green-800',
       permit: 'bg-yellow-100 text-yellow-800',
-      disposal: 'bg-gray-100 text-gray-800',
-      other: 'bg-gray-100 text-gray-800',
+      disposal: 'bg-muted text-gray-800',
+      other: 'bg-muted text-gray-800',
     }
-    return colors[type] || 'bg-gray-100 text-gray-800'
+    return colors[type] || 'bg-muted text-gray-800'
   }
 
   const handleDelete = (expenseId: string) => {
@@ -81,7 +81,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
     return (
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Expense Details</h2>
+          <h2 className="text-xl font-semibold text-foreground">Expense Details</h2>
         </div>
         <div className="p-12 text-center text-gray-500">
           <p className="text-lg">No expenses recorded yet</p>
@@ -94,7 +94,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Expense Details</h2>
+        <h2 className="text-xl font-semibold text-foreground">Expense Details</h2>
       </div>
 
       {error && (
@@ -105,7 +105,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-background">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
@@ -132,8 +132,8 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {expenses.map((expense) => (
-              <tr key={expense.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <tr key={expense.id} className="hover:bg-background">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                   {formatDate(expense.expense_date)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -144,7 +144,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
                     <div className="text-xs text-gray-500 mt-1">{expense.category}</div>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
+                <td className="px-6 py-4 text-sm text-foreground">
                   <div className="max-w-xs truncate" title={expense.description}>
                     {expense.description}
                   </div>
@@ -152,7 +152,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {expense.vendor_name || '—'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-medium">
                   {formatCurrency(expense.amount)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -193,12 +193,12 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-gray-50">
+          <tfoot className="bg-background">
             <tr>
-              <td colSpan={4} className="px-6 py-4 text-sm font-semibold text-gray-900">
+              <td colSpan={4} className="px-6 py-4 text-sm font-semibold text-foreground">
                 Total
               </td>
-              <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
+              <td className="px-6 py-4 text-sm font-bold text-foreground text-right">
                 {formatCurrency(expenses.reduce((sum, exp) => sum + exp.amount, 0))}
               </td>
               <td colSpan={2}></td>

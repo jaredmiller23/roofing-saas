@@ -81,7 +81,7 @@ export default async function CommissionsPage() {
               >
                 ← Back to Reports
               </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Commission Tracking</h1>
+              <h1 className="text-3xl font-bold text-foreground">Commission Tracking</h1>
               <p className="text-gray-600 mt-1">Manage sales rep and canvasser commissions</p>
             </div>
             <div className="flex gap-3">
@@ -104,7 +104,7 @@ export default async function CommissionsPage() {
               <h3 className="text-sm font-medium text-gray-500">Total Earned</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalEarned)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalEarned)}</p>
             <p className="text-xs text-gray-500 mt-1">All time</p>
           </div>
 
@@ -114,7 +114,7 @@ export default async function CommissionsPage() {
               <h3 className="text-sm font-medium text-gray-500">Pending</h3>
               <Clock className="h-5 w-5 text-yellow-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPending)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPending)}</p>
             <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
           </div>
 
@@ -124,7 +124,7 @@ export default async function CommissionsPage() {
               <h3 className="text-sm font-medium text-gray-500">Paid</h3>
               <CheckCircle className="h-5 w-5 text-green-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPaid)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
             <p className="text-xs text-gray-500 mt-1">Successfully paid</p>
           </div>
 
@@ -134,7 +134,7 @@ export default async function CommissionsPage() {
               <h3 className="text-sm font-medium text-gray-500">Active Users</h3>
               <Users className="h-5 w-5 text-purple-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
+            <p className="text-2xl font-bold text-foreground">{totalUsers}</p>
             <p className="text-xs text-gray-500 mt-1">With commissions</p>
           </div>
         </div>
@@ -142,11 +142,11 @@ export default async function CommissionsPage() {
         {/* Team Performance Table */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Team Performance</h2>
+            <h2 className="text-xl font-semibold text-foreground">Team Performance</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-background">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team Member</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Earned</th>
@@ -159,16 +159,16 @@ export default async function CommissionsPage() {
               <tbody className="divide-y divide-gray-200">
                 {summaryData && summaryData.length > 0 ? (
                   summaryData.map((userSummary) => (
-                    <tr key={userSummary.user_id} className="hover:bg-gray-50">
+                    <tr key={userSummary.user_id} className="hover:bg-background">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-foreground">
                             {userSummary.user_name || 'Unknown'}
                           </p>
                           <p className="text-xs text-gray-500">{userSummary.user_email}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-semibold">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-semibold">
                         {formatCurrency(userSummary.total_earned || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 text-right">
@@ -177,7 +177,7 @@ export default async function CommissionsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right">
                         {formatCurrency(userSummary.paid_amount || 0)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">
                         {userSummary.total_commissions}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">

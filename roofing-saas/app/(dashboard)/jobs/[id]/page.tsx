@@ -58,7 +58,7 @@ export default async function JobDetailPage({
       completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     }
-    return badges[status as keyof typeof badges] || 'bg-gray-100 text-gray-800'
+    return badges[status as keyof typeof badges] || 'bg-muted text-gray-800'
   }
 
   const formatCurrency = (amount: number | null) => {
@@ -85,7 +85,7 @@ export default async function JobDetailPage({
         <div className="mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Job Details</h1>
+              <h1 className="text-3xl font-bold text-foreground">Job Details</h1>
               <p className="text-gray-600 mt-1">
                 Job #{job.job_number}
               </p>
@@ -103,18 +103,18 @@ export default async function JobDetailPage({
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Briefcase className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Job Information</h2>
+            <h2 className="text-lg font-semibold text-foreground">Job Information</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Job Number</label>
-              <p className="text-gray-900">{job.job_number}</p>
+              <p className="text-foreground">{job.job_number}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Job Type</label>
-              <p className="text-gray-900 capitalize">{job.job_type?.replace('_', ' ')}</p>
+              <p className="text-foreground capitalize">{job.job_type?.replace('_', ' ')}</p>
             </div>
 
             <div>
@@ -133,14 +133,14 @@ export default async function JobDetailPage({
                     style={{ width: `${job.completion_percentage}%` }}
                   ></div>
                 </div>
-                <span className="text-gray-900">{job.completion_percentage}%</span>
+                <span className="text-foreground">{job.completion_percentage}%</span>
               </div>
             </div>
 
             {job.scope_of_work && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-500 mb-1">Scope of Work</label>
-                <p className="text-gray-900 whitespace-pre-wrap">{job.scope_of_work}</p>
+                <p className="text-foreground whitespace-pre-wrap">{job.scope_of_work}</p>
               </div>
             )}
           </div>
@@ -150,20 +150,20 @@ export default async function JobDetailPage({
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Calendar className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Schedule</h2>
+            <h2 className="text-lg font-semibold text-foreground">Schedule</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Scheduled Date</label>
-              <p className="text-gray-900">
+              <p className="text-foreground">
                 {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString() : 'Not scheduled'}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
-              <p className="text-gray-900">
+              <p className="text-foreground">
                 {job.scheduled_start_time && job.scheduled_end_time
                   ? `${formatTime(job.scheduled_start_time)} - ${formatTime(job.scheduled_end_time)}`
                   : 'Not set'}
@@ -172,14 +172,14 @@ export default async function JobDetailPage({
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Estimated Duration</label>
-              <p className="text-gray-900">
+              <p className="text-foreground">
                 {job.estimated_duration_hours ? `${job.estimated_duration_hours} hours` : 'N/A'}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Actual Duration</label>
-              <p className="text-gray-900">
+              <p className="text-foreground">
                 {job.actual_duration_hours ? `${job.actual_duration_hours} hours` : 'N/A'}
               </p>
             </div>
@@ -190,33 +190,33 @@ export default async function JobDetailPage({
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <DollarSign className="h-5 w-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Cost Tracking</h2>
+            <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Labor Cost</label>
-              <p className="text-gray-900">{formatCurrency(job.labor_cost)}</p>
+              <p className="text-foreground">{formatCurrency(job.labor_cost)}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Material Cost</label>
-              <p className="text-gray-900">{formatCurrency(job.material_cost)}</p>
+              <p className="text-foreground">{formatCurrency(job.material_cost)}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Equipment Cost</label>
-              <p className="text-gray-900">{formatCurrency(job.equipment_cost)}</p>
+              <p className="text-foreground">{formatCurrency(job.equipment_cost)}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Other Costs</label>
-              <p className="text-gray-900">{formatCurrency(job.other_costs)}</p>
+              <p className="text-foreground">{formatCurrency(job.other_costs)}</p>
             </div>
 
             <div className="md:col-span-2 pt-4 border-t border-gray-200">
               <label className="block text-sm font-medium text-gray-500 mb-1">Total Cost</label>
-              <p className="text-xl font-semibold text-gray-900">{formatCurrency(job.total_cost)}</p>
+              <p className="text-xl font-semibold text-foreground">{formatCurrency(job.total_cost)}</p>
             </div>
           </div>
         </div>
@@ -226,20 +226,20 @@ export default async function JobDetailPage({
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Notes</h2>
+              <h2 className="text-lg font-semibold text-foreground">Notes</h2>
             </div>
 
             {job.notes && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-500 mb-1">Notes</label>
-                <p className="text-gray-900 whitespace-pre-wrap">{job.notes}</p>
+                <p className="text-foreground whitespace-pre-wrap">{job.notes}</p>
               </div>
             )}
 
             {job.internal_notes && (
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Internal Notes</label>
-                <p className="text-gray-900 whitespace-pre-wrap">{job.internal_notes}</p>
+                <p className="text-foreground whitespace-pre-wrap">{job.internal_notes}</p>
               </div>
             )}
           </div>
@@ -249,7 +249,7 @@ export default async function JobDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/jobs"
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background"
           >
             Back to Jobs
           </Link>

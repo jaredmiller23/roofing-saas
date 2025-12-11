@@ -25,7 +25,7 @@ export default async function TasksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -34,7 +34,7 @@ export default async function TasksPage() {
               <div className="p-2 bg-blue-600 rounded-lg">
                 <CheckCircle2 className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
+              <h1 className="text-3xl font-bold text-foreground">Tasks</h1>
             </div>
             <div className="flex gap-2">
               <Link href="/tasks/board">

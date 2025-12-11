@@ -88,7 +88,7 @@ export default function SignaturesPage() {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: 'bg-gray-100 text-gray-700',
+      draft: 'bg-muted text-gray-700',
       sent: 'bg-blue-100 text-blue-700',
       viewed: 'bg-purple-100 text-purple-700',
       signed: 'bg-green-100 text-green-700',
@@ -114,7 +114,7 @@ export default function SignaturesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -123,7 +123,7 @@ export default function SignaturesPage() {
               <div className="p-2 bg-blue-600 rounded-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">E-Signatures</h1>
+              <h1 className="text-3xl font-bold text-foreground">E-Signatures</h1>
             </div>
             <Button
               onClick={() => router.push('/signatures/new')}
@@ -186,7 +186,7 @@ export default function SignaturesPage() {
         ) : filteredDocuments.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               No documents found
             </h3>
             <p className="text-gray-600 mb-6">
@@ -218,7 +218,7 @@ export default function SignaturesPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-foreground">
                           {doc.title}
                         </h3>
                         {getStatusBadge(doc.status)}

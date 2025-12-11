@@ -15,7 +15,7 @@ export default async function NewTaskPage() {
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">New Task</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-8">New Task</h1>
         <TaskFormEnhanced />
       </div>
     </div>

@@ -90,7 +90,7 @@ export default async function FinancialReportsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Financial Reports</h1>
+              <h1 className="text-3xl font-bold text-foreground">Financial Reports</h1>
               <p className="text-gray-600 mt-1">Company-wide profit & loss analysis</p>
             </div>
             <div className="flex gap-3">
@@ -124,7 +124,7 @@ export default async function FinancialReportsPage() {
               <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenue)}</p>
             <div className={`text-sm mt-2 flex items-center gap-1 ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {revenueGrowth >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
               {Math.abs(revenueGrowth).toFixed(1)}% vs last month
@@ -155,7 +155,7 @@ export default async function FinancialReportsPage() {
               <h3 className="text-sm font-medium text-gray-500">Active Projects</h3>
               <Briefcase className="h-5 w-5 text-purple-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{activeProjects}</p>
+            <p className="text-2xl font-bold text-foreground">{activeProjects}</p>
             <p className="text-sm text-gray-500 mt-2">
               Total: {plData?.length || 0} projects
             </p>
@@ -167,7 +167,7 @@ export default async function FinancialReportsPage() {
               <h3 className="text-sm font-medium text-gray-500">Cost Performance</h3>
               <Calendar className="h-5 w-5 text-orange-500" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-foreground">
               {formatCurrency(totalActualCost - totalEstimatedCost)}
             </p>
             <p className="text-sm text-gray-500 mt-2">
@@ -207,12 +207,12 @@ export default async function FinancialReportsPage() {
         {/* Job Type Breakdown */}
         <div className="bg-white rounded-lg shadow mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Performance by Job Type</h2>
+            <h2 className="text-xl font-semibold text-foreground">Performance by Job Type</h2>
           </div>
           <div className="p-6">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-background">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Projects</th>
@@ -226,15 +226,15 @@ export default async function FinancialReportsPage() {
                   {Object.entries(byType).map(([type, data]) => {
                     const margin = data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0
                     return (
-                      <tr key={type} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{type}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{data.count}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(data.revenue)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(data.cost)}</td>
+                      <tr key={type} className="hover:bg-background">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">{type}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">{data.count}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">{formatCurrency(data.revenue)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">{formatCurrency(data.cost)}</td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${data.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrency(data.profit)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{margin.toFixed(1)}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">{margin.toFixed(1)}%</td>
                       </tr>
                     )
                   })}

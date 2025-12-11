@@ -163,7 +163,7 @@ export default async function FinancialsPage() {
               </thead>
               <tbody>
                 {(profitLoss || []).map((project) => (
-                  <tr key={project.project_id} className="border-b hover:bg-gray-50">
+                  <tr key={project.project_id} className="border-b hover:bg-background">
                     <td className="py-3 px-4">
                       <div>
                         <div className="font-medium">{project.project_name}</div>

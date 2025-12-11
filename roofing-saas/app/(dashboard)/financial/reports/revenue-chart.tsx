@@ -61,14 +61,14 @@ export function RevenueChart({ projects }: RevenueChartProps) {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend (Last 6 Months)</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">Revenue Trend (Last 6 Months)</h3>
 
       <div className="space-y-4">
         {monthlyData.map((data, index) => (
           <div key={index}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm font-medium text-gray-700">{data.month}</span>
-              <span className="text-sm font-semibold text-gray-900">{formatCurrency(data.revenue)}</span>
+              <span className="text-sm font-semibold text-foreground">{formatCurrency(data.revenue)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div

@@ -45,7 +45,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Add Commission</h2>
+          <h2 className="text-xl font-semibold text-foreground">Add Commission</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -173,7 +173,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background disabled:opacity-50"
             >
               Cancel
             </button>

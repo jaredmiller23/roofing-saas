@@ -110,7 +110,7 @@ export default async function FinancialAnalyticsPage() {
               >
                 ← Back to Reports
               </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Advanced Analytics</h1>
+              <h1 className="text-3xl font-bold text-foreground">Advanced Analytics</h1>
               <p className="text-gray-600 mt-1">Forecasting, trends, and predictive insights</p>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default async function FinancialAnalyticsPage() {
               <TrendingUp className="h-4 w-4 text-blue-500" />
               <h3 className="text-xs font-medium text-gray-500">Close Rate</h3>
             </div>
-            <p className="text-xl font-bold text-gray-900">{closeRate.toFixed(1)}%</p>
+            <p className="text-xl font-bold text-foreground">{closeRate.toFixed(1)}%</p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
@@ -131,7 +131,7 @@ export default async function FinancialAnalyticsPage() {
               <BarChart3 className="h-4 w-4 text-purple-500" />
               <h3 className="text-xs font-medium text-gray-500">Pipeline</h3>
             </div>
-            <p className="text-xl font-bold text-gray-900">{pipelineProjects.length}</p>
+            <p className="text-xl font-bold text-foreground">{pipelineProjects.length}</p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
@@ -139,7 +139,7 @@ export default async function FinancialAnalyticsPage() {
               <DollarSign className="h-4 w-4 text-green-500" />
               <h3 className="text-xs font-medium text-gray-500">AR Current</h3>
             </div>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-xl font-bold text-foreground">
               ${(arAging.current / 1000).toFixed(0)}K
             </p>
           </div>
@@ -149,7 +149,7 @@ export default async function FinancialAnalyticsPage() {
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
               <h3 className="text-xs font-medium text-gray-500">AR 30-60</h3>
             </div>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-xl font-bold text-foreground">
               ${(arAging.days30 / 1000).toFixed(0)}K
             </p>
           </div>
@@ -159,7 +159,7 @@ export default async function FinancialAnalyticsPage() {
               <Package className="h-4 w-4 text-red-500" />
               <h3 className="text-xs font-medium text-gray-500">AR 90+</h3>
             </div>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-xl font-bold text-foreground">
               ${(arAging.days90plus / 1000).toFixed(0)}K
             </p>
           </div>

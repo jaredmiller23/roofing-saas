@@ -127,7 +127,7 @@ export default function TerritoryDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{territory.name}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{territory.name}</h1>
             {territory.description && (
               <p className="text-gray-600 mt-1">{territory.description}</p>
             )}
@@ -136,7 +136,7 @@ export default function TerritoryDetailPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/territories"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-600 hover:text-foreground font-medium"
             >
               ← Back to Territories
             </Link>
@@ -145,39 +145,39 @@ export default function TerritoryDetailPage() {
 
         {/* Territory Details Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Details</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
 
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm font-medium text-gray-600">Name</dt>
-              <dd className="text-base text-gray-900 mt-1">{territory.name}</dd>
+              <dd className="text-base text-foreground mt-1">{territory.name}</dd>
             </div>
 
             {territory.assigned_to && (
               <div>
                 <dt className="text-sm font-medium text-gray-600">Assigned To</dt>
-                <dd className="text-base text-gray-900 mt-1">{territory.assigned_to}</dd>
+                <dd className="text-base text-foreground mt-1">{territory.assigned_to}</dd>
               </div>
             )}
 
             {territory.description && (
               <div className="md:col-span-2">
                 <dt className="text-sm font-medium text-gray-600">Description</dt>
-                <dd className="text-base text-gray-900 mt-1">{territory.description}</dd>
+                <dd className="text-base text-foreground mt-1">{territory.description}</dd>
               </div>
             )}
 
             {territory.boundary_data && (
               <div>
                 <dt className="text-sm font-medium text-gray-600">Boundary Type</dt>
-                <dd className="text-base text-gray-900 mt-1">{territory.boundary_data.type}</dd>
+                <dd className="text-base text-foreground mt-1">{territory.boundary_data.type}</dd>
               </div>
             )}
 
             {territory.created_at && (
               <div>
                 <dt className="text-sm font-medium text-gray-600">Created</dt>
-                <dd className="text-base text-gray-900 mt-1">
+                <dd className="text-base text-foreground mt-1">
                   {new Date(territory.created_at).toLocaleDateString()}
                 </dd>
               </div>
@@ -223,7 +223,7 @@ export default function TerritoryDetailPage() {
         {territory.boundary_data && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Territory Map</h2>
+              <h2 className="text-lg font-semibold text-foreground">Territory Map</h2>
 
               {/* Pin Dropping Toggle */}
               <Button

@@ -181,7 +181,7 @@ export default function CardQRCodePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="p-4 bg-background rounded-lg">
               <code className="text-sm break-all">{cardUrl}</code>
             </div>
 
