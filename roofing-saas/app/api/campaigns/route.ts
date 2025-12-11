@@ -148,8 +148,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate goal_target if provided
-    if (body.goal_target !== undefined && body.goal_target <= 0) {
+    // Validate goal_target if provided (allow null/undefined, but reject non-positive numbers)
+    if (body.goal_target !== undefined && body.goal_target !== null && body.goal_target <= 0) {
       return NextResponse.json(
         { error: 'goal_target must be greater than 0' },
         { status: 400 }

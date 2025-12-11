@@ -57,7 +57,7 @@ export default function NewCampaignPage() {
     <div className="container mx-auto p-6 max-w-3xl">
       <Button
         variant="ghost"
-        onClick={() => router.back()}
+        onClick={() => router.push('/campaigns')}
         className="mb-6"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -206,7 +206,7 @@ export default function NewCampaignPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => router.push('/campaigns')}
                 disabled={loading}
               >
                 Cancel

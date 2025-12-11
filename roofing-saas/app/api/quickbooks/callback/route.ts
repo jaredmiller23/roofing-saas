@@ -72,15 +72,33 @@ export async function GET(request: NextRequest) {
     const companyName = companyInfo?.CompanyInfo?.CompanyName || 'Unknown'
     const country = companyInfo?.CompanyInfo?.Country || 'US'
 
-    // Store tokens in database
+    // Encrypt tokens before storing
+    const { data: encryptedAccessToken, error: encryptAccessError } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: tokens.access_token })
+
+    const { data: encryptedRefreshToken, error: encryptRefreshError } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: tokens.refresh_token })
+
+    if (encryptAccessError || encryptRefreshError || !encryptedAccessToken || !encryptedRefreshToken) {
+      logger.error('Failed to encrypt QB tokens', {
+        encryptAccessError,
+        encryptRefreshError
+      })
+      return NextResponse.json(
+        { error: 'Failed to encrypt QuickBooks tokens' },
+        { status: 500 }
+      )
+    }
+
+    // Store encrypted tokens in database
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
 
     const { error: insertError } = await supabase
       .from('quickbooks_tokens')
       .upsert({
         tenant_id: stateData.tenant_id,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        access_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
         realm_id: realmId,
         expires_at: expiresAt.toISOString(),
         token_type: tokens.token_type,

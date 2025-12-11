@@ -87,14 +87,6 @@
       ],
       "description": "Enhanced filesystem operations - pattern matching, bulk operations, and advanced file management"
     },
-    "git": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-git@latest"
-      ],
-      "description": "Git version control operations - automate commits, branches, and repository management"
-    },
     "time": {
       "command": "npx",
       "args": [

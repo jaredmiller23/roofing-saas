@@ -283,7 +283,7 @@ export class QuickBooksClient {
 export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksClient | null> {
   const supabase = await createClient()
 
-  // Get token from database
+  // Get token from database (encrypted)
   const { data: token, error } = await supabase
     .from('quickbooks_tokens')
     .select('*')
@@ -295,6 +295,22 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
     return null
   }
 
+  // Decrypt tokens using PostgreSQL function
+  const { data: decryptedAccessToken, error: accessTokenError } = await supabase
+    .rpc('decrypt_qb_token', { encrypted_data: token.access_token })
+
+  const { data: decryptedRefreshToken, error: refreshTokenError } = await supabase
+    .rpc('decrypt_qb_token', { encrypted_data: token.refresh_token })
+
+  if (accessTokenError || refreshTokenError || !decryptedAccessToken || !decryptedRefreshToken) {
+    logger.error('Failed to decrypt QB tokens', {
+      tenantId,
+      accessTokenError,
+      refreshTokenError
+    })
+    return null
+  }
+
   // Check if token is expired
   const expiresAt = new Date(token.expires_at)
   const now = new Date()
@@ -302,19 +318,31 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
   if (expiresAt <= now) {
     // Token expired, need to refresh
     logger.info('QuickBooks token expired, refreshing', { tenantId })
-    const newToken = await refreshAccessToken(token.refresh_token)
+    const newToken = await refreshAccessToken(decryptedRefreshToken)
 
     if (!newToken) {
       logger.error('Failed to refresh QuickBooks token', { tenantId })
       return null
     }
 
-    // Update token in database
+    // Encrypt new tokens before storing
+    const { data: encryptedAccessToken } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: newToken.access_token })
+
+    const { data: encryptedRefreshToken } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: newToken.refresh_token })
+
+    if (!encryptedAccessToken || !encryptedRefreshToken) {
+      logger.error('Failed to encrypt new QB tokens', { tenantId })
+      return null
+    }
+
+    // Update token in database with encrypted values
     await supabase
       .from('quickbooks_tokens')
       .update({
-        access_token: newToken.access_token,
-        refresh_token: newToken.refresh_token,
+        access_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
         expires_at: new Date(Date.now() + newToken.expires_in * 1000).toISOString(),
       })
       .eq('tenant_id', tenantId)
@@ -322,7 +350,7 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
     return new QuickBooksClient(token.realm_id, newToken.access_token)
   }
 
-  return new QuickBooksClient(token.realm_id, token.access_token)
+  return new QuickBooksClient(token.realm_id, decryptedAccessToken)
 }
 
 /**

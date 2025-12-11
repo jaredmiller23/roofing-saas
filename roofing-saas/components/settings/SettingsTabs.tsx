@@ -11,6 +11,7 @@ import { SubstatusSettings } from './SubstatusSettings'
 import { FilterSettings } from './FilterSettings'
 import { AdminSettings } from './AdminSettings'
 import { AutomationSettings } from './AutomationSettings'
+import { IntegrationsSettings } from './IntegrationsSettings'
 import {
   Settings,
   Palette,
@@ -20,7 +21,8 @@ import {
   Tag,
   Filter,
   UserCog,
-  Zap
+  Zap,
+  Plug
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -99,6 +101,13 @@ export function SettingsTabs() {
               <Zap className="h-4 w-4" />
               Automations
             </TabsTrigger>
+            <TabsTrigger
+              value="integrations"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <Plug className="h-4 w-4" />
+              Integrations
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -135,6 +144,10 @@ export function SettingsTabs() {
 
           <TabsContent value="automations">
             <AutomationSettings />
+          </TabsContent>
+
+          <TabsContent value="integrations">
+            <IntegrationsSettings />
           </TabsContent>
         </Tabs>
       </div>
