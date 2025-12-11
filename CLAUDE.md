@@ -17,8 +17,8 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 **Status**: Phases 1-4 Complete ✅ | Phase 5: In Progress 🔄
 **Phase 4 Complete**: E-Signature ✅, TypeScript Cleanup ✅, Voice Provider System ✅, Substatus System ✅, Configurable Filters ✅, AI Conversations ✅
 **Phase 4 Needs Validation**: Campaign Builder, Admin Impersonation (API-only, needs UI)
-**Phase 5 Progress**: Pipeline consolidation ✅, Value statistics ✅, Orphaned component cleanup ✅, E2E test improvements ✅
-**Latest Update**: December 10 - Phase 5 started: Pipeline enhancements, 3,700+ lines cleaned up, E2E tests fixed
+**Phase 5 Progress**: Pipeline consolidation ✅, Value statistics ✅, Workflow automation ✅, Stage validation ✅, 64 E2E tests ✅, Code cleanup ✅
+**Latest Update**: December 10 - Phase 5: Workflow automation system, pipeline UX, 64 E2E tests, 3,700+ lines cleaned
 
 ## 🌟 CLAUDE CAPABILITIES (December 2025)
 
@@ -239,23 +239,57 @@ Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
   - **Documentation**: See `docs/sessions/SESSION_2025-10-04_TYPESCRIPT_CLEANUP.md`
 
 ### 🔄 Phase 5 In Progress (December 10, 2025)
-- **Pipeline Consolidation**: Single view at `/projects` with Kanban/Table toggle
+
+#### Pipeline Consolidation & UX
+- **Single Pipeline View**: Unified at `/projects` with Kanban/Table toggle
 - **Value Statistics**: Pipeline value per stage and total visible
-- **8-Stage Pipeline**: Full sales workflow from Prospect to Complete/Lost
-- **Codebase Cleanup**: ~3,700+ lines of orphaned code removed
-- **E2E Tests**: All 17 Pipeline tests passing with proper auth isolation
+- **8-Stage Pipeline**: Prospect → Qualified → Quote Sent → Negotiation → Won → Production → Complete → Lost
+- **Quick Filter Chips**: Fast filtering in Kanban view
+- **Mark Lost Button**: Quick action on project cards
+- **Reactivate Button**: Recover lost opportunities
+- **Adjuster Field**: Insurance adjuster tracking (competitor parity)
+- **Days-in-Stage Counter**: Track opportunity aging
+
+#### Workflow Automation System
+- **Pipeline Stage Validation** (`lib/pipeline/validation.ts`)
+  - Enforces valid stage transitions
+  - Required fields per stage (estimated_value for quote_sent, approved_value for won)
+  - Auto-syncs status field based on pipeline_stage
+- **Workflow Triggers**: `pipeline_stage_changed`, `project_won`, `job_completed`
+- **Start Production Workflow** (`app/api/projects/[id]/start-production/route.ts`)
+  - Auto-generates job numbers (YY-####)
+  - Validates project is in 'won' stage
+- **Automations Settings UI** (`components/settings/AutomationSettings.tsx`)
+  - 5 pre-built workflow templates
+  - Enable/disable workflows from Settings
+- **Campaign Execution Engine**: Wired and functional
+- **E-signature Email Notifications**: Automated notifications on signature events
+
+#### Codebase Cleanup
+- **~3,700+ lines removed**: Orphaned components cleaned up
+- **17 components deleted**: Duplicate project, organizations, tasks, surveys, settings components
+- **Logger standardization**: Replaced ~25 console.log statements with proper logger
+
+#### Testing
+- **Pipeline E2E**: All 17 tests passing with proper auth isolation
+- **Workflows E2E**: 16 new tests (`e2e/workflows.spec.ts`)
+- **Additional E2E**: pins.spec.ts, storm-leads.spec.ts, voice-assistant.spec.ts (48 new tests total)
+
+#### Security & Types
+- npm audit fix applied (vulnerabilities reduced)
+- Claims integration fields added to Project type
 
 ### ⏳ Next Steps (Phase 5 Continuation)
 **Check Archon for current priorities**:
 1. 📋 Run `mcp__archon__find_tasks(filter_by="status", filter_value="todo")`
 2. 🎯 Review pending tasks and prioritize with user
-3. 💡 Phase 5 Focus Areas:
-   - Workflow automation ("Start Production" when pipeline_stage = won)
-   - Stage transition validation (prevent skipping stages)
-   - Auto-status updates on job completion
-   - UX polish and terminology cleanup
-   - Admin Impersonation UI (backend complete)
+3. 💡 Remaining Phase 5 Work:
+   - Admin Impersonation UI (backend complete, needs frontend)
    - Campaign Builder validation
+   - QuickBooks integration
+   - Final UX polish
+   - PWA mobile testing (deferred until code stabilizes)
+   - User Acceptance Testing (UAT)
 
 ## 📁 PROJECT STRUCTURE (TO BE CREATED)
 
