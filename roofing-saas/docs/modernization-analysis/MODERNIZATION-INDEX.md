@@ -1,7 +1,7 @@
 # Roofing SAAS - Modernization Analysis
 
 > **Project**: Tennessee Roofing Company CRM Modernization
-> **Original PRD**: /Users/ccai/24 Harness/Test PRD/
+> **Original PRD**: /Users/ccai/roofing saas/roofing-saas/docs/PRD/
 > **Source Code**: /Users/ccai/roofing saas/roofing-saas/
 > **Analysis Date**: December 2025
 > **Project Started**: September 2025

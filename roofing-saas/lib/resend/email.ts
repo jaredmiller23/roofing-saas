@@ -204,21 +204,9 @@ export async function sendBulkEmails(
 /**
  * Replace template variables in email content
  * Variables format: {{variable_name}}
+ * Re-exported from automation/variables for convenience
  */
-export function replaceEmailVariables(
-  content: string,
-  variables: Record<string, string>
-): string {
-  let result = content
-
-  for (const [key, value] of Object.entries(variables)) {
-    // Match {{key}} with optional whitespace
-    const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
-    result = result.replace(regex, value)
-  }
-
-  return result
-}
+export { replaceVariablesInString as replaceEmailVariables } from '@/lib/automation/variables'
 
 /**
  * Create a simple HTML email wrapper

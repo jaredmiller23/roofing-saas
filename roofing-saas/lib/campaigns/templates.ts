@@ -722,15 +722,6 @@ export function getTemplatesByCampaignType(
 
 /**
  * Replace template variables with actual values
+ * Re-exported from automation/variables for convenience
  */
-export function replaceTemplateVariables(
-  text: string,
-  variables: Record<string, string>
-): string {
-  let result = text
-  for (const [key, value] of Object.entries(variables)) {
-    const regex = new RegExp(`{{${key}}}`, 'g')
-    result = result.replace(regex, value)
-  }
-  return result
-}
+export { replaceVariablesInString as replaceTemplateVariables } from '@/lib/automation/variables'

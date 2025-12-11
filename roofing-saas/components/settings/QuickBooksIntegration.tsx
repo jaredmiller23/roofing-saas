@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle2, XCircle, RefreshCw, ExternalLink, AlertCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, RefreshCw, ExternalLink, AlertCircle, Download, Upload, Users, FileText } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
 interface QuickBooksStatus {
@@ -19,11 +19,19 @@ interface QuickBooksStatus {
   message?: string
 }
 
+interface SyncStatus {
+  syncing: boolean
+  type?: 'contact' | 'project' | 'bulk'
+  progress?: string
+}
+
 export function QuickBooksIntegration() {
   const [status, setStatus] = useState<QuickBooksStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ syncing: false })
+  const [syncSuccess, setSyncSuccess] = useState<string | null>(null)
 
   const fetchStatus = async () => {
     try {
@@ -100,6 +108,61 @@ export function QuickBooksIntegration() {
       setError(err instanceof Error ? err.message : 'Failed to disconnect QuickBooks')
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const handleSyncContacts = async (bulkSync: boolean = false) => {
+    try {
+      setSyncStatus({ syncing: true, type: bulkSync ? 'bulk' : 'contact', progress: 'Syncing...' })
+      setError(null)
+      setSyncSuccess(null)
+
+      const response = await fetch('/api/quickbooks/sync/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bulkSync }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sync contacts')
+      }
+
+      setSyncSuccess(bulkSync
+        ? `Successfully synced ${data.synced || 0} contacts to QuickBooks`
+        : 'Contact synced to QuickBooks successfully'
+      )
+    } catch (err) {
+      logger.error('Failed to sync contacts', { error: err })
+      setError(err instanceof Error ? err.message : 'Failed to sync contacts')
+    } finally {
+      setSyncStatus({ syncing: false })
+    }
+  }
+
+  const handleSyncProjects = async () => {
+    try {
+      setSyncStatus({ syncing: true, type: 'project', progress: 'Syncing projects as invoices...' })
+      setError(null)
+      setSyncSuccess(null)
+
+      const response = await fetch('/api/quickbooks/sync/project', {
+        method: 'POST',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sync projects')
+      }
+
+      setSyncSuccess('Projects synced to QuickBooks successfully')
+    } catch (err) {
+      logger.error('Failed to sync projects', { error: err })
+      setError(err instanceof Error ? err.message : 'Failed to sync projects')
+    } finally {
+      setSyncStatus({ syncing: false })
     }
   }
 
@@ -244,6 +307,95 @@ export function QuickBooksIntegration() {
             </li>
           </ul>
         </div>
+
+        {/* Sync Controls */}
+        {status?.connected && !status.is_expired && (
+          <div className="pt-4 border-t">
+            <div className="text-sm font-medium text-gray-900 mb-3">Data Sync:</div>
+
+            {/* Success Alert */}
+            {syncSuccess && (
+              <Alert className="mb-4 bg-green-50 border-green-200">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">{syncSuccess}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Sync Progress */}
+            {syncStatus.syncing && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
+                <span className="text-sm text-blue-900">{syncStatus.progress}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Sync Contacts */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-gray-700" />
+                  <span className="font-medium text-gray-900">Contacts</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Sync your contacts to QuickBooks as customers
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSyncContacts(true)}
+                  disabled={syncStatus.syncing || actionLoading}
+                  className="w-full"
+                >
+                  {syncStatus.syncing && syncStatus.type === 'bulk' ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Syncing All...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Sync All Contacts
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Sync Projects */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-gray-700" />
+                  <span className="font-medium text-gray-900">Projects</span>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Create invoices in QuickBooks from won projects
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSyncProjects}
+                  disabled={syncStatus.syncing || actionLoading}
+                  className="w-full"
+                >
+                  {syncStatus.syncing && syncStatus.type === 'project' ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Sync Projects
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-3 text-xs text-gray-500">
+              <strong>Note:</strong> Contacts must be synced before their projects can be synced as invoices.
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-4">

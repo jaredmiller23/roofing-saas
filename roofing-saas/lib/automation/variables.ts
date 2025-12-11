@@ -32,8 +32,9 @@ export function replaceVariables(
 
 /**
  * Replace variables in a string
+ * Exported for use in email/SMS/campaign templates
  */
-function replaceVariablesInString(
+export function replaceVariablesInString(
   str: string,
   context: Record<string, unknown>
 ): string {

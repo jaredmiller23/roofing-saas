@@ -122,17 +122,6 @@ export async function sendBulkSMS(
 /**
  * Replace template variables in SMS body
  * Example: "Hi {{first_name}}, ..." with { first_name: "John" }
+ * Re-exported from automation/variables for convenience
  */
-export function replaceTemplateVariables(
-  template: string,
-  variables: Record<string, string>
-): string {
-  let result = template
-
-  for (const [key, value] of Object.entries(variables)) {
-    const regex = new RegExp(`{{\\s*${key}\\s*}}`, 'g')
-    result = result.replace(regex, value)
-  }
-
-  return result
-}
+export { replaceVariablesInString as replaceTemplateVariables } from '@/lib/automation/variables'
