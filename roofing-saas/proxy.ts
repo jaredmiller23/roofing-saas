@@ -51,6 +51,7 @@ export async function proxy(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicRoutes = [
+    '/', // Marketing landing page
     '/login',
     '/register',
     '/reset-password',
