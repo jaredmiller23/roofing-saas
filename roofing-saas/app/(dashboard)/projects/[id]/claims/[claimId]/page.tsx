@@ -389,8 +389,8 @@ export default function ClaimDetailPage() {
             <CardContent className="space-y-4">
               {/* Date of Loss */}
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                  <Calendar className="h-4 w-4 text-blue-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <Calendar className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">Date of Loss</div>
@@ -418,8 +418,8 @@ export default function ClaimDetailPage() {
               {/* Acknowledgment */}
               {claim.acknowledgment_received && (
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
-                    <CheckCircle className="h-4 w-4 text-purple-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/10">
+                    <CheckCircle className="h-4 w-4 text-secondary" />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Acknowledgment Received</div>
