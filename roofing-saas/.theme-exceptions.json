@@ -180,6 +180,8 @@
     "components/photos/PhotoViewer.tsx:244:text-white",
     "components/photos/PhotoViewer.tsx:259:text-white",
     "components/photos/PhotoViewer.tsx:277:text-white",
+    "components/voice/VoiceDiagnostics.tsx:176:text-white",
+    "components/voice/VoiceDiagnostics.tsx:240:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

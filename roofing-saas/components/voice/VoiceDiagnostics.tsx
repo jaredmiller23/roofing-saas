@@ -173,7 +173,7 @@ export function VoiceDiagnostics() {
           setIsOpen(true)
           runDiagnostics()
         }}
-        className="fixed bottom-4 right-4 px-4 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 text-sm font-medium"
+        className="fixed bottom-4 right-4 px-4 py-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primary/90 text-sm font-medium"
       >
         🔍 Run Diagnostics
       </button>
@@ -237,7 +237,7 @@ export function VoiceDiagnostics() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={runDiagnostics}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
               Run Again
             </button>
