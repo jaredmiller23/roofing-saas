@@ -60,7 +60,7 @@ export function RevenueChart({ projects }: RevenueChartProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-card rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-foreground mb-4">Revenue Trend (Last 6 Months)</h3>
 
       <div className="space-y-4">

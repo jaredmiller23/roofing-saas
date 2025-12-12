@@ -96,7 +96,7 @@ export function InstallPrompt() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+            <div className="flex-shrink-0 w-12 h-12 bg-card rounded-lg flex items-center justify-center">
               <span className="text-2xl font-bold text-blue-600">R</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -110,7 +110,7 @@ export function InstallPrompt() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleInstallClick}
-              className="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-50 transition-colors whitespace-nowrap"
+              className="px-4 py-2 bg-card text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-50 transition-colors whitespace-nowrap"
             >
               Install
             </button>

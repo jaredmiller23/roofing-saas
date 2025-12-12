@@ -92,7 +92,7 @@ export default async function ContactDetailPage({
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -116,7 +116,7 @@ export default async function ContactDetailPage({
 
         {/* Address */}
         {(contact.address_street || contact.address_city) && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Address</h2>
             <div className="text-foreground">
               {contact.address_street && <p>{contact.address_street}</p>}
@@ -133,7 +133,7 @@ export default async function ContactDetailPage({
 
         {/* Property Details */}
         {(contact.property_type || contact.roof_type || contact.roof_age) && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Property Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.property_type && (
@@ -172,7 +172,7 @@ export default async function ContactDetailPage({
 
         {/* Insurance */}
         {(contact.insurance_carrier || contact.policy_number) && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Insurance Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.insurance_carrier && (
@@ -192,7 +192,7 @@ export default async function ContactDetailPage({
         )}
 
         {/* Photos */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Property Photos</h2>
           <PhotoManager
             contactId={contact.id}

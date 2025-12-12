@@ -180,7 +180,7 @@ export function QuickActionsMenu() {
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+        <div className="absolute bottom-full left-0 mb-2 w-72 bg-card rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
           {/* Header */}
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
             <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>

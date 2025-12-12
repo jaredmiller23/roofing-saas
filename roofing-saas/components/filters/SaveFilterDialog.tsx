@@ -33,9 +33,9 @@ export function SaveFilterDialog({ onSave, onCancel }: SaveFilterDialogProps) {
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="bg-card rounded-lg shadow-xl w-full max-w-md">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border">
             <h3 className="text-lg font-semibold text-foreground">
               Save Filter Preset
             </h3>

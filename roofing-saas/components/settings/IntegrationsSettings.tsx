@@ -26,15 +26,15 @@ export function IntegrationsSettings() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-gray-200 rounded-lg opacity-50">
+            <div className="p-4 border border rounded-lg opacity-50">
               <div className="font-medium text-muted-foreground">Stripe</div>
               <div className="text-sm text-muted-foreground mt-1">Payment processing</div>
             </div>
-            <div className="p-4 border border-gray-200 rounded-lg opacity-50">
+            <div className="p-4 border border rounded-lg opacity-50">
               <div className="font-medium text-muted-foreground">Zapier</div>
               <div className="text-sm text-muted-foreground mt-1">Workflow automation</div>
             </div>
-            <div className="p-4 border border-gray-200 rounded-lg opacity-50">
+            <div className="p-4 border border rounded-lg opacity-50">
               <div className="font-medium text-muted-foreground">Google Calendar</div>
               <div className="text-sm text-muted-foreground mt-1">Schedule management</div>
             </div>

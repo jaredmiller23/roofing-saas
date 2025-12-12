@@ -186,7 +186,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
   }, [])
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-4 ${className}`}>
+    <div className={`bg-card border border-gray-200 rounded-lg p-4 ${className}`}>
       {/* Hidden audio element */}
       <audio ref={audioRef} src={recordingUrl} preload="metadata" />
 

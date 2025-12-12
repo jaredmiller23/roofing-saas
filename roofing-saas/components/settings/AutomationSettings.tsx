@@ -298,10 +298,10 @@ export function AutomationSettings() {
               return (
                 <div
                   key={template.id}
-                  className={`p-4 rounded-lg border ${template.bgColor} border-gray-200`}
+                  className={`p-4 rounded-lg border ${template.bgColor} border`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg bg-white ${template.color}`}>
+                    <div className={`p-2 rounded-lg bg-card ${template.color}`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">

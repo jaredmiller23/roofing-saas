@@ -171,7 +171,7 @@ export function TaskBoard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -225,7 +225,7 @@ export function TaskBoard() {
               <div className="p-4 border-b border-gray-300">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{column.title}</h3>
-                  <span className="px-2 py-1 bg-white rounded-full text-xs font-medium text-muted-foreground">
+                  <span className="px-2 py-1 bg-card rounded-full text-xs font-medium text-muted-foreground">
                     {getTasksByStatus(column.id).length}
                   </span>
                 </div>
@@ -238,7 +238,7 @@ export function TaskBoard() {
                     key={task.id}
                     draggable
                     onDragStart={() => handleDragStart(task)}
-                    className="bg-white rounded-lg border border-gray-200 p-4 cursor-move hover:shadow-md transition-shadow"
+                    className="bg-card rounded-lg border border p-4 cursor-move hover:shadow-md transition-shadow"
                   >
                     {/* Task Header */}
                     <div className="flex items-start justify-between mb-2">

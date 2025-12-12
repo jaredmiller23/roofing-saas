@@ -169,7 +169,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
         {/* P&L Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Revenue Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
@@ -178,7 +178,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           </div>
 
           {/* Estimated Cost Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-gray-400">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-gray-400">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Estimated Cost</h3>
             </div>
@@ -189,7 +189,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           </div>
 
           {/* Actual Cost Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Actual Cost</h3>
               <AlertCircle className="h-5 w-5 text-orange-500" />
@@ -201,7 +201,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           </div>
 
           {/* Profit Card */}
-          <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${actualProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
+          <div className={`bg-card rounded-lg shadow p-6 border-l-4 ${actualProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Actual Profit</h3>
               {actualProfit >= 0 ? (
@@ -220,8 +220,8 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
         </div>
 
         {/* Budget vs Actual Breakdown */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b border">
             <h2 className="text-xl font-semibold text-foreground">Budget vs Actual Breakdown</h2>
           </div>
           <div className="p-6">
@@ -268,7 +268,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
               })}
 
               {/* Total Row */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">Total</h3>

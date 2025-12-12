@@ -209,11 +209,11 @@ export default function TerritoryMapDirect({
     buttons.forEach(button => {
       const buttonType = button.getAttribute('data-map-type')
       if (buttonType === type) {
-        button.classList.remove('bg-white', 'text-muted-foreground', 'hover:bg-gray-100')
+        button.classList.remove('bg-card', 'text-muted-foreground', 'hover:bg-gray-100')
         button.classList.add('bg-blue-600', 'text-white')
       } else {
         button.classList.remove('bg-blue-600', 'text-white')
-        button.classList.add('bg-white', 'text-muted-foreground', 'hover:bg-gray-100')
+        button.classList.add('bg-card', 'text-muted-foreground', 'hover:bg-gray-100')
       }
     })
   }
@@ -238,7 +238,7 @@ export default function TerritoryMapDirect({
       />
 
       {/* Map Type Controls */}
-      <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 z-10 flex gap-1">
+      <div className="absolute top-4 right-4 bg-card rounded-lg shadow-lg p-2 z-10 flex gap-1">
         <button
           onClick={() => switchMapType('roadmap')}
           data-map-type-button
@@ -246,7 +246,7 @@ export default function TerritoryMapDirect({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             currentMapTypeRef.current === 'roadmap'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-muted-foreground hover:bg-gray-100'
+              : 'bg-card text-muted-foreground hover:bg-gray-100'
           }`}
           title="Road Map"
         >
@@ -259,7 +259,7 @@ export default function TerritoryMapDirect({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             currentMapTypeRef.current === 'satellite'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-muted-foreground hover:bg-gray-100'
+              : 'bg-card text-muted-foreground hover:bg-gray-100'
           }`}
           title="Satellite View"
         >
@@ -272,7 +272,7 @@ export default function TerritoryMapDirect({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             currentMapTypeRef.current === 'hybrid'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-muted-foreground hover:bg-gray-100'
+              : 'bg-card text-muted-foreground hover:bg-gray-100'
           }`}
           title="Hybrid View"
         >
@@ -285,7 +285,7 @@ export default function TerritoryMapDirect({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             currentMapTypeRef.current === 'terrain'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-muted-foreground hover:bg-gray-100'
+              : 'bg-card text-muted-foreground hover:bg-gray-100'
           }`}
           title="Terrain Map"
         >
@@ -295,7 +295,7 @@ export default function TerritoryMapDirect({
 
       {/* Legend */}
       {territories.length > 0 && (
-        <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 z-10 text-xs">
+        <div className="absolute bottom-4 right-4 bg-card rounded-lg shadow-lg p-3 z-10 text-xs">
           <h4 className="font-semibold text-foreground mb-2">Territories</h4>
           <div className="space-y-1">
             {territories.slice(0, 5).map(territory => (

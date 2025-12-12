@@ -176,7 +176,7 @@ export function PipelineSettings() {
       )}
 
       {/* Pipeline Preview */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">Sales Pipeline Stages</h3>
           <Button
@@ -216,13 +216,13 @@ export function PipelineSettings() {
                 <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
                   <button
                     onClick={() => handleEdit(stage)}
-                    className="p-1 bg-white/20 hover:bg-white/30 rounded"
+                    className="p-1 bg-card/20 hover:bg-card/30 rounded"
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => handleDelete(stage.id)}
-                    className="p-1 bg-white/20 hover:bg-white/30 rounded"
+                    className="p-1 bg-card/20 hover:bg-card/30 rounded"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -244,7 +244,7 @@ export function PipelineSettings() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-card rounded-lg border border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingStage ? 'Edit Stage' : 'Add New Stage'}
           </h3>
@@ -358,7 +358,7 @@ export function PipelineSettings() {
 
       {/* Stage List (Table View) */}
       {stages.length > 0 && !showAddForm && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-card rounded-lg border border overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -370,7 +370,7 @@ export function PipelineSettings() {
                 <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-gray-200">
               {stages.map((stage) => (
                 <tr key={stage.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">

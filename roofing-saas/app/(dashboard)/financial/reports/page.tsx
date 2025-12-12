@@ -119,7 +119,7 @@ export default async function FinancialReportsPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Revenue Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Total Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
@@ -132,7 +132,7 @@ export default async function FinancialReportsPage() {
           </div>
 
           {/* Total Profit Card */}
-          <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${totalGrossProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
+          <div className={`bg-card rounded-lg shadow p-6 border-l-4 ${totalGrossProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Gross Profit</h3>
               {totalGrossProfit >= 0 ? (
@@ -150,7 +150,7 @@ export default async function FinancialReportsPage() {
           </div>
 
           {/* Active Projects Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Active Projects</h3>
               <Briefcase className="h-5 w-5 text-purple-500" />
@@ -162,7 +162,7 @@ export default async function FinancialReportsPage() {
           </div>
 
           {/* Cost Variance Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Cost Performance</h3>
               <Calendar className="h-5 w-5 text-orange-500" />
@@ -205,8 +205,8 @@ export default async function FinancialReportsPage() {
         </div>
 
         {/* Job Type Breakdown */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b border">
             <h2 className="text-xl font-semibold text-foreground">Performance by Job Type</h2>
           </div>
           <div className="p-6">

@@ -162,7 +162,7 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
           </span>
           <button
             onClick={() => setShowInfo(!showInfo)}
-            className="p-2 hover:bg-white hover:bg-opacity-10 rounded-lg transition-colors"
+            className="p-2 hover:bg-card hover:bg-opacity-10 rounded-lg transition-colors"
             title="Info"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +196,7 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
 
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white hover:bg-opacity-10 rounded-lg transition-colors"
+            className="p-2 hover:bg-card hover:bg-opacity-10 rounded-lg transition-colors"
             title="Close"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

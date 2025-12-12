@@ -139,7 +139,7 @@ export default function SignaturesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -184,7 +184,7 @@ export default function SignaturesPage() {
             <p className="text-muted-foreground">Loading documents...</p>
           </div>
         ) : filteredDocuments.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-card rounded-lg shadow-sm border border p-12 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No documents found
@@ -209,7 +209,7 @@ export default function SignaturesPage() {
             {filteredDocuments.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-card rounded-lg shadow-sm border border p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">

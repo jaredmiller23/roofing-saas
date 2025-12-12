@@ -79,8 +79,8 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
 
   if (expenses.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-card rounded-lg shadow">
+        <div className="px-6 py-4 border-b border">
           <h2 className="text-xl font-semibold text-foreground">Expense Details</h2>
         </div>
         <div className="p-12 text-center text-muted-foreground">
@@ -92,8 +92,8 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className="bg-card rounded-lg shadow">
+      <div className="px-6 py-4 border-b border">
         <h2 className="text-xl font-semibold text-foreground">Expense Details</h2>
       </div>
 
@@ -130,7 +130,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-gray-200">
             {expenses.map((expense) => (
               <tr key={expense.id} className="hover:bg-background">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">

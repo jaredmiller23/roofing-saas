@@ -130,7 +130,7 @@ export function Leaderboard({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-card rounded-lg shadow-sm p-6">
       {/* Header with Period Selector */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-foreground mb-3">{title}</h3>

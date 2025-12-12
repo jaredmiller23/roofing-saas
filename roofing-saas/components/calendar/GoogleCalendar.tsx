@@ -186,7 +186,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
 
       {/* Embedded Calendar or Message */}
       {calendarUrl ? (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-card rounded-lg shadow-sm overflow-hidden">
           <iframe
             src={calendarUrl}
             style={{ border: 0 }}

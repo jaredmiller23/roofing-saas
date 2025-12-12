@@ -235,7 +235,7 @@ export function TemplateSettings() {
       )}
 
       {/* Template Type Selector */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex gap-2">
             <Button
@@ -270,7 +270,7 @@ export function TemplateSettings() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {templates.map((template) => (
-              <div key={template.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+              <div key={template.id} className="border border rounded-lg p-4 hover:border-blue-300 transition-colors">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
                     <h4 className="font-semibold text-foreground">{template.name}</h4>
@@ -317,7 +317,7 @@ export function TemplateSettings() {
 
       {/* Add/Edit Form - Email */}
       {showAddForm && activeType === 'email' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-card rounded-lg border border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingTemplate ? 'Edit Email Template' : 'Add Email Template'}
           </h3>
@@ -402,7 +402,7 @@ export function TemplateSettings() {
 
       {/* Add/Edit Form - SMS */}
       {showAddForm && activeType === 'sms' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-card rounded-lg border border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingTemplate ? 'Edit SMS Template' : 'Add SMS Template'}
           </h3>

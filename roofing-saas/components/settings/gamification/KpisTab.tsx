@@ -140,7 +140,7 @@ export function KpisTab() {
                     className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-lg bg-white">
+                      <div className="p-2 rounded-lg bg-card">
                         <Icon className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
@@ -218,7 +218,7 @@ export function KpisTab() {
                         checked={kpi.is_active}
                         onCheckedChange={(checked: boolean) => toggleKpi(kpi.id, checked)}
                       />
-                      <div className="p-2 rounded-lg bg-white">
+                      <div className="p-2 rounded-lg bg-card">
                         <Icon className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>

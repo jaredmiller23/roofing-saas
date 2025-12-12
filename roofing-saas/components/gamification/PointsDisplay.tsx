@@ -36,7 +36,7 @@ export function PointsDisplay() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+      <div className="bg-card rounded-lg shadow-sm p-4 animate-pulse">
         <div className="h-20 bg-muted rounded"></div>
       </div>
     )
@@ -49,7 +49,7 @@ export function PointsDisplay() {
   const progressPercentage = (pointsInCurrentLevel / 100) * 100
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-card rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-foreground">Your Progress</h3>
         <Trophy className="h-5 w-5 text-yellow-500" />

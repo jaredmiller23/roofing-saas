@@ -74,7 +74,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
       )}
 
       {/* Call Details */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Phone className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Call Details</h2>

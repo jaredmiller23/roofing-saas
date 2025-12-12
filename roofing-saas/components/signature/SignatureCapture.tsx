@@ -145,7 +145,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white rounded-lg border border-gray-200 p-6">
+    <div className="w-full max-w-3xl mx-auto bg-card rounded-lg border border p-6">
       <h2 className="text-xl font-semibold text-foreground mb-4">Sign Document</h2>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'draw' | 'type' | 'upload')}>
@@ -168,7 +168,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
           <div className="relative">
             <canvas
               ref={canvasRef}
-              className="border-2 border-gray-300 rounded-lg w-full cursor-crosshair bg-white"
+              className="border-2 border-gray-300 rounded-lg w-full cursor-crosshair bg-card"
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -208,7 +208,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {typedSignature && (
-            <div className="border-2 border-gray-300 rounded-lg bg-white p-4">
+            <div className="border-2 border-gray-300 rounded-lg bg-card p-4">
               <canvas ref={typeCanvasRef} className="w-full" />
             </div>
           )}
@@ -229,7 +229,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {uploadedImage && (
-            <div className="border-2 border-gray-300 rounded-lg bg-white p-4 h-56 relative">
+            <div className="border-2 border-gray-300 rounded-lg bg-card p-4 h-56 relative">
               <Image
                 src={uploadedImage}
                 alt="Uploaded signature"

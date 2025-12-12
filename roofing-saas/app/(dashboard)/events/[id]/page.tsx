@@ -84,7 +84,7 @@ export default async function EventDetailPage({
         </div>
 
         {/* Event Information Card */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <CalendarDays className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Event Information</h2>
@@ -123,7 +123,7 @@ export default async function EventDetailPage({
         </div>
 
         {/* Date & Time Card */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Clock className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Date & Time</h2>
@@ -144,7 +144,7 @@ export default async function EventDetailPage({
 
         {/* Location Card */}
         {(event.location || event.address_street) && (
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+          <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
             <div className="flex items-center gap-2 mb-6">
               <MapPin className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Location</h2>
@@ -178,7 +178,7 @@ export default async function EventDetailPage({
 
         {/* Outcome Card */}
         {(event.outcome || event.outcome_notes) && (
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+          <div className="bg-card shadow-sm rounded-lg border border p-6">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Outcome</h2>

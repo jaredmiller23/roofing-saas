@@ -41,7 +41,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-card rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold text-foreground mb-4">Profit Margin by Job Type</h3>
 
       <div className="space-y-4">
@@ -76,7 +76,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
 
       {/* Legend */}
       {chartData.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="mt-6 pt-4 border-t border">
           <p className="text-xs text-muted-foreground mb-2">Margin Indicators:</p>
           <div className="flex flex-wrap gap-3 text-xs">
             <div className="flex items-center gap-1">

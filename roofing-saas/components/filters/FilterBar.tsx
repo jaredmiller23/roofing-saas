@@ -201,7 +201,7 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
 
             {/* Quick filter dropdown */}
             {configs.filter(c => c.is_quick_filter).length > 0 && (
-              <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+              <div className="absolute left-0 top-full mt-1 w-56 bg-card rounded-lg shadow-lg border border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                 <div className="p-2">
                   <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">Quick Filters</div>
                   {configs.filter(c => c.is_quick_filter).map(config => (

@@ -21,7 +21,7 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
   return (
     <div className="flex-shrink-0 w-80 flex flex-col">
       {/* Column Header */}
-      <div className="bg-white rounded-t-lg border border-gray-200 px-4 py-3">
+      <div className="bg-card rounded-t-lg border border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${stage.color}`} />
@@ -37,7 +37,7 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
       <div
         ref={setNodeRef}
         className={`
-          flex-1 bg-gray-50 rounded-b-lg border-x border-b border-gray-200
+          flex-1 bg-gray-50 rounded-b-lg border-x border-b border
           p-3 overflow-y-auto space-y-3 min-h-[200px]
           ${isOver ? 'bg-blue-50 border-blue-300' : ''}
         `}

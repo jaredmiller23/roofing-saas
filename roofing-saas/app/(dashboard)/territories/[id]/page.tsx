@@ -144,7 +144,7 @@ export default function TerritoryDetailPage() {
         </div>
 
         {/* Territory Details Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
 
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -185,7 +185,7 @@ export default function TerritoryDetailPage() {
           </dl>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex gap-3 mt-6 pt-6 border-t border">
             <Link
               href={`/territories/${territory.id}/edit`}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"

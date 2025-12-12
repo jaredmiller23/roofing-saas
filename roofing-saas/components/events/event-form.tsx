@@ -103,7 +103,7 @@ export function EventForm({ event }: EventFormProps) {
       )}
 
       {/* Event Details */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <CalendarDays className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Event Details</h2>
@@ -179,7 +179,7 @@ export function EventForm({ event }: EventFormProps) {
       </div>
 
       {/* Date & Time */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Clock className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Date & Time</h2>
@@ -229,7 +229,7 @@ export function EventForm({ event }: EventFormProps) {
       </div>
 
       {/* Location */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <MapPin className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Location</h2>
@@ -308,7 +308,7 @@ export function EventForm({ event }: EventFormProps) {
 
       {/* Outcome */}
       {event && (
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+        <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-foreground mb-6">Outcome</h2>
 
           <div className="space-y-6">

@@ -134,7 +134,7 @@ export function GeneralSettings() {
       )}
 
       {/* Company Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Company Information</h3>
         <div className="space-y-4">
           <div>
@@ -161,7 +161,7 @@ export function GeneralSettings() {
       </div>
 
       {/* Regional Settings */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Regional Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -224,7 +224,7 @@ export function GeneralSettings() {
       </div>
 
       {/* Business Hours */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Business Hours</h3>
         <div className="space-y-3">
           {DAYS.map((day) => (
@@ -281,7 +281,7 @@ export function GeneralSettings() {
       </div>
 
       {/* Notification Preferences */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Notification Preferences</h3>
         <div className="space-y-3">
           <label className="flex items-center">

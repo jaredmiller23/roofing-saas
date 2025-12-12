@@ -313,7 +313,7 @@ export default function ProfileSettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {photoPreview || profile?.avatar_url ? (
-                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200">
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border">
                       <Image
                         src={photoPreview || profile?.avatar_url || '/placeholder-avatar.png'}
                         alt="Profile photo"

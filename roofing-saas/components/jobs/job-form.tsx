@@ -101,7 +101,7 @@ export function JobForm({ job }: JobFormProps) {
       )}
 
       {/* Job Details */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Briefcase className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Job Details</h2>
@@ -177,7 +177,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Scheduling */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Scheduling</h2>
@@ -256,7 +256,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Cost Tracking */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <DollarSign className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
@@ -322,7 +322,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Notes */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-foreground mb-6">Notes</h2>
 
         <div className="space-y-6">

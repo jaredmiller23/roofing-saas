@@ -90,7 +90,7 @@ export default async function ProjectFileDetailPage({
         </div>
 
         {/* File Preview/Link */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">File</h2>
           <a
             href={file.file_url}
@@ -104,7 +104,7 @@ export default async function ProjectFileDetailPage({
 
         {/* Description */}
         {file.description && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
             <p className="text-foreground whitespace-pre-wrap">{file.description}</p>
           </div>

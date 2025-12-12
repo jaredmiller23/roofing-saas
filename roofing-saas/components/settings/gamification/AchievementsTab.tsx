@@ -267,10 +267,10 @@ export function AchievementsTab() {
               return (
                 <div
                   key={template.id}
-                  className={`p-4 rounded-lg border ${template.bgColor} border-gray-200`}
+                  className={`p-4 rounded-lg border ${template.bgColor} border`}
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className={`p-3 rounded-full bg-white ${template.color} mb-3`}>
+                    <div className={`p-3 rounded-full bg-card ${template.color} mb-3`}>
                       <Icon className="h-6 w-6" />
                     </div>
                     <div className="text-2xl mb-2">{template.icon}</div>

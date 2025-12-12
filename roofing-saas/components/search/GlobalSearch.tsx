@@ -182,7 +182,7 @@ export function GlobalSearch() {
 
       {/* Modal */}
       <div className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
-        <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-card rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
           {/* Search Input */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
             <Search className="h-5 w-5 text-muted-foreground" />
@@ -285,17 +285,17 @@ export function GlobalSearch() {
           <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">↑</kbd>
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">↓</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">↑</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">↓</kbd>
                 Navigate
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">Enter</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">Enter</kbd>
                 Select
               </span>
             </div>
             <span>
-              <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">⌘K</kbd>
+              <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">⌘K</kbd>
               {' '}to open
             </span>
           </div>

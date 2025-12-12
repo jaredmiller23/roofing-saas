@@ -177,7 +177,7 @@ export function TasksList({ params = {} }: TasksListProps) {
           <p className="text-muted-foreground">Loading tasks...</p>
         </div>
       ) : tasks.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-card rounded-lg shadow-sm border border p-12 text-center">
             <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No tasks found
@@ -198,7 +198,7 @@ export function TasksList({ params = {} }: TasksListProps) {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-card rounded-lg shadow-sm border border p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">

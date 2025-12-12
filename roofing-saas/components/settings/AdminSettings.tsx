@@ -199,7 +199,7 @@ export function AdminSettings() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="rounded-lg border border bg-gray-50 p-4">
             <h4 className="font-medium text-foreground mb-2">Security Notes</h4>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
               <li>All impersonation sessions are logged with timestamps and reasons</li>
@@ -270,7 +270,7 @@ export function AdminSettings() {
           )}
 
           {recentLogs.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 pt-4 border-t border">
               <Button variant="outline" size="sm" className="w-full" asChild>
                 <Link href="/admin/audit-logs">
                   <Eye className="h-4 w-4 mr-2" />

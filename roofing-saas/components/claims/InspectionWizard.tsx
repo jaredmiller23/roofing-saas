@@ -185,7 +185,7 @@ export function InspectionWizard({
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Progress header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <button

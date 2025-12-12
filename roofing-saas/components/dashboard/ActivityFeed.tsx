@@ -75,7 +75,7 @@ export function ActivityFeed() {
       case 'project_won':
         return 'bg-green-50 border-green-200'
       case 'project_lost':
-        return 'bg-gray-50 border-gray-200'
+        return 'bg-gray-50 border'
       case 'project_created':
         return 'bg-blue-50 border-blue-200'
       case 'contact_added':
@@ -83,7 +83,7 @@ export function ActivityFeed() {
       case 'status_change':
         return 'bg-orange-50 border-orange-200'
       default:
-        return 'bg-gray-50 border-gray-200'
+        return 'bg-gray-50 border'
     }
   }
 
@@ -115,7 +115,7 @@ export function ActivityFeed() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-card rounded-lg shadow-sm p-6">
       {/* Header */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
@@ -151,7 +151,7 @@ export function ActivityFeed() {
             const content = (
               <>
                 {/* Icon */}
-                <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-card border border flex items-center justify-center flex-shrink-0">
                   {getActivityIcon(activity.type)}
                 </div>
 

@@ -182,7 +182,7 @@ export function VoiceDiagnostics() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">

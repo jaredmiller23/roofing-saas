@@ -151,7 +151,7 @@ export default function NewSignatureDocumentPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow-sm border border p-6">
           <div className="space-y-6">
             {/* Title */}
             <div>
@@ -282,7 +282,7 @@ export default function NewSignatureDocumentPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
+          <div className="flex gap-3 mt-8 pt-6 border-t border">
             <Button
               type="button"
               variant="outline"

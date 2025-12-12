@@ -133,7 +133,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
       )}
 
       {/* File Details */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">File Details</h2>

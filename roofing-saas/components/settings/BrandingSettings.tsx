@@ -124,7 +124,7 @@ export function BrandingSettings() {
         {/* Settings Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Logo Upload */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-card rounded-lg border border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Logo</h3>
             <div className="space-y-4">
               <div>
@@ -133,7 +133,7 @@ export function BrandingSettings() {
                 </label>
                 <div className="flex items-center gap-4">
                   {settings.logo_url ? (
-                    <div className="h-20 w-20 rounded-lg border-2 border-gray-200 flex items-center justify-center overflow-hidden relative">
+                    <div className="h-20 w-20 rounded-lg border-2 border flex items-center justify-center overflow-hidden relative">
                       <Image src={settings.logo_url} alt="Logo" fill className="object-contain" />
                     </div>
                   ) : (
@@ -169,7 +169,7 @@ export function BrandingSettings() {
           </div>
 
           {/* Brand Colors */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-card rounded-lg border border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Brand Colors</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -235,7 +235,7 @@ export function BrandingSettings() {
           </div>
 
           {/* Email Branding */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-card rounded-lg border border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Email Branding</h3>
             <div className="space-y-4">
               <div>
@@ -267,7 +267,7 @@ export function BrandingSettings() {
 
         {/* Live Preview */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
+          <div className="bg-card rounded-lg border border p-6 sticky top-8">
             <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
 
             {/* Button Previews */}
@@ -304,7 +304,7 @@ export function BrandingSettings() {
 
               {/* Logo Preview */}
               {settings.logo_url && (
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border">
                   <p className="text-xs text-muted-foreground mb-2">Logo Preview</p>
                   <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center h-24 relative">
                     <Image src={settings.logo_url} alt="Logo Preview" fill className="object-contain" />

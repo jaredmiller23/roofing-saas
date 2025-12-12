@@ -39,7 +39,7 @@ export function SettingsTabs() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white border border-gray-200 p-1 h-auto">
+          <TabsList className="bg-card border border p-1 h-auto">
             <TabsTrigger
               value="general"
               className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"

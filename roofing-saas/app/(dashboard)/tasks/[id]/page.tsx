@@ -133,7 +133,7 @@ export default async function TaskDetailPage({
         </div>
 
         {/* Task Details */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-card rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -155,7 +155,7 @@ export default async function TaskDetailPage({
 
         {/* Description */}
         {task.description && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Description</h2>
             <p className="text-foreground whitespace-pre-wrap">{task.description}</p>
           </div>

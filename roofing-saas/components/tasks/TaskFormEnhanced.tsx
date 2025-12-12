@@ -160,7 +160,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       )}
 
       {/* Basic Information */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border p-6">
         <div className="flex items-center gap-2 mb-6">
           <CheckCircle className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Basic Information</h2>
@@ -243,7 +243,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Dates & Time */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Dates & Time Tracking</h2>
@@ -309,7 +309,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Assignments & Relations */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border p-6">
         <div className="flex items-center gap-2 mb-6">
           <User className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Assignments & Relations</h2>
@@ -373,7 +373,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Tags & Reminders */}
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Tag className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Tags & Reminders</h2>

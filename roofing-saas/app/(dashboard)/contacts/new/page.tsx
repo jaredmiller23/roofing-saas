@@ -22,7 +22,7 @@ export default async function NewContactPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <ContactForm />
         </div>
       </div>

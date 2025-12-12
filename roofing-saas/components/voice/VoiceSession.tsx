@@ -529,7 +529,7 @@ export function VoiceSession({
   }, [cleanup])
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4 p-4 md:p-6 bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col items-center justify-center space-y-4 p-4 md:p-6 bg-card rounded-lg shadow-lg">
       {/* Status indicator */}
       <div className="text-center">
         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm md:text-base font-medium ${

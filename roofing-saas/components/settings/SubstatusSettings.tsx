@@ -204,7 +204,7 @@ export function SubstatusSettings() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Substatus Configuration</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1">
@@ -243,7 +243,7 @@ export function SubstatusSettings() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-card rounded-lg border border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingSubstatus ? 'Edit Substatus' : 'Add New Substatus'}
           </h3>
@@ -461,7 +461,7 @@ export function SubstatusSettings() {
       {Object.keys(groupedSubstatuses).length > 0 ? (
         <div className="space-y-4">
           {Object.entries(groupedSubstatuses).map(([statusValue, substatusList]) => (
-            <div key={statusValue} className="bg-white rounded-lg border border-gray-200 p-6">
+            <div key={statusValue} className="bg-card rounded-lg border border p-6">
               <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Tag className="h-5 w-5 text-muted-foreground" />
                 {statusValue}
@@ -517,14 +517,14 @@ export function SubstatusSettings() {
                       <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
                         <button
                           onClick={() => handleEdit(substatus)}
-                          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
+                          className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
                           title="Edit"
                         >
                           <Pencil className="h-3 w-3 text-muted-foreground" />
                         </button>
                         <button
                           onClick={() => handleDelete(substatus.id)}
-                          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
+                          className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
                           title="Delete"
                         >
                           <Trash2 className="h-3 w-3 text-red-600" />
@@ -537,7 +537,7 @@ export function SubstatusSettings() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+        <div className="bg-card rounded-lg border border p-12 text-center">
           <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">
             No substatuses configured

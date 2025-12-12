@@ -120,7 +120,7 @@ export function StandardCalendar({
   }, [])
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-card rounded-lg shadow-sm p-6">
       <div className="h-[700px]">
         <Calendar
           localizer={localizer}

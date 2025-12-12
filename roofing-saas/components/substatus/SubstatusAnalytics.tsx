@@ -85,7 +85,7 @@ export function SubstatusAnalytics({
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+      <div className={`bg-card rounded-lg border border p-6 ${className}`}>
         <div className="flex items-center justify-center h-48">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
         </div>
@@ -95,7 +95,7 @@ export function SubstatusAnalytics({
 
   if (error) {
     return (
-      <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+      <div className={`bg-card rounded-lg border border p-6 ${className}`}>
         <div className="flex items-center justify-center h-48 text-red-600">
           <p>{error}</p>
         </div>
@@ -113,9 +113,9 @@ export function SubstatusAnalytics({
   const maxCount = Math.max(...sortedDistribution.map(item => item.count), 1)
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
+    <div className={`bg-card rounded-lg border border ${className}`}>
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-muted-foreground" />
@@ -197,7 +197,7 @@ export function SubstatusAnalytics({
 
       {/* Footer with insights */}
       {sortedDistribution.length > 0 && (
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-t border bg-gray-50">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
             <div>

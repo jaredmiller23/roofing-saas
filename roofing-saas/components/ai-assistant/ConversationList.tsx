@@ -79,7 +79,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
   }
 
   return (
-    <div className={`flex flex-col h-full bg-white ${className}`}>
+    <div className={`flex flex-col h-full bg-card ${className}`}>
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">

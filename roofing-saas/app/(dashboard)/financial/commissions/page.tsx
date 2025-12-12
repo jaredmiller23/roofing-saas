@@ -99,7 +99,7 @@ export default async function CommissionsPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Total Earned Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Total Earned</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
@@ -109,7 +109,7 @@ export default async function CommissionsPage() {
           </div>
 
           {/* Pending Commissions Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-yellow-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Pending</h3>
               <Clock className="h-5 w-5 text-yellow-500" />
@@ -119,7 +119,7 @@ export default async function CommissionsPage() {
           </div>
 
           {/* Paid Commissions Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Paid</h3>
               <CheckCircle className="h-5 w-5 text-green-500" />
@@ -129,7 +129,7 @@ export default async function CommissionsPage() {
           </div>
 
           {/* Active Users Card */}
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Active Users</h3>
               <Users className="h-5 w-5 text-purple-500" />
@@ -140,8 +140,8 @@ export default async function CommissionsPage() {
         </div>
 
         {/* Team Performance Table */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b border">
             <h2 className="text-xl font-semibold text-foreground">Team Performance</h2>
           </div>
           <div className="overflow-x-auto">

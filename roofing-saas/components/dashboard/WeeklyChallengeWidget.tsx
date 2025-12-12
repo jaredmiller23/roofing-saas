@@ -87,7 +87,7 @@ export function WeeklyChallengeWidget() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-card rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-center h-48">
           <div className="text-muted-foreground">Loading challenge...</div>
         </div>
@@ -116,8 +116,8 @@ export function WeeklyChallengeWidget() {
               key={leader.id}
               className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                 index === 0
-                  ? 'bg-white border-yellow-300 shadow-md'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
+                  ? 'bg-card border-yellow-300 shadow-md'
+                  : 'bg-card border hover:border-gray-300'
               }`}
             >
               {/* Rank Medal */}

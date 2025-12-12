@@ -60,7 +60,7 @@ export default async function EditContactPage({
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <ContactForm contact={contact} mode="edit" />
         </div>
       </div>

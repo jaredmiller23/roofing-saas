@@ -118,7 +118,7 @@ export default function VoicePage() {
         )}
 
         {/* Context Selection (Optional) */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Optional Context
           </h2>
@@ -180,7 +180,7 @@ export default function VoicePage() {
         </div>
 
         {/* Technical Details */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Technical Details
           </h2>
@@ -211,7 +211,7 @@ export default function VoicePage() {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border">
             <p className="text-xs text-muted-foreground">
               <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call, get_weather, search_roofing_knowledge, search_web
             </p>

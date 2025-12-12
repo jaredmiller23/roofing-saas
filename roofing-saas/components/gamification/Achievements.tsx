@@ -67,7 +67,7 @@ export function Achievements() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-card rounded-lg shadow-sm p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
@@ -129,7 +129,7 @@ export function Achievements() {
               className={`p-4 rounded-lg border transition-all ${
                 achievement.unlocked
                   ? 'bg-yellow-50 border-yellow-300'
-                  : 'bg-gray-50 border-gray-200 opacity-75'
+                  : 'bg-gray-50 border opacity-75'
               }`}
             >
               <div className="flex items-start gap-3">

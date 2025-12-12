@@ -31,7 +31,7 @@ export default function VoiceAssistantPage() {
                 className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   selectedProvider === provider.type
                     ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-white text-muted-foreground hover:bg-background border border-gray-200'
+                    : 'bg-white text-muted-foreground hover:bg-background border border'
                 }`}
               >
                 <div className="text-left">

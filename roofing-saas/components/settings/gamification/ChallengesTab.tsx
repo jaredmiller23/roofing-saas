@@ -210,7 +210,7 @@ export function ChallengesTab() {
             {CHALLENGE_TEMPLATES.map(template => (
               <div
                 key={template.id}
-                className={`p-4 rounded-lg border ${template.bgColor} border-gray-200`}
+                className={`p-4 rounded-lg border ${template.bgColor} border`}
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="text-3xl mb-2">{template.icon}</div>

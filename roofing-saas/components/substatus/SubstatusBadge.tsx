@@ -83,7 +83,7 @@ export function SubstatusBadgeSkeleton({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 rounded-full border-2 border-gray-200 bg-gray-100 ${sizeClasses[size]} ${className} animate-pulse`}
+      className={`inline-flex items-center gap-1.5 rounded-full border-2 border bg-gray-100 ${sizeClasses[size]} ${className} animate-pulse`}
     >
       <div className="w-2 h-2 rounded-full bg-gray-300" />
       <div className="flex-1 h-3 bg-gray-300 rounded" />

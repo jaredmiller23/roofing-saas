@@ -229,7 +229,7 @@ export default function TerritoriesPage() {
             {knocks.map((knock) => (
               <div
                 key={knock.id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-background transition-colors"
+                className="border border rounded-lg p-4 hover:bg-background transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -294,7 +294,7 @@ export default function TerritoriesPage() {
       </div>
 
       {selectedTerritory && selectedTerritory.boundary_data ? (
-        <div className="relative rounded-lg overflow-hidden border border-gray-200">
+        <div className="relative rounded-lg overflow-hidden border border">
           <TerritoryMap
             territories={territoriesArray}
             selectedTerritory={selectedTerritory}

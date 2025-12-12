@@ -76,7 +76,7 @@ export function SyncStatus({ tenantId }: SyncStatusProps) {
 
       {/* Pending items badge */}
       {totalPending > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px]">
+        <div className="bg-card border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">

@@ -105,7 +105,7 @@ export default function EventsPage() {
               onClick={() => setView('calendar')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'calendar'
-                  ? 'bg-white text-foreground shadow-sm'
+                  ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -116,7 +116,7 @@ export default function EventsPage() {
               onClick={() => setView('list')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'list'
-                  ? 'bg-white text-foreground shadow-sm'
+                  ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -131,7 +131,7 @@ export default function EventsPage() {
                 onClick={() => handleCalendarTypeChange('standard')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'standard'
-                    ? 'bg-white text-foreground shadow-sm'
+                    ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -141,7 +141,7 @@ export default function EventsPage() {
                 onClick={() => handleCalendarTypeChange('google')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'google'
-                    ? 'bg-white text-foreground shadow-sm'
+                    ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

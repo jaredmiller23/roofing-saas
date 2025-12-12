@@ -215,7 +215,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
+      <div className="bg-card rounded-lg shadow p-8 text-center">
         <div className="text-muted-foreground">Loading leads...</div>
       </div>
     )
@@ -223,7 +223,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-8">
+      <div className="bg-card rounded-lg shadow p-8">
         <div className="text-red-600">Error: {error}</div>
       </div>
     )
@@ -231,7 +231,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
   if (leads.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
+      <div className="bg-card rounded-lg shadow p-8 text-center">
         <div className="text-muted-foreground mb-4">No leads found</div>
         <Link
           href="/contacts/new"
@@ -265,7 +265,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="text-sm text-blue-600 font-medium">Total Leads</div>
@@ -285,7 +285,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-card rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -305,7 +305,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-gray-200">
               {leads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-accent">
                   {/* Lead Name & Score */}
@@ -436,7 +436,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         </div>
 
         {/* Pagination */}
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border">
           <div className="text-sm text-muted-foreground">
             Showing {leads.length} of {total} leads
           </div>

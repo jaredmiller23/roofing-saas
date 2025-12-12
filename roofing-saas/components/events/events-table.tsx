@@ -154,7 +154,7 @@ export function EventsTable({ params }: EventsTableProps) {
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+    <div className="bg-card shadow-sm rounded-lg border border-gray-200">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -179,7 +179,7 @@ export function EventsTable({ params }: EventsTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-gray-200">
             {events.map((event) => (
               <tr key={event.id} className="hover:bg-accent">
                 <td className="px-6 py-4">
@@ -245,19 +245,19 @@ export function EventsTable({ params }: EventsTableProps) {
 
       {/* Pagination */}
       {total > 10 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => router.push(`/events?page=${page - 1}`)}
               disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => router.push(`/events?page=${page + 1}`)}
               disabled={page * 10 >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
             >
               Next
             </button>
@@ -275,14 +275,14 @@ export function EventsTable({ params }: EventsTableProps) {
                 <button
                   onClick={() => router.push(`/events?page=${page - 1}`)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => router.push(`/events?page=${page + 1}`)}
                   disabled={page * 10 >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Next
                 </button>

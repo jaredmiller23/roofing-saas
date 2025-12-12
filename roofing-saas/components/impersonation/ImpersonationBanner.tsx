@@ -157,7 +157,7 @@ export function ImpersonationBanner() {
             disabled={isExiting}
             variant="secondary"
             size="sm"
-            className="flex items-center gap-2 bg-white text-foreground hover:bg-gray-100"
+            className="flex items-center gap-2 bg-card text-foreground hover:bg-gray-100"
           >
             <X className="h-4 w-4" />
             <span className="hidden sm:inline">

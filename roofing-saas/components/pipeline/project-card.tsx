@@ -206,7 +206,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       {...listeners}
       {...attributes}
       className={`
-        bg-white rounded-lg border border-gray-200 p-4
+        bg-card rounded-lg border border p-4
         hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing
         ${isDragging ? 'opacity-50 rotate-3 shadow-lg' : ''}
       `}

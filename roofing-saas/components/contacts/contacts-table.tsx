@@ -166,7 +166,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
+      <div className="bg-card rounded-lg shadow p-8 text-center">
         <div className="text-muted-foreground">Loading contacts...</div>
       </div>
     )
@@ -174,7 +174,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-8">
+      <div className="bg-card rounded-lg shadow p-8">
         <div className="text-red-600">Error: {error}</div>
       </div>
     )
@@ -182,7 +182,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
   if (contacts.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
+      <div className="bg-card rounded-lg shadow p-8 text-center">
         <div className="text-muted-foreground mb-4">No contacts found</div>
         <Link
           href="/contacts/new"
@@ -211,7 +211,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
   )
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-card rounded-lg shadow overflow-hidden">
       {/* Bulk Actions Bar */}
       {selectedContacts.size > 0 && (
         <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center justify-between">
@@ -291,7 +291,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-gray-200">
             {contacts.map((contact) => (
               <tr key={contact.id} className={`hover:bg-accent ${selectedContacts.has(contact.id) ? 'bg-blue-50' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -393,7 +393,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
       </div>
 
       {/* Pagination */}
-      <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+      <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border">
         <div className="text-sm text-muted-foreground">
           Showing {contacts.length} of {total} contacts
         </div>

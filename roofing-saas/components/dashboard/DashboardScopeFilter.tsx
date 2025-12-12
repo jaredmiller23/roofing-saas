@@ -14,7 +14,7 @@ export function DashboardScopeFilter({ currentScope, onScopeChange }: DashboardS
         onClick={() => onScopeChange('user')}
         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
           currentScope === 'user'
-            ? 'bg-white text-foreground shadow-sm'
+            ? 'bg-card text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground'
         }`}
       >
@@ -24,7 +24,7 @@ export function DashboardScopeFilter({ currentScope, onScopeChange }: DashboardS
         onClick={() => onScopeChange('company')}
         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
           currentScope === 'company'
-            ? 'bg-white text-foreground shadow-sm'
+            ? 'bg-card text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground'
         }`}
       >

@@ -100,7 +100,7 @@ export default async function JobDetailPage({
         </div>
 
         {/* Job Information Card */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Briefcase className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Job Information</h2>
@@ -147,7 +147,7 @@ export default async function JobDetailPage({
         </div>
 
         {/* Schedule Card */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Calendar className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Schedule</h2>
@@ -187,7 +187,7 @@ export default async function JobDetailPage({
         </div>
 
         {/* Cost Tracking Card */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <DollarSign className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
@@ -214,7 +214,7 @@ export default async function JobDetailPage({
               <p className="text-foreground">{formatCurrency(job.other_costs)}</p>
             </div>
 
-            <div className="md:col-span-2 pt-4 border-t border-gray-200">
+            <div className="md:col-span-2 pt-4 border-t border">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Total Cost</label>
               <p className="text-xl font-semibold text-foreground">{formatCurrency(job.total_cost)}</p>
             </div>
@@ -223,7 +223,7 @@ export default async function JobDetailPage({
 
         {/* Notes Card */}
         {(job.notes || job.internal_notes) && (
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+          <div className="bg-card shadow-sm rounded-lg border border p-6">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Notes</h2>
