@@ -114,6 +114,8 @@
     "app/(dashboard)/call-logs/[id]/page.tsx:74:text-white",
     "components/call-logs/call-log-form.tsx:186:text-white",
     "components/call-logs/call-logs-table.tsx:121:text-white",
+    "components/claims/ClaimPhotoCapture.tsx:420:text-white",
+    "components/claims/ClaimPhotoCapture.tsx:439:text-white",
     "app/(dashboard)/events/[id]/page.tsx:56:text-white",
     "app/(dashboard)/events/[id]/page.tsx:57:text-white",
     "app/(dashboard)/events/[id]/page.tsx:59:text-white",

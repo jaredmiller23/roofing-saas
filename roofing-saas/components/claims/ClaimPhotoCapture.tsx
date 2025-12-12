@@ -412,18 +412,18 @@ export function ClaimPhotoCapture({
                 ref={videoRef}
                 autoPlay
                 playsInline
-                className="w-full rounded-lg bg-gray-900 aspect-video object-cover"
+                className="w-full rounded-lg bg-background aspect-video object-cover"
               />
               <div className="flex gap-2">
                 <button
                   onClick={capturePhoto}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                  className="flex-1 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
                 >
                   Capture
                 </button>
                 <button
                   onClick={stopCamera}
-                  className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+                  className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
                 >
                   Cancel
                 </button>
@@ -436,7 +436,7 @@ export function ClaimPhotoCapture({
             <div className="flex flex-col gap-2">
               <button
                 onClick={startCamera}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -457,7 +457,7 @@ export function ClaimPhotoCapture({
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+                className="w-full py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Choose from Gallery
               </button>
@@ -476,7 +476,7 @@ export function ClaimPhotoCapture({
           {/* Preview with damage selection */}
           {previewUrl && uploadState.status === 'selecting' && (
             <div className="space-y-4">
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
+              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/30">
                 <Image
                   src={previewUrl}
                   alt="Captured damage"
@@ -504,7 +504,7 @@ export function ClaimPhotoCapture({
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+                  className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
                 >
                   Retake
                 </button>
@@ -516,7 +516,7 @@ export function ClaimPhotoCapture({
           {isProcessing && (
             <div className="space-y-3">
               {previewUrl && (
-                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 opacity-75">
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted/30 opacity-75">
                   <Image
                     src={previewUrl}
                     alt="Uploading"
@@ -528,7 +528,7 @@ export function ClaimPhotoCapture({
               )}
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadState.progress}%` }}
                 />
               </div>
@@ -551,7 +551,7 @@ export function ClaimPhotoCapture({
               </div>
               <button
                 onClick={handleCancel}
-                className="w-full py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+                className="w-full py-2 border border-border text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Try Again
               </button>
