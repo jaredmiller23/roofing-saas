@@ -27,7 +27,7 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
             <div className={`w-3 h-3 rounded-full ${stage.color}`} />
             <h3 className="font-semibold text-foreground">{stage.name}</h3>
           </div>
-          <span className="text-sm font-medium text-muted-foreground bg-gray-100 px-2 py-1 rounded">
+          <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
             {projects.length}
           </span>
         </div>
@@ -37,9 +37,9 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
       <div
         ref={setNodeRef}
         className={`
-          flex-1 bg-gray-50 rounded-b-lg border-x border-b border
+          flex-1 bg-muted/30 rounded-b-lg border-x border-b border
           p-3 overflow-y-auto space-y-3 min-h-[200px]
-          ${isOver ? 'bg-blue-50 border-blue-300' : ''}
+          ${isOver ? 'bg-primary/10 border-primary' : ''}
         `}
       >
         {projects.map((project) => (

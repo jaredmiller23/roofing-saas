@@ -172,11 +172,11 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   const daysInStage = getDaysInStage(project.stage_changed_at)
 
   const getLeadScoreColor = (score?: number) => {
-    if (!score) return 'text-muted-foreground bg-gray-50'
-    if (score >= 80) return 'text-green-600 bg-green-50'
-    if (score >= 60) return 'text-blue-600 bg-blue-50'
-    if (score >= 40) return 'text-yellow-600 bg-yellow-50'
-    return 'text-muted-foreground bg-gray-50'
+    if (!score) return 'text-muted-foreground bg-muted'
+    if (score >= 80) return 'text-green-400 bg-green-500/20'
+    if (score >= 60) return 'text-blue-400 bg-blue-500/20'
+    if (score >= 40) return 'text-yellow-400 bg-yellow-500/20'
+    return 'text-muted-foreground bg-muted'
   }
 
   const getPriorityBadge = (priority?: string) => {
@@ -324,7 +324,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
       {/* Start Production Button - Only for Won stage */}
       {project.pipeline_stage === 'won' && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-border">
           <button
             onClick={handleStartProduction}
             disabled={startingProduction}
@@ -347,11 +347,11 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
       {/* Mark Lost Button - Only for active sales stages */}
       {ACTIVE_SALES_STAGES.includes(project.pipeline_stage as PipelineStage) && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-border">
           <button
             onClick={handleMarkLost}
             disabled={markingLost}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 disabled:bg-gray-50 text-muted-foreground rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-muted hover:bg-red-500/20 hover:text-red-400 disabled:bg-muted/50 text-muted-foreground rounded-md text-sm font-medium transition-colors"
           >
             {markingLost ? (
               <>
@@ -370,7 +370,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
       {/* Reactivate Button - Only for lost deals */}
       {project.pipeline_stage === 'lost' && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-border">
           <button
             onClick={handleReactivate}
             disabled={reactivating}
@@ -393,13 +393,13 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
       {/* Quick Actions - Mobile Friendly */}
       {(contactPhone || contactEmail) && (
-        <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+        <div className="mt-3 pt-3 border-t border-border flex gap-2">
           {contactPhone && (
             <>
               <a
                 href={`tel:${contactPhone}`}
                 onClick={(e) => e.stopPropagation()}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-md text-xs font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-md text-xs font-medium transition-colors"
                 title="Call"
               >
                 <Phone className="h-3.5 w-3.5" />
@@ -408,7 +408,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
               <a
                 href={`sms:${contactPhone}`}
                 onClick={(e) => e.stopPropagation()}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-xs font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-md text-xs font-medium transition-colors"
                 title="Text"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
@@ -420,7 +420,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
             <a
               href={`mailto:${contactEmail}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md text-xs font-medium transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-md text-xs font-medium transition-colors"
               title="Email"
             >
               <Mail className="h-3.5 w-3.5" />
