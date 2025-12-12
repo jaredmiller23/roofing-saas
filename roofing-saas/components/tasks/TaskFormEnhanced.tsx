@@ -199,7 +199,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -214,7 +214,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -323,7 +323,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.project_id}
               onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {projects.map((project) => (
@@ -341,7 +341,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.contact_id}
               onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {contacts.map((contact) => (
@@ -359,7 +359,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.parent_task_id}
               onChange={(e) => setFormData({ ...formData, parent_task_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {tasks.map((t) => (
@@ -400,13 +400,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 {formData.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm flex items-center gap-2"
+                    className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="hover:text-blue-900"
+                      className="hover:text-primary/80"
                     >
                       ×
                     </button>
@@ -422,7 +422,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               id="reminder"
               checked={formData.reminder_enabled}
               onChange={(e) => setFormData({ ...formData, reminder_enabled: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <label htmlFor="reminder" className="text-sm font-medium text-muted-foreground">
               Enable Reminder
@@ -457,7 +457,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
         <Button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-primary hover:bg-primary/90"
         >
           {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
         </Button>
