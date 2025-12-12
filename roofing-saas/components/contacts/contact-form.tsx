@@ -123,7 +123,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.first_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -138,7 +138,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.last_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -152,7 +152,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -166,7 +166,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -180,7 +180,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="mobile_phone"
               value={formData.mobile_phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -192,7 +192,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                 name="is_organization"
                 checked={formData.is_organization}
                 onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-input rounded"
+                className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
               />
               <label htmlFor="is_organization" className="ml-2 block text-sm font-medium text-muted-foreground">
                 This is a company/organization (not an individual)
@@ -211,7 +211,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder={formData.is_organization ? "Company name" : "Employer (optional)"}
               value={formData.company}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="mt-1 text-xs text-muted-foreground">
               {formData.is_organization
@@ -231,7 +231,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="https://example.com"
               value={formData.website}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -245,7 +245,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.contact_category}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {getContactCategoryOptions().map((option) => (
                 <option key={option.value} value={option.value}>
@@ -264,7 +264,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="lead">Lead</option>
               <option value="prospect">Prospect</option>
@@ -281,7 +281,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="stage"
               value={formData.stage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="new">New</option>
               <option value="contacted">Contacted</option>
@@ -302,7 +302,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="low">Low</option>
               <option value="normal">Normal</option>
@@ -322,7 +322,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Door knocking, Referral, Website"
               value={formData.source}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
@@ -342,7 +342,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_street"
               value={formData.address_street}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -356,7 +356,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_city"
               value={formData.address_city}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -372,7 +372,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="TN"
               value={formData.address_state}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -386,7 +386,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_zip"
               value={formData.address_zip}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
@@ -407,7 +407,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Single Family, Condo"
               value={formData.property_type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -422,7 +422,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Asphalt Shingle, Metal"
               value={formData.roof_type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -436,7 +436,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="roof_age"
               value={formData.roof_age}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -450,7 +450,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="square_footage"
               value={formData.square_footage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -464,7 +464,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="stories"
               value={formData.stories}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
@@ -484,7 +484,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="insurance_carrier"
               value={formData.insurance_carrier}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -498,7 +498,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="policy_number"
               value={formData.policy_number}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </div>
@@ -509,7 +509,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : mode === 'edit' ? 'Update Contact' : 'Create Contact'}
         </button>
