@@ -52,13 +52,13 @@ export default async function EventDetailPage({
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      confirmed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-      completed: 'bg-muted text-gray-800',
-      no_show: 'bg-orange-100 text-orange-800',
+      scheduled: 'bg-primary/10 text-primary',
+      confirmed: 'bg-green-500 text-white',
+      cancelled: 'bg-red-500 text-white',
+      completed: 'bg-muted text-muted-foreground',
+      no_show: 'bg-orange-500 text-white',
     }
-    return badges[status as keyof typeof badges] || 'bg-muted text-gray-800'
+    return badges[status as keyof typeof badges] || 'bg-muted text-muted-foreground'
   }
 
   const formatDateTime = (dateStr: string) => {
@@ -76,7 +76,7 @@ export default async function EventDetailPage({
             </div>
             <Link
               href={`/events/${event.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
             >
               Edit
             </Link>
@@ -204,7 +204,7 @@ export default async function EventDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/events"
-            className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background"
+            className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-background"
           >
             Back to Events
           </Link>
