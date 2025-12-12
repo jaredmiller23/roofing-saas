@@ -93,6 +93,15 @@ setup('authenticate test user', async ({ page }) => {
     console.warn('⚠️  No logged-in indicators found - auth might not have persisted')
   }
 
+  // Verify user has org_id and can access data
+  console.log('🔍 Verifying user has org access...')
+  const response = await page.request.get('/api/contacts?limit=1')
+  if (!response.ok()) {
+    console.error(`❌ Auth setup failed: User cannot access contacts API (${response.status()})`)
+    throw new Error(`Auth setup failed: User cannot access contacts API (${response.status()})`)
+  }
+  console.log('✅ Auth setup complete - user has valid org access')
+
   // Save authenticated state to file
   await page.context().storageState({ path: authFile })
   console.log(`💾 Saved authenticated state to: ${authFile}`)

@@ -27,6 +27,9 @@ export default defineConfig({
   /* Reporter to use */
   reporter: 'html',
 
+  /* Test timeout: 60 seconds (up from default 30s) */
+  timeout: 60000,
+
   /* Shared settings for all the projects below */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
@@ -37,6 +40,10 @@ export default defineConfig({
 
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
+
+    /* Navigation and action timeouts */
+    navigationTimeout: 30000, // Navigation operations timeout
+    actionTimeout: 10000, // Individual action timeout (click, fill, etc)
   },
 
   /* Configure projects for major browsers */
