@@ -24,6 +24,31 @@
             "continueOnError": false
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "description": "Validate Supabase migrations follow conventions",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${workspaceFolder}/.claude/hooks/migration-validator.sh",
+            "timeout": 10000,
+            "continueOnError": false
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "description": "Detect potential secrets in user prompts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${workspaceFolder}/.claude/hooks/secret-detector.py",
+            "timeout": 5000,
+            "continueOnError": false
+          }
+        ]
       }
     ],
     "Stop": [

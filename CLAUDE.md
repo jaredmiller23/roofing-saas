@@ -400,6 +400,58 @@ Create tables in Supabase SQL Editor:
 6. **Background Tasks** - Run tests while continuing development
 7. **NO ASSUMPTIONS** - Verify status, don't assume "all set" or "working"
 
+### Claude Code Hooks (UPDATED - Dec 12, 2025)
+
+**Status**: Phase 1 (Foundation) IMPLEMENTED ✅
+
+Claude Code hooks provide **deterministic, event-driven automation** that enforces quality gates, security policies, and testing requirements. These hooks run automatically at specific lifecycle events.
+
+#### Currently Active Hooks
+
+**PreToolUse Hooks** (run before Write/Edit operations):
+- ✅ `typecheck.sh` - TypeScript type validation
+- ✅ `lint.sh` - ESLint code style validation
+- ✅ `migration-validator.sh` - **NEW** Supabase migration validation
+  - Validates filename format (YYYYMMDDHHMMSS_description.sql)
+  - Requires rollback comments
+  - Warns on destructive operations (DROP, TRUNCATE)
+  - Checks for org_id in new tables (multi-tenant safety)
+
+**UserPromptSubmit Hooks** (run when user submits prompts):
+- ✅ `secret-detector.py` - **NEW** Credential exposure prevention
+  - Detects API keys (OpenAI, Stripe, AWS, GitHub)
+  - Catches database connection strings
+  - Identifies JWT tokens and private keys
+  - Blocks prompts with potential secrets
+  - Smart allowlist for examples/placeholders
+
+**Stop Hooks** (run when session ends):
+- ✅ `build-check.sh` - Build validation before session stop
+
+#### Hook Coverage
+- **Current**: ~20% of hook capability
+- **Phase 1**: Foundation security + migration safety ✅ **COMPLETE**
+- **Phase 2**: Testing enforcement (planned)
+- **Phase 3**: Cost optimization (planned)
+- **Phase 4**: RLS auditing (planned)
+
+#### Comprehensive Research
+See `docs/HOOKS_RESEARCH_DEC_2025.md` for:
+- Complete hook event catalog (10 types)
+- Advanced enforcement patterns
+- Integration with 4-layer testing architecture
+- Phase 2-4 implementation roadmap
+
+#### How Hooks Enforce Quality
+```
+RULES say:        "Validate migrations"
+SUBAGENTS do:     Run validation scripts
+SKILLS provide:   Migration patterns
+HOOKS ENFORCE:    Block invalid migrations (deterministic)
+```
+
+Hooks make project standards **unbypassable and automatic**.
+
 ### Project Standards
 1. **Follow PRD_v2.md phases** - Enhanced with parallel strategies
 2. **Keep it simple** - Use Supabase features, avoid complexity
