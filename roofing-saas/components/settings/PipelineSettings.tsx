@@ -151,7 +151,7 @@ export function PipelineSettings() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -181,7 +181,7 @@ export function PipelineSettings() {
           <h3 className="text-lg font-semibold text-foreground">Sales Pipeline Stages</h3>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Stage
@@ -268,7 +268,7 @@ export function PipelineSettings() {
               <select
                 value={formData.stage_type}
                 onChange={(e) => setFormData({ ...formData, stage_type: e.target.value as 'open' | 'won' | 'lost' })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="open">Open (Active)</option>
                 <option value="won">Won (Closed Won)</option>
@@ -299,7 +299,7 @@ export function PipelineSettings() {
                   type="color"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                  className="h-10 w-16 rounded border border-border cursor-pointer"
                 />
                 <Input
                   value={formData.color}
@@ -318,7 +318,7 @@ export function PipelineSettings() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Brief description of this stage..."
               />
             </div>
@@ -348,7 +348,7 @@ export function PipelineSettings() {
             <Button
               onClick={handleSave}
               disabled={saving || !formData.name}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {saving ? 'Saving...' : editingStage ? 'Update Stage' : 'Add Stage'}
             </Button>
@@ -359,8 +359,8 @@ export function PipelineSettings() {
       {/* Stage List (Table View) */}
       {stages.length > 0 && !showAddForm && (
         <div className="bg-card rounded-lg border border overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Order</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Stage</th>
@@ -370,7 +370,7 @@ export function PipelineSettings() {
                 <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-card divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {stages.map((stage) => (
                 <tr key={stage.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
@@ -386,7 +386,7 @@ export function PipelineSettings() {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       stage.stage_type === 'won' ? 'bg-green-100 text-green-800' :
                       stage.stage_type === 'lost' ? 'bg-red-100 text-red-800' :
-                      'bg-blue-100 text-blue-800'
+                      'bg-primary/10 text-primary'
                     }`}>
                       {stage.stage_type}
                     </span>
@@ -397,7 +397,7 @@ export function PipelineSettings() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-6 h-6 rounded border border-gray-300"
+                        className="w-6 h-6 rounded border border-border"
                         style={{ backgroundColor: stage.color }}
                       />
                       <span className="text-sm text-muted-foreground">{stage.color}</span>
@@ -406,7 +406,7 @@ export function PipelineSettings() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleEdit(stage)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className="text-primary hover:text-primary/80 mr-4"
                     >
                       Edit
                     </button>

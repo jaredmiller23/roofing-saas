@@ -39,6 +39,7 @@
     "app/(auth)/register/page.tsx:185:text-white",
     "app/(auth)/reset-password/page.tsx:106:text-white",
     "app/(auth)/auth/update-password/page.tsx:110:text-white",
+    "components/settings/PipelineSettings.tsx:196:text-white",
     "components/ui/badge.tsx:*:bg-green-500",
     "components/ui/badge.tsx:*:bg-red-500",
     "components/ui/badge.tsx:*:bg-orange-500",
@@ -109,7 +110,8 @@
     "charts": "Data visualization requires specific colors for clarity and cannot use theme variables.",
     "star-ratings": "Yellow stars are a universal pattern that should remain consistent.",
     "gamification": "Achievement badges and point systems use semantic colors for instant recognition.",
-    "gamification-settings": "Tab navigation and templates use color-coding (blue=points, purple=achievements, orange=challenges, pink=rewards, green=KPIs) for visual categorization and template identification."
+    "gamification-settings": "Tab navigation and templates use color-coding (blue=points, purple=achievements, orange=challenges, pink=rewards, green=KPIs) for visual categorization and template identification.",
+    "pipeline-settings": "Visual pipeline stage cards use dynamic user-chosen background colors; text-white ensures contrast on any background color."
   },
   "enforcementRules": {
     "errors": [
