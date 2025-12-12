@@ -159,6 +159,8 @@
     "components/voice/VoiceSession.tsx:592:text-white",
     "components/territories/TerritoryList.tsx:304:text-white",
     "components/territories/TerritoryList.tsx:313:text-white",
+    "components/photos/PhotoUpload.tsx:327:text-white",
+    "components/photos/PhotoUpload.tsx:346:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

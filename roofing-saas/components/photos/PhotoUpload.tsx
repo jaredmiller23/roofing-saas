@@ -324,13 +324,13 @@ export function PhotoUpload({
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={capturePhoto}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
                 >
                   Capture Photo
                 </button>
                 <button
                   onClick={stopCamera}
-                  className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-md hover:bg-accent"
+                  className="px-4 py-2 border border-border text-muted-foreground rounded-md hover:bg-accent"
                 >
                   Cancel
                 </button>
@@ -343,7 +343,7 @@ export function PhotoUpload({
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={startCamera}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center justify-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
@@ -369,7 +369,7 @@ export function PhotoUpload({
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 px-4 py-2 border border-gray-300 text-muted-foreground rounded-md hover:bg-accent flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 border border-border text-muted-foreground rounded-md hover:bg-accent flex items-center justify-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
@@ -416,7 +416,7 @@ export function PhotoUpload({
             <div className="space-y-2">
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadState.progress}%` }}
                 />
               </div>
