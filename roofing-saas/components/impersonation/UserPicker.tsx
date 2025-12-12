@@ -157,8 +157,8 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
                 className="flex items-start gap-3 p-3 cursor-pointer hover:bg-accent"
               >
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <User className="h-4 w-4 text-blue-600" />
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -169,7 +169,7 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
                     {user.email}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                    <span className="text-xs bg-muted px-2 py-0.5 rounded">
                       {user.role}
                     </span>
                     <span className="text-xs text-muted-foreground">
