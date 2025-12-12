@@ -139,7 +139,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         <div className="p-6 border-b border-sidebar-border">
           <Link href="/dashboard" className="block">
             <h1 className="text-4xl font-bold text-sidebar-foreground" style={{ fontFamily: "'Pacifico', cursive" }}>
-              Clarity AI
+              Clarity Ai
             </h1>
           </Link>
         </div>
