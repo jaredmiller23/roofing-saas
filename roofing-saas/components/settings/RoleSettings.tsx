@@ -228,7 +228,7 @@ export function RoleSettings() {
           <h3 className="text-lg font-semibold text-foreground">User Roles</h3>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Role
@@ -245,7 +245,7 @@ export function RoleSettings() {
               <div key={role.id} className="border border rounded-lg p-4 hover:border-blue-300 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-blue-600" />
+                    <Shield className="h-5 w-5 text-primary" />
                     <h4 className="font-semibold text-foreground">{role.name}</h4>
                     {role.is_system && (
                       <Lock className="h-3 w-3 text-muted-foreground" aria-label="System role" />
@@ -255,7 +255,7 @@ export function RoleSettings() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(role)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-primary hover:text-primary/80"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -338,7 +338,7 @@ export function RoleSettings() {
               <h4 className="text-sm font-semibold text-foreground mb-3">Permissions</h4>
               <div className="border border rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-muted">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Module
@@ -367,14 +367,14 @@ export function RoleSettings() {
                                 type="checkbox"
                                 checked={modulePerms?.[action as keyof typeof modulePerms] || false}
                                 onChange={(e) => handlePermissionChange(module.key, action, e.target.checked)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                               />
                             </td>
                           ))}
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <button
                               onClick={() => handleSelectAll(module.key)}
-                              className="text-blue-600 hover:text-blue-900 text-xs mr-2"
+                              className="text-primary hover:text-primary/80 text-xs mr-2"
                             >
                               All
                             </button>
@@ -400,7 +400,7 @@ export function RoleSettings() {
               <Button
                 onClick={handleSave}
                 disabled={saving || !formData.name}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 {saving ? 'Saving...' : editingRole ? 'Update Role' : 'Add Role'}
               </Button>
