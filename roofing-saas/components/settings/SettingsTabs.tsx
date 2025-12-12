@@ -42,77 +42,77 @@ export function SettingsTabs() {
           <TabsList className="bg-white border border-gray-200 p-1 h-auto">
             <TabsTrigger
               value="general"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Settings className="h-4 w-4" />
               General
             </TabsTrigger>
             <TabsTrigger
               value="branding"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Palette className="h-4 w-4" />
               Branding
             </TabsTrigger>
             <TabsTrigger
               value="pipeline"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Workflow className="h-4 w-4" />
               Pipeline
             </TabsTrigger>
             <TabsTrigger
               value="templates"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <FileText className="h-4 w-4" />
               Templates
             </TabsTrigger>
             <TabsTrigger
               value="roles"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Shield className="h-4 w-4" />
               Roles
             </TabsTrigger>
             <TabsTrigger
               value="substatus"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Tag className="h-4 w-4" />
               Substatus
             </TabsTrigger>
             <TabsTrigger
               value="filters"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Filter className="h-4 w-4" />
               Filters
             </TabsTrigger>
             <TabsTrigger
               value="admin"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <UserCog className="h-4 w-4" />
               Admin
             </TabsTrigger>
             <TabsTrigger
               value="automations"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Zap className="h-4 w-4" />
               Automations
             </TabsTrigger>
             <TabsTrigger
               value="integrations"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Plug className="h-4 w-4" />
               Integrations
             </TabsTrigger>
             <TabsTrigger
               value="gamification"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
             >
               <Trophy className="h-4 w-4" />
               Gamification
