@@ -380,7 +380,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     </Link>
                     <button
                       onClick={() => handleDelete(contact.id)}
-                      className="text-red-600 hover:text-red-900 ml-2"
+                      className="text-red-600 hover:text-red-700 ml-2"
                     >
                       Delete
                     </button>
