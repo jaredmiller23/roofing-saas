@@ -242,7 +242,7 @@ export function FilterSettings() {
   if (loading && configs.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -277,7 +277,7 @@ export function FilterSettings() {
             <select
               value={entityTypeFilter}
               onChange={(e) => setEntityTypeFilter(e.target.value as EntityType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               {ENTITY_TYPES.map(type => (
                 <option key={type} value={type} className="capitalize">
@@ -291,7 +291,7 @@ export function FilterSettings() {
               setFormData(prev => ({ ...prev, entity_type: entityTypeFilter }))
               setShowAddForm(true)
             }}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Filter
@@ -315,7 +315,7 @@ export function FilterSettings() {
                 value={formData.entity_type}
                 onChange={(e) => setFormData({ ...formData, entity_type: e.target.value as EntityType })}
                 disabled={!!editingConfig}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-muted"
               >
                 {ENTITY_TYPES.map(type => (
                   <option key={type} value={type}>
@@ -358,7 +358,7 @@ export function FilterSettings() {
               <select
                 value={formData.field_type}
                 onChange={(e) => setFormData({ ...formData, field_type: e.target.value as FilterFieldType })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {FIELD_TYPES.map(type => (
                   <option key={type.value} value={type.value}>
@@ -375,7 +375,7 @@ export function FilterSettings() {
               <select
                 value={formData.filter_operator}
                 onChange={(e) => setFormData({ ...formData, filter_operator: e.target.value as FilterOperator })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {OPERATORS.map(op => (
                   <option key={op.value} value={op.value}>
@@ -411,7 +411,7 @@ export function FilterSettings() {
                     {formData.filter_options.map((option, index) => (
                       <div
                         key={index}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-muted rounded-full text-sm"
                       >
                         <span className="font-medium">{option.label}</span>
                         <span className="text-muted-foreground">({option.value})</span>
@@ -462,7 +462,7 @@ export function FilterSettings() {
                     type="checkbox"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Active</span>
                 </label>
@@ -472,7 +472,7 @@ export function FilterSettings() {
                     type="checkbox"
                     checked={formData.is_quick_filter}
                     onChange={(e) => setFormData({ ...formData, is_quick_filter: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Quick Filter</span>
                   <span className="text-xs text-muted-foreground">(Show in filter bar)</span>
@@ -483,7 +483,7 @@ export function FilterSettings() {
                     type="checkbox"
                     checked={formData.is_advanced_filter}
                     onChange={(e) => setFormData({ ...formData, is_advanced_filter: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Advanced Filter</span>
                   <span className="text-xs text-muted-foreground">(Show in advanced panel)</span>
@@ -502,7 +502,7 @@ export function FilterSettings() {
             <Button
               onClick={handleSave}
               disabled={saving || !formData.field_name || !formData.field_label}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {saving ? 'Saving...' : editingConfig ? 'Update Filter' : 'Add Filter'}
             </Button>
@@ -579,7 +579,7 @@ export function FilterSettings() {
               setFormData(prev => ({ ...prev, entity_type: entityTypeFilter }))
               setShowAddForm(true)
             }}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Filter
@@ -605,7 +605,7 @@ function FilterConfigCard({
   return (
     <div
       className={`relative group p-4 border-2 rounded-lg hover:shadow-md transition-shadow ${
-        config.is_active ? 'border-blue-200' : 'border opacity-60'
+        config.is_active ? 'border-primary/30' : 'border opacity-60'
       }`}
     >
       <div className="flex items-start justify-between mb-2">
@@ -618,11 +618,11 @@ function FilterConfigCard({
       </div>
 
       <p className="text-xs text-muted-foreground mb-2">
-        Field: <code className="bg-gray-100 px-1 rounded">{config.field_name}</code>
+        Field: <code className="bg-muted px-1 rounded">{config.field_name}</code>
       </p>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="px-2 py-0.5 bg-gray-100 rounded capitalize">
+        <span className="px-2 py-0.5 bg-muted rounded capitalize">
           {config.field_type.replace('_', ' ')}
         </span>
         {config.is_quick_filter && (
