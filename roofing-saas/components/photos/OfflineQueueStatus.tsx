@@ -103,7 +103,7 @@ export default function OfflineQueueStatus() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-5">
-      <div className="bg-card rounded-lg shadow-lg border border-gray-200 p-4">
+      <div className="bg-card rounded-lg shadow-lg border border-border p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export default function OfflineQueueStatus() {
             {/* Pending */}
             {pendingCount > 0 && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Upload className="w-4 h-4 text-blue-600" />
+                <Upload className="w-4 h-4 text-primary" />
                 <span>
                   {pendingCount} photo{pendingCount !== 1 ? 's' : ''} queued
                 </span>
@@ -141,7 +141,7 @@ export default function OfflineQueueStatus() {
 
             {/* Syncing */}
             {syncingCount > 0 && (
-              <div className="flex items-center gap-2 text-sm text-blue-600">
+              <div className="flex items-center gap-2 text-sm text-primary">
                 <RefreshCw className="w-4 h-4 animate-spin" />
                 <span>
                   Uploading {syncingCount} photo{syncingCount !== 1 ? 's' : ''}...
@@ -170,7 +170,7 @@ export default function OfflineQueueStatus() {
 
         {/* Actions */}
         {isOnline && totalCount > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+          <div className="mt-3 pt-3 border-t border-border flex gap-2">
             {failedCount > 0 && (
               <button
                 onClick={handleRetry}
@@ -185,7 +185,7 @@ export default function OfflineQueueStatus() {
               <button
                 onClick={handleSync}
                 disabled={isProcessing}
-                className="flex-1 text-sm bg-blue-50 text-blue-700 px-3 py-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="flex-1 text-sm bg-primary/10 text-primary px-3 py-2 rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isProcessing ? 'Syncing...' : 'Sync Now'}
               </button>
@@ -197,7 +197,7 @@ export default function OfflineQueueStatus() {
         {syncingCount > 0 && (
           <div className="mt-3">
             <div className="h-1 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-blue-600 rounded-full animate-pulse" style={{ width: '60%' }} />
+              <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
           </div>
         )}
