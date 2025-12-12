@@ -64,7 +64,7 @@ export default async function IncentivesPage() {
                     <p className="text-xs text-muted-foreground">Hit weekly target</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-3 p-2 bg-blue-500/10 rounded-lg">
                   <Zap className="h-5 w-5 text-blue-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Streak Master</p>
@@ -89,7 +89,7 @@ export default async function IncentivesPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+              <div className="p-4 border-2 border-purple-500/30 rounded-lg bg-purple-500/10">
                 <div className="flex items-center justify-between mb-2">
                   <Trophy className="h-8 w-8 text-purple-600" />
                   <span className="text-2xl font-bold text-purple-900">1st</span>
@@ -99,7 +99,7 @@ export default async function IncentivesPage() {
                 <div className="text-xs text-purple-600 font-medium">Most knocks this week</div>
               </div>
 
-              <div className="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+              <div className="p-4 border-2 border-blue-500/30 rounded-lg bg-blue-500/10">
                 <div className="flex items-center justify-between mb-2">
                   <Target className="h-8 w-8 text-blue-600" />
                   <span className="text-2xl font-bold text-blue-900">2nd</span>
