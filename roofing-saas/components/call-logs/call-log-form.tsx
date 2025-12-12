@@ -151,7 +151,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               type="text"
               value={formData.disposition}
               onChange={(e) => setFormData({ ...formData, disposition: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="e.g., qualified, callback, appointment_set"
             />
           </div>
@@ -164,7 +164,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Call notes..."
             />
           </div>
