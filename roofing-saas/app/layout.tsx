@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "Clarity - Roofing CRM",
   description: "Complete roofing business management platform for CRM, field operations, and door-to-door sales",
   manifest: "/manifest.json",
-  themeColor: "#9333ea",
+  themeColor: "#FF8243",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

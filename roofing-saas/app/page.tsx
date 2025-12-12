@@ -294,8 +294,8 @@ const features = [
     title: 'AI Voice Assistant',
     description: 'Ask questions, create contacts, and update deals using natural voice commands. Hands-free CRM.',
     icon: Mic,
-    iconBg: 'bg-purple-500/10',
-    iconColor: 'text-purple-500',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
   },
 ];
 
