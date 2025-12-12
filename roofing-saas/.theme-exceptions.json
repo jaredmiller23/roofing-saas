@@ -44,6 +44,7 @@
     "app/(auth)/auth/update-password/page.tsx:110:text-white",
     "components/settings/PipelineSettings.tsx:196:text-white",
     "components/tasks/TaskBoard.tsx:154:text-white",
+    "components/territories/TerritoryForm.tsx:249:text-white",
     "components/ui/badge.tsx:*:bg-green-500",
     "components/ui/badge.tsx:*:bg-red-500",
     "components/ui/badge.tsx:*:bg-orange-500",

@@ -156,7 +156,7 @@ export function TerritoryForm({
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g., Downtown Nashville"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -171,7 +171,7 @@ export function TerritoryForm({
                 onChange={handleChange}
                 rows={3}
                 placeholder="Describe this territory, key landmarks, or notes..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -186,7 +186,7 @@ export function TerritoryForm({
                 value={formData.assigned_to}
                 onChange={handleChange}
                 placeholder="UUID of assigned user (optional)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Leave blank for unassigned. User must belong to your organization.
@@ -199,7 +199,7 @@ export function TerritoryForm({
             <h3 className="text-sm font-medium text-foreground mb-3">Boundary Data</h3>
 
             {formData.boundary_data ? (
-              <div className="bg-gray-50 border border rounded-md p-4">
+              <div className="bg-muted/30 border border rounded-md p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">
@@ -246,7 +246,7 @@ export function TerritoryForm({
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading
                 ? 'Saving...'
@@ -264,7 +264,7 @@ export function TerritoryForm({
                 }
               }}
               disabled={loading}
-              className="px-6 py-2 border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
+              className="px-6 py-2 border border-border text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
             >
               Cancel
             </button>
