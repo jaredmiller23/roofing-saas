@@ -195,7 +195,7 @@
   --sidebar-ring: #FF8243;
 }
 
-/* Light mode override (for future theme toggle) */
+/* Light mode override (for future theme toggle) - Coral Jade themed */
 .light {
   --background: #fafafa;
   --foreground: #0a0a0f;
@@ -203,31 +203,31 @@
   --card-foreground: #0a0a0f;
   --popover: #ffffff;
   --popover-foreground: #0a0a0f;
-  --primary: #9333ea;
+  --primary: #FF8243;  /* Coral - matching dark mode */
   --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #0a0a0f;
+  --secondary: #2D7A7A;  /* Teal - matching dark mode */
+  --secondary-foreground: #ffffff;
   --muted: #f3f4f6;
   --muted-foreground: rgba(0, 0, 0, 0.5);
   --accent: #e5e7eb;
   --accent-foreground: #0a0a0f;
   --destructive: #dc2626;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: rgba(0, 0, 0, 0.1);
-  --ring: #9333ea;
-  --chart-1: #9333ea;
-  --chart-2: #14b8a6;
-  --chart-3: #f97316;
-  --chart-4: #2563eb;
-  --chart-5: #16a34a;
+  --border: rgba(201, 112, 90, 0.2);  /* Terracotta tint */
+  --input: rgba(201, 112, 90, 0.2);
+  --ring: #FF8243;  /* Coral focus ring */
+  --chart-1: #FF8243;  /* Coral */
+  --chart-2: #2D7A7A;  /* Teal */
+  --chart-3: #C9705A;  /* Terracotta */
+  --chart-4: #7DD3D3;  /* Cyan */
+  --chart-5: #4A3428;  /* Brown */
   --sidebar: #ffffff;
   --sidebar-foreground: #0a0a0f;
-  --sidebar-primary: #9333ea;
+  --sidebar-primary: #FF8243;  /* Coral */
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f3f4f6;
   --sidebar-accent-foreground: #0a0a0f;
-  --sidebar-border: rgba(0, 0, 0, 0.1);
-  --sidebar-ring: #9333ea;
+  --sidebar-border: rgba(201, 112, 90, 0.2);
+  --sidebar-ring: #FF8243;
 }
 
 @layer base {
