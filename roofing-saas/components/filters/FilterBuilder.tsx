@@ -70,7 +70,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             value={value as string}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Enter value..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           />
         )
@@ -86,7 +86,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 value={min}
                 onChange={(e) => setValue([Number(e.target.value), max])}
                 placeholder="Min"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
               <span className="text-muted-foreground">to</span>
@@ -95,7 +95,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 value={max}
                 onChange={(e) => setValue([min, Number(e.target.value)])}
                 placeholder="Max"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -107,7 +107,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             value={value as number}
             onChange={(e) => setValue(Number(e.target.value))}
             placeholder="Enter number..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           />
         )
@@ -122,7 +122,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 type="date"
                 value={start}
                 onChange={(e) => setValue([e.target.value, end])}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
               <span className="text-muted-foreground">to</span>
@@ -130,7 +130,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 type="date"
                 value={end}
                 onChange={(e) => setValue([start, e.target.value])}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -141,7 +141,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             type="date"
             value={value as string}
             onChange={(e) => setValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           />
         )
@@ -151,7 +151,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
           <select
             value={String(value)}
             onChange={(e) => setValue(e.target.value === 'true')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           >
             <option value="">Select...</option>
@@ -165,7 +165,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
           <select
             value={value as string}
             onChange={(e) => setValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           >
             <option value="">Select...</option>
@@ -183,7 +183,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             multiple
             value={value as string[]}
             onChange={(e) => setValue(Array.from(e.target.selectedOptions, option => option.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px]"
             required
           >
             {config.filter_options.map((option) => (
@@ -201,7 +201,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             value={value as string}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Enter value..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             required
           />
         )
@@ -246,7 +246,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                       setOperator(selected.filter_operator)
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   <option value="">Select a field...</option>
@@ -269,7 +269,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                   <select
                     value={operator}
                     onChange={(e) => setOperator(e.target.value as FilterOperator)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   >
                     {getOperatorsForFieldType(config.field_type).map((op) => (
