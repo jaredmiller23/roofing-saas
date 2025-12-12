@@ -107,6 +107,7 @@
     "components/contacts/*:*:text-green-",
     "components/contacts/*:*:text-red-",
     "components/jobs/job-form.tsx:369:text-white",
+    "components/jobs/jobs-table.tsx:155:text-white",
     "components/events/event-form.tsx:356:text-white",
     "components/contacts/contact-form.tsx:512:text-white",
     "app/(dashboard)/financial/commissions/add-commission-dialog.tsx:183:text-white",
