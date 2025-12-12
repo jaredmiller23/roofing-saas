@@ -92,7 +92,7 @@ export default async function JobDetailPage({
             </div>
             <Link
               href={`/jobs/${job.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
             >
               Edit
             </Link>
@@ -129,7 +129,7 @@ export default async function JobDetailPage({
               <div className="flex items-center gap-2">
                 <div className="w-24 bg-muted rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-primary h-2 rounded-full"
                     style={{ width: `${job.completion_percentage}%` }}
                   ></div>
                 </div>
@@ -249,7 +249,7 @@ export default async function JobDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/jobs"
-            className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background"
+            className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-background"
           >
             Back to Jobs
           </Link>
