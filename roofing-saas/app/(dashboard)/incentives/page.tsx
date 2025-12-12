@@ -64,8 +64,8 @@ export default async function IncentivesPage() {
                     <p className="text-xs text-muted-foreground">Hit weekly target</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 bg-blue-500/10 rounded-lg">
-                  <Zap className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center gap-3 p-2 bg-primary/10 rounded-lg">
+                  <Zap className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Streak Master</p>
                     <p className="text-xs text-muted-foreground">5 days in a row</p>
@@ -80,7 +80,7 @@ export default async function IncentivesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-purple-600" />
+              <Award className="h-5 w-5 text-secondary" />
               Current Rewards & Prizes
             </CardTitle>
             <CardDescription>
@@ -89,24 +89,24 @@ export default async function IncentivesPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 border-2 border-purple-500/30 rounded-lg bg-purple-500/10">
+              <div className="p-4 border-2 border-secondary/30 rounded-lg bg-secondary/10">
                 <div className="flex items-center justify-between mb-2">
-                  <Trophy className="h-8 w-8 text-purple-600" />
-                  <span className="text-2xl font-bold text-purple-900">1st</span>
+                  <Trophy className="h-8 w-8 text-secondary" />
+                  <span className="text-2xl font-bold text-secondary">1st</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Weekly Winner</h3>
                 <p className="text-sm text-muted-foreground mb-3">$500 bonus + paid day off</p>
-                <div className="text-xs text-purple-600 font-medium">Most knocks this week</div>
+                <div className="text-xs text-secondary font-medium">Most knocks this week</div>
               </div>
 
-              <div className="p-4 border-2 border-blue-500/30 rounded-lg bg-blue-500/10">
+              <div className="p-4 border-2 border-primary/30 rounded-lg bg-primary/10">
                 <div className="flex items-center justify-between mb-2">
-                  <Target className="h-8 w-8 text-blue-600" />
-                  <span className="text-2xl font-bold text-blue-900">2nd</span>
+                  <Target className="h-8 w-8 text-primary" />
+                  <span className="text-2xl font-bold text-primary">2nd</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Sales Champion</h3>
                 <p className="text-sm text-muted-foreground mb-3">$300 bonus + gift card</p>
-                <div className="text-xs text-blue-600 font-medium">Most sales this week</div>
+                <div className="text-xs text-primary font-medium">Most sales this week</div>
               </div>
 
               <div className="p-4 border-2 border-green-200 rounded-lg bg-green-50">
