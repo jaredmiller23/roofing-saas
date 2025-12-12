@@ -29,12 +29,12 @@ export default async function MessagesPage() {
         <div className="p-4 border-b border-border bg-background">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <MessageSquare className="h-6 w-6 text-blue-600" />
+              <MessageSquare className="h-6 w-6 text-primary" />
               <h1 className="text-2xl font-bold">Messages</h1>
             </div>
             <Link
               href="/contacts"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium text-sm"
             >
               <Plus className="h-4 w-4" />
               New Conversation
@@ -58,7 +58,7 @@ export default async function MessagesPage() {
           </p>
           <Link
             href="/contacts"
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
           >
             View Contacts
           </Link>

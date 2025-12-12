@@ -121,6 +121,8 @@
     "components/project-files/project-file-form.tsx:212:text-white",
     "components/project-files/project-file-form.tsx:292:text-white",
     "components/sms/SMSComposer.tsx:299:text-white",
+    "app/(dashboard)/messages/page.tsx:37:text-white",
+    "app/(dashboard)/messages/page.tsx:61:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
