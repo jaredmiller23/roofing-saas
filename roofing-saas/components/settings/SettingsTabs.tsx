@@ -12,6 +12,7 @@ import { FilterSettings } from './FilterSettings'
 import { AdminSettings } from './AdminSettings'
 import { AutomationSettings } from './AutomationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
+import { GamificationSettings } from './GamificationSettings'
 import {
   Settings,
   Palette,
@@ -22,7 +23,8 @@ import {
   Filter,
   UserCog,
   Zap,
-  Plug
+  Plug,
+  Trophy
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -108,6 +110,13 @@ export function SettingsTabs() {
               <Plug className="h-4 w-4" />
               Integrations
             </TabsTrigger>
+            <TabsTrigger
+              value="gamification"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-2"
+            >
+              <Trophy className="h-4 w-4" />
+              Gamification
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -148,6 +157,10 @@ export function SettingsTabs() {
 
           <TabsContent value="integrations">
             <IntegrationsSettings />
+          </TabsContent>
+
+          <TabsContent value="gamification">
+            <GamificationSettings />
           </TabsContent>
         </Tabs>
       </div>

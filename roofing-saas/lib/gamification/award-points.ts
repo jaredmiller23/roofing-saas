@@ -1,6 +1,9 @@
 /**
  * Gamification Points Helper
  * Reusable function to award points for user actions
+ *
+ * Updated: Dynamic point lookup from point_rule_configs table
+ * Fallback: Hardcoded POINT_VALUES for backwards compatibility
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -42,6 +45,51 @@ export const POINT_VALUES = {
   FIRST_ACTIVITY_OF_DAY: 5,
   EARLY_BIRD_BONUS: 10, // Log activity before 9 AM
 } as const
+
+/**
+ * Get point value for an action type from database
+ * Falls back to POINT_VALUES if not found
+ *
+ * @param orgId - Organization ID
+ * @param actionType - Action type to look up (e.g., 'CONTACT_CREATED')
+ * @returns Points value or 0 if not found
+ */
+export async function getPointValueForAction(
+  orgId: string,
+  actionType: string
+): Promise<number> {
+  try {
+    const supabase = await createClient()
+
+    // Try to get from database first
+    const { data, error } = await supabase
+      .from('point_rule_configs')
+      .select('points_value')
+      .eq('org_id', orgId)
+      .eq('action_type', actionType)
+      .eq('is_active', true)
+      .single()
+
+    if (!error && data) {
+      logger.info('Dynamic point lookup', { org_id: orgId, action_type: actionType, points: data.points_value })
+      return data.points_value
+    }
+
+    // Fallback to hardcoded values
+    const fallbackValue = POINT_VALUES[actionType.toUpperCase() as keyof typeof POINT_VALUES]
+    if (fallbackValue) {
+      logger.info('Fallback to hardcoded point value', { action_type: actionType, points: fallbackValue })
+      return fallbackValue
+    }
+
+    logger.warn('No point value found for action', { org_id: orgId, action_type: actionType })
+    return 0
+  } catch (error) {
+    logger.error('Point value lookup error', { error, org_id: orgId, action_type: actionType })
+    // Fallback to hardcoded on error
+    return POINT_VALUES[actionType.toUpperCase() as keyof typeof POINT_VALUES] || 0
+  }
+}
 
 /**
  * Award points to a user
