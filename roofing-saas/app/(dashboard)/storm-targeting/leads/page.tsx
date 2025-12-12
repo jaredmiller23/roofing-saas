@@ -333,7 +333,7 @@ export default function StormLeadsPage() {
                     <div className="text-sm text-muted-foreground">Need Data</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.selected}</div>
+                    <div className="text-2xl font-bold text-primary">{stats.selected}</div>
                     <div className="text-sm text-muted-foreground">Selected</div>
                   </div>
                 </div>
