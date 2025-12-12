@@ -68,7 +68,7 @@ export function WeeklyChallengeWidget() {
       case 2:
         return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white'
       default:
-        return 'bg-gray-100 text-muted-foreground'
+        return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -103,7 +103,7 @@ export function WeeklyChallengeWidget() {
           <h3 className="text-lg font-bold text-foreground">This Week&apos;s Challenge</h3>
           <p className="text-sm text-purple-700 font-medium mt-0.5">{getChallengeTitle()}</p>
         </div>
-        <div className="bg-purple-600 text-white rounded-full p-3">
+        <div className="bg-primary text-white rounded-full p-3">
           <Trophy className="h-6 w-6" />
         </div>
       </div>
@@ -117,7 +117,7 @@ export function WeeklyChallengeWidget() {
               className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                 index === 0
                   ? 'bg-card border-yellow-300 shadow-md'
-                  : 'bg-card border hover:border-gray-300'
+                  : 'bg-card border hover:border-border'
               }`}
             >
               {/* Rank Medal */}

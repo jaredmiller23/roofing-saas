@@ -104,7 +104,7 @@ export function Leaderboard({
       badges.push({
         icon: <Zap className="h-3 w-3" />,
         label: 'High Achiever',
-        color: 'bg-purple-100 text-purple-800'
+        color: 'bg-primary/10 text-primary'
       })
     }
 
@@ -122,7 +122,7 @@ export function Leaderboard({
       badges.push({
         icon: <Target className="h-3 w-3" />,
         label: 'Consistent Closer',
-        color: 'bg-blue-100 text-blue-800'
+        color: 'bg-primary/10 text-primary'
       })
     }
 
@@ -141,8 +141,8 @@ export function Leaderboard({
               onClick={() => setSelectedPeriod(p)}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 selectedPeriod === p
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-muted-foreground hover:bg-muted'
+                  ? 'bg-primary text-white'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -153,8 +153,8 @@ export function Leaderboard({
 
       {/* Current User Rank */}
       {currentUserRank && (
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-900">
+        <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/30">
+          <p className="text-sm text-primary">
             Your rank: <span className="font-bold">#{currentUserRank}</span>
           </p>
         </div>
@@ -181,7 +181,7 @@ export function Leaderboard({
               key={entry.user_id}
               className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                 entry.isCurrentUser
-                  ? 'bg-blue-50 border border-blue-200'
+                  ? 'bg-primary/10 border border-primary/30'
                   : 'hover:bg-accent'
               }`}
             >
@@ -245,7 +245,7 @@ export function Leaderboard({
       {/* Empty State */}
       {!loading && leaderboard.length === 0 && (
         <div className="text-center py-8">
-          <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+          <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No leaderboard data available</p>
         </div>
       )}

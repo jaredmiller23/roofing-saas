@@ -79,7 +79,7 @@ export function PointsDisplay() {
 
       {/* Daily, Weekly, Monthly Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
+        <div className="text-center p-3 bg-muted/30 rounded-lg">
           <div className="flex items-center justify-center mb-1">
             <Target className="h-4 w-4 text-muted-foreground mr-1" />
             <span className="text-xs text-muted-foreground">Daily</span>
@@ -89,7 +89,7 @@ export function PointsDisplay() {
           </p>
         </div>
 
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
+        <div className="text-center p-3 bg-muted/30 rounded-lg">
           <div className="flex items-center justify-center mb-1">
             <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
             <span className="text-xs text-muted-foreground">Weekly</span>
@@ -99,7 +99,7 @@ export function PointsDisplay() {
           </p>
         </div>
 
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
+        <div className="text-center p-3 bg-muted/30 rounded-lg">
           <div className="flex items-center justify-center mb-1">
             <Trophy className="h-4 w-4 text-muted-foreground mr-1" />
             <span className="text-xs text-muted-foreground">Monthly</span>

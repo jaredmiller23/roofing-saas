@@ -9,7 +9,7 @@ interface DashboardScopeFilterProps {
 
 export function DashboardScopeFilter({ currentScope, onScopeChange }: DashboardScopeFilterProps) {
   return (
-    <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+    <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
       <button
         onClick={() => onScopeChange('user')}
         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
