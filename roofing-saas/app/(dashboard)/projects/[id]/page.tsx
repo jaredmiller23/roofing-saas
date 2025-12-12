@@ -183,12 +183,12 @@ export default function ProjectDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      lead: 'bg-blue-100 text-blue-800',
+      lead: 'bg-primary/10 text-primary',
       won: 'bg-green-100 text-green-800',
       lost: 'bg-red-100 text-red-800',
       proposal: 'bg-yellow-100 text-yellow-800',
-      negotiation: 'bg-purple-100 text-purple-800',
-      estimate: 'bg-blue-100 text-blue-800',
+      negotiation: 'bg-secondary/10 text-secondary',
+      estimate: 'bg-primary/10 text-primary',
       approved: 'bg-green-100 text-green-800',
       in_progress: 'bg-yellow-100 text-yellow-800',
       completed: 'bg-green-100 text-green-800',
@@ -196,7 +196,7 @@ export default function ProjectDetailPage() {
     }
 
     return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status as keyof typeof colors] || 'bg-muted text-gray-800'}`}>
+      <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status as keyof typeof colors] || 'bg-muted text-foreground'}`}>
         {status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
       </span>
     )
@@ -205,7 +205,7 @@ export default function ProjectDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -217,7 +217,7 @@ export default function ProjectDetailPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">Project not found</p>
           </div>
-          <Link href="/projects" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
+          <Link href="/projects" className="text-primary hover:text-primary/80 mt-4 inline-block">
             ← Back to Projects
           </Link>
         </div>
@@ -236,7 +236,7 @@ export default function ProjectDetailPage() {
         <div className="mb-6">
           <Link
             href="/projects"
-            className="text-sm text-blue-600 hover:text-blue-800 mb-4 inline-block"
+            className="text-sm text-primary hover:text-primary/80 mb-4 inline-block"
           >
             ← Back to Projects
           </Link>
@@ -311,7 +311,7 @@ export default function ProjectDetailPage() {
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Jobs</span>
               {jobs.length > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                <span className="ml-1 px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
                   {jobs.length}
                 </span>
               )}
@@ -405,7 +405,7 @@ export default function ProjectDetailPage() {
                             <div className="flex items-start justify-between mb-1">
                               <div>
                                 {activity.subject && (
-                                  <p className="text-sm font-medium text-gray-800">{activity.subject}</p>
+                                  <p className="text-sm font-medium text-foreground">{activity.subject}</p>
                                 )}
                                 <p className="text-xs text-muted-foreground">{formatDate(activity.created_at)}</p>
                               </div>
@@ -445,7 +445,7 @@ export default function ProjectDetailPage() {
                         project.pipeline_stage === 'production' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
                         project.pipeline_stage === 'complete' ? 'bg-green-100 text-green-800 border border-green-200' :
                         project.pipeline_stage === 'lost' ? 'bg-red-100 text-red-800 border border-red-200' :
-                        'bg-blue-100 text-blue-800 border border-blue-200'
+                        'bg-primary/10 text-primary border border-primary/30'
                       }`}>
                         {STAGE_DISPLAY_NAMES[project.pipeline_stage] || project.pipeline_stage}
                       </div>
@@ -557,7 +557,7 @@ export default function ProjectDetailPage() {
                           <div className="text-xs text-muted-foreground mb-1">Progress</div>
                           <div className="w-full bg-muted rounded-full h-2">
                             <div
-                              className="bg-blue-600 h-2 rounded-full"
+                              className="bg-primary h-2 rounded-full"
                               style={{ width: `${job.completion_percentage || 0}%` }}
                             />
                           </div>
