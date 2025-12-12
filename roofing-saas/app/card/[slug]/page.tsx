@@ -167,7 +167,7 @@ export default function PublicCardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -175,7 +175,7 @@ export default function PublicCardPage() {
 
   if (!card) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <Card className="max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground">Card not found</p>

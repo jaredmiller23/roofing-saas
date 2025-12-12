@@ -161,6 +161,8 @@
     "components/territories/TerritoryList.tsx:313:text-white",
     "components/photos/PhotoUpload.tsx:327:text-white",
     "components/photos/PhotoUpload.tsx:346:text-white",
+    "app/card/[slug]/page.tsx:223:text-white",
+    "app/card/[slug]/page.tsx:265:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
