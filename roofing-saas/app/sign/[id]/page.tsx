@@ -101,9 +101,9 @@ export default function SignDocumentPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading document...</p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function SignDocumentPage() {
 
   if (error && !document) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Alert className="max-w-md bg-red-50 border-red-200">
           <XCircle className="h-5 w-5 text-red-600" />
           <AlertDescription className="text-red-900">{error}</AlertDescription>
@@ -123,8 +123,8 @@ export default function SignDocumentPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-8 text-center">
           <div className="mb-6">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -183,14 +183,35 @@ export default function SignDocumentPage() {
     const config = statusConfig[status]
     const Icon = config.icon
 
+    const containerStyles = {
+      expired: 'bg-yellow-100 border-yellow-300',
+      signed: 'bg-green-100 border-green-300',
+      declined: 'bg-red-100 border-red-300'
+    }
+    const iconStyles = {
+      expired: 'text-yellow-600',
+      signed: 'text-green-600',
+      declined: 'text-red-600'
+    }
+    const titleStyles = {
+      expired: 'text-yellow-900',
+      signed: 'text-green-900',
+      declined: 'text-red-900'
+    }
+    const textStyles = {
+      expired: 'text-yellow-700',
+      signed: 'text-green-700',
+      declined: 'text-red-700'
+    }
+
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className={`max-w-md w-full bg-${config.color}-50 border border-${config.color}-200 rounded-lg p-8 text-center`}>
-          <Icon className={`h-12 w-12 text-${config.color}-600 mx-auto mb-4`} />
-          <h1 className={`text-2xl font-bold text-${config.color}-900 mb-2`}>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className={`max-w-md w-full ${containerStyles[status]} border rounded-lg p-8 text-center`}>
+          <Icon className={`h-12 w-12 ${iconStyles[status]} mx-auto mb-4`} />
+          <h1 className={`text-2xl font-bold ${titleStyles[status]} mb-2`}>
             {config.title}
           </h1>
-          <p className={`text-${config.color}-700`}>
+          <p className={textStyles[status]}>
             {config.message}
           </p>
         </div>
@@ -199,13 +220,13 @@ export default function SignDocumentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <FileText className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <FileText className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -244,9 +265,9 @@ export default function SignDocumentPage() {
 
         {/* Document Preview */}
         {document.file_url && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Document Preview</h2>
-            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+            <div className="border border-border rounded-lg p-4 bg-muted">
               <embed
                 src={document.file_url}
                 type="application/pdf"
@@ -265,7 +286,7 @@ export default function SignDocumentPage() {
 
         {/* Signer Information */}
         {!showSignature && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Information</h2>
             <div className="space-y-4">
               <div>
@@ -296,7 +317,7 @@ export default function SignDocumentPage() {
                   id="signer-type"
                   value={signerType}
                   onChange={(e) => setSignerType(e.target.value as 'customer' | 'company')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="customer">Customer</option>
                   <option value="company">Company Representative</option>
@@ -307,7 +328,7 @@ export default function SignDocumentPage() {
             <Button
               onClick={() => setShowSignature(true)}
               disabled={!signerName || !signerEmail}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
+              className="w-full mt-6 bg-primary hover:bg-primary/90"
             >
               Proceed to Sign
             </Button>
