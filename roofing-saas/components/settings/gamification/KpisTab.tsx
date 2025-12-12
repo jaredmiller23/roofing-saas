@@ -125,7 +125,7 @@ export function KpisTab() {
             <div className="text-center py-8 text-muted-foreground">Loading KPIs...</div>
           ) : systemKpis.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No system KPIs found</p>
               <p className="text-sm mt-1">Run database seed to add pre-built KPIs</p>
             </div>

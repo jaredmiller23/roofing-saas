@@ -346,7 +346,7 @@ export function AchievementsTab() {
             <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>
           ) : achievements.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No achievements yet</p>
               <p className="text-sm mt-1">Use the templates above to get started</p>
             </div>

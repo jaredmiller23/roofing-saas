@@ -357,7 +357,7 @@ export function ChallengesTab() {
         <Card>
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
-              <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No challenges yet</p>
               <p className="text-sm mt-1">Use the templates above to get started</p>
             </div>
@@ -367,7 +367,7 @@ export function ChallengesTab() {
         <Card>
           <CardContent className="py-8">
             <div className="text-center text-muted-foreground">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No active or upcoming challenges</p>
               <p className="text-sm mt-1">{completedChallenges.length} completed</p>
             </div>

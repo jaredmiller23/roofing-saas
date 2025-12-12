@@ -347,7 +347,7 @@ export function PointRulesTab() {
             <div className="text-center py-8 text-muted-foreground">Loading point rules...</div>
           ) : pointRules.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No point rules yet</p>
               <p className="text-sm mt-1">Use the templates above to get started</p>
             </div>
