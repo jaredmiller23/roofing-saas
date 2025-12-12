@@ -219,7 +219,7 @@ export function TerritoryForm({
                 </div>
               </div>
             ) : (
-              <div className="bg-gray-50 border border rounded-md p-4 text-center">
+              <div className="bg-muted/30 border border rounded-md p-4 text-center">
                 <svg
                   className="mx-auto h-8 w-8 text-muted-foreground"
                   fill="none"
