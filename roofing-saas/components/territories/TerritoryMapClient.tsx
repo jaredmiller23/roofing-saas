@@ -234,8 +234,8 @@ function TerritoryMapClient({
   if (!isLoaded) {
     return (
       <div className={`relative ${className}`} style={{ height }}>
-        <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="flex items-center justify-center h-full bg-muted rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     )
