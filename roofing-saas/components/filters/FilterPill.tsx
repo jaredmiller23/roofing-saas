@@ -47,13 +47,13 @@ export function FilterPill({ filter, onRemove }: FilterPillProps) {
   const operator = formatOperator(filter.operator)
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-      <span className="font-medium text-blue-900">{filter.field_label}</span>
-      <span className="text-blue-600">{operator}</span>
-      <span className="text-blue-900">{displayValue}</span>
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg text-sm">
+      <span className="font-medium text-foreground">{filter.field_label}</span>
+      <span className="text-primary">{operator}</span>
+      <span className="text-foreground">{displayValue}</span>
       <button
         onClick={onRemove}
-        className="ml-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full p-0.5 transition-colors"
+        className="ml-1 text-primary hover:text-primary/80 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
         aria-label="Remove filter"
       >
         <X className="h-3.5 w-3.5" />
