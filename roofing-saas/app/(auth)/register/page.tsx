@@ -104,7 +104,7 @@ export default function RegisterPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className="rounded-md bg-red-500/10 p-4">
               <div className="text-sm text-red-800">{error}</div>
             </div>
           )}
