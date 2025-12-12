@@ -21,7 +21,7 @@ export default function VoiceAssistantPage() {
         </p>
 
         {/* Provider Selection */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+        <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <h3 className="text-sm font-semibold text-foreground mb-3">Voice Provider</h3>
           <div className="flex items-center gap-4">
             {providers.map((provider) => (
@@ -30,13 +30,13 @@ export default function VoiceAssistantPage() {
                 onClick={() => setSelectedProvider(provider.type)}
                 className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   selectedProvider === provider.type
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-primary text-white shadow-md'
                     : 'bg-white text-muted-foreground hover:bg-background border border'
                 }`}
               >
                 <div className="text-left">
                   <div className="font-semibold">{provider.name}</div>
-                  <div className={`text-xs mt-1 ${selectedProvider === provider.type ? 'text-blue-100' : 'text-muted-foreground'}`}>
+                  <div className={`text-xs mt-1 ${selectedProvider === provider.type ? 'text-white/80' : 'text-muted-foreground'}`}>
                     ${provider.costPerMinute.toFixed(2)}/min
                     {provider.type === 'elevenlabs' && ' (73% savings)'}
                   </div>
@@ -61,7 +61,7 @@ export default function VoiceAssistantPage() {
 
         {/* Feature list */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="p-4 bg-primary/10 rounded-lg">
             <h3 className="font-semibold text-foreground mb-2">Create Contacts</h3>
             <p className="text-sm text-muted-foreground">
               &quot;Create a new contact named John Smith at 123 Main Street&quot;
@@ -75,7 +75,7 @@ export default function VoiceAssistantPage() {
             </p>
           </div>
 
-          <div className="p-4 bg-purple-50 rounded-lg">
+          <div className="p-4 bg-secondary/10 rounded-lg">
             <h3 className="font-semibold text-foreground mb-2">Search Contacts</h3>
             <p className="text-sm text-muted-foreground">
               &quot;Find John Smith&quot; or &quot;Search for 123 Main Street&quot;
