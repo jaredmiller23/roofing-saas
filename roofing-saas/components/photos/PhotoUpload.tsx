@@ -319,7 +319,7 @@ export function PhotoUpload({
                 ref={videoRef}
                 autoPlay
                 playsInline
-                className="w-full rounded-lg bg-gray-900"
+                className="w-full rounded-lg bg-background"
               />
               <div className="mt-4 flex gap-2">
                 <button

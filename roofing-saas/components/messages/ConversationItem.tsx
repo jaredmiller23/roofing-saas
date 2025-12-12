@@ -67,7 +67,7 @@ export function ConversationItem({ conversation, isActive, onClick }: Conversati
           </div>
 
           {hasUnread && (
-            <Badge variant="default" className="bg-blue-600 text-white shrink-0">
+            <Badge variant="default" className="bg-primary text-white shrink-0">
               {conversation.unread_count}
             </Badge>
           )}

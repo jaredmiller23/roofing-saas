@@ -81,7 +81,7 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
                     <FilterOption
                       key={filter.id}
                       filter={filter}
-                      icon={<Users className="h-4 w-4 text-blue-500" />}
+                      icon={<Users className="h-4 w-4 text-primary" />}
                       onSelect={() => {
                         onSelect(filter.id)
                         setIsOpen(false)
@@ -128,7 +128,7 @@ function FilterOption({ filter, icon, onSelect }: FilterOptionProps) {
   return (
     <button
       onClick={onSelect}
-      className="w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-gray-100 rounded-md transition-colors group"
+      className="w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-muted rounded-md transition-colors group"
     >
       <div className="mt-0.5">{icon}</div>
       <div className="flex-1 min-w-0">

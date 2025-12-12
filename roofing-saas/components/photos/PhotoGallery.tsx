@@ -134,7 +134,7 @@ export function PhotoGallery({
           <button
             onClick={fetchPhotos}
             disabled={loading}
-            className="px-3 py-1 text-sm border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
+            className="px-3 py-1 text-sm border border-border text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Refresh'}
           </button>
@@ -151,7 +151,7 @@ export function PhotoGallery({
         {/* Loading state */}
         {loading && photos.length === 0 && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         )}
 

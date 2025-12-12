@@ -187,6 +187,8 @@
     "components/settings/BrandingSettings.tsx:279:text-white",
     "components/settings/BrandingSettings.tsx:289:text-white",
     "components/settings/BrandingSettings.tsx:299:text-white",
+    "components/impersonation/ImpersonationBanner.tsx:*:text-white",
+    "components/messages/ConversationItem.tsx:70:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
