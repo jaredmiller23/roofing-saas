@@ -114,6 +114,8 @@
     "app/(dashboard)/events/page.tsx:95:text-white",
     "components/contacts/contacts-table.tsx:189:text-white",
     "components/contacts/contacts-table.tsx:261:text-white",
+    "components/projects/leads-table.tsx:238:text-white",
+    "components/projects/leads-table.tsx:314:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

@@ -198,14 +198,14 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
   const getLeadScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-50'
-    if (score >= 60) return 'text-blue-600 bg-blue-50'
+    if (score >= 60) return 'text-primary bg-primary/10'
     if (score >= 40) return 'text-yellow-600 bg-yellow-50'
-    return 'text-muted-foreground bg-gray-50'
+    return 'text-muted-foreground bg-muted'
   }
 
   const getStageColor = (stage: string) => {
     const colors: Record<string, string> = {
-      lead: 'bg-blue-100 text-blue-800',
+      lead: 'bg-primary/10 text-primary',
       active: 'bg-yellow-100 text-yellow-800',
       customer: 'bg-green-100 text-green-800',
       lost: 'bg-muted text-muted-foreground',
@@ -235,7 +235,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         <div className="text-muted-foreground mb-4">No leads found</div>
         <Link
           href="/contacts/new"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
         >
           Create your first lead
         </Link>
@@ -246,12 +246,12 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
       onClick={() => handleSort(field)}
-      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/10 select-none"
     >
       <div className="flex items-center gap-1">
         {children}
         {sortField === field && (
-          <span className="text-blue-600">
+          <span className="text-primary">
             {sortDirection === 'asc' ? '↑' : '↓'}
           </span>
         )}
@@ -267,17 +267,17 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       {/* Stats */}
       <div className="bg-card rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 rounded-lg p-3">
-            <div className="text-sm text-blue-600 font-medium">Total Leads</div>
-            <div className="text-2xl font-bold text-blue-900">{total}</div>
+          <div className="bg-primary/10 rounded-lg p-3">
+            <div className="text-sm text-primary font-medium">Total Leads</div>
+            <div className="text-2xl font-bold text-primary">{total}</div>
           </div>
           <div className="bg-green-50 rounded-lg p-3">
             <div className="text-sm text-green-600 font-medium">Pipeline Value</div>
             <div className="text-2xl font-bold text-green-900">{formatCurrency(totalPipelineValue)}</div>
           </div>
-          <div className="bg-purple-50 rounded-lg p-3">
-            <div className="text-sm text-purple-600 font-medium">Avg. Value</div>
-            <div className="text-2xl font-bold text-purple-900">
+          <div className="bg-secondary/10 rounded-lg p-3">
+            <div className="text-sm text-secondary font-medium">Avg. Value</div>
+            <div className="text-2xl font-bold text-secondary">
               {formatCurrency(leads.length > 0 ? totalPipelineValue / leads.length : 0)}
             </div>
           </div>
@@ -287,8 +287,8 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       {/* Table */}
       <div className="bg-card rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
                 <SortableHeader field="name">Lead</SortableHeader>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -305,19 +305,19 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-card divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {leads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-accent">
                   {/* Lead Name & Score */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold">
                         {lead.first_name.charAt(0)}{lead.last_name.charAt(0)}
                       </div>
                       <div>
                         <Link
                           href={`/contacts/${lead.id}`}
-                          className="text-blue-600 hover:text-blue-900 font-medium"
+                          className="text-primary hover:text-primary/80 font-medium"
                         >
                           {lead.first_name} {lead.last_name}
                         </Link>
@@ -405,7 +405,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                       {(lead.phone || lead.mobile_phone) && (
                         <a
                           href={`sms:${lead.phone || lead.mobile_phone}`}
-                          className="inline-flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
+                          className="inline-flex items-center justify-center w-8 h-8 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
                           title="Text"
                         >
                           <MessageSquare className="h-4 w-4" />
@@ -414,16 +414,16 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                       {lead.email && (
                         <a
                           href={`mailto:${lead.email}`}
-                          className="inline-flex items-center justify-center w-8 h-8 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md transition-colors"
+                          className="inline-flex items-center justify-center w-8 h-8 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-md transition-colors"
                           title="Email"
                         >
                           <Mail className="h-4 w-4" />
                         </a>
                       )}
-                      <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                      <div className="w-px h-6 bg-border mx-1"></div>
                       <Link
                         href={`/contacts/${lead.id}`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-primary hover:text-primary/80"
                       >
                         View
                       </Link>
@@ -436,7 +436,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         </div>
 
         {/* Pagination */}
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border">
+        <div className="bg-muted px-6 py-4 flex items-center justify-between border-t border">
           <div className="text-sm text-muted-foreground">
             Showing {leads.length} of {total} leads
           </div>
@@ -444,7 +444,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
             <button
               onClick={() => updateUrlParams({ page: String(page - 1) })}
               disabled={page <= 1}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+              className="px-3 py-1 border border-border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
             >
               Previous
             </button>
@@ -454,7 +454,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
             <button
               onClick={() => updateUrlParams({ page: String(page + 1) })}
               disabled={leads.length < 50}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+              className="px-3 py-1 border border-border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
             >
               Next
             </button>
