@@ -87,7 +87,7 @@ export function SubstatusAnalytics({
     return (
       <div className={`bg-card rounded-lg border border p-6 ${className}`}>
         <div className="flex items-center justify-center h-48">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
         </div>
       </div>
     )
@@ -179,7 +179,7 @@ export function SubstatusAnalytics({
                       </span>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
@@ -197,7 +197,7 @@ export function SubstatusAnalytics({
 
       {/* Footer with insights */}
       {sortedDistribution.length > 0 && (
-        <div className="px-6 py-4 border-t border bg-gray-50">
+        <div className="px-6 py-4 border-t border bg-muted/30">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
             <div>
