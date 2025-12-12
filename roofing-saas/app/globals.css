@@ -47,131 +47,152 @@
   --radius: 0.625rem;
 
   /* ========================================
-     NIGHTFALL DESIGN SYSTEM
-     Dark-mode-first with purple accents
+     CORAL JADE AFTERNOON DESIGN SYSTEM
+     Dark-mode-first with warm coral/teal accents
+
+     TO CHANGE COLORS: Just edit the 6 hex codes below!
+     - Coral (#FF8243) = Primary brand color
+     - Teal (#2D7A7A) = Secondary/calm actions
+     - Terracotta (#C9705A) = Warm accents
+     - Brown (#4A3428) = Grounded elements
+     - Cyan (#7DD3D3) = Success/highlights
+     - Slate (#3A4045) = Neutral surfaces
      ======================================== */
 
-  /* Core Backgrounds - Near black with subtle depth */
-  --background: #0a0a0f;
+  /* Core Backgrounds - Warm dark with depth */
+  --background: #1a1f2e;  /* Warmer than pure black */
   --foreground: #ffffff;
-  --card: #12121a;
+  --card: #222834;  /* Slightly elevated from background */
   --card-foreground: #ffffff;
-  --popover: #12121a;
+  --popover: #222834;
   --popover-foreground: #ffffff;
 
-  /* Primary - Purple accent (hero color) */
-  --primary: #a855f7;
+  /* Primary - Coral accent (hero color) */
+  --primary: #FF8243;  /* 🧡 CORAL - Change this for main brand color */
   --primary-foreground: #ffffff;
 
-  /* Secondary - Elevated surfaces */
-  --secondary: #1a1a24;
+  /* Secondary - Teal for calm actions */
+  --secondary: #2D7A7A;  /* 🌊 TEAL - Change this for secondary color */
   --secondary-foreground: #ffffff;
 
   /* Muted - Subtle backgrounds and disabled states */
-  --muted: #1a1a24;
+  --muted: #2a2f3d;
   --muted-foreground: rgba(255, 255, 255, 0.5);
 
   /* Accent - Interactive highlights */
-  --accent: #22222e;
+  --accent: #3A4045;  /* ⬛ SLATE - Neutral anchor */
   --accent-foreground: #ffffff;
 
   /* Destructive - Error/danger states */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
 
-  /* Borders - Subtle white with transparency */
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #a855f7;
+  /* Borders - Subtle with warm tint */
+  --border: rgba(201, 112, 90, 0.15);  /* Terracotta tint */
+  --input: rgba(201, 112, 90, 0.2);
+  --ring: #FF8243;  /* Coral focus ring */
 
-  /* Charts - Multi-colored functional palette */
-  --chart-1: #a855f7;  /* Purple - primary */
-  --chart-2: #2dd4bf;  /* Teal - communications */
-  --chart-3: #fb923c;  /* Orange - projects */
-  --chart-4: #3b82f6;  /* Blue - analytics */
-  --chart-5: #22c55e;  /* Green - success */
+  /* Charts - Coral Jade palette */
+  --chart-1: #FF8243;  /* Coral - primary metrics */
+  --chart-2: #2D7A7A;  /* Teal - secondary metrics */
+  --chart-3: #C9705A;  /* Terracotta - warm data */
+  --chart-4: #7DD3D3;  /* Cyan - highlights */
+  --chart-5: #4A3428;  /* Brown - neutral data */
 
-  /* Sidebar - Matching dark theme */
-  --sidebar: #0a0a0f;
+  /* Sidebar - Matching warm dark theme */
+  --sidebar: #1a1f2e;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #a855f7;
+  --sidebar-primary: #FF8243;  /* Coral */
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a24;
+  --sidebar-accent: #2a2f3d;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #a855f7;
+  --sidebar-border: rgba(201, 112, 90, 0.15);
+  --sidebar-ring: #FF8243;
 
   /* ========================================
-     NIGHTFALL EXTENDED PALETTE
+     CORAL JADE EXTENDED PALETTE
      Functional colors for icons & accents
      ======================================== */
 
-  /* Functional Colors */
-  --color-purple: #a855f7;
-  --color-teal: #2dd4bf;
-  --color-orange: #fb923c;
-  --color-blue: #3b82f6;
-  --color-green: #22c55e;
-  --color-pink: #ec4899;
-  --color-yellow: #facc15;
-  --color-red: #ef4444;
+  /* Functional Colors - Coral Jade Palette */
+  --color-coral: #FF8243;      /* 🧡 Primary brand */
+  --color-teal: #2D7A7A;       /* 🌊 Secondary/calm */
+  --color-terracotta: #C9705A; /* 🧱 Warm accents */
+  --color-cyan: #7DD3D3;       /* 💧 Success/fresh */
+  --color-brown: #4A3428;      /* 🟤 Grounded/earth */
+  --color-slate: #3A4045;      /* ⬛ Neutral anchor */
 
-  /* Glow Effects */
-  --glow-purple: 0 0 20px rgba(168, 85, 247, 0.3);
-  --glow-teal: 0 0 20px rgba(45, 212, 191, 0.3);
-  --glow-orange: 0 0 20px rgba(251, 146, 60, 0.3);
-  --glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
-  --glow-green: 0 0 20px rgba(34, 197, 94, 0.3);
+  /* Legacy compatibility (gradually migrate to coral/teal) */
+  --color-purple: #FF8243;  /* Mapped to coral */
+  --color-orange: #C9705A;  /* Mapped to terracotta */
+  --color-blue: #2D7A7A;    /* Mapped to teal */
+  --color-green: #7DD3D3;   /* Mapped to cyan */
+  --color-pink: #C9705A;    /* Mapped to terracotta */
+  --color-yellow: #FF8243;  /* Mapped to coral */
+  --color-red: #ef4444;     /* Keep red for errors */
+
+  /* Glow Effects - Coral Jade */
+  --glow-coral: 0 0 20px rgba(255, 130, 67, 0.3);
+  --glow-teal: 0 0 20px rgba(45, 122, 122, 0.3);
+  --glow-terracotta: 0 0 20px rgba(201, 112, 90, 0.3);
+  --glow-cyan: 0 0 20px rgba(125, 211, 211, 0.3);
+  --glow-brown: 0 0 20px rgba(74, 52, 40, 0.3);
+
+  /* Legacy glow compatibility */
+  --glow-purple: var(--glow-coral);
+  --glow-orange: var(--glow-terracotta);
+  --glow-blue: var(--glow-teal);
+  --glow-green: var(--glow-cyan);
 
   /* Glass Effect */
   --glass-bg: rgba(18, 18, 26, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
 
-  /* Pipeline Stage Colors */
-  --stage-prospect: #64748b;
-  --stage-qualified: #38bdf8;
-  --stage-quote-sent: #fbbf24;
-  --stage-negotiation: #fb923c;
-  --stage-won: #22c55e;
-  --stage-production: #3b82f6;
-  --stage-complete: #10b981;
-  --stage-lost: #6b7280;
+  /* Pipeline Stage Colors - Coral Jade themed */
+  --stage-prospect: #3A4045;      /* Slate - neutral start */
+  --stage-qualified: #7DD3D3;     /* Cyan - qualified interest */
+  --stage-quote-sent: #C9705A;    /* Terracotta - warm proposal */
+  --stage-negotiation: #FF8243;   /* Coral - active discussion */
+  --stage-won: #7DD3D3;           /* Cyan - success! */
+  --stage-production: #2D7A7A;    /* Teal - steady work */
+  --stage-complete: #4A3428;      /* Brown - solid foundation */
+  --stage-lost: #6b7280;          /* Gray - archived */
 }
 
 /* .dark class inherits :root (already dark-first)
    This is kept for compatibility with theme toggles */
 .dark {
-  --background: #0a0a0f;
+  --background: #1a1f2e;
   --foreground: #ffffff;
-  --card: #12121a;
+  --card: #222834;
   --card-foreground: #ffffff;
-  --popover: #12121a;
+  --popover: #222834;
   --popover-foreground: #ffffff;
-  --primary: #a855f7;
+  --primary: #FF8243;  /* Coral */
   --primary-foreground: #ffffff;
-  --secondary: #1a1a24;
+  --secondary: #2D7A7A;  /* Teal */
   --secondary-foreground: #ffffff;
-  --muted: #1a1a24;
+  --muted: #2a2f3d;
   --muted-foreground: rgba(255, 255, 255, 0.5);
-  --accent: #22222e;
+  --accent: #3A4045;  /* Slate */
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #a855f7;
-  --chart-1: #a855f7;
-  --chart-2: #2dd4bf;
-  --chart-3: #fb923c;
-  --chart-4: #3b82f6;
-  --chart-5: #22c55e;
-  --sidebar: #0a0a0f;
+  --border: rgba(201, 112, 90, 0.15);
+  --input: rgba(201, 112, 90, 0.2);
+  --ring: #FF8243;
+  --chart-1: #FF8243;  /* Coral */
+  --chart-2: #2D7A7A;  /* Teal */
+  --chart-3: #C9705A;  /* Terracotta */
+  --chart-4: #7DD3D3;  /* Cyan */
+  --chart-5: #4A3428;  /* Brown */
+  --sidebar: #1a1f2e;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #a855f7;
+  --sidebar-primary: #FF8243;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a24;
+  --sidebar-accent: #2a2f3d;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #a855f7;
+  --sidebar-border: rgba(201, 112, 90, 0.15);
+  --sidebar-ring: #FF8243;
 }
 
 /* Light mode override (for future theme toggle) */
@@ -267,8 +288,23 @@
 }
 
 /* Gradient text */
+.text-gradient-coral {
+  background: linear-gradient(135deg, #FF8243, #C9705A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, #2D7A7A, #7DD3D3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Legacy compatibility */
 .text-gradient-purple {
-  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #FF8243, #C9705A);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
