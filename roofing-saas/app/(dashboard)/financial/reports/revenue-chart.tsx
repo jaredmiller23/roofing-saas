@@ -72,7 +72,7 @@ export function RevenueChart({ projects }: RevenueChartProps) {
             </div>
             <div className="w-full bg-muted rounded-full h-3">
               <div
-                className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                className="bg-primary h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(data.revenue / maxRevenue) * 100}%` }}
               />
             </div>
