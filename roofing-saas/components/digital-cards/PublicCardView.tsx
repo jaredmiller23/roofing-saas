@@ -102,7 +102,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Section with Brand Color */}
       <div
         className="relative h-48 md:h-64"
@@ -137,7 +137,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-300 flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
                     {card.full_name.charAt(0)}
                   </div>
                 )}
@@ -177,7 +177,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
 
             {/* Bio */}
             {card.bio && (
-              <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+              <div className="mt-8 p-6 bg-muted/30 rounded-lg">
                 <h2 className="text-lg font-semibold mb-2">About</h2>
                 <p className="text-muted-foreground whitespace-pre-wrap">{card.bio}</p>
               </div>
@@ -191,7 +191,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                   {services.map((service, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      className="px-3 py-1 bg-muted rounded-full text-sm"
                     >
                       {service}
                     </span>
@@ -267,7 +267,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
+                      className="p-3 rounded-full bg-muted hover:bg-muted transition-colors"
                       onClick={() => trackClick('linkedin_click')}
                     >
                       <Linkedin className="h-5 w-5" />
@@ -278,7 +278,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.facebook_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
+                      className="p-3 rounded-full bg-muted hover:bg-muted transition-colors"
                       onClick={() => trackClick('facebook_click')}
                     >
                       <Facebook className="h-5 w-5" />
@@ -289,7 +289,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.instagram_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
+                      className="p-3 rounded-full bg-muted hover:bg-muted transition-colors"
                       onClick={() => trackClick('instagram_click')}
                     >
                       <Instagram className="h-5 w-5" />
@@ -300,7 +300,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.twitter_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
+                      className="p-3 rounded-full bg-muted hover:bg-muted transition-colors"
                       onClick={() => trackClick('twitter_click')}
                     >
                       <Twitter className="h-5 w-5" />
