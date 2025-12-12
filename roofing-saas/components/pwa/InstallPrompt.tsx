@@ -92,16 +92,16 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 w-12 h-12 bg-card rounded-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-blue-600">R</span>
+              <span className="text-2xl font-bold text-primary">R</span>
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-sm sm:text-base">Install Roofing SaaS</h3>
-              <p className="text-xs sm:text-sm text-blue-100 mt-0.5">
+              <p className="text-xs sm:text-sm text-primary-foreground/60 mt-0.5">
                 Install our app for quick access and offline use
               </p>
             </div>
@@ -110,13 +110,13 @@ export function InstallPrompt() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleInstallClick}
-              className="px-4 py-2 bg-card text-blue-600 rounded-lg font-medium text-sm hover:bg-blue-50 transition-colors whitespace-nowrap"
+              className="px-4 py-2 bg-card text-primary rounded-lg font-medium text-sm hover:bg-primary/10 transition-colors whitespace-nowrap"
             >
               Install
             </button>
             <button
               onClick={handleDismiss}
-              className="p-2 hover:bg-blue-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-primary/80 rounded-lg transition-colors"
               aria-label="Dismiss"
             >
               <X className="w-5 h-5" />
