@@ -21,14 +21,14 @@ const ENTITY_CONFIG = {
   contact: {
     label: 'Contacts',
     icon: User,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
   },
   project: {
     label: 'Projects',
     icon: Briefcase,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/10',
   },
   job: {
     label: 'Jobs',
@@ -46,13 +46,13 @@ const ENTITY_CONFIG = {
     label: 'Files',
     icon: FileText,
     color: 'text-muted-foreground',
-    bgColor: 'bg-gray-50',
+    bgColor: 'bg-muted/30',
   },
   call_log: {
     label: 'Call Logs',
     icon: Phone,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/10',
   },
 }
 
@@ -182,9 +182,9 @@ export function GlobalSearch() {
 
       {/* Modal */}
       <div className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 px-4">
-        <div className="bg-card rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-card rounded-lg shadow-2xl border border-border overflow-hidden">
           {/* Search Input */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               ref={searchInputRef}
@@ -207,7 +207,7 @@ export function GlobalSearch() {
                 <X className="h-4 w-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-muted-foreground bg-gray-100 border border-gray-200 rounded">
+            <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-muted-foreground bg-muted/30 border border-border rounded">
               ESC
             </kbd>
           </div>
@@ -216,14 +216,14 @@ export function GlobalSearch() {
           <div className="max-h-[60vh] overflow-y-auto">
             {results.length === 0 && query && !loading && (
               <div className="p-8 text-center text-muted-foreground">
-                <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <Search className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                 <p className="text-sm">No results found for &ldquo;{query}&rdquo;</p>
               </div>
             )}
 
             {results.length === 0 && !query && (
               <div className="p-8 text-center text-muted-foreground">
-                <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <Search className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                 <p className="text-sm mb-1">Quick search across all your data</p>
                 <p className="text-xs text-muted-foreground">
                   Try searching for contacts, projects, jobs, or territories
@@ -239,7 +239,7 @@ export function GlobalSearch() {
 
               return (
                 <div key={type} className="py-2">
-                  <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-gray-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30">
                     {config.label} ({typeResults.length})
                   </div>
                   {typeResults.map((result) => {
@@ -252,7 +252,7 @@ export function GlobalSearch() {
                         onClick={() => navigateToResult(result)}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-accent transition-colors text-left ${
-                          isSelected ? 'bg-blue-50 border-l-2 border-blue-600' : ''
+                          isSelected ? 'bg-primary/10 border-l-2 border-primary' : ''
                         }`}
                       >
                         <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${config.bgColor} flex items-center justify-center`}>
@@ -282,20 +282,20 @@ export function GlobalSearch() {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-2 border-t border-border bg-muted/30 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">↑</kbd>
-                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">↓</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-border rounded text-xs">↑</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-border rounded text-xs">↓</kbd>
                 Navigate
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">Enter</kbd>
+                <kbd className="px-1.5 py-0.5 bg-card border border-border rounded text-xs">Enter</kbd>
                 Select
               </span>
             </div>
             <span>
-              <kbd className="px-1.5 py-0.5 bg-card border border-gray-300 rounded text-xs">⌘K</kbd>
+              <kbd className="px-1.5 py-0.5 bg-card border border-border rounded text-xs">⌘K</kbd>
               {' '}to open
             </span>
           </div>
