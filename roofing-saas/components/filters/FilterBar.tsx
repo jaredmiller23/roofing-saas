@@ -172,7 +172,7 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
     return (
       <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-lg">
         <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
-        <span className="text-sm text-gray-600">Loading filters...</span>
+        <span className="text-sm text-muted-foreground">Loading filters...</span>
       </div>
     )
   }
@@ -203,12 +203,12 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
             {configs.filter(c => c.is_quick_filter).length > 0 && (
               <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                 <div className="p-2">
-                  <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Quick Filters</div>
+                  <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">Quick Filters</div>
                   {configs.filter(c => c.is_quick_filter).map(config => (
                     <button
                       key={config.id}
                       onClick={() => handleAddFilter(config)}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:bg-gray-100 rounded-md transition-colors"
                     >
                       {config.field_label}
                     </button>
@@ -235,7 +235,7 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearAll}
-                className="gap-2 text-gray-600 hover:text-gray-700"
+                className="gap-2 text-muted-foreground hover:text-muted-foreground"
               >
                 <X className="h-4 w-4" />
                 Clear All

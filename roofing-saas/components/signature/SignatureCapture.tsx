@@ -146,7 +146,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Sign Document</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-4">Sign Document</h2>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'draw' | 'type' | 'upload')}>
         <TabsList className="grid w-full grid-cols-3">
@@ -190,7 +190,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
               </Button>
             </div>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Draw your signature above using your mouse or touchscreen
           </p>
         </TabsContent>
@@ -212,7 +212,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
               <canvas ref={typeCanvasRef} className="w-full" />
             </div>
           )}
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Your typed signature will be converted to a handwriting style
           </p>
         </TabsContent>
@@ -239,7 +239,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
               />
             </div>
           )}
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Upload a clear image of your signature (PNG, JPG, or GIF)
           </p>
         </TabsContent>

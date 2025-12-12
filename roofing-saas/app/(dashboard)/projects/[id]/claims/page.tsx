@@ -21,7 +21,7 @@ const STATUS_COLORS: Record<ClaimStatus, string> = {
   'under_review': 'bg-purple-500',
   'approved': 'bg-green-500',
   'paid': 'bg-emerald-500',
-  'closed': 'bg-background0',
+  'closed': 'bg-muted',
   'disputed': 'bg-red-500',
   'supplement_filed': 'bg-orange-500',
   'escalated': 'bg-pink-500',
@@ -86,8 +86,8 @@ export default function ProjectClaimsPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -108,7 +108,7 @@ export default function ProjectClaimsPage() {
           <div>
             <h1 className="text-3xl font-bold">Claims Management</h1>
             {project && (
-              <p className="text-gray-600 mt-1">{project.name}</p>
+              <p className="text-muted-foreground mt-1">{project.name}</p>
             )}
           </div>
         </div>
@@ -122,9 +122,9 @@ export default function ProjectClaimsPage() {
       {claims.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-16 w-16 text-gray-400 mb-4" />
+            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No Claims Yet</h3>
-            <p className="text-gray-600 text-center mb-6 max-w-md">
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
               Start an inspection to document property damage and create an insurance claim package.
             </p>
             <Button onClick={handleStartInspection}>
@@ -159,7 +159,7 @@ export default function ProjectClaimsPage() {
                   </div>
                   {claim.approved_amount && (
                     <div className="text-right">
-                      <div className="text-sm text-gray-600">Approved Amount</div>
+                      <div className="text-sm text-muted-foreground">Approved Amount</div>
                       <div className="text-2xl font-bold text-green-600">
                         ${claim.approved_amount.toLocaleString()}
                       </div>
@@ -170,20 +170,20 @@ export default function ProjectClaimsPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <div className="text-gray-600">Policy #</div>
+                    <div className="text-muted-foreground">Policy #</div>
                     <div className="font-medium">{claim.policy_number || 'N/A'}</div>
                   </div>
                   <div>
-                    <div className="text-gray-600">Claim Type</div>
+                    <div className="text-muted-foreground">Claim Type</div>
                     <div className="font-medium capitalize">{claim.claim_type.replace('_', ' ')}</div>
                   </div>
                   <div>
-                    <div className="text-gray-600">Property</div>
+                    <div className="text-muted-foreground">Property</div>
                     <div className="font-medium">{claim.property_city}, {claim.property_state}</div>
                   </div>
                   {claim.initial_estimate && (
                     <div>
-                      <div className="text-gray-600">Initial Estimate</div>
+                      <div className="text-muted-foreground">Initial Estimate</div>
                       <div className="font-medium">${claim.initial_estimate.toLocaleString()}</div>
                     </div>
                   )}
@@ -221,7 +221,7 @@ export default function ProjectClaimsPage() {
             <FileText className="h-6 w-6 mb-2" />
             <div className="text-left">
               <div className="font-semibold">New Inspection</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Document property damage
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function ProjectClaimsPage() {
             <DollarSign className="h-6 w-6 mb-2" />
             <div className="text-left">
               <div className="font-semibold">Export Claim Package</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Generate submission docs
               </div>
             </div>
@@ -247,7 +247,7 @@ export default function ProjectClaimsPage() {
             <Calendar className="h-6 w-6 mb-2" />
             <div className="text-left">
               <div className="font-semibold">View Project</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Back to project details
               </div>
             </div>

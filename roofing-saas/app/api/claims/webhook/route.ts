@@ -32,14 +32,26 @@ function verifyWebhookSignature(
     return false
   }
 
-  // Simple HMAC verification (in production, use crypto.timingSafeEqual)
+  // HMAC verification with constant-time comparison to prevent timing attacks
   const crypto = require('crypto')
   const expectedSignature = crypto
     .createHmac('sha256', WEBHOOK_SECRET)
     .update(payload)
     .digest('hex')
 
-  return signature === `sha256=${expectedSignature}`
+  // Extract the hash from the signature (format: "sha256=<hash>")
+  const signatureHash = signature.replace('sha256=', '')
+
+  // Use constant-time comparison to prevent timing attacks
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signatureHash, 'hex'),
+      Buffer.from(expectedSignature, 'hex')
+    )
+  } catch {
+    // timingSafeEqual throws if buffers are different lengths
+    return false
+  }
 }
 
 export async function POST(request: NextRequest) {

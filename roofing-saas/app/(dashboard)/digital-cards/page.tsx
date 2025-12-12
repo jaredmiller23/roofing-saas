@@ -93,11 +93,11 @@ export default function DigitalCardsPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="h-64 bg-gray-200 rounded"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function DigitalCardsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Digital Business Cards</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             Create and manage digital business cards for your team
           </p>
         </div>
@@ -124,9 +124,9 @@ export default function DigitalCardsPage() {
       {cards.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <QrCode className="h-16 w-16 text-gray-400 mb-4" />
+            <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No Digital Cards Yet</h3>
-            <p className="text-gray-600 text-center mb-6 max-w-md">
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
               Create your first digital business card to share your contact information with a tap or scan.
             </p>
             <Button onClick={handleCreateCard}>
@@ -158,7 +158,7 @@ export default function DigitalCardsPage() {
                         className="w-16 h-16 rounded-full border-4 border-white object-cover"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-2xl font-bold text-gray-600">
+                      <div className="w-16 h-16 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-2xl font-bold text-muted-foreground">
                         {card.full_name.charAt(0)}
                       </div>
                     )}
@@ -217,15 +217,15 @@ export default function DigitalCardsPage() {
                 <div className="grid grid-cols-3 gap-2 pt-4 border-t">
                   <div className="text-center">
                     <div className="text-2xl font-bold">{card.total_views}</div>
-                    <div className="text-xs text-gray-600">Views</div>
+                    <div className="text-xs text-muted-foreground">Views</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold">{card.total_vcard_downloads}</div>
-                    <div className="text-xs text-gray-600">Downloads</div>
+                    <div className="text-xs text-muted-foreground">Downloads</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold">{card.total_contact_form_submissions}</div>
-                    <div className="text-xs text-gray-600">Contacts</div>
+                    <div className="text-xs text-muted-foreground">Contacts</div>
                   </div>
                 </div>
 

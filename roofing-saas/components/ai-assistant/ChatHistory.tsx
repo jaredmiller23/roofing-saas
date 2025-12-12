@@ -46,21 +46,21 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
           <MessageSquare className="h-8 w-8 text-blue-600" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-foreground mb-2">
           Start a conversation
         </h3>
-        <p className="text-sm text-gray-600 max-w-sm">
+        <p className="text-sm text-muted-foreground max-w-sm">
           Ask me anything! I can help you manage contacts, create projects, log door knocks, and more.
         </p>
         <div className="mt-6 grid grid-cols-1 gap-2 text-left max-w-md">
           <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <p className="text-sm text-gray-900">&quot;Create a new contact named John Smith&quot;</p>
+            <p className="text-sm text-foreground">&quot;Create a new contact named John Smith&quot;</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <p className="text-sm text-gray-900">&quot;Search for contacts in Nashville&quot;</p>
+            <p className="text-sm text-foreground">&quot;Search for contacts in Nashville&quot;</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <p className="text-sm text-gray-900">&quot;Log a door knock at 123 Main St&quot;</p>
+            <p className="text-sm text-foreground">&quot;Log a door knock at 123 Main St&quot;</p>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
       <div className={`flex items-center justify-center h-full ${className}`}>
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-          <p className="text-sm text-gray-600">Loading conversation...</p>
+          <p className="text-sm text-muted-foreground">Loading conversation...</p>
         </div>
       </div>
     )
@@ -99,7 +99,7 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
         {/* Typing indicator */}
         {isSending && (
           <div className="flex justify-start mb-3">
-            <div className="px-4 py-3 bg-gray-200 rounded-2xl rounded-bl-sm">
+            <div className="px-4 py-3 bg-muted rounded-2xl rounded-bl-sm">
               <div className="flex gap-1">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

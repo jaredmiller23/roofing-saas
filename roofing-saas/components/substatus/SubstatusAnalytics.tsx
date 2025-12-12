@@ -118,18 +118,18 @@ export function SubstatusAnalytics({
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">
               Substatus Distribution
             </h3>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
             <span>{totalCount} {entityType}</span>
           </div>
         </div>
         {statusValue && (
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             For status: <span className="font-medium capitalize">{statusValue}</span>
           </p>
         )}
@@ -138,8 +138,8 @@ export function SubstatusAnalytics({
       {/* Content */}
       <div className="p-6">
         {sortedDistribution.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <BarChart3 className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+          <div className="text-center py-8 text-muted-foreground">
+            <BarChart3 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
             <p>No substatus data available</p>
             <p className="text-sm mt-1">
               {statusValue
@@ -165,16 +165,16 @@ export function SubstatusAnalytics({
                           className="flex-shrink-0"
                         />
                       ) : (
-                        <span className="text-sm font-medium text-gray-700 truncate">
+                        <span className="text-sm font-medium text-muted-foreground truncate">
                           {item.substatus_value}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-sm flex-shrink-0 ml-4">
-                      <span className="font-semibold text-gray-900 w-8 text-right">
+                      <span className="font-semibold text-foreground w-8 text-right">
                         {item.count}
                       </span>
-                      <span className="text-gray-600 w-12 text-right">
+                      <span className="text-muted-foreground w-12 text-right">
                         {percentage.toFixed(1)}%
                       </span>
                     </div>
@@ -198,10 +198,10 @@ export function SubstatusAnalytics({
       {/* Footer with insights */}
       {sortedDistribution.length > 0 && (
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex items-start gap-2 text-sm text-gray-600">
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
             <div>
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-foreground">
                 {sortedDistribution[0].config?.substatus_label || sortedDistribution[0].substatus_value}
               </span>
               {' '}is the most common substatus ({sortedDistribution[0].count} {entityType})

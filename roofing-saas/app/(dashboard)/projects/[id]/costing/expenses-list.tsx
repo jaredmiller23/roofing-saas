@@ -83,7 +83,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-foreground">Expense Details</h2>
         </div>
-        <div className="p-12 text-center text-gray-500">
+        <div className="p-12 text-center text-muted-foreground">
           <p className="text-lg">No expenses recorded yet</p>
           <p className="text-sm mt-2">Click &ldquo;Add Expense&rdquo; to start tracking costs</p>
         </div>
@@ -107,25 +107,25 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
         <table className="w-full">
           <thead className="bg-background">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Description
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Vendor
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Amount
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -141,7 +141,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
                     {expense.expense_type}
                   </span>
                   {expense.category && (
-                    <div className="text-xs text-gray-500 mt-1">{expense.category}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{expense.category}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground">
@@ -149,7 +149,7 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
                     {expense.description}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {expense.vendor_name || '—'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-medium">

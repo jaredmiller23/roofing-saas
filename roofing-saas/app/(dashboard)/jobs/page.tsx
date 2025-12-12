@@ -32,7 +32,7 @@ export default async function JobsPage({
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Jobs</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage production jobs, crew schedules, and job tracking
             </p>
           </div>

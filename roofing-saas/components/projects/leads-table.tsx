@@ -200,7 +200,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
     if (score >= 80) return 'text-green-600 bg-green-50'
     if (score >= 60) return 'text-blue-600 bg-blue-50'
     if (score >= 40) return 'text-yellow-600 bg-yellow-50'
-    return 'text-gray-600 bg-gray-50'
+    return 'text-muted-foreground bg-gray-50'
   }
 
   const getStageColor = (stage: string) => {
@@ -208,15 +208,15 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       lead: 'bg-blue-100 text-blue-800',
       active: 'bg-yellow-100 text-yellow-800',
       customer: 'bg-green-100 text-green-800',
-      lost: 'bg-gray-100 text-gray-800',
+      lost: 'bg-muted text-muted-foreground',
     }
-    return colors[stage] || 'bg-gray-100 text-gray-800'
+    return colors[stage] || 'bg-muted text-muted-foreground'
   }
 
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-gray-600">Loading leads...</div>
+        <div className="text-muted-foreground">Loading leads...</div>
       </div>
     )
   }
@@ -232,7 +232,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
   if (leads.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-gray-600 mb-4">No leads found</div>
+        <div className="text-muted-foreground mb-4">No leads found</div>
         <Link
           href="/contacts/new"
           className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -246,7 +246,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
       onClick={() => handleSort(field)}
-      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
     >
       <div className="flex items-center gap-1">
         {children}
@@ -291,23 +291,23 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
             <thead className="bg-gray-50">
               <tr>
                 <SortableHeader field="name">Lead</SortableHeader>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Contact
                 </th>
                 <SortableHeader field="stage">Stage</SortableHeader>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Projects
                 </th>
                 <SortableHeader field="value">Total Value</SortableHeader>
                 <SortableHeader field="updated_at">Last Activity</SortableHeader>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {leads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-gray-50">
+                <tr key={lead.id} className="hover:bg-accent">
                   {/* Lead Name & Score */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
@@ -333,16 +333,16 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
                   {/* Contact Details */}
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-foreground">
                       {lead.email && (
                         <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3 text-gray-400" />
+                          <Mail className="h-3 w-3 text-muted-foreground" />
                           <span className="truncate max-w-[200px]">{lead.email}</span>
                         </div>
                       )}
                       {(lead.phone || lead.mobile_phone) && (
                         <div className="flex items-center gap-1 mt-1">
-                          <Phone className="h-3 w-3 text-gray-400" />
+                          <Phone className="h-3 w-3 text-muted-foreground" />
                           <span>{lead.phone || lead.mobile_phone}</span>
                         </div>
                       )}
@@ -360,16 +360,16 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {lead.projects && lead.projects.length > 0 ? (
                       <div className="flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-900 font-medium">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-foreground font-medium">
                           {lead.projects.length}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {lead.projects.length === 1 ? 'project' : 'projects'}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400">No projects</span>
+                      <span className="text-sm text-muted-foreground">No projects</span>
                     )}
                   </td>
 
@@ -382,9 +382,9 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                   </td>
 
                   {/* Last Activity */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-gray-400" />
+                      <Clock className="h-3 w-3 text-muted-foreground" />
                       {getTimeSince(lead.updated_at)}
                     </div>
                   </td>
@@ -437,7 +437,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
 
         {/* Pagination */}
         <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             Showing {leads.length} of {total} leads
           </div>
           <div className="flex gap-2">
@@ -448,7 +448,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-gray-700">
+            <span className="px-3 py-1 text-sm text-muted-foreground">
               Page {page}
             </span>
             <button

@@ -52,13 +52,13 @@ export function InspectionSummary({
               <div className="text-2xl font-bold text-blue-600">
                 {summary.totalPhotoCount}
               </div>
-              <div className="text-xs text-gray-500">Photos</div>
+              <div className="text-xs text-muted-foreground">Photos</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {summary.selectedAreaCount}
               </div>
-              <div className="text-xs text-gray-500">Areas</div>
+              <div className="text-xs text-muted-foreground">Areas</div>
             </div>
           </div>
 
@@ -80,21 +80,21 @@ export function InspectionSummary({
 
           {/* Area breakdown */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Documented Areas</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Documented Areas</h4>
             <div className="space-y-1">
               {summary.areas.map(area => (
                 <div
                   key={area.type}
                   className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded"
                 >
-                  <span className="text-sm text-gray-700">{area.label}</span>
+                  <span className="text-sm text-muted-foreground">{area.label}</span>
                   <div className="flex items-center gap-2">
                     {area.hasSeverePhoto && (
                       <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
                         Severe
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       {area.photoCount} photo{area.photoCount !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -104,7 +104,7 @@ export function InspectionSummary({
           </div>
 
           {/* Timing */}
-          <div className="text-sm text-gray-500 text-center">
+          <div className="text-sm text-muted-foreground text-center">
             Inspection duration: {formatDuration()}
           </div>
 
@@ -120,7 +120,7 @@ export function InspectionSummary({
             <button
               onClick={onBack}
               disabled={isSubmitting}
-              className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent disabled:opacity-50"
             >
               Back
             </button>
@@ -130,7 +130,7 @@ export function InspectionSummary({
               className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
                 summary.readyToSubmit && !isSubmitting
                   ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
             >
               {isSubmitting ? (
@@ -162,7 +162,7 @@ function ChecklistItem({ checked, label }: { checked: boolean; label: string }) 
     <div className="flex items-center gap-2">
       <div
         className={`w-5 h-5 rounded-full flex items-center justify-center ${
-          checked ? 'bg-green-500' : 'bg-gray-200'
+          checked ? 'bg-green-500' : 'bg-muted'
         }`}
       >
         {checked ? (
@@ -174,7 +174,7 @@ function ChecklistItem({ checked, label }: { checked: boolean; label: string }) 
             />
           </svg>
         ) : (
-          <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
@@ -183,7 +183,7 @@ function ChecklistItem({ checked, label }: { checked: boolean; label: string }) 
           </svg>
         )}
       </div>
-      <span className={checked ? 'text-gray-700' : 'text-gray-400'}>{label}</span>
+      <span className={checked ? 'text-muted-foreground' : 'text-muted-foreground'}>{label}</span>
     </div>
   )
 }

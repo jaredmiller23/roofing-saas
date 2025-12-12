@@ -58,7 +58,7 @@ export function ActivityFeed() {
       case 'project_won':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />
       case 'project_lost':
-        return <XCircle className="h-5 w-5 text-gray-400" />
+        return <XCircle className="h-5 w-5 text-muted-foreground" />
       case 'project_created':
         return <FolderPlus className="h-5 w-5 text-blue-600" />
       case 'contact_added':
@@ -66,7 +66,7 @@ export function ActivityFeed() {
       case 'status_change':
         return <TrendingUp className="h-5 w-5 text-orange-600" />
       default:
-        return <Clock className="h-5 w-5 text-gray-400" />
+        return <Clock className="h-5 w-5 text-muted-foreground" />
     }
   }
 
@@ -118,8 +118,8 @@ export function ActivityFeed() {
     <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-        <p className="text-sm text-gray-500">Team updates from the last 7 days</p>
+        <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+        <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
       </div>
 
       {/* Loading State */}
@@ -127,10 +127,10 @@ export function ActivityFeed() {
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-start gap-3 p-3 animate-pulse">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+              <div className="w-10 h-10 bg-muted rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-1/2" />
               </div>
             </div>
           ))}
@@ -158,14 +158,14 @@ export function ActivityFeed() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="font-medium text-gray-900 text-sm">
+                    <p className="font-medium text-foreground text-sm">
                       {activity.title}
                     </p>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatTimestamp(activity.timestamp)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {activity.description}
                   </p>
 
@@ -215,8 +215,8 @@ export function ActivityFeed() {
       {!loading && activities.length === 0 && (
         <div className="text-center py-8">
           <Clock className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-500">No recent activity</p>
-          <p className="text-sm text-gray-400 mt-1">Activity will appear here as your team works</p>
+          <p className="text-muted-foreground">No recent activity</p>
+          <p className="text-sm text-muted-foreground mt-1">Activity will appear here as your team works</p>
         </div>
       )}
     </div>

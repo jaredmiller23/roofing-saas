@@ -255,7 +255,7 @@ export function AutomationSettings() {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'running': return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
       case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />
-      default: return <Clock className="h-4 w-4 text-gray-400" />
+      default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -305,8 +305,8 @@ export function AutomationSettings() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 text-sm">{template.name}</h4>
-                      <p className="text-xs text-gray-600 mt-1">{template.description}</p>
+                      <h4 className="font-medium text-foreground text-sm">{template.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
                       <Badge variant="outline" className="mt-2 text-xs">
                         {getTriggerLabel(template.trigger_type)}
                       </Badge>
@@ -354,9 +354,9 @@ export function AutomationSettings() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading workflows...</div>
+            <div className="text-center py-8 text-muted-foreground">Loading workflows...</div>
           ) : workflows.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <Zap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p>No automations yet</p>
               <p className="text-sm mt-1">Use the templates above to get started</p>
@@ -374,7 +374,7 @@ export function AutomationSettings() {
                       onCheckedChange={(checked: boolean) => toggleWorkflow(workflow.id, checked)}
                     />
                     <div>
-                      <h4 className="font-medium text-gray-900">{workflow.name}</h4>
+                      <h4 className="font-medium text-foreground">{workflow.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="secondary" className="text-xs">
                           {getTriggerLabel(workflow.trigger_type)}
@@ -384,7 +384,7 @@ export function AutomationSettings() {
                             <Play className="h-3 w-3" /> Active
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Pause className="h-3 w-3" /> Paused
                           </span>
                         )}
@@ -418,7 +418,7 @@ export function AutomationSettings() {
                 <span className="text-blue-600 font-bold">1</span>
               </div>
               <h4 className="font-medium">Trigger Event</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 When a project is won, job is completed, or stage changes
               </p>
             </div>
@@ -427,7 +427,7 @@ export function AutomationSettings() {
                 <span className="text-blue-600 font-bold">2</span>
               </div>
               <h4 className="font-medium">Workflow Runs</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 System automatically executes configured actions
               </p>
             </div>
@@ -436,7 +436,7 @@ export function AutomationSettings() {
                 <span className="text-blue-600 font-bold">3</span>
               </div>
               <h4 className="font-medium">Action Complete</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Emails sent, tasks created, or SMS delivered
               </p>
             </div>

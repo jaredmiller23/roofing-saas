@@ -99,13 +99,13 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-foreground">Cost Trend Analysis</h2>
-        <p className="text-sm text-gray-500 mt-1">Month-over-month cost changes and vendor analysis</p>
+        <p className="text-sm text-muted-foreground mt-1">Month-over-month cost changes and vendor analysis</p>
       </div>
 
       <div className="p-6">
         {/* Cost Trends by Type */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Cost Trends by Category</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Cost Trends by Category</h3>
           <div className="space-y-3">
             {analysis.trends.map((trend, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-background rounded-lg">
@@ -128,18 +128,18 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
                     )}
                   </div>
                   <div className="flex items-center gap-4 mt-1">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       Last month: {formatCurrency(trend.previous)}
                     </span>
-                    <span className="text-xs text-gray-500">→</span>
-                    <span className="text-xs text-gray-700 font-medium">
+                    <span className="text-xs text-muted-foreground">→</span>
+                    <span className="text-xs text-muted-foreground font-medium">
                       This month: {formatCurrency(trend.current)}
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-bold ${
-                    trend.change > 0 ? 'text-red-600' : trend.change < 0 ? 'text-green-600' : 'text-gray-600'
+                    trend.change > 0 ? 'text-red-600' : trend.change < 0 ? 'text-green-600' : 'text-muted-foreground'
                   }`}>
                     {trend.change > 0 ? '+' : ''}{formatCurrency(trend.change)}
                   </p>
@@ -151,15 +151,15 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
 
         {/* Top Vendors */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Top Vendors by Spend</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Top Vendors by Spend</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-background">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Spend</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">% of Total</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Rank</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Vendor</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Total Spend</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">% of Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -174,7 +174,7 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
                       <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">
                         {formatCurrency(vendor.amount)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <td className="px-4 py-3 text-sm text-muted-foreground text-right">
                         {percentage.toFixed(1)}%
                       </td>
                     </tr>

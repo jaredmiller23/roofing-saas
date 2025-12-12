@@ -125,10 +125,10 @@ export function BrandingSettings() {
         <div className="lg:col-span-2 space-y-6">
           {/* Logo Upload */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Logo</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Logo</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Company Logo
                 </label>
                 <div className="flex items-center gap-4">
@@ -138,7 +138,7 @@ export function BrandingSettings() {
                     </div>
                   ) : (
                     <div className="h-20 w-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                      <ImageIcon className="h-8 w-8 text-gray-400" />
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
                   <div className="flex-1">
@@ -148,13 +148,13 @@ export function BrandingSettings() {
                       onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
                       placeholder="https://example.com/logo.png"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Enter logo URL or upload to Supabase Storage</p>
+                    <p className="text-xs text-muted-foreground mt-1">Enter logo URL or upload to Supabase Storage</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Email Header Logo
                 </label>
                 <Input
@@ -163,17 +163,17 @@ export function BrandingSettings() {
                   onChange={(e) => setSettings({ ...settings, email_header_logo_url: e.target.value })}
                   placeholder="https://example.com/email-logo.png"
                 />
-                <p className="text-xs text-gray-500 mt-1">Used in email headers (optional)</p>
+                <p className="text-xs text-muted-foreground mt-1">Used in email headers (optional)</p>
               </div>
             </div>
           </div>
 
           {/* Brand Colors */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Brand Colors</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Brand Colors</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Primary Color
                 </label>
                 <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export function BrandingSettings() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Secondary Color
                 </label>
                 <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export function BrandingSettings() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Accent Color
                 </label>
                 <div className="flex items-center gap-2">
@@ -236,10 +236,10 @@ export function BrandingSettings() {
 
           {/* Email Branding */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Branding</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Email Branding</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Email Footer Text
                 </label>
                 <Input
@@ -250,7 +250,7 @@ export function BrandingSettings() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Email Signature
                 </label>
                 <textarea
@@ -268,12 +268,12 @@ export function BrandingSettings() {
         {/* Live Preview */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
 
             {/* Button Previews */}
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-gray-500 mb-2">Primary Button</p>
+                <p className="text-xs text-muted-foreground mb-2">Primary Button</p>
                 <button
                   style={{ backgroundColor: settings.primary_color }}
                   className="px-4 py-2 text-white rounded-md font-medium w-full"
@@ -283,7 +283,7 @@ export function BrandingSettings() {
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 mb-2">Secondary Button</p>
+                <p className="text-xs text-muted-foreground mb-2">Secondary Button</p>
                 <button
                   style={{ backgroundColor: settings.secondary_color }}
                   className="px-4 py-2 text-white rounded-md font-medium w-full"
@@ -293,7 +293,7 @@ export function BrandingSettings() {
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 mb-2">Accent Button</p>
+                <p className="text-xs text-muted-foreground mb-2">Accent Button</p>
                 <button
                   style={{ backgroundColor: settings.accent_color }}
                   className="px-4 py-2 text-white rounded-md font-medium w-full"
@@ -305,7 +305,7 @@ export function BrandingSettings() {
               {/* Logo Preview */}
               {settings.logo_url && (
                 <div className="pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2">Logo Preview</p>
+                  <p className="text-xs text-muted-foreground mb-2">Logo Preview</p>
                   <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center h-24 relative">
                     <Image src={settings.logo_url} alt="Logo Preview" fill className="object-contain" />
                   </div>

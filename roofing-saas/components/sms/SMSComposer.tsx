@@ -198,7 +198,7 @@ export default function SMSComposer({
       <CardContent className="space-y-4">
         {/* Template Selector */}
         <div>
-          <label htmlFor="template" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="template" className="block text-sm font-medium text-muted-foreground mb-1">
             Use Template (Optional)
           </label>
           <select
@@ -216,20 +216,20 @@ export default function SMSComposer({
             ))}
           </select>
           {currentTemplate && (
-            <p className="text-xs text-gray-500 mt-1">{currentTemplate.description}</p>
+            <p className="text-xs text-muted-foreground mt-1">{currentTemplate.description}</p>
           )}
         </div>
 
         {/* Variable Inputs */}
         {currentTemplate && currentTemplate.variables.length > 0 && (
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-muted-foreground">
               Fill in template variables:
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {currentTemplate.variables.map(variable => (
                 <div key={variable}>
-                  <label htmlFor={variable} className="block text-xs font-medium text-gray-600 mb-1">
+                  <label htmlFor={variable} className="block text-xs font-medium text-muted-foreground mb-1">
                     {variable.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </label>
                   <input
@@ -248,7 +248,7 @@ export default function SMSComposer({
 
         {/* Message Input */}
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="message" className="block text-sm font-medium text-muted-foreground mb-1">
             Message
           </label>
           <textarea
@@ -261,7 +261,7 @@ export default function SMSComposer({
             disabled={!canSend || isSending}
             maxLength={1600}
           />
-          <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+          <div className="flex justify-between items-center mt-1 text-xs text-muted-foreground">
             <span>{charCount} / 1600 characters</span>
             <span className={segmentCount > 1 ? 'text-orange-600 font-medium' : ''}>
               {segmentCount} SMS segment{segmentCount !== 1 ? 's' : ''}
@@ -272,8 +272,8 @@ export default function SMSComposer({
         {/* Preview */}
         {selectedTemplate && previewMessage !== message && (
           <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
-            <label className="block text-xs font-medium text-gray-600 mb-2">Preview:</label>
-            <p className="text-sm text-gray-900 whitespace-pre-wrap">{previewMessage}</p>
+            <label className="block text-xs font-medium text-muted-foreground mb-2">Preview:</label>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{previewMessage}</p>
           </div>
         )}
 
@@ -312,7 +312,7 @@ export default function SMSComposer({
         </button>
 
         {/* TCPA Compliance Notice */}
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           By sending, you confirm the recipient has opted in to receive SMS communications.
         </p>
       </CardContent>

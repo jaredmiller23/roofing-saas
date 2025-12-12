@@ -137,7 +137,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-300 flex items-center justify-center text-4xl font-bold text-gray-600">
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-300 flex items-center justify-center text-4xl font-bold text-muted-foreground">
                     {card.full_name.charAt(0)}
                   </div>
                 )}
@@ -147,13 +147,13 @@ export function PublicCardView({ card }: PublicCardViewProps) {
               <div className="flex-1 text-center md:text-left">
                 <h1 className="text-3xl font-bold mb-2">{card.full_name}</h1>
                 {card.job_title && (
-                  <p className="text-xl text-gray-600 mb-2">{card.job_title}</p>
+                  <p className="text-xl text-muted-foreground mb-2">{card.job_title}</p>
                 )}
                 {card.company_name && (
-                  <p className="text-lg text-gray-700 font-medium mb-3">{card.company_name}</p>
+                  <p className="text-lg text-muted-foreground font-medium mb-3">{card.company_name}</p>
                 )}
                 {card.tagline && (
-                  <p className="text-gray-600 italic mb-4">{card.tagline}</p>
+                  <p className="text-muted-foreground italic mb-4">{card.tagline}</p>
                 )}
 
                 {/* Primary Actions */}
@@ -179,7 +179,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
             {card.bio && (
               <div className="mt-8 p-6 bg-gray-50 rounded-lg">
                 <h2 className="text-lg font-semibold mb-2">About</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">{card.bio}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{card.bio}</p>
               </div>
             )}
 
@@ -205,12 +205,12 @@ export function PublicCardView({ card }: PublicCardViewProps) {
               {card.phone && (
                 <a
                   href={`tel:${card.phone}`}
-                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-accent transition-colors"
                   onClick={() => trackClick('phone_click')}
                 >
-                  <Phone className="h-5 w-5 text-gray-600" />
+                  <Phone className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-gray-600">Phone</div>
+                    <div className="text-sm text-muted-foreground">Phone</div>
                     <div className="font-medium">{card.phone}</div>
                   </div>
                 </a>
@@ -219,12 +219,12 @@ export function PublicCardView({ card }: PublicCardViewProps) {
               {card.email && (
                 <a
                   href={`mailto:${card.email}`}
-                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-accent transition-colors"
                   onClick={() => trackClick('email_click')}
                 >
-                  <Mail className="h-5 w-5 text-gray-600" />
+                  <Mail className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-gray-600">Email</div>
+                    <div className="text-sm text-muted-foreground">Email</div>
                     <div className="font-medium">{card.email}</div>
                   </div>
                 </a>
@@ -235,12 +235,12 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                   href={card.company_website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-4 rounded-lg border hover:bg-accent transition-colors"
                   onClick={() => trackClick('website_click')}
                 >
-                  <Globe className="h-5 w-5 text-gray-600" />
+                  <Globe className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-gray-600">Website</div>
+                    <div className="text-sm text-muted-foreground">Website</div>
                     <div className="font-medium truncate">{card.company_website}</div>
                   </div>
                 </a>
@@ -248,9 +248,9 @@ export function PublicCardView({ card }: PublicCardViewProps) {
 
               {card.company_address && (
                 <div className="flex items-center gap-3 p-4 rounded-lg border">
-                  <MapPin className="h-5 w-5 text-gray-600" />
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="text-sm text-gray-600">Address</div>
+                    <div className="text-sm text-muted-foreground">Address</div>
                     <div className="font-medium">{card.company_address}</div>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.linkedin_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
                       onClick={() => trackClick('linkedin_click')}
                     >
                       <Linkedin className="h-5 w-5" />
@@ -278,7 +278,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.facebook_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
                       onClick={() => trackClick('facebook_click')}
                     >
                       <Facebook className="h-5 w-5" />
@@ -289,7 +289,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.instagram_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
                       onClick={() => trackClick('instagram_click')}
                     >
                       <Instagram className="h-5 w-5" />
@@ -300,7 +300,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       href={card.twitter_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                      className="p-3 rounded-full bg-gray-100 hover:bg-muted transition-colors"
                       onClick={() => trackClick('twitter_click')}
                     >
                       <Twitter className="h-5 w-5" />
@@ -331,7 +331,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                       </svg>
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       Thank you for reaching out. We&apos;ll get back to you soon.
                     </p>
                   </div>
@@ -419,7 +419,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-600">
+        <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>Powered by Digital Business Cards</p>
         </div>
       </div>

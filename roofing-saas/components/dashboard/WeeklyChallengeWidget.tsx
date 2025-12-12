@@ -68,7 +68,7 @@ export function WeeklyChallengeWidget() {
       case 2:
         return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white'
       default:
-        return 'bg-gray-100 text-gray-600'
+        return 'bg-gray-100 text-muted-foreground'
     }
   }
 
@@ -89,7 +89,7 @@ export function WeeklyChallengeWidget() {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-center h-48">
-          <div className="text-gray-600">Loading challenge...</div>
+          <div className="text-muted-foreground">Loading challenge...</div>
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ export function WeeklyChallengeWidget() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">This Week&apos;s Challenge</h3>
+          <h3 className="text-lg font-bold text-foreground">This Week&apos;s Challenge</h3>
           <p className="text-sm text-purple-700 font-medium mt-0.5">{getChallengeTitle()}</p>
         </div>
         <div className="bg-purple-600 text-white rounded-full p-3">
@@ -127,26 +127,26 @@ export function WeeklyChallengeWidget() {
 
               {/* User Info */}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold truncate ${index === 0 ? 'text-purple-900' : 'text-gray-900'}`}>
+                <p className={`text-sm font-semibold truncate ${index === 0 ? 'text-purple-900' : 'text-foreground'}`}>
                   {leader.user_name}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Level {leader.level}
                 </p>
               </div>
 
               {/* Stats */}
               <div className="text-right">
-                <p className={`text-lg font-bold ${index === 0 ? 'text-purple-700' : 'text-gray-900'}`}>
+                <p className={`text-lg font-bold ${index === 0 ? 'text-purple-700' : 'text-foreground'}`}>
                   {leader.points_this_week.toLocaleString()}
                 </p>
-                <p className="text-xs text-gray-500">points</p>
+                <p className="text-xs text-muted-foreground">points</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-muted-foreground text-sm">
           No participants yet. Start earning points!
         </div>
       )}
@@ -154,7 +154,7 @@ export function WeeklyChallengeWidget() {
       {/* Challenge Info */}
       <div className="mt-4 pt-4 border-t border-purple-200">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">
+          <span className="text-muted-foreground">
             Resets every Monday
           </span>
           <span className="text-purple-700 font-medium">

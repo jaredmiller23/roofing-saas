@@ -76,7 +76,7 @@ const STATUS_INFO: Record<ClaimStatus, { icon: React.ElementType; color: string;
   },
   'closed': {
     icon: CheckCircle,
-    color: 'text-gray-600 bg-gray-100',
+    color: 'text-muted-foreground bg-gray-100',
     label: 'Closed',
     description: 'Claim has been completed and closed',
   },
@@ -204,7 +204,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
         <CardContent className="space-y-6">
           {/* Current Status */}
           <div>
-            <Label className="text-sm text-gray-600 mb-2 block">Current Status</Label>
+            <Label className="text-sm text-muted-foreground mb-2 block">Current Status</Label>
             <div className={`flex items-center gap-3 p-4 rounded-lg ${currentInfo.color}`}>
               <CurrentIcon className="h-6 w-6" />
               <div className="flex-1">
@@ -217,7 +217,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
           {/* Available Transitions */}
           {possibleTransitions.length > 0 && (
             <div>
-              <Label className="text-sm text-gray-600 mb-3 block">Available Actions</Label>
+              <Label className="text-sm text-muted-foreground mb-3 block">Available Actions</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {possibleTransitions.map((status) => {
                   const info = STATUS_INFO[status]
@@ -237,7 +237,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
                       </div>
                       <div className="flex-1 text-left">
                         <div className="font-medium">{info.label}</div>
-                        <div className="text-xs text-gray-600 font-normal">
+                        <div className="text-xs text-muted-foreground font-normal">
                           {error || info.description}
                         </div>
                       </div>
@@ -250,8 +250,8 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
 
           {/* No actions available */}
           {possibleTransitions.length === 0 && (
-            <div className="text-center py-6 text-gray-500">
-              <CheckCircle className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+            <div className="text-center py-6 text-muted-foreground">
+              <CheckCircle className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
               <p className="font-medium">No further actions available</p>
               <p className="text-sm mt-1">This claim is in a final state</p>
             </div>
@@ -328,7 +328,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
                       setTransitionData({ ...transitionData, paid_amount: e.target.value })
                     }
                   />
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted-foreground">
                     Defaults to approved amount: ${claim.approved_amount?.toLocaleString() || '0'}
                   </p>
                 </div>

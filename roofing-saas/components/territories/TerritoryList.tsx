@@ -142,7 +142,7 @@ export function TerritoryList({
           <button
             onClick={fetchTerritories}
             disabled={loading}
-            className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-1 text-sm border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Refresh'}
           </button>
@@ -167,7 +167,7 @@ export function TerritoryList({
         {!loading && territories.length === 0 && !error && (
           <div className="text-center py-12">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -179,7 +179,7 @@ export function TerritoryList({
                 d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
               />
             </svg>
-            <p className="mt-2 text-sm text-gray-500">No territories yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">No territories yet</p>
           </div>
         )}
 
@@ -189,7 +189,7 @@ export function TerritoryList({
             {territories.map(territory => (
               <div
                 key={territory.id}
-                className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="border border-gray-200 rounded-lg p-4 hover:bg-accent transition-colors"
               >
                 <div className="flex items-start justify-between">
                   {/* Territory info */}
@@ -197,13 +197,13 @@ export function TerritoryList({
                     className="flex-1 cursor-pointer"
                     onClick={() => onTerritorySelect?.(territory)}
                   >
-                    <h3 className="font-semibold text-gray-900">{territory.name}</h3>
+                    <h3 className="font-semibold text-foreground">{territory.name}</h3>
 
                     {territory.description && (
-                      <p className="text-sm text-gray-600 mt-1">{territory.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{territory.description}</p>
                     )}
 
-                    <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
+                    <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <svg
                           className="w-4 h-4"

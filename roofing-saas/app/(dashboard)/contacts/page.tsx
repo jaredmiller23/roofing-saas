@@ -27,7 +27,7 @@ export default async function ContactsPage() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Contacts</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage your leads and customers with configurable filters
             </p>
           </div>

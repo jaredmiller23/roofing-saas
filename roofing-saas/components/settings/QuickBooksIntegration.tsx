@@ -185,7 +185,7 @@ export function QuickBooksIntegration() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
+            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -223,18 +223,18 @@ export function QuickBooksIntegration() {
               <>
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <div>
-                  <div className="font-medium text-gray-900">Connected</div>
+                  <div className="font-medium text-foreground">Connected</div>
                   {status.company_name && (
-                    <div className="text-sm text-gray-600">{status.company_name}</div>
+                    <div className="text-sm text-muted-foreground">{status.company_name}</div>
                   )}
                 </div>
               </>
             ) : (
               <>
-                <XCircle className="h-5 w-5 text-gray-400" />
+                <XCircle className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div className="font-medium text-gray-900">Not Connected</div>
-                  <div className="text-sm text-gray-600">Connect to enable syncing</div>
+                  <div className="font-medium text-foreground">Not Connected</div>
+                  <div className="text-sm text-muted-foreground">Connect to enable syncing</div>
                 </div>
               </>
             )}
@@ -254,27 +254,27 @@ export function QuickBooksIntegration() {
         {status?.connected && (
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Company ID:</span>
-              <span className="font-mono text-gray-900">{status.realm_id}</span>
+              <span className="text-muted-foreground">Company ID:</span>
+              <span className="font-mono text-foreground">{status.realm_id}</span>
             </div>
             {status.country && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Country:</span>
-                <span className="text-gray-900">{status.country}</span>
+                <span className="text-muted-foreground">Country:</span>
+                <span className="text-foreground">{status.country}</span>
               </div>
             )}
             {status.connected_at && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Connected:</span>
-                <span className="text-gray-900">
+                <span className="text-muted-foreground">Connected:</span>
+                <span className="text-foreground">
                   {new Date(status.connected_at).toLocaleDateString()}
                 </span>
               </div>
             )}
             {status.expires_at && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Token Expires:</span>
-                <span className="text-gray-900">
+                <span className="text-muted-foreground">Token Expires:</span>
+                <span className="text-foreground">
                   {new Date(status.expires_at).toLocaleDateString()}
                 </span>
               </div>
@@ -284,8 +284,8 @@ export function QuickBooksIntegration() {
 
         {/* Features List */}
         <div className="pt-4 border-t">
-          <div className="text-sm font-medium text-gray-900 mb-3">Sync Features:</div>
-          <ul className="space-y-2 text-sm text-gray-600">
+          <div className="text-sm font-medium text-foreground mb-3">Sync Features:</div>
+          <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               Sync contacts as QuickBooks customers
@@ -308,7 +308,7 @@ export function QuickBooksIntegration() {
         {/* Sync Controls */}
         {status?.connected && !status.is_expired && (
           <div className="pt-4 border-t">
-            <div className="text-sm font-medium text-gray-900 mb-3">Data Sync:</div>
+            <div className="text-sm font-medium text-foreground mb-3">Data Sync:</div>
 
             {/* Success Alert */}
             {syncSuccess && (
@@ -330,10 +330,10 @@ export function QuickBooksIntegration() {
               {/* Sync Contacts */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-5 w-5 text-gray-700" />
-                  <span className="font-medium text-gray-900">Contacts</span>
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium text-foreground">Contacts</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   Sync your contacts to QuickBooks as customers
                 </p>
                 <Button
@@ -360,10 +360,10 @@ export function QuickBooksIntegration() {
               {/* Sync Projects */}
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-5 w-5 text-gray-700" />
-                  <span className="font-medium text-gray-900">Projects</span>
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium text-foreground">Projects</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   Create invoices in QuickBooks from won projects
                 </p>
                 <Button
@@ -388,7 +388,7 @@ export function QuickBooksIntegration() {
               </div>
             </div>
 
-            <div className="mt-3 text-xs text-gray-500">
+            <div className="mt-3 text-xs text-muted-foreground">
               <strong>Note:</strong> Contacts must be synced before their projects can be synced as invoices.
             </div>
           </div>
@@ -450,7 +450,7 @@ export function QuickBooksIntegration() {
         </div>
 
         {/* Help Text */}
-        <div className="text-xs text-gray-500 pt-2 border-t">
+        <div className="text-xs text-muted-foreground pt-2 border-t">
           <strong>Note:</strong> You&apos;ll be redirected to QuickBooks to authorize this connection.
           Make sure pop-ups are enabled in your browser.
         </div>

@@ -103,13 +103,13 @@ export function JobForm({ job }: JobFormProps) {
       {/* Job Details */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Briefcase className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Job Details</h2>
+          <Briefcase className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Job Details</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Project ID
             </label>
             <input
@@ -119,14 +119,14 @@ export function JobForm({ job }: JobFormProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter project ID (optional)"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Leave blank if not associated with a specific project
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Job Type
               </label>
               <select
@@ -144,7 +144,7 @@ export function JobForm({ job }: JobFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Status
               </label>
               <select
@@ -162,7 +162,7 @@ export function JobForm({ job }: JobFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Scope of Work
             </label>
             <textarea
@@ -179,14 +179,14 @@ export function JobForm({ job }: JobFormProps) {
       {/* Scheduling */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Calendar className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Scheduling</h2>
+          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Scheduling</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Scheduled Date
               </label>
               <input
@@ -198,7 +198,7 @@ export function JobForm({ job }: JobFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Start Time
               </label>
               <input
@@ -210,7 +210,7 @@ export function JobForm({ job }: JobFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 End Time
               </label>
               <input
@@ -224,7 +224,7 @@ export function JobForm({ job }: JobFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Estimated Duration (hours)
               </label>
               <input
@@ -238,7 +238,7 @@ export function JobForm({ job }: JobFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Completion %
               </label>
               <input
@@ -258,13 +258,13 @@ export function JobForm({ job }: JobFormProps) {
       {/* Cost Tracking */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <DollarSign className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Cost Tracking</h2>
+          <DollarSign className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Labor Cost
             </label>
             <input
@@ -278,7 +278,7 @@ export function JobForm({ job }: JobFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Material Cost
             </label>
             <input
@@ -292,7 +292,7 @@ export function JobForm({ job }: JobFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Equipment Cost
             </label>
             <input
@@ -306,7 +306,7 @@ export function JobForm({ job }: JobFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Other Costs
             </label>
             <input
@@ -323,11 +323,11 @@ export function JobForm({ job }: JobFormProps) {
 
       {/* Notes */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Notes</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-6">Notes</h2>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Notes
             </label>
             <textarea
@@ -340,7 +340,7 @@ export function JobForm({ job }: JobFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Internal Notes
             </label>
             <textarea
@@ -359,7 +359,7 @@ export function JobForm({ job }: JobFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>

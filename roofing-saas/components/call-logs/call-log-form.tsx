@@ -76,14 +76,14 @@ export function CallLogForm({ call }: CallLogFormProps) {
       {/* Call Details */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Phone className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Call Details</h2>
+          <Phone className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Call Details</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Direction
               </label>
               <select
@@ -97,7 +97,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Phone Number *
               </label>
               <input
@@ -113,7 +113,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Duration (seconds)
               </label>
               <input
@@ -126,7 +126,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Outcome
               </label>
               <select
@@ -144,7 +144,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Disposition
             </label>
             <input
@@ -157,7 +157,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Notes
             </label>
             <textarea
@@ -176,7 +176,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>

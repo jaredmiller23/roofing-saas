@@ -199,8 +199,8 @@ export function AdminSettings() {
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="font-medium text-gray-900 mb-2">Security Notes</h4>
-            <ul className="text-sm text-gray-600 space-y-1 list-disc pl-5">
+            <h4 className="font-medium text-foreground mb-2">Security Notes</h4>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
               <li>All impersonation sessions are logged with timestamps and reasons</li>
               <li>Sessions automatically expire after 4 hours</li>
               <li>You cannot impersonate other admin users</li>
@@ -229,7 +229,7 @@ export function AdminSettings() {
               <div className="h-12 w-full bg-gray-100 animate-pulse rounded" />
             </div>
           ) : recentLogs.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
+            <p className="text-sm text-muted-foreground text-center py-8">
               No impersonation sessions recorded yet
             </p>
           ) : (
@@ -254,10 +254,10 @@ export function AdminSettings() {
                       </Badge>
                     </div>
                     {log.reason && (
-                      <p className="text-xs text-gray-500 mt-0.5">{log.reason}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{log.reason}</p>
                     )}
                   </div>
-                  <div className="text-right text-sm text-gray-500">
+                  <div className="text-right text-sm text-muted-foreground">
                     <div>{formatDate(log.started_at)}</div>
                     <div className="text-xs">
                       Duration: {formatDuration(log.duration_seconds)}

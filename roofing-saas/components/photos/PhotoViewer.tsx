@@ -276,13 +276,13 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
       {showInfo && (
         <div className="p-4 bg-black bg-opacity-90 text-white space-y-2 text-sm">
           <div>
-            <span className="text-gray-400">Uploaded:</span>{' '}
+            <span className="text-muted-foreground">Uploaded:</span>{' '}
             <span>{formatDate(currentPhoto.created_at)}</span>
           </div>
 
           {currentPhoto.metadata?.compressedSize && (
             <div>
-              <span className="text-gray-400">Size:</span>{' '}
+              <span className="text-muted-foreground">Size:</span>{' '}
               <span>{formatSize(currentPhoto.metadata.compressedSize)}</span>
               {currentPhoto.metadata.compressionRatio && (
                 <span className="text-green-400 ml-2">
@@ -294,13 +294,13 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
 
           {currentPhoto.metadata?.originalSize && currentPhoto.metadata?.compressedSize && (
             <div>
-              <span className="text-gray-400">Original size:</span>{' '}
+              <span className="text-muted-foreground">Original size:</span>{' '}
               <span>{formatSize(currentPhoto.metadata.originalSize)}</span>
             </div>
           )}
 
           <div>
-            <span className="text-gray-400">ID:</span>{' '}
+            <span className="text-muted-foreground">ID:</span>{' '}
             <span className="font-mono text-xs">{currentPhoto.id}</span>
           </div>
         </div>
@@ -308,7 +308,7 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
 
       {/* Mobile swipe hint */}
       {photos.length > 1 && (
-        <div className="p-2 text-center text-gray-400 text-xs sm:hidden">
+        <div className="p-2 text-center text-muted-foreground text-xs sm:hidden">
           Swipe left or right to navigate
         </div>
       )}

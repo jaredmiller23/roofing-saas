@@ -162,13 +162,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       {/* Basic Information */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <CheckCircle className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+          <CheckCircle className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Basic Information</h2>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Title <span className="text-red-500">*</span>
             </label>
             <Input
@@ -180,7 +180,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Description
             </label>
             <Textarea
@@ -193,7 +193,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Priority
               </label>
               <select
@@ -208,7 +208,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Status
               </label>
               <select
@@ -224,7 +224,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Progress (%)
               </label>
               <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                   value={formData.progress}
                   onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })}
                 />
-                <BarChart3 className="h-4 w-4 text-gray-400" />
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
           </div>
@@ -245,13 +245,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       {/* Dates & Time */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Calendar className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Dates & Time Tracking</h2>
+          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Dates & Time Tracking</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Start Date
             </label>
             <Input
@@ -262,7 +262,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Due Date
             </label>
             <Input
@@ -273,7 +273,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Estimated Hours
             </label>
             <div className="flex items-center gap-2">
@@ -285,12 +285,12 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
                 placeholder="0.0"
               />
-              <Clock className="h-4 w-4 text-gray-400" />
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Actual Hours
             </label>
             <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 onChange={(e) => setFormData({ ...formData, actual_hours: e.target.value })}
                 placeholder="0.0"
               />
-              <Clock className="h-4 w-4 text-gray-400" />
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
         </div>
@@ -311,13 +311,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       {/* Assignments & Relations */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <User className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Assignments & Relations</h2>
+          <User className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Assignments & Relations</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Project
             </label>
             <select
@@ -335,7 +335,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Contact
             </label>
             <select
@@ -353,7 +353,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Parent Task (Subtask of)
             </label>
             <select
@@ -375,13 +375,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       {/* Tags & Reminders */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Tag className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Tags & Reminders</h2>
+          <Tag className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Tags & Reminders</h2>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Tags
             </label>
             <div className="flex gap-2 mb-2">
@@ -424,15 +424,15 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               onChange={(e) => setFormData({ ...formData, reminder_enabled: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="reminder" className="text-sm font-medium text-gray-700">
+            <label htmlFor="reminder" className="text-sm font-medium text-muted-foreground">
               Enable Reminder
             </label>
-            <Bell className="h-4 w-4 text-gray-400" />
+            <Bell className="h-4 w-4 text-muted-foreground" />
           </div>
 
           {formData.reminder_enabled && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Reminder Date
               </label>
               <Input

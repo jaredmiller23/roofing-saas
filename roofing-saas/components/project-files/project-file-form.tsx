@@ -135,13 +135,13 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
       {/* File Details */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <FileText className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">File Details</h2>
+          <FileText className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">File Details</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               File Name *
             </label>
             <input
@@ -155,7 +155,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 File Type
               </label>
               <select
@@ -173,7 +173,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Category
               </label>
               <input
@@ -188,7 +188,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
 
           {/* Upload Mode Toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-2">
               File Source *
             </label>
             <div className="flex gap-4 mb-4">
@@ -198,7 +198,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 className={`flex-1 px-4 py-2 rounded-md font-medium ${
                   uploadMode === 'upload'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <Upload className="inline h-4 w-4 mr-2" />
@@ -210,7 +210,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 className={`flex-1 px-4 py-2 rounded-md font-medium ${
                   uploadMode === 'url'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <FileText className="inline h-4 w-4 mr-2" />
@@ -223,15 +223,15 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 <label className="block w-full">
                   <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-md hover:border-blue-500 cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                     <div className="text-center">
-                      <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">
+                      <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
                         {selectedFile ? (
                           <span className="font-medium text-blue-600">{selectedFile.name}</span>
                         ) : (
                           <>
                             Click to upload or drag and drop
                             <br />
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               PDF, PNG, JPG, or any document
                             </span>
                           </>
@@ -263,7 +263,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Description
             </label>
             <textarea
@@ -282,7 +282,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>

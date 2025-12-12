@@ -178,7 +178,7 @@ export function PipelineSettings() {
       {/* Pipeline Preview */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Sales Pipeline Stages</h3>
+          <h3 className="text-lg font-semibold text-foreground">Sales Pipeline Stages</h3>
           <Button
             onClick={() => setShowAddForm(true)}
             className="bg-blue-600 hover:bg-blue-700"
@@ -229,13 +229,13 @@ export function PipelineSettings() {
                 </div>
               </div>
               {index < stages.length - 1 && (
-                <div className="text-gray-400 px-2">→</div>
+                <div className="text-muted-foreground px-2">→</div>
               )}
             </div>
           ))}
 
           {stages.length === 0 && (
-            <div className="text-gray-500 text-sm py-8 text-center w-full">
+            <div className="text-muted-foreground text-sm py-8 text-center w-full">
               No pipeline stages configured. Add your first stage to get started.
             </div>
           )}
@@ -245,13 +245,13 @@ export function PipelineSettings() {
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingStage ? 'Edit Stage' : 'Add New Stage'}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Stage Name *
               </label>
               <Input
@@ -262,7 +262,7 @@ export function PipelineSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Stage Type *
               </label>
               <select
@@ -277,7 +277,7 @@ export function PipelineSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Win Probability (%)
               </label>
               <Input
@@ -291,7 +291,7 @@ export function PipelineSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Stage Color
               </label>
               <div className="flex items-center gap-2">
@@ -311,7 +311,7 @@ export function PipelineSettings() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Description
               </label>
               <textarea
@@ -324,7 +324,7 @@ export function PipelineSettings() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Icon (optional)
               </label>
               <Input
@@ -332,7 +332,7 @@ export function PipelineSettings() {
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                 placeholder="e.g., star, check, x (lucide icon name)"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Enter a Lucide icon name for visual representation
               </p>
             </div>
@@ -362,24 +362,24 @@ export function PipelineSettings() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Win Probability</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Order</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Stage</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Win Probability</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Color</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {stages.map((stage) => (
                 <tr key={stage.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {stage.stage_order + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{stage.name}</div>
+                    <div className="text-sm font-medium text-foreground">{stage.name}</div>
                     {stage.description && (
-                      <div className="text-sm text-gray-500">{stage.description}</div>
+                      <div className="text-sm text-muted-foreground">{stage.description}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -391,7 +391,7 @@ export function PipelineSettings() {
                       {stage.stage_type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {stage.win_probability}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -400,7 +400,7 @@ export function PipelineSettings() {
                         className="w-6 h-6 rounded border border-gray-300"
                         style={{ backgroundColor: stage.color }}
                       />
-                      <span className="text-sm text-gray-500">{stage.color}</span>
+                      <span className="text-sm text-muted-foreground">{stage.color}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

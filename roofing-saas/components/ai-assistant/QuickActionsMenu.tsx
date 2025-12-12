@@ -171,7 +171,7 @@ export function QuickActionsMenu() {
         className={`p-2 rounded-full transition-all ${
           isOpen
             ? 'bg-blue-600 text-white shadow-lg'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            : 'bg-gray-100 text-muted-foreground hover:bg-muted'
         }`}
         title="Quick actions"
       >
@@ -183,8 +183,8 @@ export function QuickActionsMenu() {
         <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50">
           {/* Header */}
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-900">Quick Actions</h3>
-            <p className="text-xs text-gray-600 mt-0.5">
+            <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {availableActions.length} actions available
             </p>
           </div>
@@ -192,7 +192,7 @@ export function QuickActionsMenu() {
           {/* Actions list */}
           <div className="max-h-96 overflow-y-auto">
             {availableActions.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-500">
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                 No actions available for current context
               </div>
             ) : (
@@ -203,7 +203,7 @@ export function QuickActionsMenu() {
                     <button
                       key={action.id}
                       onClick={() => handleActionClick(action)}
-                      className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-left group"
+                      className="w-full flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-accent active:bg-gray-100 transition-colors text-left group"
                     >
                       {/* Icon */}
                       <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -212,10 +212,10 @@ export function QuickActionsMenu() {
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 text-sm">
+                        <div className="font-medium text-foreground text-sm">
                           {action.label}
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                           {action.description}
                         </div>
                       </div>
@@ -228,7 +228,7 @@ export function QuickActionsMenu() {
 
           {/* Footer */}
           <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               Or just type what you need in the chat
             </p>
           </div>

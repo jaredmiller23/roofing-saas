@@ -108,7 +108,7 @@ export function TasksList({ params = {} }: TasksListProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'todo':
-        return <Circle className="h-5 w-5 text-gray-500" />
+        return <Circle className="h-5 w-5 text-muted-foreground" />
       case 'in_progress':
         return <Clock className="h-5 w-5 text-blue-500" />
       case 'completed':
@@ -116,13 +116,13 @@ export function TasksList({ params = {} }: TasksListProps) {
       case 'cancelled':
         return <AlertCircle className="h-5 w-5 text-red-500" />
       default:
-        return <Circle className="h-5 w-5 text-gray-500" />
+        return <Circle className="h-5 w-5 text-muted-foreground" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      todo: 'bg-gray-100 text-gray-700',
+      todo: 'bg-gray-100 text-muted-foreground',
       in_progress: 'bg-blue-100 text-blue-700',
       completed: 'bg-green-100 text-green-700',
       cancelled: 'bg-red-100 text-red-700'
@@ -144,7 +144,7 @@ export function TasksList({ params = {} }: TasksListProps) {
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      low: 'bg-gray-100 text-gray-700',
+      low: 'bg-gray-100 text-muted-foreground',
       medium: 'bg-yellow-100 text-yellow-700',
       high: 'bg-red-100 text-red-700'
     }
@@ -174,15 +174,15 @@ export function TasksList({ params = {} }: TasksListProps) {
       {isLoading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading tasks...</p>
+          <p className="text-muted-foreground">Loading tasks...</p>
         </div>
       ) : tasks.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <CheckCircle2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               No tasks found
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Try adjusting your search or filters
             </p>
             <Button
@@ -207,16 +207,16 @@ export function TasksList({ params = {} }: TasksListProps) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-foreground">
                           {task.title}
                         </h3>
                         {getStatusBadge(task.status)}
                         {getPriorityBadge(task.priority)}
                       </div>
                       {task.description && (
-                        <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+                        <p className="text-muted-foreground text-sm mb-3">{task.description}</p>
                       )}
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         {task.project && (
                           <div>
                             <span className="font-medium">Project:</span>{' '}
@@ -245,7 +245,7 @@ export function TasksList({ params = {} }: TasksListProps) {
                       {task.tags && task.tags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {task.tags.map((tag, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            <span key={idx} className="px-2 py-1 bg-gray-100 text-muted-foreground rounded text-xs">
                               {tag}
                             </span>
                           ))}

@@ -9,12 +9,12 @@ import { Calendar, List } from 'lucide-react'
 
 // Lazy load calendar components to reduce initial bundle
 const StandardCalendar = dynamic(() => import('@/components/calendar/StandardCalendar').then(mod => ({ default: mod.StandardCalendar })), {
-  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-muted-foreground">Loading calendar...</span></div>,
   ssr: false
 })
 
 const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalendar').then(mod => ({ default: mod.GoogleCalendar })), {
-  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-gray-400">Loading calendar...</span></div>,
+  loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-muted-foreground">Loading calendar...</span></div>,
   ssr: false
 })
 
@@ -85,7 +85,7 @@ export default function EventsPage() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Events & Calendar</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage appointments, inspections, and meetings
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function EventsPage() {
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'calendar'
                   ? 'bg-white text-foreground shadow-sm'
-                  : 'text-gray-600 hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <Calendar className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function EventsPage() {
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 view === 'list'
                   ? 'bg-white text-foreground shadow-sm'
-                  : 'text-gray-600 hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <List className="h-4 w-4" />
@@ -132,7 +132,7 @@ export default function EventsPage() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'standard'
                     ? 'bg-white text-foreground shadow-sm'
-                    : 'text-gray-600 hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Standard Calendar
@@ -142,7 +142,7 @@ export default function EventsPage() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   calendarType === 'google'
                     ? 'bg-white text-foreground shadow-sm'
-                    : 'text-gray-600 hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Google Calendar
@@ -159,7 +159,7 @@ export default function EventsPage() {
             ) : (
               isLoading ? (
                 <div className="flex items-center justify-center h-96">
-                  <div className="text-gray-600">Loading calendar...</div>
+                  <div className="text-muted-foreground">Loading calendar...</div>
                 </div>
               ) : (
                 <StandardCalendar

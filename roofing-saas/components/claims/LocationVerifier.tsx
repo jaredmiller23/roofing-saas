@@ -128,7 +128,7 @@ export function LocationVerifier({
                   />
                 </svg>
               </div>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 Verify you&apos;re at the property before starting the inspection.
               </p>
             </div>
@@ -142,7 +142,7 @@ export function LocationVerifier({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <p className="text-gray-600">Getting your location...</p>
+              <p className="text-muted-foreground">Getting your location...</p>
             </div>
           )}
 
@@ -155,7 +155,7 @@ export function LocationVerifier({
               </div>
               <p className="text-green-700 font-medium">Location Verified</p>
               {distance !== null && distance > 0 && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   You&apos;re {formatDistance(distance)} from the property
                 </p>
               )}
@@ -171,11 +171,11 @@ export function LocationVerifier({
               </div>
               <p className="text-orange-700 font-medium">Too Far From Property</p>
               {distance !== null && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   You&apos;re {formatDistance(distance)} away (max: {formatDistance(maxDistanceMeters)})
                 </p>
               )}
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Please move closer to the property and try again.
               </p>
             </div>
@@ -189,7 +189,7 @@ export function LocationVerifier({
                 </svg>
               </div>
               <p className="text-red-700 font-medium">Location Error</p>
-              <p className="text-sm text-gray-500 mt-1">{error}</p>
+              <p className="text-sm text-muted-foreground mt-1">{error}</p>
             </div>
           )}
 
@@ -214,7 +214,7 @@ export function LocationVerifier({
             {onSkip && status !== 'verified' && (
               <button
                 onClick={onSkip}
-                className="w-full py-3 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
+                className="w-full py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Skip Location Verification
               </button>

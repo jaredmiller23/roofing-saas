@@ -78,7 +78,7 @@ export default function VoicePage() {
             </div>
             <h1 className="text-3xl font-bold text-foreground">AI Voice Assistant</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Talk to your CRM - Create contacts, log knocks, search records, and more using your voice
           </p>
         </div>
@@ -122,14 +122,14 @@ export default function VoicePage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Optional Context
           </h2>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Select a contact or project to provide context to the assistant
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Contact Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Contact
               </label>
               <select
@@ -149,7 +149,7 @@ export default function VoicePage() {
 
             {/* Project Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 Project
               </label>
               <select
@@ -186,33 +186,33 @@ export default function VoicePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="text-gray-600 font-medium">Provider</p>
+              <p className="text-muted-foreground font-medium">Provider</p>
               <p className="text-foreground">OpenAI Realtime API</p>
             </div>
             <div>
-              <p className="text-gray-600 font-medium">Model</p>
+              <p className="text-muted-foreground font-medium">Model</p>
               <p className="text-foreground">gpt-4o-realtime-preview</p>
             </div>
             <div>
-              <p className="text-gray-600 font-medium">Voice</p>
+              <p className="text-muted-foreground font-medium">Voice</p>
               <p className="text-foreground">Alloy</p>
             </div>
             <div>
-              <p className="text-gray-600 font-medium">Cost</p>
+              <p className="text-muted-foreground font-medium">Cost</p>
               <p className="text-foreground">~$0.30/minute</p>
             </div>
             <div>
-              <p className="text-gray-600 font-medium">Target Latency</p>
+              <p className="text-muted-foreground font-medium">Target Latency</p>
               <p className="text-foreground">&lt;2 seconds</p>
             </div>
             <div>
-              <p className="text-gray-600 font-medium">Functions Available</p>
+              <p className="text-muted-foreground font-medium">Functions Available</p>
               <p className="text-foreground">10 CRM + Intelligence</p>
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               <strong>Available Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call, get_weather, search_roofing_knowledge, search_web
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function VoicePage() {
           <h3 className="text-lg font-semibold text-foreground mb-2">
             Coming Soon: Phase 4.2 & 4.3
           </h3>
-          <ul className="space-y-2 text-sm text-gray-700">
+          <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <span className="text-purple-600 font-bold">•</span>
               <span><strong>ElevenLabs Integration:</strong> Premium voice quality at 75% lower cost ($0.08/min)</span>

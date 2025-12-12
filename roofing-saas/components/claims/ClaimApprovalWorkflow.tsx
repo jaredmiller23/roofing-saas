@@ -291,7 +291,7 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
                 rows={4}
                 className={error ? 'border-red-500' : ''}
               />
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-muted-foreground">
                 Be specific and professional. This reason will be shared with the homeowner.
               </p>
             </div>

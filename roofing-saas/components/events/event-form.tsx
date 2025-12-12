@@ -105,13 +105,13 @@ export function EventForm({ event }: EventFormProps) {
       {/* Event Details */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <CalendarDays className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Event Details</h2>
+          <CalendarDays className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Event Details</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Title *
             </label>
             <input
@@ -126,7 +126,7 @@ export function EventForm({ event }: EventFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Event Type
               </label>
               <select
@@ -146,7 +146,7 @@ export function EventForm({ event }: EventFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Status
               </label>
               <select
@@ -164,7 +164,7 @@ export function EventForm({ event }: EventFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Description
             </label>
             <textarea
@@ -181,8 +181,8 @@ export function EventForm({ event }: EventFormProps) {
       {/* Date & Time */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <Clock className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Date & Time</h2>
+          <Clock className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Date & Time</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
@@ -193,14 +193,14 @@ export function EventForm({ event }: EventFormProps) {
               onChange={(e) => setFormData({ ...formData, all_day: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label className="ml-2 block text-sm text-gray-900">
+            <label className="ml-2 block text-sm text-foreground">
               All Day Event
             </label>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Start *
               </label>
               <input
@@ -213,7 +213,7 @@ export function EventForm({ event }: EventFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 End *
               </label>
               <input
@@ -231,13 +231,13 @@ export function EventForm({ event }: EventFormProps) {
       {/* Location */}
       <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-6">
-          <MapPin className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Location</h2>
+          <MapPin className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground">Location</h2>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Location Name
             </label>
             <input
@@ -250,7 +250,7 @@ export function EventForm({ event }: EventFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Street Address
             </label>
             <input
@@ -264,7 +264,7 @@ export function EventForm({ event }: EventFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 City
               </label>
               <input
@@ -277,7 +277,7 @@ export function EventForm({ event }: EventFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 State
               </label>
               <input
@@ -291,7 +291,7 @@ export function EventForm({ event }: EventFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 ZIP Code
               </label>
               <input
@@ -309,11 +309,11 @@ export function EventForm({ event }: EventFormProps) {
       {/* Outcome */}
       {event && (
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Outcome</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-6">Outcome</h2>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Outcome
               </label>
               <input
@@ -326,7 +326,7 @@ export function EventForm({ event }: EventFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Outcome Notes
               </label>
               <textarea
@@ -346,7 +346,7 @@ export function EventForm({ event }: EventFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>

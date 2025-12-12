@@ -48,7 +48,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
           <h2 className="text-xl font-semibold text-foreground">Add Commission</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-muted-foreground"
             disabled={isPending}
           >
             <X className="h-6 w-6" />
@@ -66,7 +66,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Commission Plan */}
             <div>
-              <label htmlFor="commission_plan_id" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="commission_plan_id" className="block text-sm font-medium text-muted-foreground mb-1">
                 Commission Plan *
               </label>
               <select
@@ -86,7 +86,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
 
             {/* Commission Type */}
             <div>
-              <label htmlFor="commission_type" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="commission_type" className="block text-sm font-medium text-muted-foreground mb-1">
                 Commission Type *
               </label>
               <select
@@ -107,7 +107,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
 
           {/* User Email */}
           <div>
-            <label htmlFor="user_email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="user_email" className="block text-sm font-medium text-muted-foreground mb-1">
               Team Member Email *
             </label>
             <input
@@ -118,12 +118,12 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               placeholder="user@example.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Enter the email of the user earning this commission</p>
+            <p className="text-xs text-muted-foreground mt-1">Enter the email of the user earning this commission</p>
           </div>
 
           {/* Base Amount */}
           <div>
-            <label htmlFor="base_amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="base_amount" className="block text-sm font-medium text-muted-foreground mb-1">
               Base Amount *
             </label>
             <input
@@ -136,12 +136,12 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Contract value, profit, or other calculation base</p>
+            <p className="text-xs text-muted-foreground mt-1">Contract value, profit, or other calculation base</p>
           </div>
 
           {/* Project ID (Optional) */}
           <div>
-            <label htmlFor="project_id" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="project_id" className="block text-sm font-medium text-muted-foreground mb-1">
               Project ID (Optional)
             </label>
             <input
@@ -155,7 +155,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
 
           {/* Notes */}
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-1">
               Notes
             </label>
             <textarea
@@ -173,7 +173,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
             >
               Cancel
             </button>

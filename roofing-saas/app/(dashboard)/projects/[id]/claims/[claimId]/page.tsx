@@ -174,8 +174,8 @@ export default function ClaimDetailPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-96 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -186,7 +186,7 @@ export default function ClaimDetailPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-600 mb-4">Claim not found</p>
+            <p className="text-muted-foreground mb-4">Claim not found</p>
             <Button onClick={() => router.push(`/projects/${projectId}/claims`)}>
               Back to Claims
             </Button>
@@ -217,7 +217,7 @@ export default function ClaimDetailPage() {
                 {STATUS_LABELS[claim.status]}
               </Badge>
             </div>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               {claim.property_address}, {claim.property_city}, {claim.property_state}
             </p>
           </div>
@@ -312,23 +312,23 @@ export default function ClaimDetailPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-6">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Policy Number</div>
+                <div className="text-sm text-muted-foreground mb-1">Policy Number</div>
                 <div className="font-medium">{claim.policy_number || 'N/A'}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Claim Type</div>
+                <div className="text-sm text-muted-foreground mb-1">Claim Type</div>
                 <div className="font-medium capitalize">
                   {claim.claim_type.replace('_', ' ')}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Date of Loss</div>
+                <div className="text-sm text-muted-foreground mb-1">Date of Loss</div>
                 <div className="font-medium">
                   {format(new Date(claim.date_of_loss), 'MMMM d, yyyy')}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Date Filed</div>
+                <div className="text-sm text-muted-foreground mb-1">Date Filed</div>
                 <div className="font-medium">
                   {claim.date_filed
                     ? format(new Date(claim.date_filed), 'MMMM d, yyyy')
@@ -336,13 +336,13 @@ export default function ClaimDetailPage() {
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Property Type</div>
+                <div className="text-sm text-muted-foreground mb-1">Property Type</div>
                 <div className="font-medium capitalize">
                   {claim.property_type?.replace('_', ' ') || 'N/A'}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Storm Event</div>
+                <div className="text-sm text-muted-foreground mb-1">Storm Event</div>
                 <div className="font-medium">
                   {claim.storm_event_id ? 'Yes' : 'No'}
                 </div>
@@ -356,20 +356,20 @@ export default function ClaimDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Address</div>
+                <div className="text-sm text-muted-foreground mb-1">Address</div>
                 <div className="font-medium">{claim.property_address}</div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">City</div>
+                  <div className="text-sm text-muted-foreground mb-1">City</div>
                   <div className="font-medium">{claim.property_city}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">State</div>
+                  <div className="text-sm text-muted-foreground mb-1">State</div>
                   <div className="font-medium">{claim.property_state}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">ZIP</div>
+                  <div className="text-sm text-muted-foreground mb-1">ZIP</div>
                   <div className="font-medium">{claim.property_zip}</div>
                 </div>
               </div>
@@ -394,7 +394,7 @@ export default function ClaimDetailPage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">Date of Loss</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     {format(new Date(claim.date_of_loss), 'MMMM d, yyyy')}
                   </div>
                 </div>
@@ -408,7 +408,7 @@ export default function ClaimDetailPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Claim Filed</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {format(new Date(claim.date_filed), 'MMMM d, yyyy')}
                     </div>
                   </div>
@@ -423,7 +423,7 @@ export default function ClaimDetailPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Acknowledgment Received</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {format(new Date(claim.acknowledgment_received), 'MMMM d, yyyy')}
                     </div>
                   </div>
@@ -438,7 +438,7 @@ export default function ClaimDetailPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Inspection Scheduled</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {format(new Date(claim.inspection_scheduled), 'MMMM d, yyyy')}
                     </div>
                   </div>
@@ -453,7 +453,7 @@ export default function ClaimDetailPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Inspection Completed</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {format(new Date(claim.inspection_completed), 'MMMM d, yyyy')}
                     </div>
                   </div>
@@ -468,7 +468,7 @@ export default function ClaimDetailPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Decision Received</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       {format(new Date(claim.decision_date), 'MMMM d, yyyy')}
                     </div>
                   </div>

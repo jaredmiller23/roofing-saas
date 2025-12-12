@@ -72,7 +72,7 @@ export default async function EventDetailPage({
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Event Details</h1>
-              <p className="text-gray-600 mt-1">{event.title}</p>
+              <p className="text-muted-foreground mt-1">{event.title}</p>
             </div>
             <Link
               href={`/events/${event.id}/edit`}
@@ -86,36 +86,36 @@ export default async function EventDetailPage({
         {/* Event Information Card */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <CalendarDays className="h-5 w-5 text-gray-600" />
+            <CalendarDays className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Event Information</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Title</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Title</label>
               <p className="text-foreground">{event.title}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Event Type</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Event Type</label>
               <p className="text-foreground capitalize">{event.event_type?.replace('_', ' ')}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(event.status)}`}>
                 {event.status?.replace('_', ' ')}
               </span>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">All Day</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">All Day</label>
               <p className="text-foreground">{event.all_day ? 'Yes' : 'No'}</p>
             </div>
 
             {event.description && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-500 mb-1">Description</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Description</label>
                 <p className="text-foreground whitespace-pre-wrap">{event.description}</p>
               </div>
             )}
@@ -125,18 +125,18 @@ export default async function EventDetailPage({
         {/* Date & Time Card */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <Clock className="h-5 w-5 text-gray-600" />
+            <Clock className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Date & Time</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Start</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Start</label>
               <p className="text-foreground">{formatDateTime(event.start_at)}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">End</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">End</label>
               <p className="text-foreground">{formatDateTime(event.end_at)}</p>
             </div>
           </div>
@@ -146,21 +146,21 @@ export default async function EventDetailPage({
         {(event.location || event.address_street) && (
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
             <div className="flex items-center gap-2 mb-6">
-              <MapPin className="h-5 w-5 text-gray-600" />
+              <MapPin className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Location</h2>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               {event.location && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Location Name</label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Location Name</label>
                   <p className="text-foreground">{event.location}</p>
                 </div>
               )}
 
               {event.address_street && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Address</label>
                   <p className="text-foreground">
                     {event.address_street}
                     {event.address_city && (
@@ -180,20 +180,20 @@ export default async function EventDetailPage({
         {(event.outcome || event.outcome_notes) && (
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-gray-600" />
+              <FileText className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Outcome</h2>
             </div>
 
             {event.outcome && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-500 mb-1">Outcome</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Outcome</label>
                 <p className="text-foreground">{event.outcome}</p>
               </div>
             )}
 
             {event.outcome_notes && (
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
                 <p className="text-foreground whitespace-pre-wrap">{event.outcome_notes}</p>
               </div>
             )}
@@ -204,7 +204,7 @@ export default async function EventDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/events"
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background"
+            className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background"
           >
             Back to Events
           </Link>

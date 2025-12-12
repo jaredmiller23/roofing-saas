@@ -50,7 +50,7 @@ export default async function TasksPage() {
               </Link>
             </div>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Manage tasks and deadlines for projects and contacts
           </p>
         </div>

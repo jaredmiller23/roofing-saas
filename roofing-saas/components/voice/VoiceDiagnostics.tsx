@@ -185,12 +185,12 @@ export function VoiceDiagnostics() {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-foreground">
               Voice Assistant Diagnostics
             </h2>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-muted-foreground"
             >
               ✕
             </button>
@@ -217,14 +217,14 @@ export function VoiceDiagnostics() {
                     <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">
+                    <h3 className="font-semibold text-foreground text-sm">
                       {result.key}
                     </h3>
-                    <p className="text-sm text-gray-700 mt-1 font-mono">
+                    <p className="text-sm text-muted-foreground mt-1 font-mono">
                       {result.message}
                     </p>
                     {result.value && (
-                      <p className="text-xs text-gray-500 mt-1 break-all">
+                      <p className="text-xs text-muted-foreground mt-1 break-all">
                         Value: {result.value}
                       </p>
                     )}
@@ -243,7 +243,7 @@ export function VoiceDiagnostics() {
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium"
+              className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-gray-300 text-sm font-medium"
             >
               Close
             </button>

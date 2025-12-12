@@ -85,12 +85,12 @@ export function SyncStatus({ tenantId }: SyncStatusProps) {
                 ) : (
                   <RefreshCw className="w-4 h-4 text-blue-600" />
                 )}
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   {isSyncing ? 'Syncing...' : `${totalPending} pending`}
                 </span>
               </div>
 
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 {pendingCount.uploads > 0 && `${pendingCount.uploads} upload${pendingCount.uploads > 1 ? 's' : ''}`}
                 {pendingCount.uploads > 0 && pendingCount.actions > 0 && ', '}
                 {pendingCount.actions > 0 && `${pendingCount.actions} action${pendingCount.actions > 1 ? 's' : ''}`}

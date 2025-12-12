@@ -75,7 +75,7 @@ export default async function FinancialsPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Financial Dashboard</h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-muted-foreground mt-2">
           Profit & Loss reporting and job costing analysis
         </p>
       </div>
@@ -167,22 +167,22 @@ export default async function FinancialsPage() {
                     <td className="py-3 px-4">
                       <div>
                         <div className="font-medium">{project.project_name}</div>
-                        <div className="text-sm text-gray-500">{project.project_number}</div>
+                        <div className="text-sm text-muted-foreground">{project.project_number}</div>
                       </div>
                     </td>
                     <td className="text-right py-3 px-4">
                       {formatCurrency(Number(project.revenue) || 0)}
                     </td>
-                    <td className="text-right py-3 px-4 text-gray-600">
+                    <td className="text-right py-3 px-4 text-muted-foreground">
                       {formatCurrency(Number(project.actual_labor) || 0)}
                     </td>
-                    <td className="text-right py-3 px-4 text-gray-600">
+                    <td className="text-right py-3 px-4 text-muted-foreground">
                       {formatCurrency(Number(project.actual_materials) || 0)}
                     </td>
-                    <td className="text-right py-3 px-4 text-gray-600">
+                    <td className="text-right py-3 px-4 text-muted-foreground">
                       {formatCurrency(Number(project.actual_equipment) || 0)}
                     </td>
-                    <td className="text-right py-3 px-4 text-gray-600">
+                    <td className="text-right py-3 px-4 text-muted-foreground">
                       {formatCurrency(Number(project.actual_other) || 0)}
                     </td>
                     <td className="text-right py-3 px-4 font-medium">
@@ -228,7 +228,7 @@ export default async function FinancialsPage() {
                 <div key={project.project_id} className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="font-medium">{project.project_name}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       Est: {formatCurrency(Number(project.total_estimated_cost) || 0)} |
                       Actual: {formatCurrency(Number(project.total_actual_cost) || 0)}
                     </div>

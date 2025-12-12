@@ -155,8 +155,8 @@ export default function TerritoriesPage() {
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardHeader className="pb-2">
-                <div className="h-6 bg-gray-200 rounded animate-pulse mb-2" />
-                <div className="h-8 bg-gray-200 rounded animate-pulse" />
+                <div className="h-6 bg-muted rounded animate-pulse mb-2" />
+                <div className="h-8 bg-muted rounded animate-pulse" />
               </CardHeader>
             </Card>
           ))}
@@ -216,9 +216,9 @@ export default function TerritoriesPage() {
           </div>
         ) : knocks.length === 0 ? (
           <div className="text-center py-8">
-            <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-            <p className="text-gray-500">No activity yet</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">No activity yet</p>
+            <p className="text-sm text-muted-foreground mt-1">
               {selectedTerritory
                 ? 'Drop pins on the map to track door knocks'
                 : 'Select a territory to start tracking'}
@@ -237,7 +237,7 @@ export default function TerritoriesPage() {
                       <span className="text-sm font-medium text-foreground">
                         {formatDisposition(knock.disposition)}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {new Date(knock.created_at).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -248,11 +248,11 @@ export default function TerritoriesPage() {
                     </div>
 
                     {knock.address && (
-                      <p className="text-sm text-gray-600">{knock.address}</p>
+                      <p className="text-sm text-muted-foreground">{knock.address}</p>
                     )}
 
                     {knock.notes && (
-                      <p className="text-sm text-gray-500 mt-1">{knock.notes}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{knock.notes}</p>
                     )}
 
                     {knock.contact_created && knock.contact_id && (
@@ -316,9 +316,9 @@ export default function TerritoriesPage() {
         </div>
       ) : (
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-          <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-          <p className="text-gray-600 font-medium">No territory selected</p>
-          <p className="text-sm text-gray-500 mt-1">
+          <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+          <p className="text-muted-foreground font-medium">No territory selected</p>
+          <p className="text-sm text-muted-foreground mt-1">
             Select a territory from the list to view its map
           </p>
         </div>
@@ -336,7 +336,7 @@ export default function TerritoriesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Territories & Activity</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage territories and track door-knocking activities
             </p>
           </div>

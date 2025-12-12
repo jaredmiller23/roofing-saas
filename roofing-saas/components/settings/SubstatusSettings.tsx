@@ -205,10 +205,10 @@ export function SubstatusSettings() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Substatus Configuration</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Substatus Configuration</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Entity Type
             </label>
             <select
@@ -222,7 +222,7 @@ export function SubstatusSettings() {
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Filter by Status (optional)
             </label>
             <Input
@@ -244,13 +244,13 @@ export function SubstatusSettings() {
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingSubstatus ? 'Edit Substatus' : 'Add New Substatus'}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Entity Type *
               </label>
               <select
@@ -266,7 +266,7 @@ export function SubstatusSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Status Field Name *
               </label>
               <Input
@@ -278,7 +278,7 @@ export function SubstatusSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Parent Status Value *
               </label>
               <Input
@@ -287,13 +287,13 @@ export function SubstatusSettings() {
                 placeholder="e.g., Lead, Customer"
                 disabled={!!editingSubstatus}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 The main status this substatus belongs to
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Substatus Value *
               </label>
               <Input
@@ -301,13 +301,13 @@ export function SubstatusSettings() {
                 onChange={(e) => setFormData({ ...formData, substatus_value: e.target.value })}
                 placeholder="e.g., cold, warm, hot"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Internal value for this substatus
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Display Label *
               </label>
               <Input
@@ -318,7 +318,7 @@ export function SubstatusSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Display Order
               </label>
               <Input
@@ -331,7 +331,7 @@ export function SubstatusSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Color
               </label>
               <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export function SubstatusSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Icon (optional)
               </label>
               <Input
@@ -362,7 +362,7 @@ export function SubstatusSettings() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Description
               </label>
               <textarea
@@ -383,7 +383,7 @@ export function SubstatusSettings() {
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
+                  <span className="text-sm text-muted-foreground">Active</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -393,8 +393,8 @@ export function SubstatusSettings() {
                     onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Default</span>
-                  <span className="text-xs text-gray-500">(Auto-set when status changes)</span>
+                  <span className="text-sm text-muted-foreground">Default</span>
+                  <span className="text-xs text-muted-foreground">(Auto-set when status changes)</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -404,15 +404,15 @@ export function SubstatusSettings() {
                     onChange={(e) => setFormData({ ...formData, is_terminal: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Terminal</span>
-                  <span className="text-xs text-gray-500">(Final state)</span>
+                  <span className="text-sm text-muted-foreground">Terminal</span>
+                  <span className="text-xs text-muted-foreground">(Final state)</span>
                 </label>
               </div>
             </div>
 
             {/* Auto-transition fields */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Auto-transition To (optional)
               </label>
               <Input
@@ -420,13 +420,13 @@ export function SubstatusSettings() {
                 onChange={(e) => setFormData({ ...formData, auto_transition_to: e.target.value })}
                 placeholder="e.g., cold"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Substatus value to auto-transition to
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Auto-transition Delay (hours)
               </label>
               <Input
@@ -462,10 +462,10 @@ export function SubstatusSettings() {
         <div className="space-y-4">
           {Object.entries(groupedSubstatuses).map(([statusValue, substatusList]) => (
             <div key={statusValue} className="bg-white rounded-lg border border-gray-200 p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Tag className="h-5 w-5 text-gray-500" />
+              <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Tag className="h-5 w-5 text-muted-foreground" />
                 {statusValue}
-                <span className="text-sm font-normal text-gray-500">
+                <span className="text-sm font-normal text-muted-foreground">
                   ({substatusList.length} substatus{substatusList.length !== 1 ? 'es' : ''})
                 </span>
               </h4>
@@ -485,7 +485,7 @@ export function SubstatusSettings() {
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: substatus.color || '#3B82F6' }}
                           />
-                          <span className="font-semibold text-sm text-gray-900">
+                          <span className="font-semibold text-sm text-foreground">
                             {substatus.substatus_label}
                           </span>
                           {substatus.is_default && (
@@ -495,14 +495,14 @@ export function SubstatusSettings() {
                       </div>
 
                       {substatus.substatus_description && (
-                        <p className="text-xs text-gray-600 mb-2">
+                        <p className="text-xs text-muted-foreground mb-2">
                           {substatus.substatus_description}
                         </p>
                       )}
 
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         {!substatus.is_active && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                          <span className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded">
                             Inactive
                           </span>
                         )}
@@ -517,14 +517,14 @@ export function SubstatusSettings() {
                       <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
                         <button
                           onClick={() => handleEdit(substatus)}
-                          className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm"
+                          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
                           title="Edit"
                         >
-                          <Pencil className="h-3 w-3 text-gray-600" />
+                          <Pencil className="h-3 w-3 text-muted-foreground" />
                         </button>
                         <button
                           onClick={() => handleDelete(substatus.id)}
-                          className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm"
+                          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
                           title="Delete"
                         >
                           <Trash2 className="h-3 w-3 text-red-600" />
@@ -538,11 +538,11 @@ export function SubstatusSettings() {
         </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             No substatuses configured
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             Add your first substatus to enhance your {entityTypeFilter} status tracking
           </p>
           <Button

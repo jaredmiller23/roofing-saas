@@ -110,10 +110,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
       {/* Basic Information */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Basic Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="first_name" className="block text-sm font-medium text-muted-foreground mb-1">
               First Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -123,12 +123,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.first_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="last_name" className="block text-sm font-medium text-muted-foreground mb-1">
               Last Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -138,12 +138,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.last_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-1">
               Email
             </label>
             <input
@@ -152,12 +152,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground mb-1">
               Phone
             </label>
             <input
@@ -166,12 +166,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="mobile_phone" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="mobile_phone" className="block text-sm font-medium text-muted-foreground mb-1">
               Mobile Phone
             </label>
             <input
@@ -180,7 +180,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="mobile_phone"
               value={formData.mobile_phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -192,16 +192,16 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                 name="is_organization"
                 checked={formData.is_organization}
                 onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-input rounded"
               />
-              <label htmlFor="is_organization" className="ml-2 block text-sm font-medium text-gray-700">
+              <label htmlFor="is_organization" className="ml-2 block text-sm font-medium text-muted-foreground">
                 This is a company/organization (not an individual)
               </label>
             </div>
           </div>
 
           <div>
-            <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="company" className="block text-sm font-medium text-muted-foreground mb-1">
               Company Name
             </label>
             <input
@@ -211,9 +211,9 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder={formData.is_organization ? "Company name" : "Employer (optional)"}
               value={formData.company}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {formData.is_organization
                 ? "The name of the organization"
                 : "Optional: The company this person works for"}
@@ -221,7 +221,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           </div>
 
           <div>
-            <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="website" className="block text-sm font-medium text-muted-foreground mb-1">
               Website
             </label>
             <input
@@ -231,12 +231,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="https://example.com"
               value={formData.website}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="contact_category" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="contact_category" className="block text-sm font-medium text-muted-foreground mb-1">
               Category <span className="text-red-500">*</span>
             </label>
             <select
@@ -245,7 +245,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               required
               value={formData.contact_category}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {getContactCategoryOptions().map((option) => (
                 <option key={option.value} value={option.value}>
@@ -256,7 +256,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           </div>
 
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="type" className="block text-sm font-medium text-muted-foreground mb-1">
               Sales Stage
             </label>
             <select
@@ -264,7 +264,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="lead">Lead</option>
               <option value="prospect">Prospect</option>
@@ -273,7 +273,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           </div>
 
           <div>
-            <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="stage" className="block text-sm font-medium text-muted-foreground mb-1">
               Stage
             </label>
             <select
@@ -281,7 +281,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="stage"
               value={formData.stage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="new">New</option>
               <option value="contacted">Contacted</option>
@@ -294,7 +294,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           </div>
 
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="priority" className="block text-sm font-medium text-muted-foreground mb-1">
               Priority
             </label>
             <select
@@ -302,7 +302,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="low">Low</option>
               <option value="normal">Normal</option>
@@ -312,7 +312,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="source" className="block text-sm font-medium text-muted-foreground mb-1">
               Source
             </label>
             <input
@@ -322,7 +322,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Door knocking, Referral, Website"
               value={formData.source}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -330,10 +330,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
       {/* Address */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Address</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Address</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label htmlFor="address_street" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="address_street" className="block text-sm font-medium text-muted-foreground mb-1">
               Street Address
             </label>
             <input
@@ -342,12 +342,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_street"
               value={formData.address_street}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="address_city" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="address_city" className="block text-sm font-medium text-muted-foreground mb-1">
               City
             </label>
             <input
@@ -356,12 +356,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_city"
               value={formData.address_city}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="address_state" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="address_state" className="block text-sm font-medium text-muted-foreground mb-1">
               State
             </label>
             <input
@@ -372,12 +372,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="TN"
               value={formData.address_state}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="address_zip" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="address_zip" className="block text-sm font-medium text-muted-foreground mb-1">
               ZIP Code
             </label>
             <input
@@ -386,7 +386,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="address_zip"
               value={formData.address_zip}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -394,10 +394,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
       {/* Property Details */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Property Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="property_type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="property_type" className="block text-sm font-medium text-muted-foreground mb-1">
               Property Type
             </label>
             <input
@@ -407,12 +407,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Single Family, Condo"
               value={formData.property_type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="roof_type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="roof_type" className="block text-sm font-medium text-muted-foreground mb-1">
               Roof Type
             </label>
             <input
@@ -422,12 +422,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="e.g., Asphalt Shingle, Metal"
               value={formData.roof_type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="roof_age" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="roof_age" className="block text-sm font-medium text-muted-foreground mb-1">
               Roof Age (years)
             </label>
             <input
@@ -436,12 +436,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="roof_age"
               value={formData.roof_age}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="square_footage" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="square_footage" className="block text-sm font-medium text-muted-foreground mb-1">
               Square Footage
             </label>
             <input
@@ -450,12 +450,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="square_footage"
               value={formData.square_footage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="stories" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="stories" className="block text-sm font-medium text-muted-foreground mb-1">
               Stories
             </label>
             <input
@@ -464,7 +464,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="stories"
               value={formData.stories}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -472,10 +472,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
       {/* Insurance */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Insurance Information</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Insurance Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="insurance_carrier" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="insurance_carrier" className="block text-sm font-medium text-muted-foreground mb-1">
               Insurance Carrier
             </label>
             <input
@@ -484,12 +484,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="insurance_carrier"
               value={formData.insurance_carrier}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label htmlFor="policy_number" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="policy_number" className="block text-sm font-medium text-muted-foreground mb-1">
               Policy Number
             </label>
             <input
@@ -498,7 +498,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="policy_number"
               value={formData.policy_number}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -517,7 +517,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           type="button"
           onClick={() => router.back()}
           disabled={loading}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+          className="px-6 py-2 border border-input text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
         >
           Cancel
         </button>

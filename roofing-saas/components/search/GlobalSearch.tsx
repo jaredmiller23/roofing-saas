@@ -45,7 +45,7 @@ const ENTITY_CONFIG = {
   file: {
     label: 'Files',
     icon: FileText,
-    color: 'text-gray-600',
+    color: 'text-muted-foreground',
     bgColor: 'bg-gray-50',
   },
   call_log: {
@@ -185,7 +185,7 @@ export function GlobalSearch() {
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
           {/* Search Input */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
             <input
               ref={searchInputRef}
               type="text"
@@ -193,21 +193,21 @@ export function GlobalSearch() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 outline-none text-gray-900 placeholder-gray-400"
+              className="flex-1 outline-none text-foreground placeholder-gray-400"
             />
-            {loading && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
+            {loading && <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />}
             {query && (
               <button
                 onClick={() => {
                   setQuery('')
                   setResults([])
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground hover:text-muted-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 rounded">
+            <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-semibold text-muted-foreground bg-gray-100 border border-gray-200 rounded">
               ESC
             </kbd>
           </div>
@@ -215,17 +215,17 @@ export function GlobalSearch() {
           {/* Results */}
           <div className="max-h-[60vh] overflow-y-auto">
             {results.length === 0 && query && !loading && (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm">No results found for &ldquo;{query}&rdquo;</p>
               </div>
             )}
 
             {results.length === 0 && !query && (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm mb-1">Quick search across all your data</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   Try searching for contacts, projects, jobs, or territories
                 </p>
               </div>
@@ -239,7 +239,7 @@ export function GlobalSearch() {
 
               return (
                 <div key={type} className="py-2">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+                  <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-gray-50">
                     {config.label} ({typeResults.length})
                   </div>
                   {typeResults.map((result) => {
@@ -251,7 +251,7 @@ export function GlobalSearch() {
                         key={result.id}
                         onClick={() => navigateToResult(result)}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
-                        className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left ${
+                        className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-accent transition-colors text-left ${
                           isSelected ? 'bg-blue-50 border-l-2 border-blue-600' : ''
                         }`}
                       >
@@ -259,16 +259,16 @@ export function GlobalSearch() {
                           <Icon className={`h-5 w-5 ${config.color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
+                          <div className="font-medium text-foreground truncate">
                             {result.title}
                           </div>
                           {result.subtitle && (
-                            <div className="text-sm text-gray-600 truncate">
+                            <div className="text-sm text-muted-foreground truncate">
                               {result.subtitle}
                             </div>
                           )}
                           {result.description && (
-                            <div className="text-xs text-gray-500 truncate mt-1">
+                            <div className="text-xs text-muted-foreground truncate mt-1">
                               {result.description}
                             </div>
                           )}
@@ -282,7 +282,7 @@ export function GlobalSearch() {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
+          <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">↑</kbd>

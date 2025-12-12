@@ -104,7 +104,7 @@ export default function SignDocumentPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading document...</p>
+          <p className="text-muted-foreground">Loading document...</p>
         </div>
       </div>
     )
@@ -130,10 +130,10 @@ export default function SignDocumentPage() {
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Document Signed Successfully!
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Your signature has been recorded. You will receive a confirmation email shortly.
           </p>
           <Button
@@ -208,31 +208,31 @@ export default function SignDocumentPage() {
               <FileText className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
                 {document.title}
               </h1>
               {document.description && (
-                <p className="text-gray-600 mb-4">{document.description}</p>
+                <p className="text-muted-foreground mb-4">{document.description}</p>
               )}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Document Type:</span>
-                  <span className="ml-2 font-medium text-gray-900 capitalize">
+                  <span className="text-muted-foreground">Document Type:</span>
+                  <span className="ml-2 font-medium text-foreground capitalize">
                     {document.document_type.replace('_', ' ')}
                   </span>
                 </div>
                 {document.project && (
                   <div>
-                    <span className="text-gray-600">Project:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">Project:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {document.project.name}
                     </span>
                   </div>
                 )}
                 {document.expires_at && (
                   <div>
-                    <span className="text-gray-600">Expires:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-muted-foreground">Expires:</span>
+                    <span className="ml-2 font-medium text-foreground">
                       {new Date(document.expires_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -245,7 +245,7 @@ export default function SignDocumentPage() {
         {/* Document Preview */}
         {document.file_url && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Document Preview</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Document Preview</h2>
             <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
               <embed
                 src={document.file_url}
@@ -266,7 +266,7 @@ export default function SignDocumentPage() {
         {/* Signer Information */}
         {!showSignature && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Information</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Your Information</h2>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="signer-name">Full Name *</Label>

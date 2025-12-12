@@ -423,7 +423,7 @@ export function ClaimPhotoCapture({
                 </button>
                 <button
                   onClick={stopCamera}
-                  className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
                 >
                   Cancel
                 </button>
@@ -457,7 +457,7 @@ export function ClaimPhotoCapture({
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="w-full py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Choose from Gallery
               </button>
@@ -497,14 +497,14 @@ export function ClaimPhotoCapture({
                   className={`flex-1 py-3 rounded-lg font-medium ${
                     canSave
                       ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
                   Save Photo
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
                 >
                   Retake
                 </button>
@@ -526,13 +526,13 @@ export function ClaimPhotoCapture({
                   />
                 </div>
               )}
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadState.progress}%` }}
                 />
               </div>
-              <p className="text-sm text-gray-600 text-center">{uploadState.message}</p>
+              <p className="text-sm text-muted-foreground text-center">{uploadState.message}</p>
             </div>
           )}
 
@@ -551,7 +551,7 @@ export function ClaimPhotoCapture({
               </div>
               <button
                 onClick={handleCancel}
-                className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="w-full py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Try Again
               </button>

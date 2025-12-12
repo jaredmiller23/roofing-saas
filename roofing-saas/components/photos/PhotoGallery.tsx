@@ -134,7 +134,7 @@ export function PhotoGallery({
           <button
             onClick={fetchPhotos}
             disabled={loading}
-            className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-1 text-sm border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Refresh'}
           </button>
@@ -159,7 +159,7 @@ export function PhotoGallery({
         {!loading && photos.length === 0 && !error && (
           <div className="text-center py-12">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -171,7 +171,7 @@ export function PhotoGallery({
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="mt-2 text-sm text-gray-500">No photos yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">No photos yet</p>
           </div>
         )}
 

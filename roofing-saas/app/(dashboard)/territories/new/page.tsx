@@ -39,14 +39,14 @@ export default function NewTerritoryPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Create Territory</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Draw territory boundaries and add details
             </p>
           </div>
 
           <Link
             href="/territories"
-            className="text-gray-600 hover:text-foreground font-medium"
+            className="text-muted-foreground hover:text-foreground font-medium"
           >
             ← Back to Territories
           </Link>

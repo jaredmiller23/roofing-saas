@@ -135,10 +135,10 @@ export function GeneralSettings() {
 
       {/* Company Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Company Information</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Company Name
             </label>
             <Input
@@ -148,7 +148,7 @@ export function GeneralSettings() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Tagline
             </label>
             <Input
@@ -162,10 +162,10 @@ export function GeneralSettings() {
 
       {/* Regional Settings */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Regional Settings</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Regional Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Timezone
             </label>
             <select
@@ -179,7 +179,7 @@ export function GeneralSettings() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Date Format
             </label>
             <select
@@ -193,7 +193,7 @@ export function GeneralSettings() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Time Format
             </label>
             <select
@@ -206,7 +206,7 @@ export function GeneralSettings() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Currency
             </label>
             <select
@@ -225,7 +225,7 @@ export function GeneralSettings() {
 
       {/* Business Hours */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Hours</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Business Hours</h3>
         <div className="space-y-3">
           {DAYS.map((day) => (
             <div key={day} className="flex items-center gap-4">
@@ -243,7 +243,7 @@ export function GeneralSettings() {
                     })}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
                   />
-                  <span className="text-sm font-medium text-gray-700 capitalize">{day}</span>
+                  <span className="text-sm font-medium text-muted-foreground capitalize">{day}</span>
                 </label>
               </div>
               {settings.business_hours[day]?.enabled && (
@@ -260,7 +260,7 @@ export function GeneralSettings() {
                     })}
                     className="w-32"
                   />
-                  <span className="text-gray-500">to</span>
+                  <span className="text-muted-foreground">to</span>
                   <Input
                     type="time"
                     value={settings.business_hours[day]?.close || '17:00'}
@@ -282,7 +282,7 @@ export function GeneralSettings() {
 
       {/* Notification Preferences */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Notification Preferences</h3>
         <div className="space-y-3">
           <label className="flex items-center">
             <input
@@ -291,7 +291,7 @@ export function GeneralSettings() {
               onChange={(e) => setSettings({ ...settings, email_notifications_enabled: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <span className="ml-2 text-sm text-gray-700">Email Notifications</span>
+            <span className="ml-2 text-sm text-muted-foreground">Email Notifications</span>
           </label>
           <label className="flex items-center">
             <input
@@ -300,7 +300,7 @@ export function GeneralSettings() {
               onChange={(e) => setSettings({ ...settings, sms_notifications_enabled: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <span className="ml-2 text-sm text-gray-700">SMS Notifications</span>
+            <span className="ml-2 text-sm text-muted-foreground">SMS Notifications</span>
           </label>
           <label className="flex items-center">
             <input
@@ -309,7 +309,7 @@ export function GeneralSettings() {
               onChange={(e) => setSettings({ ...settings, push_notifications_enabled: e.target.checked })}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <span className="ml-2 text-sm text-gray-700">Push Notifications</span>
+            <span className="ml-2 text-sm text-muted-foreground">Push Notifications</span>
           </label>
         </div>
       </div>

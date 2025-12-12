@@ -121,9 +121,9 @@ export function TaskBoard() {
       case 'medium':
         return 'text-yellow-600'
       case 'low':
-        return 'text-gray-600'
+        return 'text-muted-foreground'
       default:
-        return 'text-gray-600'
+        return 'text-muted-foreground'
     }
   }
 
@@ -155,7 +155,7 @@ export function TaskBoard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Task Board</h1>
+              <h1 className="text-3xl font-bold text-foreground">Task Board</h1>
             </div>
             <Button
               onClick={() => router.push('/tasks/new')}
@@ -165,7 +165,7 @@ export function TaskBoard() {
               New Task
             </Button>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Drag and drop tasks to update their status
           </p>
         </div>
@@ -175,7 +175,7 @@ export function TaskBoard() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search tasks..."
@@ -224,8 +224,8 @@ export function TaskBoard() {
               {/* Column Header */}
               <div className="p-4 border-b border-gray-300">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">{column.title}</h3>
-                  <span className="px-2 py-1 bg-white rounded-full text-xs font-medium text-gray-600">
+                  <h3 className="font-semibold text-foreground">{column.title}</h3>
+                  <span className="px-2 py-1 bg-white rounded-full text-xs font-medium text-muted-foreground">
                     {getTasksByStatus(column.id).length}
                   </span>
                 </div>
@@ -242,13 +242,13 @@ export function TaskBoard() {
                   >
                     {/* Task Header */}
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900 flex-1">{task.title}</h4>
+                      <h4 className="font-medium text-foreground flex-1">{task.title}</h4>
                       {getPriorityIcon(task.priority)}
                     </div>
 
                     {/* Task Description */}
                     {task.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                         {task.description}
                       </p>
                     )}
@@ -256,7 +256,7 @@ export function TaskBoard() {
                     {/* Task Meta */}
                     <div className="space-y-2 mb-3">
                       {task.project && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                           </svg>
@@ -264,13 +264,13 @@ export function TaskBoard() {
                         </div>
                       )}
                       {task.assigned_user && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <User className="h-3 w-3" />
                           <span>{task.assigned_user.raw_user_meta_data?.full_name || task.assigned_user.email}</span>
                         </div>
                       )}
                       {task.due_date && (
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
                           <span>{new Date(task.due_date).toLocaleDateString()}</span>
                         </div>
@@ -280,11 +280,11 @@ export function TaskBoard() {
                     {/* Progress Bar */}
                     {task.progress > 0 && (
                       <div className="mb-3">
-                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                           <span>Progress</span>
                           <span>{task.progress}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="w-full bg-muted rounded-full h-1.5">
                           <div
                             className="bg-blue-600 h-1.5 rounded-full"
                             style={{ width: `${task.progress}%` }}
@@ -299,13 +299,13 @@ export function TaskBoard() {
                         {task.tags.slice(0, 3).map((tag, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                            className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded text-xs"
                           >
                             {tag}
                           </span>
                         ))}
                         {task.tags.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                          <span className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded text-xs">
                             +{task.tags.length - 3}
                           </span>
                         )}
@@ -343,7 +343,7 @@ export function TaskBoard() {
                 ))}
 
                 {getTasksByStatus(column.id).length === 0 && (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-muted-foreground">
                     <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No tasks</p>
                   </div>

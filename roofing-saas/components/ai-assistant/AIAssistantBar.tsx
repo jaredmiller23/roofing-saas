@@ -74,7 +74,7 @@ export function AIAssistantBar() {
             {/* Input preview (click to expand) */}
             <button
               onClick={toggleExpanded}
-              className="flex-1 px-4 py-2.5 text-left text-gray-500 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
+              className="flex-1 px-4 py-2.5 text-left text-muted-foreground bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
             >
               Ask anything...
             </button>
@@ -91,7 +91,7 @@ export function AIAssistantBar() {
               className={`flex-shrink-0 p-2.5 rounded-full transition-all ${
                 voiceSessionActive
                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-muted-foreground hover:bg-muted'
               }`}
               title={voiceSessionActive ? 'Stop voice session' : 'Start voice session'}
             >
@@ -104,7 +104,7 @@ export function AIAssistantBar() {
             {/* Expand button */}
             <button
               onClick={toggleExpanded}
-              className="flex-shrink-0 p-2.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-all"
+              className="flex-shrink-0 p-2.5 bg-gray-100 text-muted-foreground hover:bg-muted rounded-full transition-all"
               title="Expand assistant"
             >
               <ChevronUp className="h-5 w-5" />
@@ -138,8 +138,8 @@ export function AIAssistantBar() {
 
                 {/* Title */}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">AI Assistant</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="text-sm font-semibold text-foreground">AI Assistant</h3>
+                  <p className="text-xs text-muted-foreground">
                     {messages.length === 0
                       ? 'Ready to help'
                       : `${messages.length} message${messages.length === 1 ? '' : 's'}`}
@@ -163,7 +163,7 @@ export function AIAssistantBar() {
                   className={`p-2 rounded-lg transition-colors ${
                     showHistory
                       ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      : 'text-muted-foreground hover:bg-gray-100'
                   }`}
                   title="Conversation history"
                 >
@@ -179,7 +179,7 @@ export function AIAssistantBar() {
                   className={`p-2 rounded-lg transition-colors ${
                     showSettings
                       ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      : 'text-muted-foreground hover:bg-gray-100'
                   }`}
                   title="Settings"
                 >
@@ -189,7 +189,7 @@ export function AIAssistantBar() {
                 {/* Minimize */}
                 <button
                   onClick={toggleExpanded}
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:bg-gray-100 rounded-lg transition-colors"
                   title="Minimize"
                 >
                   <ChevronDown className="h-4 w-4" />
@@ -198,7 +198,7 @@ export function AIAssistantBar() {
                 {/* Close to icon */}
                 <button
                   onClick={minimize}
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:bg-gray-100 rounded-lg transition-colors"
                   title="Close"
                 >
                   <X className="h-4 w-4" />
@@ -211,14 +211,14 @@ export function AIAssistantBar() {
               <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">Voice Provider</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">Choose your preferred voice provider</p>
+                    <h4 className="text-sm font-medium text-foreground">Voice Provider</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Choose your preferred voice provider</p>
                   </div>
                   <div className="flex gap-2">
                     <button className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg">
                       OpenAI
                     </button>
-                    <button className="px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    <button className="px-3 py-1.5 text-xs font-medium bg-muted text-muted-foreground rounded-lg hover:bg-gray-300">
                       ElevenLabs
                     </button>
                   </div>
@@ -262,7 +262,7 @@ export function AIAssistantBar() {
                     className={`p-3 rounded-full transition-all ${
                       voiceSessionActive
                         ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                     }`}
                     title={voiceSessionActive ? 'Stop voice' : 'Start voice'}
                   >

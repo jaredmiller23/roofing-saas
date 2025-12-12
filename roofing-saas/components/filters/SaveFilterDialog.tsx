@@ -36,12 +36,12 @@ export function SaveFilterDialog({ onSave, onCancel }: SaveFilterDialogProps) {
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-foreground">
               Save Filter Preset
             </h3>
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted-foreground hover:text-muted-foreground transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -50,7 +50,7 @@ export function SaveFilterDialog({ onSave, onCancel }: SaveFilterDialogProps) {
           {/* Body */}
           <form onSubmit={handleSubmit} className="p-4 space-y-4">
             <div>
-              <label htmlFor="filter-name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="filter-name" className="block text-sm font-medium text-muted-foreground mb-1">
                 Filter Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -66,7 +66,7 @@ export function SaveFilterDialog({ onSave, onCancel }: SaveFilterDialogProps) {
             </div>
 
             <div>
-              <label htmlFor="filter-description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="filter-description" className="block text-sm font-medium text-muted-foreground mb-1">
                 Description (optional)
               </label>
               <textarea

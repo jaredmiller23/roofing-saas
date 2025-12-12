@@ -67,10 +67,10 @@ export function RevenueChart({ projects }: RevenueChartProps) {
         {monthlyData.map((data, index) => (
           <div key={index}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-gray-700">{data.month}</span>
+              <span className="text-sm font-medium text-muted-foreground">{data.month}</span>
               <span className="text-sm font-semibold text-foreground">{formatCurrency(data.revenue)}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-muted rounded-full h-3">
               <div
                 className="bg-blue-600 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(data.revenue / maxRevenue) * 100}%` }}
@@ -81,7 +81,7 @@ export function RevenueChart({ projects }: RevenueChartProps) {
       </div>
 
       {monthlyData.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <p>No completed projects in the last 6 months</p>
         </div>
       )}

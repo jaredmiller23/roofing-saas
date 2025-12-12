@@ -81,12 +81,12 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
           className={`px-4 py-2.5 rounded-2xl ${
             isUser
               ? 'bg-blue-600 text-white rounded-br-sm'
-              : 'bg-gray-200 text-gray-900 rounded-bl-sm'
+              : 'bg-muted text-foreground rounded-bl-sm'
           } ${message.isStreaming ? 'animate-pulse' : ''} ${message.error ? 'border-2 border-red-500' : ''}`}
         >
           {/* Voice indicator */}
           {isVoice && (
-            <div className={`flex items-center gap-1 mb-1 text-xs ${isUser ? 'text-blue-100' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-1 mb-1 text-xs ${isUser ? 'text-blue-100' : 'text-muted-foreground'}`}>
               <Mic className="h-3 w-3" />
               <span>Voice message</span>
               {message.metadata?.provider && (
@@ -112,7 +112,7 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
         <div className="flex items-center gap-2 mt-1 px-1">
           {/* Timestamp */}
           {showTimestamp && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {formatTime(message.created_at)}
             </span>
           )}
@@ -121,13 +121,13 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
           {!isUser && (
             <button
               onClick={handleCopy}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
               title="Copy message"
             >
               {copied ? (
                 <Check className="h-3 w-3 text-green-600" />
               ) : (
-                <Copy className="h-3 w-3 text-gray-500" />
+                <Copy className="h-3 w-3 text-muted-foreground" />
               )}
             </button>
           )}

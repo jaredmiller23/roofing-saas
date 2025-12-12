@@ -107,8 +107,8 @@ export default function CardQRCodePage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-96 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -119,7 +119,7 @@ export default function CardQRCodePage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-600 mb-4">Card not found</p>
+            <p className="text-muted-foreground mb-4">Card not found</p>
             <Button onClick={() => router.push('/digital-cards')}>
               Back to Cards
             </Button>
@@ -141,7 +141,7 @@ export default function CardQRCodePage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold">QR Code</h1>
-          <p className="text-gray-600 mt-1">{card.full_name}</p>
+          <p className="text-muted-foreground mt-1">{card.full_name}</p>
         </div>
       </div>
 
@@ -202,7 +202,7 @@ export default function CardQRCodePage() {
 
             <div className="pt-4 border-t">
               <h3 className="font-semibold mb-3">How to Use</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-lg">1.</span>
                   <span>Download the QR code image</span>

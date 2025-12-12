@@ -145,7 +145,7 @@ export function TerritoryForm({
           {/* Basic Information */}
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-muted-foreground mb-1">
                 Territory Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -161,7 +161,7 @@ export function TerritoryForm({
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-1">
                 Description
               </label>
               <textarea
@@ -176,7 +176,7 @@ export function TerritoryForm({
             </div>
 
             <div>
-              <label htmlFor="assigned_to" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="assigned_to" className="block text-sm font-medium text-muted-foreground mb-1">
                 Assigned To (User ID)
               </label>
               <input
@@ -188,7 +188,7 @@ export function TerritoryForm({
                 placeholder="UUID of assigned user (optional)"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Leave blank for unassigned. User must belong to your organization.
               </p>
             </div>
@@ -196,16 +196,16 @@ export function TerritoryForm({
 
           {/* Boundary Information */}
           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Boundary Data</h3>
+            <h3 className="text-sm font-medium text-foreground mb-3">Boundary Data</h3>
 
             {formData.boundary_data ? (
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
+                    <p className="text-sm font-medium text-muted-foreground">
                       {formData.boundary_data.type}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {getBoundaryPointCount()} points defined
                     </p>
                   </div>
@@ -221,7 +221,7 @@ export function TerritoryForm({
             ) : (
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
                 <svg
-                  className="mx-auto h-8 w-8 text-gray-400"
+                  className="mx-auto h-8 w-8 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -233,8 +233,8 @@ export function TerritoryForm({
                     d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
                   />
                 </svg>
-                <p className="text-sm text-gray-500 mt-2">No boundary defined</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-2">No boundary defined</p>
+                <p className="text-xs text-muted-foreground mt-1">
                   Use the map tool to draw territory boundaries
                 </p>
               </div>
@@ -264,7 +264,7 @@ export function TerritoryForm({
                 }
               }}
               disabled={loading}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="px-6 py-2 border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
             >
               Cancel
             </button>

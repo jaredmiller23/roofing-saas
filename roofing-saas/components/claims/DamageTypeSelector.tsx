@@ -44,7 +44,7 @@ export function DamageTypeSelector({
 }: DamageTypeSelectorProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <label className="text-sm font-medium text-gray-700">Damage Type</label>
+      <label className="text-sm font-medium text-muted-foreground">Damage Type</label>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {DAMAGE_TYPES.map(type => (
           <button
@@ -55,7 +55,7 @@ export function DamageTypeSelector({
               'p-2 text-xs rounded-lg border transition-all text-center',
               value === type.value
                 ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
-                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                : 'border-gray-200 hover:border-gray-300 text-muted-foreground'
             )}
           >
             {type.label}
@@ -79,7 +79,7 @@ export function SeveritySelector({
 }: SeveritySelectorProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <label className="text-sm font-medium text-gray-700">Severity</label>
+      <label className="text-sm font-medium text-muted-foreground">Severity</label>
       <div className="flex gap-2">
         {SEVERITY_LEVELS.map(level => (
           <button
@@ -94,7 +94,7 @@ export function SeveritySelector({
                   : level.color === 'orange'
                     ? 'border-orange-500 bg-orange-50 text-orange-700 font-medium'
                     : 'border-red-500 bg-red-50 text-red-700 font-medium'
-                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                : 'border-gray-200 hover:border-gray-300 text-muted-foreground'
             )}
           >
             {level.label}

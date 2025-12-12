@@ -25,9 +25,9 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${stage.color}`} />
-            <h3 className="font-semibold text-gray-900">{stage.name}</h3>
+            <h3 className="font-semibold text-foreground">{stage.name}</h3>
           </div>
-          <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
+          <span className="text-sm font-medium text-muted-foreground bg-gray-100 px-2 py-1 rounded">
             {projects.length}
           </span>
         </div>
@@ -47,7 +47,7 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
         ))}
 
         {projects.length === 0 && (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="text-center py-8 text-muted-foreground text-sm">
             Drop opportunities here
           </div>
         )}

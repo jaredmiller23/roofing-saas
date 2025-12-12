@@ -65,12 +65,12 @@ export function DamageChecklist({
                       </svg>
                     )}
                   </div>
-                  <span className={cn('font-medium', area.selected ? 'text-blue-700' : 'text-gray-700')}>
+                  <span className={cn('font-medium', area.selected ? 'text-blue-700' : 'text-muted-foreground')}>
                     {area.label}
                   </span>
                 </div>
                 {area.photos.length > 0 && (
-                  <div className="mt-1 ml-7 text-xs text-gray-500">
+                  <div className="mt-1 ml-7 text-xs text-muted-foreground">
                     {area.photos.length} photo{area.photos.length !== 1 ? 's' : ''}
                   </div>
                 )}
@@ -82,13 +82,13 @@ export function DamageChecklist({
           <div className="flex gap-2">
             <button
               onClick={() => areas.forEach(a => !a.selected && onToggle(a.type))}
-              className="flex-1 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
+              className="flex-1 py-2 text-sm border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
             >
               Select All
             </button>
             <button
               onClick={() => areas.forEach(a => a.selected && onToggle(a.type))}
-              className="flex-1 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
+              className="flex-1 py-2 text-sm border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
             >
               Clear All
             </button>
@@ -96,12 +96,12 @@ export function DamageChecklist({
 
           {/* Selection summary */}
           <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               <span className="font-medium text-blue-600">{selectedCount}</span> area
               {selectedCount !== 1 ? 's' : ''} selected
             </span>
             {selectedCount === 0 && (
-              <p className="text-sm text-gray-500 mt-1">Select at least one area to continue</p>
+              <p className="text-sm text-muted-foreground mt-1">Select at least one area to continue</p>
             )}
           </div>
 
@@ -109,7 +109,7 @@ export function DamageChecklist({
           <div className="flex gap-2">
             <button
               onClick={onBack}
-              className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
             >
               Back
             </button>
@@ -120,7 +120,7 @@ export function DamageChecklist({
                 'flex-1 py-3 rounded-lg font-medium',
                 selectedCount > 0
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
               )}
             >
               Continue to Photos ({selectedCount})

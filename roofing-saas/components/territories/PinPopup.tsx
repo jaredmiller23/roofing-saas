@@ -71,7 +71,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
           <h3 className="font-semibold text-lg">{isEditMode ? 'Edit Pin' : 'Drop Pin'}</h3>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -81,12 +81,12 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
         <div className="p-4 space-y-4">
           {/* Address */}
           <div>
-            <Label className="text-sm font-medium text-gray-700">Address</Label>
-            <p className="text-sm text-gray-900 mt-1">
+            <Label className="text-sm font-medium text-muted-foreground">Address</Label>
+            <p className="text-sm text-foreground mt-1">
               {pin.address || 'Address not found'}
             </p>
             {pin.address_zip && (
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {pin.address_city}, {pin.address_state} {pin.address_zip}
               </p>
             )}
@@ -94,7 +94,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
 
           {/* Quick Disposition Buttons */}
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2 block">
+            <Label className="text-sm font-medium text-muted-foreground mb-2 block">
               Disposition *
             </Label>
             <div className="grid grid-cols-2 gap-2">
@@ -122,7 +122,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
 
           {/* Notes */}
           <div>
-            <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="notes" className="text-sm font-medium text-muted-foreground">
               Notes (Optional)
             </Label>
             <Textarea
@@ -145,11 +145,11 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
                   onChange={(e) => setCreateContact(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   Create lead in CRM
                 </span>
               </label>
-              <p className="text-xs text-gray-500 mt-1 ml-7">
+              <p className="text-xs text-muted-foreground mt-1 ml-7">
                 Automatically create a contact record for this property
               </p>
             </div>
@@ -158,7 +158,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
           {/* Contact Data (if creating contact) */}
           {createContact && (
             <div className="space-y-3 border-t pt-4">
-              <h4 className="text-sm font-semibold text-gray-900">Contact Information</h4>
+              <h4 className="text-sm font-semibold text-foreground">Contact Information</h4>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

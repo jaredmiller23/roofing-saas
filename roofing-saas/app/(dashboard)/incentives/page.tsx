@@ -27,7 +27,7 @@ export default async function IncentivesPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">Incentives & Gamification</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-muted-foreground mt-2">
             Track your performance, compete with teammates, and earn rewards
           </p>
         </div>
@@ -54,21 +54,21 @@ export default async function IncentivesPage() {
                   <Trophy className="h-5 w-5 text-yellow-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Top Performer</p>
-                    <p className="text-xs text-gray-600">Ranked #1 this week</p>
+                    <p className="text-xs text-muted-foreground">Ranked #1 this week</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
                   <Target className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Goal Crusher</p>
-                    <p className="text-xs text-gray-600">Hit weekly target</p>
+                    <p className="text-xs text-muted-foreground">Hit weekly target</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-2 bg-blue-50 rounded-lg">
                   <Zap className="h-5 w-5 text-blue-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Streak Master</p>
-                    <p className="text-xs text-gray-600">5 days in a row</p>
+                    <p className="text-xs text-muted-foreground">5 days in a row</p>
                   </div>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export default async function IncentivesPage() {
                   <span className="text-2xl font-bold text-purple-900">1st</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Weekly Winner</h3>
-                <p className="text-sm text-gray-600 mb-3">$500 bonus + paid day off</p>
+                <p className="text-sm text-muted-foreground mb-3">$500 bonus + paid day off</p>
                 <div className="text-xs text-purple-600 font-medium">Most knocks this week</div>
               </div>
 
@@ -105,7 +105,7 @@ export default async function IncentivesPage() {
                   <span className="text-2xl font-bold text-blue-900">2nd</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Sales Champion</h3>
-                <p className="text-sm text-gray-600 mb-3">$300 bonus + gift card</p>
+                <p className="text-sm text-muted-foreground mb-3">$300 bonus + gift card</p>
                 <div className="text-xs text-blue-600 font-medium">Most sales this week</div>
               </div>
 
@@ -115,7 +115,7 @@ export default async function IncentivesPage() {
                   <span className="text-2xl font-bold text-green-900">3rd</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Consistency Award</h3>
-                <p className="text-sm text-gray-600 mb-3">$150 bonus</p>
+                <p className="text-sm text-muted-foreground mb-3">$150 bonus</p>
                 <div className="text-xs text-green-600 font-medium">Hit daily goals all week</div>
               </div>
             </div>

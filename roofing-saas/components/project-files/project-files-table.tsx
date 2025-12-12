@@ -103,9 +103,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
       contract: 'bg-green-100 text-green-800',
       estimate: 'bg-yellow-100 text-yellow-800',
       invoice: 'bg-orange-100 text-orange-800',
-      other: 'bg-gray-100 text-gray-800',
+      other: 'bg-muted text-muted-foreground',
     }
-    return type ? colors[type] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800'
+    return type ? colors[type] || 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'
   }
 
   const formatFileSize = (bytes: number | null) => {
@@ -134,9 +134,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
   if (files.length === 0) {
     return (
       <div className="text-center py-12">
-        <FileText className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No files</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-2 text-sm font-medium text-foreground">No files</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           Get started by uploading a file.
         </p>
         <div className="mt-6">
@@ -157,26 +157,26 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 File
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Category
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Size
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {files.map((file) => (
-              <tr key={file.id} className="hover:bg-gray-50">
+              <tr key={file.id} className="hover:bg-accent">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded flex items-center justify-center">
@@ -187,9 +187,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                       )}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{file.file_name}</div>
+                      <div className="text-sm font-medium text-foreground">{file.file_name}</div>
                       {file.description && (
-                        <div className="text-sm text-gray-500 truncate max-w-md">{file.description}</div>
+                        <div className="text-sm text-muted-foreground truncate max-w-md">{file.description}</div>
                       )}
                     </div>
                   </div>
@@ -199,10 +199,10 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                     {getFileTypeLabel(file.file_type)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {file.file_category || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {formatFileSize(file.file_size)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -232,21 +232,21 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
             <button
               onClick={() => router.push(`/project-files?page=${page - 1}`)}
               disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => router.push(`/project-files?page=${page + 1}`)}
               disabled={page * 10 >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
                 <span className="font-medium">{Math.min(page * 10, total)}</span> of{' '}
                 <span className="font-medium">{total}</span> results
@@ -257,14 +257,14 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                 <button
                   onClick={() => router.push(`/project-files?page=${page - 1}`)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => router.push(`/project-files?page=${page + 1}`)}
                   disabled={page * 10 >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Next
                 </button>

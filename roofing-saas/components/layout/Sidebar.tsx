@@ -139,7 +139,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
             <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Pacifico', cursive" }}>
               Clarity
             </h1>
-            <p className="text-xs text-gray-400 mt-1 tracking-wide">ROOFING CRM</p>
+            <p className="text-xs text-muted-foreground mt-1 tracking-wide">ROOFING CRM</p>
           </Link>
         </div>
 
@@ -150,7 +150,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
               {/* Section Header */}
               {section.label && (
                 <div className="px-4 pt-4 pb-2">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {section.label}
                   </h3>
                 </div>
@@ -173,7 +173,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
                           : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                       }`}
                     >
-                      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-gray-400'}`} />
+                      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-muted-foreground'}`} />
                       <span className="text-sm font-medium">{link.label}</span>
                     </Link>
                   )
@@ -196,7 +196,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{userEmail}</p>
-              <p className="text-xs text-gray-400 capitalize">{userRole}</p>
+              <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
             </div>
           </div>
 

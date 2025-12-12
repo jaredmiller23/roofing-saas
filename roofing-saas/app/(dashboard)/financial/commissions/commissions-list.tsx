@@ -100,7 +100,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-foreground">Recent Commissions</h2>
         </div>
-        <div className="p-12 text-center text-gray-500">
+        <div className="p-12 text-center text-muted-foreground">
           <p className="text-lg">No commissions recorded yet</p>
           <p className="text-sm mt-2">Click &ldquo;Add Commission&rdquo; to start tracking</p>
         </div>
@@ -124,13 +124,13 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
         <table className="w-full">
           <thead className="bg-background">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Project</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Base Amount</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commission</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Project</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Base Amount</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Commission</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -150,10 +150,10 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                     {project ? (
                       <div>
                         <p className="font-medium truncate max-w-xs">{project.name}</p>
-                        <p className="text-xs text-gray-500">#{project.project_number}</p>
+                        <p className="text-xs text-muted-foreground">#{project.project_number}</p>
                       </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">

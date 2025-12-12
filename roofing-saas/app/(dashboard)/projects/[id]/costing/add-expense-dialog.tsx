@@ -44,7 +44,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
           <h2 className="text-xl font-semibold text-foreground">Add Expense</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-muted-foreground"
             disabled={isPending}
           >
             <X className="h-6 w-6" />
@@ -62,7 +62,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Expense Type */}
             <div>
-              <label htmlFor="expense_type" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="expense_type" className="block text-sm font-medium text-muted-foreground mb-1">
                 Expense Type *
               </label>
               <select
@@ -84,7 +84,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="category" className="block text-sm font-medium text-muted-foreground mb-1">
                 Category
               </label>
               <input
@@ -99,7 +99,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-1">
               Description *
             </label>
             <textarea
@@ -115,7 +115,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Amount */}
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="amount" className="block text-sm font-medium text-muted-foreground mb-1">
                 Amount *
               </label>
               <input
@@ -132,7 +132,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
             {/* Quantity */}
             <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="quantity" className="block text-sm font-medium text-muted-foreground mb-1">
                 Quantity
               </label>
               <input
@@ -148,7 +148,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
             {/* Unit Price */}
             <div>
-              <label htmlFor="unit_price" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="unit_price" className="block text-sm font-medium text-muted-foreground mb-1">
                 Unit Price
               </label>
               <input
@@ -166,7 +166,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Vendor Name */}
             <div>
-              <label htmlFor="vendor_name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="vendor_name" className="block text-sm font-medium text-muted-foreground mb-1">
                 Vendor Name
               </label>
               <input
@@ -180,7 +180,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
             {/* Invoice Number */}
             <div>
-              <label htmlFor="invoice_number" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="invoice_number" className="block text-sm font-medium text-muted-foreground mb-1">
                 Invoice Number
               </label>
               <input
@@ -196,7 +196,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Expense Date */}
             <div>
-              <label htmlFor="expense_date" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="expense_date" className="block text-sm font-medium text-muted-foreground mb-1">
                 Expense Date *
               </label>
               <input
@@ -211,7 +211,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
             {/* Paid Date */}
             <div>
-              <label htmlFor="paid_date" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="paid_date" className="block text-sm font-medium text-muted-foreground mb-1">
                 Paid Date
               </label>
               <input
@@ -225,7 +225,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
 
           {/* Notes */}
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-1">
               Notes
             </label>
             <textarea
@@ -243,7 +243,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
             >
               Cancel
             </button>

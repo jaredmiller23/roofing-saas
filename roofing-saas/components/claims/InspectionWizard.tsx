@@ -190,18 +190,18 @@ export function InspectionWizard({
           <div className="flex items-center justify-between mb-2">
             <button
               onClick={onCancel}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-muted-foreground hover:text-muted-foreground"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <span className="text-sm font-medium text-gray-600 capitalize">
+            <span className="text-sm font-medium text-muted-foreground capitalize">
               {state.currentStep.replace('_', ' ')}
             </span>
-            <span className="text-sm text-gray-500">{Math.round(progress)}%</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1">
+          <div className="w-full bg-muted rounded-full h-1">
             <div
               className="bg-blue-600 h-1 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -233,7 +233,7 @@ export function InspectionWizard({
           <div className="space-y-4">
             <div className="text-center mb-4">
               <h2 className="text-lg font-medium">Overview Photo</h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Take a wide shot of the entire roof
               </p>
             </div>
@@ -248,7 +248,7 @@ export function InspectionWizard({
             />
             <button
               onClick={goBack}
-              className="w-full py-2 border border-gray-300 text-gray-600 rounded-lg"
+              className="w-full py-2 border border-gray-300 text-muted-foreground rounded-lg"
             >
               Back
             </button>
@@ -269,7 +269,7 @@ export function InspectionWizard({
         {state.currentStep === 'capture' && currentArea && (
           <div className="space-y-4">
             {/* Area progress */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>
                 Area {state.currentCaptureIndex + 1} of {selectedAreas.length}
               </span>
@@ -282,7 +282,7 @@ export function InspectionWizard({
             {/* Current area name */}
             <div className="text-center">
               <h2 className="text-lg font-medium">{currentArea.label}</h2>
-              <p className="text-sm text-gray-500">Photograph any damage</p>
+              <p className="text-sm text-muted-foreground">Photograph any damage</p>
             </div>
 
             {/* Photo capture */}
@@ -302,7 +302,7 @@ export function InspectionWizard({
             <div className="flex gap-2">
               <button
                 onClick={goBack}
-                className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Back
               </button>
@@ -312,7 +312,7 @@ export function InspectionWizard({
                 className={`flex-1 py-3 rounded-lg font-medium ${
                   currentArea.photos.length > 0
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
                 {state.currentCaptureIndex < selectedAreas.length - 1

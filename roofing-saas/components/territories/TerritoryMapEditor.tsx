@@ -208,7 +208,7 @@ export function TerritoryMapEditor({
       <div className="flex items-center justify-center bg-gray-100 rounded-lg" style={{ height }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Loading map editor...</p>
+          <p className="text-sm text-muted-foreground">Loading map editor...</p>
         </div>
       </div>
     )
@@ -235,8 +235,8 @@ export function TerritoryMapEditor({
       {/* Instructions overlay */}
       {isLoaded && !currentBoundary && (
         <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[1000] max-w-xs">
-          <h4 className="font-semibold text-sm text-gray-900 mb-2">Draw Territory Boundary</h4>
-          <ul className="text-xs text-gray-600 space-y-1">
+          <h4 className="font-semibold text-sm text-foreground mb-2">Draw Territory Boundary</h4>
+          <ul className="text-xs text-muted-foreground space-y-1">
             <li className="flex items-start gap-2">
               <span className="text-blue-600 font-semibold">•</span>
               <span>Use the rectangle or polygon tool (top center)</span>
@@ -258,10 +258,10 @@ export function TerritoryMapEditor({
         <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-[1000]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-gray-900">
+              <p className="text-xs font-semibold text-foreground">
                 {currentBoundary.type} drawn
               </p>
-              <p className="text-xs text-gray-600">{getBoundaryPointCount()} points</p>
+              <p className="text-xs text-muted-foreground">{getBoundaryPointCount()} points</p>
             </div>
             <button
               onClick={handleClear}

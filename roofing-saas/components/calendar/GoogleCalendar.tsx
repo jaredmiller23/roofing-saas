@@ -123,10 +123,10 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
           )}
 
           <div className="space-y-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Benefits of connecting Google Calendar:
             </p>
-            <ul className="text-sm text-gray-600 space-y-1 ml-6 list-disc">
+            <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
               <li>Automatic two-way sync of events</li>
               <li>Access your schedule on any device</li>
               <li>Get notifications on your phone</li>
@@ -153,7 +153,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
             )}
           </Button>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-muted-foreground text-center">
             Note: Google Calendar integration requires additional setup. Contact your administrator if you encounter issues.
           </p>
         </CardContent>
@@ -201,11 +201,11 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
       ) : (
         <Card>
           <CardContent className="py-12 text-center">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">
               Google Calendar is connected
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Events will sync automatically. View your calendar in the standard view below or in Google Calendar.
             </p>
           </CardContent>

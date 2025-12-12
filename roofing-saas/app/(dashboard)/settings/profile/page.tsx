@@ -257,7 +257,7 @@ export default function ProfileSettingsPage() {
     return (
       <div className="p-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     )
@@ -267,7 +267,7 @@ export default function ProfileSettingsPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Profile & Security</h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-muted-foreground mt-2">
           Manage your profile information and security settings
         </p>
       </div>
@@ -327,8 +327,8 @@ export default function ProfileSettingsPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                      <Camera className="h-8 w-8 text-gray-400" />
+                    <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+                      <Camera className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -412,7 +412,7 @@ export default function ProfileSettingsPage() {
                     disabled
                     className="bg-background"
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Email cannot be changed. Contact support if needed.
                   </p>
                 </div>
@@ -514,7 +514,7 @@ export default function ProfileSettingsPage() {
                         <span>Password strength:</span>
                         <span className="font-medium">{getPasswordStrengthLabel(passwordStrength)}</span>
                       </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all ${getPasswordStrengthColor(passwordStrength)}`}
                           style={{
@@ -529,34 +529,34 @@ export default function ProfileSettingsPage() {
 
                   {/* Password Requirements */}
                   <div className="mt-3 p-3 bg-background rounded-md">
-                    <p className="text-xs font-medium text-gray-700 mb-2">Password must contain:</p>
-                    <ul className="text-xs text-gray-600 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Password must contain:</p>
+                    <ul className="text-xs text-muted-foreground space-y-1">
                       <li className="flex items-center gap-2">
-                        <span className={passwordForm.new_password.length >= PASSWORD_REQUIREMENTS.minLength ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={passwordForm.new_password.length >= PASSWORD_REQUIREMENTS.minLength ? 'text-green-600' : 'text-muted-foreground'}>
                           {passwordForm.new_password.length >= PASSWORD_REQUIREMENTS.minLength ? '✓' : '○'}
                         </span>
                         At least {PASSWORD_REQUIREMENTS.minLength} characters
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className={/[A-Z]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={/[A-Z]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-muted-foreground'}>
                           {/[A-Z]/.test(passwordForm.new_password) ? '✓' : '○'}
                         </span>
                         One uppercase letter
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className={/[a-z]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={/[a-z]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-muted-foreground'}>
                           {/[a-z]/.test(passwordForm.new_password) ? '✓' : '○'}
                         </span>
                         One lowercase letter
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className={/[0-9]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={/[0-9]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-muted-foreground'}>
                           {/[0-9]/.test(passwordForm.new_password) ? '✓' : '○'}
                         </span>
                         One number
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className={/[^a-zA-Z0-9]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-gray-400'}>
+                        <span className={/[^a-zA-Z0-9]/.test(passwordForm.new_password) ? 'text-green-600' : 'text-muted-foreground'}>
                           {/[^a-zA-Z0-9]/.test(passwordForm.new_password) ? '✓' : '○'}
                         </span>
                         One special character
@@ -606,17 +606,17 @@ export default function ProfileSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">User ID</span>
+                <span className="text-sm text-muted-foreground">User ID</span>
                 <span className="text-sm font-mono">{profile?.id.substring(0, 8)}...</span>
               </div>
               <div className="flex justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Account Created</span>
+                <span className="text-sm text-muted-foreground">Account Created</span>
                 <span className="text-sm">
                   {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-sm text-gray-600">Last Updated</span>
+                <span className="text-sm text-muted-foreground">Last Updated</span>
                 <span className="text-sm">
                   {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'N/A'}
                 </span>

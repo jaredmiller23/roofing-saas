@@ -244,7 +244,7 @@ export default function ProjectDetailPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
               {project.project_number && (
-                <p className="text-sm text-gray-500 mt-1">Project #{project.project_number}</p>
+                <p className="text-sm text-muted-foreground mt-1">Project #{project.project_number}</p>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -338,21 +338,21 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Description</label>
+                      <label className="text-sm font-medium text-muted-foreground">Description</label>
                       <p className="text-foreground mt-1">{project.description || 'No description provided'}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Scope of Work</label>
+                      <label className="text-sm font-medium text-muted-foreground">Scope of Work</label>
                       <p className="text-foreground mt-1">{project.scope_of_work || 'No scope defined'}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Type</label>
+                        <label className="text-sm font-medium text-muted-foreground">Type</label>
                         <p className="text-foreground">{project.type || '—'}</p>
                       </div>
                       {customFields?.lead_source && (
                         <div>
-                          <label className="text-sm font-medium text-gray-500">Lead Source</label>
+                          <label className="text-sm font-medium text-muted-foreground">Lead Source</label>
                           <p className="text-foreground">{customFields.lead_source}</p>
                         </div>
                       )}
@@ -368,20 +368,20 @@ export default function ProjectDetailPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Estimated Value</label>
+                        <label className="text-sm font-medium text-muted-foreground">Estimated Value</label>
                         <p className="text-lg font-semibold text-foreground">{formatCurrency(project.estimated_value)}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Approved Value</label>
+                        <label className="text-sm font-medium text-muted-foreground">Approved Value</label>
                         <p className="text-lg font-semibold text-foreground">{formatCurrency(project.approved_value)}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Final Value</label>
+                        <label className="text-sm font-medium text-muted-foreground">Final Value</label>
                         <p className="text-lg font-semibold text-green-600">{formatCurrency(project.final_value)}</p>
                       </div>
                       {project.profit_margin && (
                         <div>
-                          <label className="text-sm font-medium text-gray-500">Profit Margin</label>
+                          <label className="text-sm font-medium text-muted-foreground">Profit Margin</label>
                           <p className="text-lg font-semibold text-foreground">
                             {(project.profit_margin * 100).toFixed(1)}%
                           </p>
@@ -407,22 +407,22 @@ export default function ProjectDetailPage() {
                                 {activity.subject && (
                                   <p className="text-sm font-medium text-gray-800">{activity.subject}</p>
                                 )}
-                                <p className="text-xs text-gray-500">{formatDate(activity.created_at)}</p>
+                                <p className="text-xs text-muted-foreground">{formatDate(activity.created_at)}</p>
                               </div>
                               {activity.type && (
-                                <span className="text-xs px-2 py-0.5 bg-muted text-gray-700 rounded capitalize">
+                                <span className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded capitalize">
                                   {activity.type.replace('_', ' ')}
                                 </span>
                               )}
                             </div>
                             {activity.notes && (
-                              <p className="text-sm text-gray-600">{activity.notes}</p>
+                              <p className="text-sm text-muted-foreground">{activity.notes}</p>
                             )}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-gray-500 text-sm">
+                      <div className="text-center py-8 text-muted-foreground text-sm">
                         No activities yet. Add a note to track progress.
                       </div>
                     )}
@@ -439,7 +439,7 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-500 mb-2 block">Current Stage</label>
+                      <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Stage</label>
                       <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
                         project.pipeline_stage === 'won' ? 'bg-green-100 text-green-800 border border-green-200' :
                         project.pipeline_stage === 'production' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
@@ -473,8 +473,8 @@ export default function ProjectDetailPage() {
                     {/* Legacy pipeline info if exists */}
                     {(pipeline || stage) && (
                       <div className="pt-3 border-t border-gray-200">
-                        <label className="text-xs font-medium text-gray-400 mb-2 block">Legacy Pipeline</label>
-                        <div className="text-xs text-gray-500">
+                        <label className="text-xs font-medium text-muted-foreground mb-2 block">Legacy Pipeline</label>
+                        <div className="text-xs text-muted-foreground">
                           {pipeline && <span>{pipeline}</span>}
                           {pipeline && stage && <span> → </span>}
                           {stage && <span>{stage}</span>}
@@ -491,28 +491,28 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Created</label>
+                      <label className="text-sm font-medium text-muted-foreground">Created</label>
                       <p className="text-foreground">{formatDate(project.created_at)}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Last Updated</label>
+                      <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
                       <p className="text-foreground">{formatDate(project.updated_at)}</p>
                     </div>
                     {project.estimated_start && (
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Estimated Start</label>
+                        <label className="text-sm font-medium text-muted-foreground">Estimated Start</label>
                         <p className="text-foreground">{formatDate(project.estimated_start)}</p>
                       </div>
                     )}
                     {project.actual_start && (
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Actual Start</label>
+                        <label className="text-sm font-medium text-muted-foreground">Actual Start</label>
                         <p className="text-foreground">{formatDate(project.actual_start)}</p>
                       </div>
                     )}
                     {project.actual_completion && (
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Completion</label>
+                        <label className="text-sm font-medium text-muted-foreground">Completion</label>
                         <p className="text-foreground">{formatDate(project.actual_completion)}</p>
                       </div>
                     )}
@@ -527,7 +527,7 @@ export default function ProjectDetailPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Production Jobs</h2>
-                <p className="text-sm text-gray-600">Jobs and work orders for this project</p>
+                <p className="text-sm text-muted-foreground">Jobs and work orders for this project</p>
               </div>
               <Link href={`/jobs/new?project_id=${projectId}`}>
                 <Button size="sm">+ Create Job</Button>
@@ -548,14 +548,14 @@ export default function ProjectDetailPage() {
                     <CardContent className="space-y-2">
                       {job.scheduled_date && (
                         <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-gray-400" />
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span>{formatDate(job.scheduled_date)}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-sm">
                         <div className="flex-1">
-                          <div className="text-xs text-gray-500 mb-1">Progress</div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="text-xs text-muted-foreground mb-1">Progress</div>
+                          <div className="w-full bg-muted rounded-full h-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full"
                               style={{ width: `${job.completion_percentage || 0}%` }}
@@ -566,7 +566,7 @@ export default function ProjectDetailPage() {
                       </div>
                       {job.total_cost && (
                         <div className="flex items-center gap-2 text-sm">
-                          <DollarSign className="h-4 w-4 text-gray-400" />
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <span>{formatCurrency(job.total_cost)}</span>
                         </div>
                       )}
@@ -582,9 +582,9 @@ export default function ProjectDetailPage() {
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Briefcase className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                  <Briefcase className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
                   <h3 className="text-lg font-medium text-foreground mb-1">No jobs yet</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-muted-foreground mb-4">
                     Create a job to schedule production work for this project
                   </p>
                   <Link href={`/jobs/new?project_id=${projectId}`}>
@@ -599,14 +599,14 @@ export default function ProjectDetailPage() {
           <TabsContent value="files" className="space-y-6">
             <div>
               <h2 className="text-xl font-semibold text-foreground mb-2">Project Files & Photos</h2>
-              <p className="text-sm text-gray-600">Documents, photos, and attachments</p>
+              <p className="text-sm text-muted-foreground">Documents, photos, and attachments</p>
             </div>
 
             <Card>
               <CardContent className="py-12 text-center">
-                <FileText className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
                 <h3 className="text-lg font-medium text-foreground mb-1">Files integration coming soon</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Upload and manage project documents, photos, and files
                 </p>
               </CardContent>
@@ -627,27 +627,27 @@ export default function ProjectDetailPage() {
                   <CardContent className="space-y-4">
                     {contact.phone && (
                       <div className="flex items-center gap-3">
-                        <Phone className="h-5 w-5 text-gray-400" />
+                        <Phone className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <label className="text-sm font-medium text-gray-500">Phone</label>
+                          <label className="text-sm font-medium text-muted-foreground">Phone</label>
                           <p className="text-foreground">{contact.phone}</p>
                         </div>
                       </div>
                     )}
                     {contact.email && (
                       <div className="flex items-center gap-3">
-                        <Mail className="h-5 w-5 text-gray-400" />
+                        <Mail className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <label className="text-sm font-medium text-gray-500">Email</label>
+                          <label className="text-sm font-medium text-muted-foreground">Email</label>
                           <p className="text-foreground">{contact.email}</p>
                         </div>
                       </div>
                     )}
                     {contact.address_street && (
                       <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-gray-400 mt-1" />
+                        <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
                         <div>
-                          <label className="text-sm font-medium text-gray-500">Address</label>
+                          <label className="text-sm font-medium text-muted-foreground">Address</label>
                           <p className="text-foreground">
                             {contact.address_street}
                             <br />
@@ -693,9 +693,9 @@ export default function ProjectDetailPage() {
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <User className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                  <User className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
                   <h3 className="text-lg font-medium text-foreground mb-1">No contact linked</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Link a contact to this project to track customer information
                   </p>
                 </CardContent>

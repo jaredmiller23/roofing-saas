@@ -89,10 +89,10 @@ export function EventsTable({ params }: EventsTableProps) {
       scheduled: 'bg-blue-100 text-blue-800',
       confirmed: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
-      completed: 'bg-gray-100 text-gray-800',
+      completed: 'bg-muted text-muted-foreground',
       no_show: 'bg-orange-100 text-orange-800',
     }
-    return badges[status as keyof typeof badges] || 'bg-gray-100 text-gray-800'
+    return badges[status as keyof typeof badges] || 'bg-muted text-muted-foreground'
   }
 
   const getEventTypeBadge = (type: string) => {
@@ -104,9 +104,9 @@ export function EventsTable({ params }: EventsTableProps) {
       follow_up: 'bg-orange-100 text-orange-800',
       callback: 'bg-pink-100 text-pink-800',
       estimate: 'bg-indigo-100 text-indigo-800',
-      other: 'bg-gray-100 text-gray-800',
+      other: 'bg-muted text-muted-foreground',
     }
-    return badges[type as keyof typeof badges] || 'bg-gray-100 text-gray-800'
+    return badges[type as keyof typeof badges] || 'bg-muted text-muted-foreground'
   }
 
   const formatDateTime = (dateStr: string, allDay: boolean) => {
@@ -136,9 +136,9 @@ export function EventsTable({ params }: EventsTableProps) {
   if (events.length === 0) {
     return (
       <div className="text-center py-12">
-        <CalendarDays className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No events</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-2 text-sm font-medium text-foreground">No events</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           Get started by scheduling an event.
         </p>
         <div className="mt-6">
@@ -159,38 +159,38 @@ export function EventsTable({ params }: EventsTableProps) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Event
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Start
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Location
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {events.map((event) => (
-              <tr key={event.id} className="hover:bg-gray-50">
+              <tr key={event.id} className="hover:bg-accent">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <CalendarDays className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{event.title}</div>
+                      <div className="text-sm font-medium text-foreground">{event.title}</div>
                       {event.description && (
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                        <div className="text-sm text-muted-foreground truncate max-w-xs">
                           {event.description}
                         </div>
                       )}
@@ -203,19 +203,19 @@ export function EventsTable({ params }: EventsTableProps) {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-900">
-                    <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                  <div className="flex items-center text-sm text-foreground">
+                    <Clock className="h-4 w-4 text-muted-foreground mr-2" />
                     {formatDateTime(event.start_at, event.all_day)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {event.location ? (
-                    <div className="flex items-center text-sm text-gray-900">
-                      <MapPin className="h-4 w-4 text-gray-400 mr-2" />
+                    <div className="flex items-center text-sm text-foreground">
+                      <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
                       <span className="truncate max-w-xs">{event.location}</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-gray-500">-</span>
+                    <span className="text-sm text-muted-foreground">-</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -250,21 +250,21 @@ export function EventsTable({ params }: EventsTableProps) {
             <button
               onClick={() => router.push(`/events?page=${page - 1}`)}
               disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => router.push(`/events?page=${page + 1}`)}
               disabled={page * 10 >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-white hover:bg-accent disabled:opacity-50"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
                 <span className="font-medium">{Math.min(page * 10, total)}</span> of{' '}
                 <span className="font-medium">{total}</span> results
@@ -275,14 +275,14 @@ export function EventsTable({ params }: EventsTableProps) {
                 <button
                   onClick={() => router.push(`/events?page=${page - 1}`)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => router.push(`/events?page=${page + 1}`)}
                   disabled={page * 10 >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Next
                 </button>

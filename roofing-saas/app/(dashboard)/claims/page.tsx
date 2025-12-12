@@ -231,14 +231,14 @@ export default function ClaimsPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="h-32 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-32 bg-muted rounded"></div>
           </div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -249,7 +249,7 @@ export default function ClaimsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Claims Management</h1>
-        <p className="text-gray-600 mt-1">View and manage all insurance claims across all projects</p>
+        <p className="text-muted-foreground mt-1">View and manage all insurance claims across all projects</p>
       </div>
 
       {/* Statistics Cards */}
@@ -317,7 +317,7 @@ export default function ClaimsPage() {
             {/* Row 1: Search and Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by claim #, address, policy #..."
                   value={searchTerm}
@@ -360,7 +360,7 @@ export default function ClaimsPage() {
                 </SelectContent>
               </Select>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="date"
                   placeholder="From date"
@@ -370,7 +370,7 @@ export default function ClaimsPage() {
                 />
               </div>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="date"
                   placeholder="To date"
@@ -383,7 +383,7 @@ export default function ClaimsPage() {
 
             {/* Active Filters Summary */}
             {(searchTerm || statusFilter !== 'all' || projectFilter !== 'all' || dateFromFilter || dateToFilter) && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium">Active filters:</span>
                 {searchTerm && <Badge variant="secondary">Search: {searchTerm}</Badge>}
                 {statusFilter !== 'all' && <Badge variant="secondary">Status: {STATUS_LABELS[statusFilter as ClaimStatus]}</Badge>}
@@ -418,11 +418,11 @@ export default function ClaimsPage() {
       {filteredClaims.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-16 w-16 text-gray-400 mb-4" />
+            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">
               {searchTerm || statusFilter !== 'all' ? 'No Claims Match Your Filters' : 'No Claims Yet'}
             </h3>
-            <p className="text-gray-600 text-center max-w-md">
+            <p className="text-muted-foreground text-center max-w-md">
               {searchTerm || statusFilter !== 'all'
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Claims will appear here once they are created for projects.'}
@@ -431,7 +431,7 @@ export default function ClaimsPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             Showing {filteredClaims.length} of {stats.total} claims
           </div>
           <div className="grid gap-4">
@@ -459,7 +459,7 @@ export default function ClaimsPage() {
                     </div>
                     {claim.approved_amount && (
                       <div className="text-right">
-                        <div className="text-sm text-gray-600">Approved Amount</div>
+                        <div className="text-sm text-muted-foreground">Approved Amount</div>
                         <div className="text-2xl font-bold text-green-600">
                           ${claim.approved_amount.toLocaleString()}
                         </div>
@@ -470,15 +470,15 @@ export default function ClaimsPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-600">Policy #</div>
+                      <div className="text-muted-foreground">Policy #</div>
                       <div className="font-medium">{claim.policy_number || 'N/A'}</div>
                     </div>
                     <div>
-                      <div className="text-gray-600">Claim Type</div>
+                      <div className="text-muted-foreground">Claim Type</div>
                       <div className="font-medium capitalize">{claim.claim_type.replace('_', ' ')}</div>
                     </div>
                     <div>
-                      <div className="text-gray-600">Property</div>
+                      <div className="text-muted-foreground">Property</div>
                       <div className="font-medium">
                         {claim.property_address}
                         <br />
@@ -487,7 +487,7 @@ export default function ClaimsPage() {
                     </div>
                     {claim.initial_estimate && (
                       <div>
-                        <div className="text-gray-600">Initial Estimate</div>
+                        <div className="text-muted-foreground">Initial Estimate</div>
                         <div className="font-medium">${claim.initial_estimate.toLocaleString()}</div>
                       </div>
                     )}

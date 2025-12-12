@@ -129,14 +129,14 @@ export default function TerritoryDetailPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">{territory.name}</h1>
             {territory.description && (
-              <p className="text-gray-600 mt-1">{territory.description}</p>
+              <p className="text-muted-foreground mt-1">{territory.description}</p>
             )}
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href="/territories"
-              className="text-gray-600 hover:text-foreground font-medium"
+              className="text-muted-foreground hover:text-foreground font-medium"
             >
               ← Back to Territories
             </Link>
@@ -149,34 +149,34 @@ export default function TerritoryDetailPage() {
 
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <dt className="text-sm font-medium text-gray-600">Name</dt>
+              <dt className="text-sm font-medium text-muted-foreground">Name</dt>
               <dd className="text-base text-foreground mt-1">{territory.name}</dd>
             </div>
 
             {territory.assigned_to && (
               <div>
-                <dt className="text-sm font-medium text-gray-600">Assigned To</dt>
+                <dt className="text-sm font-medium text-muted-foreground">Assigned To</dt>
                 <dd className="text-base text-foreground mt-1">{territory.assigned_to}</dd>
               </div>
             )}
 
             {territory.description && (
               <div className="md:col-span-2">
-                <dt className="text-sm font-medium text-gray-600">Description</dt>
+                <dt className="text-sm font-medium text-muted-foreground">Description</dt>
                 <dd className="text-base text-foreground mt-1">{territory.description}</dd>
               </div>
             )}
 
             {territory.boundary_data && (
               <div>
-                <dt className="text-sm font-medium text-gray-600">Boundary Type</dt>
+                <dt className="text-sm font-medium text-muted-foreground">Boundary Type</dt>
                 <dd className="text-base text-foreground mt-1">{territory.boundary_data.type}</dd>
               </div>
             )}
 
             {territory.created_at && (
               <div>
-                <dt className="text-sm font-medium text-gray-600">Created</dt>
+                <dt className="text-sm font-medium text-muted-foreground">Created</dt>
                 <dd className="text-base text-foreground mt-1">
                   {new Date(territory.created_at).toLocaleDateString()}
                 </dd>
@@ -203,7 +203,7 @@ export default function TerritoryDetailPage() {
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                  className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-gray-300 font-medium"
                 >
                   Cancel
                 </button>

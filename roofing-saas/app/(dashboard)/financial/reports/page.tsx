@@ -91,7 +91,7 @@ export default async function FinancialReportsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Financial Reports</h1>
-              <p className="text-gray-600 mt-1">Company-wide profit & loss analysis</p>
+              <p className="text-muted-foreground mt-1">Company-wide profit & loss analysis</p>
             </div>
             <div className="flex gap-3">
               <Link
@@ -121,7 +121,7 @@ export default async function FinancialReportsPage() {
           {/* Total Revenue Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Total Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenue)}</p>
@@ -134,7 +134,7 @@ export default async function FinancialReportsPage() {
           {/* Total Profit Card */}
           <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${totalGrossProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Gross Profit</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Gross Profit</h3>
               {totalGrossProfit >= 0 ? (
                 <TrendingUp className="h-5 w-5 text-green-500" />
               ) : (
@@ -144,7 +144,7 @@ export default async function FinancialReportsPage() {
             <p className={`text-2xl font-bold ${totalGrossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(totalGrossProfit)}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Margin: {avgMargin.toFixed(1)}%
             </p>
           </div>
@@ -152,11 +152,11 @@ export default async function FinancialReportsPage() {
           {/* Active Projects Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Active Projects</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Active Projects</h3>
               <Briefcase className="h-5 w-5 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{activeProjects}</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Total: {plData?.length || 0} projects
             </p>
           </div>
@@ -164,13 +164,13 @@ export default async function FinancialReportsPage() {
           {/* Cost Variance Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Cost Performance</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Cost Performance</h3>
               <Calendar className="h-5 w-5 text-orange-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">
               {formatCurrency(totalActualCost - totalEstimatedCost)}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Variance from estimate
             </p>
           </div>
@@ -214,12 +214,12 @@ export default async function FinancialReportsPage() {
               <table className="w-full">
                 <thead className="bg-background">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Projects</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cost</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Profit</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Margin</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Projects</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Revenue</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Cost</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Profit</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Margin</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">

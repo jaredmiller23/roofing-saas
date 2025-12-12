@@ -536,7 +536,7 @@ export function VoiceSession({
           status === 'connected' ? 'bg-green-100 text-green-800' :
           status === 'connecting' ? 'bg-yellow-100 text-yellow-800' :
           status === 'error' ? 'bg-red-100 text-red-800' :
-          'bg-gray-100 text-gray-800'
+          'bg-muted text-muted-foreground'
         }`}>
           {status === 'connecting' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           {status === 'idle' && 'Ready to start'}
@@ -556,7 +556,7 @@ export function VoiceSession({
 
       {/* Session ID */}
       {sessionId && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Session: {sessionId.slice(0, 8)}...
         </p>
       )}
@@ -580,7 +580,7 @@ export function VoiceSession({
               className={`p-5 md:p-4 rounded-full transition-colors touch-manipulation ${
                 isMuted
                   ? 'bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
+                  : 'bg-gray-100 text-muted-foreground hover:bg-muted active:bg-gray-300'
               }`}
               aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             >
@@ -600,7 +600,7 @@ export function VoiceSession({
 
       {/* Instructions */}
       {status === 'idle' && (
-        <div className="text-center text-sm md:text-base text-gray-600 max-w-md px-4">
+        <div className="text-center text-sm md:text-base text-muted-foreground max-w-md px-4">
           <p>
             {isMobileDevice() ? 'Tap' : 'Click'} &quot;Start Voice Assistant&quot; to begin speaking with your AI assistant.
           </p>
@@ -614,7 +614,7 @@ export function VoiceSession({
       )}
 
       {status === 'connected' && (
-        <div className="text-center text-sm md:text-base text-gray-600 max-w-md px-4">
+        <div className="text-center text-sm md:text-base text-muted-foreground max-w-md px-4">
           <p className="font-medium">🎤 Listening... You can now speak to your assistant.</p>
           <p className="mt-2 text-xs md:text-sm">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
           {isMobileDevice() && (
@@ -628,7 +628,7 @@ export function VoiceSession({
       {/* Conversation Transcript */}
       {conversationHistory.length > 0 && (
         <div className="w-full max-w-2xl mt-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Conversation Transcript</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Conversation Transcript</h3>
           <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto space-y-3">
             {conversationHistory.map((message) => (
               <div
@@ -640,7 +640,7 @@ export function VoiceSession({
                     message.role === 'user'
                       ? 'bg-blue-600 text-white'
                       : message.role === 'assistant'
-                      ? 'bg-gray-200 text-gray-900'
+                      ? 'bg-muted text-foreground'
                       : 'bg-purple-100 text-purple-900 text-xs'
                   }`}
                 >

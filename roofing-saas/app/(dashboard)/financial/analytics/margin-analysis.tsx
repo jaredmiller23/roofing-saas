@@ -103,28 +103,28 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-foreground">Margin Analysis</h2>
-        <p className="text-sm text-gray-500 mt-1">Profitability breakdown by job type and performance</p>
+        <p className="text-sm text-muted-foreground mt-1">Profitability breakdown by job type and performance</p>
       </div>
 
       <div className="p-6">
         {/* Overall Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500 mb-1">Overall Margin</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Overall Margin</p>
             <p className={`text-3xl font-bold ${getMarginColor(analysis.overallMargin)}`}>
               {analysis.overallMargin.toFixed(1)}%
             </p>
           </div>
 
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Total Revenue</p>
             <p className="text-3xl font-bold text-foreground">
               {formatCurrency(analysis.totalRevenue)}
             </p>
           </div>
 
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500 mb-1">Total Profit</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Total Profit</p>
             <p className="text-3xl font-bold text-green-600">
               {formatCurrency(analysis.totalProfit)}
             </p>
@@ -133,15 +133,15 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
 
         {/* Margin by Job Type */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Margin by Job Type</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">Margin by Job Type</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {analysis.marginByType.map((item, index) => (
               <div key={index} className={`rounded-lg p-4 ${getMarginBgColor(item.margin)}`}>
-                <p className="text-sm font-medium text-gray-700 mb-2">{item.type}</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">{item.type}</p>
                 <p className={`text-2xl font-bold ${getMarginColor(item.margin)} mb-1`}>
                   {item.margin.toFixed(1)}%
                 </p>
-                <div className="text-xs text-gray-600 space-y-0.5">
+                <div className="text-xs text-muted-foreground space-y-0.5">
                   <p>{item.count} projects</p>
                   <p>Revenue: {formatCurrency(item.revenue)}</p>
                   <p>Avg profit: {formatCurrency(item.avgProfit)}</p>
@@ -155,7 +155,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Best Performers */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Top Margin Projects</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Top Margin Projects</h3>
             <div className="space-y-2">
               {analysis.bestPerformers.map((project, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
@@ -163,7 +163,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
                     <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Revenue: {formatCurrency(project.revenue || 0)}
                     </p>
                   </div>
@@ -179,7 +179,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
 
           {/* Worst Performers */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Lowest Margin Projects</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Lowest Margin Projects</h3>
             <div className="space-y-2">
               {analysis.worstPerformers.map((project, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
@@ -187,7 +187,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
                     <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Revenue: {formatCurrency(project.revenue || 0)}
                     </p>
                   </div>

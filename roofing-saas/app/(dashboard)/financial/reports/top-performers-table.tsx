@@ -63,7 +63,7 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
                       <p className="text-sm font-medium text-foreground truncate">
                         {project.project_name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Revenue: {formatCurrency(project.revenue || 0)}
                       </p>
                     </div>
@@ -72,14 +72,14 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
                     <p className={`text-sm font-bold ${getMetricColor(project)}`}>
                       {formatMetric(project)}
                     </p>
-                    <p className="text-xs text-gray-500">{metricLabel}</p>
+                    <p className="text-xs text-muted-foreground">{metricLabel}</p>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <p>No projects to display</p>
           </div>
         )}

@@ -67,7 +67,7 @@ export default async function ProjectFileDetailPage({
               <h1 className="text-3xl font-bold text-foreground">
                 {file.file_name}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-muted-foreground mt-1">
                 {file.file_type} {file.file_category && `• ${file.file_category}`}
               </p>
             </div>
@@ -82,7 +82,7 @@ export default async function ProjectFileDetailPage({
             </Link>
             <Link
               href="/project-files"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>

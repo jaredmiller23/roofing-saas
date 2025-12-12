@@ -83,11 +83,11 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-900">Conversations</h3>
+          <h3 className="text-sm font-semibold text-foreground">Conversations</h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded"
+              className="p-1 text-muted-foreground hover:text-muted-foreground rounded"
               title="Close"
             >
               <X className="h-4 w-4" />
@@ -97,7 +97,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
@@ -125,11 +125,11 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
           </div>
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-            <MessageSquare className="h-8 w-8 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-600">
+            <MessageSquare className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">
               {searchQuery ? 'No conversations found' : 'No conversations yet'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {searchQuery ? 'Try a different search' : 'Start a new conversation to get started'}
             </p>
           </div>
@@ -144,7 +144,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                   key={conversation.id}
                   onClick={() => handleSelectConversation(conversation.id)}
                   disabled={isDeleting}
-                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors group relative ${
+                  className={`w-full px-4 py-3 text-left hover:bg-accent transition-colors group relative ${
                     isActive ? 'bg-blue-50' : ''
                   } ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
@@ -158,10 +158,10 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                     <div className="flex-1 min-w-0">
                       {/* Title */}
                       <div className="flex items-center gap-2">
-                        <MessageSquare className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                        <MessageSquare className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                         <h4
                           className={`text-sm font-medium truncate ${
-                            isActive ? 'text-blue-900' : 'text-gray-900'
+                            isActive ? 'text-blue-900' : 'text-foreground'
                           }`}
                         >
                           {conversation.title || 'Untitled conversation'}
@@ -169,7 +169,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                       </div>
 
                       {/* Timestamp */}
-                      <p className="text-xs text-gray-500 mt-0.5 ml-5">
+                      <p className="text-xs text-muted-foreground mt-0.5 ml-5">
                         {formatDistanceToNow(new Date(conversation.updated_at), {
                           addSuffix: true,
                         })}
@@ -181,7 +181,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                       {/* Archive */}
                       <button
                         onClick={(e) => handleArchiveConversation(conversation.id, e)}
-                        className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
                         title="Archive conversation"
                       >
                         <Archive className="h-3.5 w-3.5" />
@@ -190,7 +190,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                       {/* Delete */}
                       <button
                         onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                         title="Delete conversation"
                       >
                         {isDeleting ? (
@@ -210,7 +210,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
 
       {/* Footer info */}
       <div className="flex-shrink-0 px-4 py-2 border-t border-gray-200 bg-gray-50">
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-muted-foreground text-center">
           {conversations.length} conversation{conversations.length === 1 ? '' : 's'}
         </p>
       </div>

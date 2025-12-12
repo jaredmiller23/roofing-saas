@@ -503,7 +503,7 @@ export function CardFormDialog({
                       <FormLabel>Card URL Slug</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">/card/</span>
+                          <span className="text-sm text-muted-foreground">/card/</span>
                           <Input {...field} placeholder="john-doe" />
                         </div>
                       </FormControl>
@@ -519,7 +519,7 @@ export function CardFormDialog({
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">Contact Form</FormLabel>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                           Allow visitors to send you messages
                         </div>
                       </div>
@@ -540,7 +540,7 @@ export function CardFormDialog({
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">Appointment Booking</FormLabel>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                           Allow visitors to book appointments
                         </div>
                       </div>

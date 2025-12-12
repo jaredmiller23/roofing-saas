@@ -268,10 +268,10 @@ export function FilterSettings() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter Configuration</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Filter Configuration</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Entity Type
             </label>
             <select
@@ -302,13 +302,13 @@ export function FilterSettings() {
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingConfig ? 'Edit Filter' : 'Add New Filter'}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Entity Type *
               </label>
               <select
@@ -326,7 +326,7 @@ export function FilterSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Field Name (DB Column) *
               </label>
               <Input
@@ -335,13 +335,13 @@ export function FilterSettings() {
                 placeholder="e.g., status, type, created_at"
                 disabled={!!editingConfig}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Database column name to filter on
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Display Label *
               </label>
               <Input
@@ -352,7 +352,7 @@ export function FilterSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Field Type *
               </label>
               <select
@@ -369,7 +369,7 @@ export function FilterSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Default Operator
               </label>
               <select
@@ -386,7 +386,7 @@ export function FilterSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Display Order
               </label>
               <Input
@@ -401,7 +401,7 @@ export function FilterSettings() {
             {/* Options section for select/multi_select */}
             {(formData.field_type === 'select' || formData.field_type === 'multi_select') && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Options
                 </label>
 
@@ -414,10 +414,10 @@ export function FilterSettings() {
                         className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
                       >
                         <span className="font-medium">{option.label}</span>
-                        <span className="text-gray-500">({option.value})</span>
+                        <span className="text-muted-foreground">({option.value})</span>
                         <button
                           onClick={() => removeOption(index)}
-                          className="ml-1 text-gray-400 hover:text-red-500"
+                          className="ml-1 text-muted-foreground hover:text-red-500"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -449,7 +449,7 @@ export function FilterSettings() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Add options for dropdown filters
                 </p>
               </div>
@@ -464,7 +464,7 @@ export function FilterSettings() {
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
+                  <span className="text-sm text-muted-foreground">Active</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -474,8 +474,8 @@ export function FilterSettings() {
                     onChange={(e) => setFormData({ ...formData, is_quick_filter: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Quick Filter</span>
-                  <span className="text-xs text-gray-500">(Show in filter bar)</span>
+                  <span className="text-sm text-muted-foreground">Quick Filter</span>
+                  <span className="text-xs text-muted-foreground">(Show in filter bar)</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -485,8 +485,8 @@ export function FilterSettings() {
                     onChange={(e) => setFormData({ ...formData, is_advanced_filter: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <span className="text-sm text-gray-700">Advanced Filter</span>
-                  <span className="text-xs text-gray-500">(Show in advanced panel)</span>
+                  <span className="text-sm text-muted-foreground">Advanced Filter</span>
+                  <span className="text-xs text-muted-foreground">(Show in advanced panel)</span>
                 </label>
               </div>
             </div>
@@ -513,10 +513,10 @@ export function FilterSettings() {
       {/* Quick Filters Section */}
       {quickFilters.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Zap className="h-5 w-5 text-yellow-500" />
             Quick Filters
-            <span className="text-sm font-normal text-gray-500">
+            <span className="text-sm font-normal text-muted-foreground">
               ({quickFilters.length} filter{quickFilters.length !== 1 ? 's' : ''})
             </span>
           </h4>
@@ -540,10 +540,10 @@ export function FilterSettings() {
       {/* Advanced Filters Section */}
       {advancedFilters.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-gray-500" />
+          <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Settings2 className="h-5 w-5 text-muted-foreground" />
             Advanced Filters
-            <span className="text-sm font-normal text-gray-500">
+            <span className="text-sm font-normal text-muted-foreground">
               ({advancedFilters.length} filter{advancedFilters.length !== 1 ? 's' : ''})
             </span>
           </h4>
@@ -567,11 +567,11 @@ export function FilterSettings() {
       {/* Empty State */}
       {configs.length === 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <Filter className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             No filters configured
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             Add filters to help users search and filter {entityTypeFilter}
           </p>
           <Button
@@ -610,18 +610,18 @@ function FilterConfigCard({
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <span className="font-semibold text-sm text-gray-900">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="font-semibold text-sm text-foreground">
             {config.field_label}
           </span>
         </div>
       </div>
 
-      <p className="text-xs text-gray-600 mb-2">
+      <p className="text-xs text-muted-foreground mb-2">
         Field: <code className="bg-gray-100 px-1 rounded">{config.field_name}</code>
       </p>
 
-      <div className="flex items-center gap-2 text-xs text-gray-500">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span className="px-2 py-0.5 bg-gray-100 rounded capitalize">
           {config.field_type.replace('_', ' ')}
         </span>
@@ -631,12 +631,12 @@ function FilterConfigCard({
           </span>
         )}
         {!config.is_active && (
-          <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded">
+          <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded">
             Inactive
           </span>
         )}
         {config.filter_options?.length > 0 && (
-          <span className="text-gray-400">
+          <span className="text-muted-foreground">
             {config.filter_options.length} options
           </span>
         )}
@@ -646,21 +646,21 @@ function FilterConfigCard({
       <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
         <button
           onClick={onToggleActive}
-          className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm"
+          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
           title={config.is_active ? 'Deactivate' : 'Activate'}
         >
-          <CheckCircle className={`h-3 w-3 ${config.is_active ? 'text-green-600' : 'text-gray-400'}`} />
+          <CheckCircle className={`h-3 w-3 ${config.is_active ? 'text-green-600' : 'text-muted-foreground'}`} />
         </button>
         <button
           onClick={onEdit}
-          className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm"
+          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
           title="Edit"
         >
-          <Pencil className="h-3 w-3 text-gray-600" />
+          <Pencil className="h-3 w-3 text-muted-foreground" />
         </button>
         <button
           onClick={onDelete}
-          className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded shadow-sm"
+          className="p-1.5 bg-white border border-gray-200 hover:bg-accent rounded shadow-sm"
           title="Delete"
         >
           <Trash2 className="h-3 w-3 text-red-600" />

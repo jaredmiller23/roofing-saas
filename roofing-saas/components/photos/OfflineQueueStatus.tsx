@@ -112,14 +112,14 @@ export default function OfflineQueueStatus() {
             ) : (
               <WifiOff className="w-5 h-5 text-red-600" />
             )}
-            <span className="font-semibold text-gray-900">
+            <span className="font-semibold text-foreground">
               {isOnline ? 'Online' : 'Offline Mode'}
             </span>
           </div>
 
           <button
             onClick={() => setIsVisible(false)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-muted-foreground transition-colors"
             aria-label="Dismiss"
           >
             <X className="w-4 h-4" />
@@ -131,7 +131,7 @@ export default function OfflineQueueStatus() {
           <div className="space-y-2">
             {/* Pending */}
             {pendingCount > 0 && (
-              <div className="flex items-center gap-2 text-sm text-gray-700">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Upload className="w-4 h-4 text-blue-600" />
                 <span>
                   {pendingCount} photo{pendingCount !== 1 ? 's' : ''} queued
@@ -163,7 +163,7 @@ export default function OfflineQueueStatus() {
 
         {/* Offline Message */}
         {!isOnline && totalCount === 0 && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Photos will sync automatically when you&apos;re back online.
           </p>
         )}
@@ -196,7 +196,7 @@ export default function OfflineQueueStatus() {
         {/* Progress Indicator */}
         {syncingCount > 0 && (
           <div className="mt-3">
-            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
               <div className="h-full bg-blue-600 rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
           </div>

@@ -105,18 +105,18 @@ export function SubstatusSelector({
         {currentSubstatus ? (
           <SubstatusBadge substatus={currentSubstatus} size={size} showIcon />
         ) : (
-          <div className="px-2.5 py-1 text-sm text-gray-500 border-2 border-dashed border-gray-300 rounded-full flex items-center gap-1">
+          <div className="px-2.5 py-1 text-sm text-muted-foreground border-2 border-dashed border-gray-300 rounded-full flex items-center gap-1">
             <span>Set substatus</span>
             {!disabled && <ChevronDown className="h-3 w-3" />}
           </div>
         )}
 
         {!disabled && !updating && (
-          <ChevronDown className="h-3 w-3 text-gray-400" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
         )}
 
         {updating && (
-          <Loader2 className="h-3 w-3 text-gray-400 animate-spin" />
+          <Loader2 className="h-3 w-3 text-muted-foreground animate-spin" />
         )}
       </button>
 
@@ -148,7 +148,7 @@ export function SubstatusSelector({
                       className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${
                         isSelected
                           ? 'bg-blue-50'
-                          : 'hover:bg-gray-50'
+                          : 'hover:bg-accent'
                       } ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {/* Selection indicator */}
@@ -163,7 +163,7 @@ export function SubstatusSelector({
                       />
 
                       {/* Label */}
-                      <span className="text-sm flex-1 text-gray-900">
+                      <span className="text-sm flex-1 text-foreground">
                         {substatus.substatus_label}
                       </span>
 
@@ -174,7 +174,7 @@ export function SubstatusSelector({
 
                       {/* Terminal indicator */}
                       {substatus.is_terminal && (
-                        <span className="text-xs text-gray-500 flex-shrink-0">[T]</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">[T]</span>
                       )}
                     </button>
                   )

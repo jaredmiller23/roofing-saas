@@ -37,7 +37,7 @@ export function PointsDisplay() {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-        <div className="h-20 bg-gray-200 rounded"></div>
+        <div className="h-20 bg-muted rounded"></div>
       </div>
     )
   }
@@ -51,28 +51,28 @@ export function PointsDisplay() {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Your Progress</h3>
+        <h3 className="text-lg font-semibold text-foreground">Your Progress</h3>
         <Trophy className="h-5 w-5 text-yellow-500" />
       </div>
 
       {/* Level and Total Points */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Level {points.current_level}</span>
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm text-muted-foreground">Level {points.current_level}</span>
+          <span className="text-sm font-medium text-foreground">
             {points.total_points.toLocaleString()} points
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-muted rounded-full h-2">
           <div
             className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
 
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           {100 - pointsInCurrentLevel} points to level {points.current_level + 1}
         </p>
       </div>
@@ -81,30 +81,30 @@ export function PointsDisplay() {
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-center mb-1">
-            <Target className="h-4 w-4 text-gray-400 mr-1" />
-            <span className="text-xs text-gray-600">Daily</span>
+            <Target className="h-4 w-4 text-muted-foreground mr-1" />
+            <span className="text-xs text-muted-foreground">Daily</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-foreground">
             {points.daily_points}
           </p>
         </div>
 
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-center mb-1">
-            <TrendingUp className="h-4 w-4 text-gray-400 mr-1" />
-            <span className="text-xs text-gray-600">Weekly</span>
+            <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
+            <span className="text-xs text-muted-foreground">Weekly</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-foreground">
             {points.weekly_points}
           </p>
         </div>
 
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-center mb-1">
-            <Trophy className="h-4 w-4 text-gray-400 mr-1" />
-            <span className="text-xs text-gray-600">Monthly</span>
+            <Trophy className="h-4 w-4 text-muted-foreground mr-1" />
+            <span className="text-xs text-muted-foreground">Monthly</span>
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-foreground">
             {points.monthly_points}
           </p>
         </div>

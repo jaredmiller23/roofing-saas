@@ -167,7 +167,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-gray-600">Loading contacts...</div>
+        <div className="text-muted-foreground">Loading contacts...</div>
       </div>
     )
   }
@@ -183,7 +183,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
   if (contacts.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-gray-600 mb-4">No contacts found</div>
+        <div className="text-muted-foreground mb-4">No contacts found</div>
         <Link
           href="/contacts/new"
           className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -197,7 +197,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
       onClick={() => handleSort(field)}
-      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
     >
       <div className="flex items-center gap-1">
         {children}
@@ -230,7 +230,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
             <select
               onChange={(e) => handleBulkAction('stage', e.target.value)}
               disabled={bulkActionLoading}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
               defaultValue=""
             >
               <option value="" disabled>Change Stage</option>
@@ -242,7 +242,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
             <select
               onChange={(e) => handleBulkAction('priority', e.target.value)}
               disabled={bulkActionLoading}
-              className="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
               defaultValue=""
             >
               <option value="" disabled>Change Priority</option>
@@ -276,30 +276,30 @@ export function ContactsTable({ params }: ContactsTableProps) {
                   type="checkbox"
                   checked={contacts.length > 0 && selectedContacts.size === contacts.length}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 border-input rounded focus:ring-blue-500"
                 />
               </th>
               <SortableHeader field="name">Name</SortableHeader>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Type & Category
               </th>
               <SortableHeader field="email">Email</SortableHeader>
               <SortableHeader field="phone">Phone</SortableHeader>
               <SortableHeader field="stage">Stage</SortableHeader>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {contacts.map((contact) => (
-              <tr key={contact.id} className={`hover:bg-gray-50 ${selectedContacts.has(contact.id) ? 'bg-blue-50' : ''}`}>
+              <tr key={contact.id} className={`hover:bg-accent ${selectedContacts.has(contact.id) ? 'bg-blue-50' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedContacts.has(contact.id)}
                     onChange={() => toggleSelectContact(contact.id)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-input rounded focus:ring-blue-500"
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -310,7 +310,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {contact.first_name} {contact.last_name}
                   </Link>
                   {contact.company && (
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {contact.company}
                     </div>
                   )}
@@ -318,17 +318,17 @@ export function ContactsTable({ params }: ContactsTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     {contact.is_organization && (
-                      <Building2 className="h-4 w-4 text-gray-400" aria-label="Organization" />
+                      <Building2 className="h-4 w-4 text-muted-foreground" aria-label="Organization" />
                     )}
-                    <span className="text-sm text-gray-900">
+                    <span className="text-sm text-foreground">
                       {getCombinedTypeLabel(contact)}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {contact.email || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {contact.phone || contact.mobile_phone || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -394,7 +394,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
       {/* Pagination */}
       <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           Showing {contacts.length} of {total} contacts
         </div>
         <div className="flex gap-2">
@@ -404,11 +404,11 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={page <= 1}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
           >
             Previous
           </button>
-          <span className="px-3 py-1 text-sm text-gray-700">
+          <span className="px-3 py-1 text-sm text-muted-foreground">
             Page {page}
           </span>
           <button
@@ -417,7 +417,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={contacts.length < 20}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
           >
             Next
           </button>
@@ -435,7 +435,7 @@ function getStageColor(stage: string) {
     proposal: 'bg-indigo-100 text-indigo-800',
     negotiation: 'bg-orange-100 text-orange-800',
     won: 'bg-green-100 text-green-800',
-    lost: 'bg-gray-100 text-gray-800',
+    lost: 'bg-muted text-muted-foreground',
   }
-  return colors[stage] || 'bg-gray-100 text-gray-800'
+  return colors[stage] || 'bg-muted text-muted-foreground'
 }

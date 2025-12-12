@@ -201,14 +201,14 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
             value={currentTime}
             onChange={handleSeek}
             disabled={isLoading}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: `linear-gradient(to right, #2563eb 0%, #2563eb ${
                 (currentTime / totalDuration) * 100
               }%, #e5e7eb ${(currentTime / totalDuration) * 100}%, #e5e7eb 100%)`,
             }}
           />
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(totalDuration)}</span>
           </div>
@@ -221,7 +221,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
             <button
               onClick={() => skip(-15)}
               disabled={isLoading}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Skip back 15 seconds"
             >
               <SkipBack className="h-5 w-5" />
@@ -239,7 +239,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
             <button
               onClick={() => skip(15)}
               disabled={isLoading}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Skip forward 15 seconds"
             >
               <SkipForward className="h-5 w-5" />
@@ -248,7 +248,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
 
           {/* Center: Playback Speed */}
           <div className="flex items-center gap-1">
-            <span className="text-sm text-gray-600 mr-2">Speed:</span>
+            <span className="text-sm text-muted-foreground mr-2">Speed:</span>
             {[0.5, 1, 1.5, 2].map((rate) => (
               <button
                 key={rate}
@@ -257,7 +257,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   playbackRate === rate
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                 }`}
               >
                 {rate}x
@@ -272,7 +272,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
               <button
                 onClick={toggleMute}
                 disabled={isLoading}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 title={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
@@ -290,7 +290,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
                 value={volume}
                 onChange={handleVolumeChange}
                 disabled={isLoading}
-                className="w-20 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-20 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -298,7 +298,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
             <button
               onClick={handleDownload}
               disabled={isLoading}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Download recording"
             >
               <Download className="h-5 w-5" />
@@ -308,7 +308,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center text-sm text-gray-500">Loading recording...</div>
+          <div className="text-center text-sm text-muted-foreground">Loading recording...</div>
         )}
       </div>
     </div>

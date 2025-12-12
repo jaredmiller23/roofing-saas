@@ -59,7 +59,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
 
     // Operators that don't need a value
     if (operator === 'is_null' || operator === 'is_not_null') {
-      return <div className="text-sm text-gray-500 italic">No value needed</div>
+      return <div className="text-sm text-muted-foreground italic">No value needed</div>
     }
 
     switch (config.field_type) {
@@ -89,7 +89,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
-              <span className="text-gray-500">to</span>
+              <span className="text-muted-foreground">to</span>
               <input
                 type="number"
                 value={max}
@@ -125,7 +125,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
-              <span className="text-gray-500">to</span>
+              <span className="text-muted-foreground">to</span>
               <input
                 type="date"
                 value={end}
@@ -218,12 +218,12 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-foreground">
               {selectedConfig ? 'Edit Filter' : 'Add Filter'}
             </h3>
             <button
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted-foreground hover:text-muted-foreground transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -234,7 +234,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
             {/* Field Selection */}
             {!selectedConfig && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Field
                 </label>
                 <select
@@ -263,7 +263,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
               <>
                 {/* Operator Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
                     Condition
                   </label>
                   <select
@@ -282,7 +282,7 @@ export function FilterBuilder({ configs, selectedConfig, onBuild, onCancel }: Fi
 
                 {/* Value Input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
                     Value
                   </label>
                   {renderValueInput()}

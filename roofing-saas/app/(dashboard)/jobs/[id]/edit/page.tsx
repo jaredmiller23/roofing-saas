@@ -55,7 +55,7 @@ export default async function EditJobPage({
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Edit Job</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-muted-foreground mt-1">
             Update job: {job.job_number}
           </p>
         </div>

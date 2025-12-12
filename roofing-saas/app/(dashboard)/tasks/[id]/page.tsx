@@ -125,7 +125,7 @@ export default async function TaskDetailPage({
             </Link>
             <Link
               href="/tasks"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>
@@ -137,14 +137,14 @@ export default async function TaskDetailPage({
           <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500">Due Date</label>
+              <label className="block text-sm font-medium text-muted-foreground">Due Date</label>
               <p className="mt-1 text-foreground">
                 {task.due_date ? new Date(task.due_date).toLocaleDateString() : '-'}
               </p>
             </div>
             {task.completed_at && (
               <div>
-                <label className="block text-sm font-medium text-gray-500">Completed At</label>
+                <label className="block text-sm font-medium text-muted-foreground">Completed At</label>
                 <p className="mt-1 text-foreground">
                   {new Date(task.completed_at).toLocaleString()}
                 </p>

@@ -35,7 +35,7 @@ export default function ProjectsPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                 Pipeline
               </h1>
-              <p className="text-sm md:text-base text-gray-600 mt-1">
+              <p className="text-sm md:text-base text-muted-foreground mt-1">
                 Track opportunities from first contact to completion
               </p>
             </div>
@@ -50,7 +50,7 @@ export default function ProjectsPage() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'kanban'
                       ? 'bg-white text-foreground shadow-sm'
-                      : 'text-gray-600 hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -62,7 +62,7 @@ export default function ProjectsPage() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'table'
                       ? 'bg-white text-foreground shadow-sm'
-                      : 'text-gray-600 hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Table className="h-4 w-4" />

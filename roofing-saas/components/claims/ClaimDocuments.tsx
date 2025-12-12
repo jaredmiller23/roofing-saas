@@ -191,8 +191,8 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
         {/* Documents Grid */}
         {documents.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p>No documents uploaded yet</p>
               <p className="text-sm mt-1">Click &quot;Upload Documents&quot; to add files</p>
             </CardContent>
@@ -215,14 +215,14 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                           {doc.name}
                         </h3>
                         {doc.type && (
-                          <p className="text-xs text-gray-600 capitalize mt-1">
+                          <p className="text-xs text-muted-foreground capitalize mt-1">
                             {doc.type.replace('_', ' ')}
                           </p>
                         )}
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {formatFileSize(doc.file_size)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {format(new Date(doc.created_at), 'MMM d, yyyy')}
                         </p>
                       </div>
@@ -289,11 +289,11 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
               className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
               onClick={() => document.getElementById('file-upload')?.click()}
             >
-              <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-              <p className="text-sm text-gray-600 mb-1">
+              <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground mb-1">
                 Drop files here or click to browse
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Supports PDF, images, Word, Excel (max 10MB per file)
               </p>
               <Input
@@ -317,9 +317,9 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                       className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <FileText className="h-4 w-4 flex-shrink-0 text-gray-500" />
+                        <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                         <span className="truncate">{file.name}</span>
-                        <span className="text-xs text-gray-500 flex-shrink-0">
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
                           ({formatFileSize(file.size)})
                         </span>
                       </div>
@@ -344,7 +344,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                   <span>Uploading...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600 transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}

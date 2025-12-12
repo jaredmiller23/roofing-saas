@@ -227,7 +227,7 @@ export function PipelineBoard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-gray-600">Loading pipeline...</div>
+        <div className="text-muted-foreground">Loading pipeline...</div>
       </div>
     )
   }
@@ -312,7 +312,7 @@ export function PipelineBoard() {
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search opportunities by name, contact, email, or phone..."
@@ -331,12 +331,12 @@ export function PipelineBoard() {
                   className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
                     quickFilter === filter.id
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {filter.name}
                   <span className={`ml-1.5 text-xs ${
-                    quickFilter === filter.id ? 'text-blue-200' : 'text-gray-400'
+                    quickFilter === filter.id ? 'text-blue-200' : 'text-muted-foreground'
                   }`}>
                     ({projects.filter(p => filter.stages.includes(p.pipeline_stage)).length})
                   </span>
@@ -347,8 +347,8 @@ export function PipelineBoard() {
 
           {/* Bottom row: Stage Toggles */}
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-400" />
-            <span className="text-xs text-gray-500 mr-1">Stages:</span>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground mr-1">Stages:</span>
             {STAGES.map((stage) => (
               <button
                 key={stage.id}
@@ -356,7 +356,7 @@ export function PipelineBoard() {
                 className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
                   selectedStages.includes(stage.id)
                     ? `${stage.color} text-white`
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
                 }`}
               >
                 {stage.name}
@@ -379,7 +379,7 @@ export function PipelineBoard() {
         </div>
 
         {/* Stats */}
-        <div className="mt-3 flex items-center gap-6 text-sm text-gray-600">
+        <div className="mt-3 flex items-center gap-6 text-sm text-muted-foreground">
           <span>Total: {projects.length} opportunities</span>
           {(searchQuery || quickFilter !== 'all') && (
             <span>Showing: {filteredProjects.filter(p => selectedStages.includes(p.pipeline_stage)).length} opportunities</span>
@@ -411,8 +411,8 @@ export function PipelineBoard() {
                 {/* Column Header with Count and Value */}
                 <div className="mb-2 px-2">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-semibold text-gray-700">{stage.name}</h3>
-                    <span className="text-xs text-gray-500">
+                    <h3 className="text-sm font-semibold text-muted-foreground">{stage.name}</h3>
+                    <span className="text-xs text-muted-foreground">
                       {stageProjects.length}
                       {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
                     </span>
@@ -432,7 +432,7 @@ export function PipelineBoard() {
                 {/* Show more indicator */}
                 {totalInStage > PROJECTS_PER_COLUMN && (
                   <div className="mt-2 text-center">
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
                     </p>
                   </div>

@@ -86,7 +86,7 @@ export default async function JobDetailPage({
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Job Details</h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-muted-foreground mt-1">
                 Job #{job.job_number}
               </p>
             </div>
@@ -102,32 +102,32 @@ export default async function JobDetailPage({
         {/* Job Information Card */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <Briefcase className="h-5 w-5 text-gray-600" />
+            <Briefcase className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Job Information</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Job Number</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Job Number</label>
               <p className="text-foreground">{job.job_number}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Job Type</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Job Type</label>
               <p className="text-foreground capitalize">{job.job_type?.replace('_', ' ')}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(job.status)}`}>
                 {job.status?.replace('_', ' ')}
               </span>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Completion</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Completion</label>
               <div className="flex items-center gap-2">
-                <div className="w-24 bg-gray-200 rounded-full h-2">
+                <div className="w-24 bg-muted rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full"
                     style={{ width: `${job.completion_percentage}%` }}
@@ -139,7 +139,7 @@ export default async function JobDetailPage({
 
             {job.scope_of_work && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-500 mb-1">Scope of Work</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Scope of Work</label>
                 <p className="text-foreground whitespace-pre-wrap">{job.scope_of_work}</p>
               </div>
             )}
@@ -149,20 +149,20 @@ export default async function JobDetailPage({
         {/* Schedule Card */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <Calendar className="h-5 w-5 text-gray-600" />
+            <Calendar className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Schedule</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Scheduled Date</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Scheduled Date</label>
               <p className="text-foreground">
                 {job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString() : 'Not scheduled'}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Time</label>
               <p className="text-foreground">
                 {job.scheduled_start_time && job.scheduled_end_time
                   ? `${formatTime(job.scheduled_start_time)} - ${formatTime(job.scheduled_end_time)}`
@@ -171,14 +171,14 @@ export default async function JobDetailPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Estimated Duration</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Estimated Duration</label>
               <p className="text-foreground">
                 {job.estimated_duration_hours ? `${job.estimated_duration_hours} hours` : 'N/A'}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Actual Duration</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Actual Duration</label>
               <p className="text-foreground">
                 {job.actual_duration_hours ? `${job.actual_duration_hours} hours` : 'N/A'}
               </p>
@@ -189,33 +189,33 @@ export default async function JobDetailPage({
         {/* Cost Tracking Card */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <DollarSign className="h-5 w-5 text-gray-600" />
+            <DollarSign className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Labor Cost</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Labor Cost</label>
               <p className="text-foreground">{formatCurrency(job.labor_cost)}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Material Cost</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Material Cost</label>
               <p className="text-foreground">{formatCurrency(job.material_cost)}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Equipment Cost</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Equipment Cost</label>
               <p className="text-foreground">{formatCurrency(job.equipment_cost)}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Other Costs</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Other Costs</label>
               <p className="text-foreground">{formatCurrency(job.other_costs)}</p>
             </div>
 
             <div className="md:col-span-2 pt-4 border-t border-gray-200">
-              <label className="block text-sm font-medium text-gray-500 mb-1">Total Cost</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Total Cost</label>
               <p className="text-xl font-semibold text-foreground">{formatCurrency(job.total_cost)}</p>
             </div>
           </div>
@@ -225,20 +225,20 @@ export default async function JobDetailPage({
         {(job.notes || job.internal_notes) && (
           <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-gray-600" />
+              <FileText className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Notes</h2>
             </div>
 
             {job.notes && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-500 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Notes</label>
                 <p className="text-foreground whitespace-pre-wrap">{job.notes}</p>
               </div>
             )}
 
             {job.internal_notes && (
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Internal Notes</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Internal Notes</label>
                 <p className="text-foreground whitespace-pre-wrap">{job.internal_notes}</p>
               </div>
             )}
@@ -249,7 +249,7 @@ export default async function JobDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/jobs"
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-background"
+            className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background"
           >
             Back to Jobs
           </Link>

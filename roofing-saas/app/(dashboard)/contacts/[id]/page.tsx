@@ -84,7 +84,7 @@ export default async function ContactDetailPage({
             </Link>
             <Link
               href="/contacts"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>
@@ -96,19 +96,19 @@ export default async function ContactDetailPage({
           <h2 className="text-lg font-semibold text-foreground mb-4">Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-500">Email</label>
+              <label className="block text-sm font-medium text-muted-foreground">Email</label>
               <p className="mt-1 text-foreground">{contact.email || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">Phone</label>
+              <label className="block text-sm font-medium text-muted-foreground">Phone</label>
               <p className="mt-1 text-foreground">{contact.phone || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">Mobile Phone</label>
+              <label className="block text-sm font-medium text-muted-foreground">Mobile Phone</label>
               <p className="mt-1 text-foreground">{contact.mobile_phone || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-500">Source</label>
+              <label className="block text-sm font-medium text-muted-foreground">Source</label>
               <p className="mt-1 text-foreground">{contact.source || '-'}</p>
             </div>
           </div>
@@ -138,31 +138,31 @@ export default async function ContactDetailPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.property_type && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Property Type</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Property Type</label>
                   <p className="mt-1 text-foreground">{contact.property_type}</p>
                 </div>
               )}
               {contact.roof_type && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Roof Type</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Roof Type</label>
                   <p className="mt-1 text-foreground">{contact.roof_type}</p>
                 </div>
               )}
               {contact.roof_age !== null && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Roof Age</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Roof Age</label>
                   <p className="mt-1 text-foreground">{contact.roof_age} years</p>
                 </div>
               )}
               {contact.square_footage && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Square Footage</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Square Footage</label>
                   <p className="mt-1 text-foreground">{contact.square_footage.toLocaleString()} sq ft</p>
                 </div>
               )}
               {contact.stories && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Stories</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Stories</label>
                   <p className="mt-1 text-foreground">{contact.stories}</p>
                 </div>
               )}
@@ -177,13 +177,13 @@ export default async function ContactDetailPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.insurance_carrier && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Insurance Carrier</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Insurance Carrier</label>
                   <p className="mt-1 text-foreground">{contact.insurance_carrier}</p>
                 </div>
               )}
               {contact.policy_number && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">Policy Number</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Policy Number</label>
                   <p className="mt-1 text-foreground">{contact.policy_number}</p>
                 </div>
               )}

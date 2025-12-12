@@ -172,11 +172,11 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   const daysInStage = getDaysInStage(project.stage_changed_at)
 
   const getLeadScoreColor = (score?: number) => {
-    if (!score) return 'text-gray-600 bg-gray-50'
+    if (!score) return 'text-muted-foreground bg-gray-50'
     if (score >= 80) return 'text-green-600 bg-green-50'
     if (score >= 60) return 'text-blue-600 bg-blue-50'
     if (score >= 40) return 'text-yellow-600 bg-yellow-50'
-    return 'text-gray-600 bg-gray-50'
+    return 'text-muted-foreground bg-gray-50'
   }
 
   const getPriorityBadge = (priority?: string) => {
@@ -186,7 +186,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       case 'high':
         return 'bg-orange-100 text-orange-800'
       case 'low':
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-muted text-muted-foreground'
       default:
         return null // Don't show normal priority
     }
@@ -215,7 +215,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       <div className="flex items-start justify-between mb-2">
         <Link
           href={`/projects/${project.id}`}
-          className="font-semibold text-gray-900 hover:text-blue-600 flex-1"
+          className="font-semibold text-foreground hover:text-blue-600 flex-1"
           onClick={(e) => e.stopPropagation()}
         >
           {project.name || 'Untitled Project'}
@@ -229,7 +229,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       </div>
 
       {/* Contact Name */}
-      <div className="flex items-center gap-1.5 mb-3 text-sm text-gray-600">
+      <div className="flex items-center gap-1.5 mb-3 text-sm text-muted-foreground">
         <User className="h-3.5 w-3.5" />
         <Link
           href={`/contacts/${project.contact_id}`}
@@ -249,11 +249,11 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       )}
 
       {/* Contact Details */}
-      <div className="space-y-1 text-sm text-gray-600">
+      <div className="space-y-1 text-sm text-muted-foreground">
         {contactEmail && (
           <div className="flex items-center gap-2">
             <svg
-              className="w-4 h-4 text-gray-400"
+              className="w-4 h-4 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -272,7 +272,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         {contactPhone && (
           <div className="flex items-center gap-2">
             <svg
-              className="w-4 h-4 text-gray-400"
+              className="w-4 h-4 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -290,7 +290,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
         {project.lead_source && (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-500">Source:</span>
+            <span className="text-muted-foreground">Source:</span>
             <span className="font-medium capitalize">{project.lead_source}</span>
           </div>
         )}
@@ -317,7 +317,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500" title="Last updated">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground" title="Last updated">
           {getTimeSince(project.updated_at)}
         </div>
       </div>
@@ -351,7 +351,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           <button
             onClick={handleMarkLost}
             disabled={markingLost}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 disabled:bg-gray-50 text-gray-600 rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 disabled:bg-gray-50 text-muted-foreground rounded-md text-sm font-medium transition-colors"
           >
             {markingLost ? (
               <>

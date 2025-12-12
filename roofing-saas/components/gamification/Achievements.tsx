@@ -52,7 +52,7 @@ export function Achievements() {
     : achievements.filter(a => a.category === selectedCategory)
 
   const getIconComponent = (iconName: string, unlocked: boolean) => {
-    const className = `h-8 w-8 ${unlocked ? 'text-yellow-500' : 'text-gray-400'}`
+    const className = `h-8 w-8 ${unlocked ? 'text-yellow-500' : 'text-muted-foreground'}`
 
     switch (iconName) {
       case 'trophy':
@@ -71,14 +71,14 @@ export function Achievements() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">Achievements</h3>
-          <div className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-foreground">Achievements</h3>
+          <div className="text-sm text-muted-foreground">
             {stats.unlocked} / {stats.total} Unlocked
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+        <div className="w-full bg-muted rounded-full h-2 mb-4">
           <div
             className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full transition-all duration-500"
             style={{ width: `${(stats.unlocked / stats.total) * 100}%` }}
@@ -94,7 +94,7 @@ export function Achievements() {
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 selectedCategory === category
                   ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-muted-foreground hover:bg-muted'
               }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -109,10 +109,10 @@ export function Achievements() {
           {[...Array(4)].map((_, i) => (
             <div key={i} className="p-4 border rounded-lg animate-pulse">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                <div className="w-10 h-10 bg-muted rounded-full" />
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded mb-2" />
-                  <div className="h-3 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded mb-2" />
+                  <div className="h-3 bg-muted rounded w-3/4" />
                 </div>
               </div>
             </div>
@@ -137,18 +137,18 @@ export function Achievements() {
                 <div className="relative">
                   {getIconComponent(achievement.icon, achievement.unlocked)}
                   {!achievement.unlocked && (
-                    <Lock className="h-4 w-4 text-gray-500 absolute -bottom-1 -right-1" />
+                    <Lock className="h-4 w-4 text-muted-foreground absolute -bottom-1 -right-1" />
                   )}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1">
                   <h4 className={`font-medium mb-1 ${
-                    achievement.unlocked ? 'text-gray-900' : 'text-gray-600'
+                    achievement.unlocked ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {achievement.name}
                   </h4>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {achievement.description}
                   </p>
 
@@ -161,7 +161,7 @@ export function Achievements() {
                       </span>
                     </div>
                   ) : achievement.points_required ? (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       Requires {achievement.points_required.toLocaleString()} points
                     </div>
                   ) : null}
@@ -176,7 +176,7 @@ export function Achievements() {
       {!loading && filteredAchievements.length === 0 && (
         <div className="text-center py-8">
           <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-500">No achievements in this category</p>
+          <p className="text-muted-foreground">No achievements in this category</p>
         </div>
       )}
     </div>

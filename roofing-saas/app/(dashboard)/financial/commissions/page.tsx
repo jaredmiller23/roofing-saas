@@ -82,7 +82,7 @@ export default async function CommissionsPage() {
                 ← Back to Reports
               </Link>
               <h1 className="text-3xl font-bold text-foreground">Commission Tracking</h1>
-              <p className="text-gray-600 mt-1">Manage sales rep and canvasser commissions</p>
+              <p className="text-muted-foreground mt-1">Manage sales rep and canvasser commissions</p>
             </div>
             <div className="flex gap-3">
               <Link
@@ -101,41 +101,41 @@ export default async function CommissionsPage() {
           {/* Total Earned Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Total Earned</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Total Earned</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalEarned)}</p>
-            <p className="text-xs text-gray-500 mt-1">All time</p>
+            <p className="text-xs text-muted-foreground mt-1">All time</p>
           </div>
 
           {/* Pending Commissions Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Pending</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Pending</h3>
               <Clock className="h-5 w-5 text-yellow-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPending)}</p>
-            <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
+            <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
           </div>
 
           {/* Paid Commissions Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Paid</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Paid</h3>
               <CheckCircle className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalPaid)}</p>
-            <p className="text-xs text-gray-500 mt-1">Successfully paid</p>
+            <p className="text-xs text-muted-foreground mt-1">Successfully paid</p>
           </div>
 
           {/* Active Users Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Active Users</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Active Users</h3>
               <Users className="h-5 w-5 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{totalUsers}</p>
-            <p className="text-xs text-gray-500 mt-1">With commissions</p>
+            <p className="text-xs text-muted-foreground mt-1">With commissions</p>
           </div>
         </div>
 
@@ -148,12 +148,12 @@ export default async function CommissionsPage() {
             <table className="w-full">
               <thead className="bg-background">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team Member</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Earned</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pending</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Commissions</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Team Member</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Total Earned</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Pending</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Paid</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Commissions</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -165,7 +165,7 @@ export default async function CommissionsPage() {
                           <p className="text-sm font-medium text-foreground">
                             {userSummary.user_name || 'Unknown'}
                           </p>
-                          <p className="text-xs text-gray-500">{userSummary.user_email}</p>
+                          <p className="text-xs text-muted-foreground">{userSummary.user_email}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-semibold">
@@ -189,7 +189,7 @@ export default async function CommissionsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                       No commission data yet. Add commissions to get started.
                     </td>
                   </tr>

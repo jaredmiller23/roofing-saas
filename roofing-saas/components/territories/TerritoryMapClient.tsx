@@ -212,11 +212,11 @@ function TerritoryMapClient({
     buttons.forEach(button => {
       const buttonType = button.getAttribute('data-map-type')
       if (buttonType === type) {
-        button.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-100')
+        button.classList.remove('bg-white', 'text-muted-foreground', 'hover:bg-gray-100')
         button.classList.add('bg-blue-600', 'text-white')
       } else {
         button.classList.remove('bg-blue-600', 'text-white')
-        button.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-100')
+        button.classList.add('bg-white', 'text-muted-foreground', 'hover:bg-gray-100')
       }
     })
   }
@@ -261,7 +261,7 @@ function TerritoryMapClient({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             activeMapTypeRef.current === 'roadmap'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+              : 'bg-white text-muted-foreground hover:bg-gray-100'
           }`}
           title="Road Map"
         >
@@ -274,7 +274,7 @@ function TerritoryMapClient({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             activeMapTypeRef.current === 'satellite'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+              : 'bg-white text-muted-foreground hover:bg-gray-100'
           }`}
           title="Satellite View"
         >
@@ -287,7 +287,7 @@ function TerritoryMapClient({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             activeMapTypeRef.current === 'hybrid'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+              : 'bg-white text-muted-foreground hover:bg-gray-100'
           }`}
           title="Hybrid View"
         >
@@ -300,7 +300,7 @@ function TerritoryMapClient({
           className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
             activeMapTypeRef.current === 'terrain'
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-100'
+              : 'bg-white text-muted-foreground hover:bg-gray-100'
           }`}
           title="Terrain Map"
         >
@@ -311,12 +311,12 @@ function TerritoryMapClient({
       {/* Legend */}
       {territories.length > 0 && (
         <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 z-10 text-xs">
-          <h4 className="font-semibold text-gray-900 mb-2">Territories</h4>
+          <h4 className="font-semibold text-foreground mb-2">Territories</h4>
           <div className="space-y-1">
             {territories.slice(0, 5).map(territory => (
               <div
                 key={territory.id}
-                className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                className="flex items-center gap-2 cursor-pointer hover:bg-accent p-1 rounded"
                 onClick={() => onTerritoryClick?.(territory)}
               >
                 <div
@@ -329,11 +329,11 @@ function TerritoryMapClient({
                         : 'rgba(59, 130, 246, 0.15)',
                   }}
                 />
-                <span className="text-gray-700">{territory.name}</span>
+                <span className="text-muted-foreground">{territory.name}</span>
               </div>
             ))}
             {territories.length > 5 && (
-              <div className="text-gray-500 text-xs mt-1">
+              <div className="text-muted-foreground text-xs mt-1">
                 +{territories.length - 5} more
               </div>
             )}

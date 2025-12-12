@@ -104,13 +104,13 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
   const getVarianceColor = (variance: number) => {
     if (variance > 0) return 'text-red-600' // Over budget is bad
     if (variance < 0) return 'text-green-600' // Under budget is good
-    return 'text-gray-600'
+    return 'text-muted-foreground'
   }
 
   const getProfitColor = (profit: number) => {
     if (profit > 0) return 'text-green-600'
     if (profit < 0) return 'text-red-600'
-    return 'text-gray-600'
+    return 'text-muted-foreground'
   }
 
   const categories = [
@@ -158,7 +158,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Job Costing</h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {project.name} • Project #{project.project_number}
               </p>
             </div>
@@ -171,7 +171,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           {/* Revenue Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Revenue</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Revenue</h3>
               <DollarSign className="h-5 w-5 text-blue-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(revenue)}</p>
@@ -180,10 +180,10 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           {/* Estimated Cost Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-gray-400">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Estimated Cost</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Estimated Cost</h3>
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalEstimatedCost)}</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Margin: {estimatedMargin.toFixed(1)}%
             </p>
           </div>
@@ -191,7 +191,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           {/* Actual Cost Card */}
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Actual Cost</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Actual Cost</h3>
               <AlertCircle className="h-5 w-5 text-orange-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalActualCost)}</p>
@@ -203,7 +203,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           {/* Profit Card */}
           <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${actualProfit >= 0 ? 'border-green-500' : 'border-red-500'}`}>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-500">Actual Profit</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Actual Profit</h3>
               {actualProfit >= 0 ? (
                 <TrendingUp className="h-5 w-5 text-green-500" />
               ) : (
@@ -213,7 +213,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
             <p className={`text-2xl font-bold ${getProfitColor(actualProfit)}`}>
               {formatCurrency(actualProfit)}
             </p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Margin: {actualMargin.toFixed(1)}%
             </p>
           </div>
@@ -237,7 +237,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-medium text-foreground">{category.name}</h3>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Budget: {formatCurrency(category.estimated)} •
                           Actual: {formatCurrency(category.actual)}
                         </p>
@@ -246,7 +246,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
                         <p className={`text-sm font-medium ${getVarianceColor(category.variance)}`}>
                           {category.variance >= 0 ? '+' : ''}{formatCurrency(category.variance)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {percentActual.toFixed(0)}% of budget
                         </p>
                       </div>
@@ -254,7 +254,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
 
                     {/* Progress Bar */}
                     <div className="relative pt-1">
-                      <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-200">
+                      <div className="overflow-hidden h-2 text-xs flex rounded bg-muted">
                         <div
                           style={{ width: `${Math.min(percentActual, 100)}%` }}
                           className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
@@ -272,7 +272,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">Total</h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Budget: {formatCurrency(totalEstimatedCost)} •
                       Actual: {formatCurrency(totalActualCost)}
                     </p>
@@ -281,7 +281,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
                     <p className={`text-lg font-bold ${getVarianceColor(costVariance)}`}>
                       {costVariance >= 0 ? '+' : ''}{formatCurrency(costVariance)}
                     </p>
-                    <p className="text-sm text-gray-500">Total Variance</p>
+                    <p className="text-sm text-muted-foreground">Total Variance</p>
                   </div>
                 </div>
               </div>

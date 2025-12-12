@@ -29,7 +29,7 @@ export default async function NewKnockPage() {
             href="/knocks"
             className="p-2 -ml-2 hover:bg-muted rounded-md transition-colors"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </Link>
           <h1 className="text-lg font-semibold text-foreground">Log Knock</h1>
         </div>

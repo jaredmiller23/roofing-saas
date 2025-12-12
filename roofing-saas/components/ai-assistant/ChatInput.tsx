@@ -83,12 +83,12 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={isSending}
-            className={`w-full px-4 py-3 pr-12 rounded-2xl border-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+            className={`w-full px-4 py-3 pr-12 rounded-2xl border-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-foreground ${
               isSending
-                ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-muted border-input text-muted-foreground cursor-not-allowed'
                 : isOverLimit
-                ? 'border-red-300 focus:ring-red-500'
-                : 'border-gray-200 hover:border-gray-300'
+                ? 'border-red-500 focus:ring-red-500 bg-background'
+                : 'border-input hover:border-ring bg-background'
             }`}
             style={{
               minHeight: '52px',
@@ -101,7 +101,7 @@ export function ChatInput({
           {showCharCount && (
             <div
               className={`absolute bottom-2 right-3 text-xs ${
-                isOverLimit ? 'text-red-600 font-semibold' : 'text-gray-400'
+                isOverLimit ? 'text-red-600 font-semibold' : 'text-muted-foreground'
               }`}
             >
               {charCount}/{maxChars}
@@ -115,8 +115,8 @@ export function ChatInput({
           disabled={!input.trim() || isSending || isOverLimit}
           className={`flex-shrink-0 p-3 rounded-full transition-all ${
             !input.trim() || isSending || isOverLimit
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-md hover:shadow-lg'
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 shadow-md hover:shadow-lg'
           }`}
           title={isOverLimit ? 'Message too long' : 'Send message (Enter)'}
         >
@@ -131,8 +131,8 @@ export function ChatInput({
       {/* Helper text */}
       {!isSending && (
         <div className="flex items-center justify-between px-1">
-          <p className="text-xs text-gray-500">
-            Press <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Shift+Enter</kbd> for new line
+          <p className="text-xs text-muted-foreground">
+            Press <kbd className="px-1.5 py-0.5 bg-muted border border-input rounded text-xs text-foreground">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-muted border border-input rounded text-xs text-foreground">Shift+Enter</kbd> for new line
           </p>
         </div>
       )}

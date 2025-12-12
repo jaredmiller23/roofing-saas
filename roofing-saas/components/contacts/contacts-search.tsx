@@ -112,7 +112,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-semibold text-gray-700">Quick Filters</span>
+          <span className="text-sm font-semibold text-muted-foreground">Quick Filters</span>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -162,7 +162,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
       {/* Active Filters */}
       {hasActiveFilters && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-gray-600">Active Filters ({activeFilterCount}):</span>
+          <span className="text-sm font-medium text-muted-foreground">Active Filters ({activeFilterCount}):</span>
           {search && (
             <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
               <Search className="h-3 w-3" />
@@ -210,11 +210,11 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="search" className="block text-sm font-medium text-muted-foreground mb-1">
               Search
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 id="search"
                 type="text"
@@ -222,21 +222,21 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Name, email, or phone..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           {/* Stage Filter */}
           <div>
-            <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="stage" className="block text-sm font-medium text-muted-foreground mb-1">
               Stage
             </label>
             <select
               id="stage"
               value={stage}
               onChange={(e) => setStage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Stages</option>
               <option value="lead">Lead</option>
@@ -248,14 +248,14 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
 
           {/* Type Filter */}
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="type" className="block text-sm font-medium text-muted-foreground mb-1">
               Type
             </label>
             <select
               id="type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Types</option>
               <option value="lead">Lead</option>
@@ -266,14 +266,14 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
 
           {/* Priority Filter */}
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="priority" className="block text-sm font-medium text-muted-foreground mb-1">
               Priority
             </label>
             <select
               id="priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Priorities</option>
               <option value="urgent">Urgent</option>
@@ -297,7 +297,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           <button
             onClick={handleClear}
             disabled={isPending}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            className="px-4 py-2 border border-input text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
           >
             Reset
           </button>

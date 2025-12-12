@@ -90,58 +90,58 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
     <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-foreground">Revenue Forecasting</h2>
-        <p className="text-sm text-gray-500 mt-1">Pipeline-based revenue prediction with confidence intervals</p>
+        <p className="text-sm text-muted-foreground mt-1">Pipeline-based revenue prediction with confidence intervals</p>
       </div>
 
       <div className="p-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Pipeline Value</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Pipeline Value</p>
             <p className="text-2xl font-bold text-blue-600">{formatCurrency(forecast.pipelineValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">{pipelineProjects.length} opportunities</p>
+            <p className="text-xs text-muted-foreground mt-1">{pipelineProjects.length} opportunities</p>
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Expected Revenue</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Expected Revenue</p>
             <p className="text-2xl font-bold text-green-600">{formatCurrency(forecast.expectedRevenue)}</p>
-            <p className="text-xs text-gray-500 mt-1">At {closeRate.toFixed(1)}% close rate</p>
+            <p className="text-xs text-muted-foreground mt-1">At {closeRate.toFixed(1)}% close rate</p>
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Monthly Average</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Monthly Average</p>
             <p className="text-2xl font-bold text-purple-600">{formatCurrency(forecast.avgMonthlyRevenue)}</p>
-            <p className="text-xs text-gray-500 mt-1">Based on historical data</p>
+            <p className="text-xs text-muted-foreground mt-1">Based on historical data</p>
           </div>
         </div>
 
         {/* Forecast Table */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">3-Month Revenue Projection</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3">3-Month Revenue Projection</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-background">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Low Estimate</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Projected</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">High Estimate</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confidence</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Month</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Low Estimate</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Projected</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">High Estimate</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Confidence</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {forecast.forecasts.map((item, index) => (
                   <tr key={index} className="hover:bg-background">
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{item.month}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{formatCompact(item.lowEstimate)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground text-right">{formatCompact(item.lowEstimate)}</td>
                     <td className="px-4 py-3 text-sm font-bold text-foreground text-right">{formatCompact(item.projected)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{formatCompact(item.highEstimate)}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground text-right">{formatCompact(item.highEstimate)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div className="flex-1 bg-muted rounded-full h-2">
                           <div className="bg-green-500 h-2 rounded-full" style={{ width: '75%' }} />
                         </div>
-                        <span className="text-xs text-gray-500">75%</span>
+                        <span className="text-xs text-muted-foreground">75%</span>
                       </div>
                     </td>
                   </tr>

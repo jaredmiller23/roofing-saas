@@ -225,7 +225,7 @@ export function RoleSettings() {
       {/* Role List */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">User Roles</h3>
+          <h3 className="text-lg font-semibold text-foreground">User Roles</h3>
           <Button
             onClick={() => setShowAddForm(true)}
             className="bg-blue-600 hover:bg-blue-700"
@@ -236,7 +236,7 @@ export function RoleSettings() {
         </div>
 
         {roles.length === 0 ? (
-          <div className="text-gray-500 text-sm py-8 text-center">
+          <div className="text-muted-foreground text-sm py-8 text-center">
             No roles configured. Add your first role to get started.
           </div>
         ) : (
@@ -246,9 +246,9 @@ export function RoleSettings() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-900">{role.name}</h4>
+                    <h4 className="font-semibold text-foreground">{role.name}</h4>
                     {role.is_system && (
-                      <Lock className="h-3 w-3 text-gray-400" aria-label="System role" />
+                      <Lock className="h-3 w-3 text-muted-foreground" aria-label="System role" />
                     )}
                   </div>
                   {!role.is_system && (
@@ -270,11 +270,11 @@ export function RoleSettings() {
                 </div>
 
                 {role.description && (
-                  <p className="text-sm text-gray-500 mb-3">{role.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{role.description}</p>
                 )}
 
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-700">Permissions:</div>
+                  <div className="text-xs font-medium text-muted-foreground">Permissions:</div>
                   {Object.entries(role.permissions).map(([module, perms]) => {
                     const activePerms = Object.entries(perms as Record<string, boolean>)
                       .filter(([, value]) => value)
@@ -283,7 +283,7 @@ export function RoleSettings() {
                     if (activePerms.length === 0) return null
 
                     return (
-                      <div key={module} className="text-xs text-gray-600">
+                      <div key={module} className="text-xs text-muted-foreground">
                         <span className="font-medium capitalize">{module}:</span>{' '}
                         {activePerms.join(', ')}
                       </div>
@@ -299,7 +299,7 @@ export function RoleSettings() {
       {/* Add/Edit Form */}
       {showAddForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingRole ? `Edit Role: ${editingRole.name}` : 'Add New Role'}
           </h3>
 
@@ -307,7 +307,7 @@ export function RoleSettings() {
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Role Name *
                 </label>
                 <Input
@@ -317,12 +317,12 @@ export function RoleSettings() {
                   disabled={editingRole?.is_system}
                 />
                 {editingRole?.is_system && (
-                  <p className="text-xs text-gray-500 mt-1">System role name cannot be changed</p>
+                  <p className="text-xs text-muted-foreground mt-1">System role name cannot be changed</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Description
                 </label>
                 <Input
@@ -335,20 +335,20 @@ export function RoleSettings() {
 
             {/* Permission Matrix */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Permissions</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Permissions</h4>
               <div className="border border-gray-200 rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Module
                       </th>
                       {PERMISSION_ACTIONS.map((action) => (
-                        <th key={action} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th key={action} className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           {action}
                         </th>
                       ))}
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -358,7 +358,7 @@ export function RoleSettings() {
                       const modulePerms = formData.permissions[module.key as keyof typeof formData.permissions]
                       return (
                         <tr key={module.key}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                             {module.label}
                           </td>
                           {PERMISSION_ACTIONS.map((action) => (
@@ -380,7 +380,7 @@ export function RoleSettings() {
                             </button>
                             <button
                               onClick={() => handleDeselectAll(module.key)}
-                              className="text-gray-600 hover:text-gray-900 text-xs"
+                              className="text-muted-foreground hover:text-foreground text-xs"
                             >
                               None
                             </button>

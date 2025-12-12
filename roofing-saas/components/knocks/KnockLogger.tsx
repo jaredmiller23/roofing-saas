@@ -145,7 +145,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
       value: 'not_home' as Disposition,
       label: 'Not Home',
       icon: Home,
-      color: 'bg-gray-100 hover:bg-gray-200 text-gray-900',
+      color: 'bg-gray-100 hover:bg-muted text-foreground',
       activeColor: 'bg-gray-600 text-white'
     },
     {
@@ -192,7 +192,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
           {gettingLocation ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="ml-3 text-gray-600">Getting your location...</span>
+              <span className="ml-3 text-muted-foreground">Getting your location...</span>
             </div>
           ) : latitude && longitude ? (
             <>
@@ -200,7 +200,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
                 <Check className="h-5 w-5" />
                 <span className="font-medium">Location captured</span>
               </div>
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p className="font-mono">{address}</p>
                 {accuracy && (
                   <p className="text-xs">Accuracy: ±{Math.round(accuracy)}m</p>
@@ -296,11 +296,13 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
             <CardTitle className="text-lg">Callback Date</CardTitle>
           </CardHeader>
           <CardContent>
+            <Label htmlFor="callback-date">Select Date</Label>
             <Input
+              id="callback-date"
               type="date"
               value={callbackDate}
               onChange={(e) => setCallbackDate(e.target.value)}
-              className="h-12"
+              className="h-12 mt-2"
             />
           </CardContent>
         </Card>
@@ -312,12 +314,14 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
           <CardTitle className="text-lg">Notes (Optional)</CardTitle>
         </CardHeader>
         <CardContent>
+          <Label htmlFor="knock-notes">Additional Details</Label>
           <Textarea
+            id="knock-notes"
             placeholder="Add any notes about this knock..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            className="resize-none"
+            className="resize-none mt-2"
           />
         </CardContent>
       </Card>

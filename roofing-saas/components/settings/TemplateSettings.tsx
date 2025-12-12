@@ -240,14 +240,14 @@ export function TemplateSettings() {
           <div className="flex gap-2">
             <Button
               onClick={() => { setActiveType('email'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}
+              className={activeType === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-foreground'}
             >
               <Mail className="h-4 w-4 mr-2" />
               Email Templates
             </Button>
             <Button
               onClick={() => { setActiveType('sms'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'sms' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}
+              className={activeType === 'sms' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-foreground'}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               SMS Templates
@@ -264,7 +264,7 @@ export function TemplateSettings() {
 
         {/* Template List */}
         {templates.length === 0 ? (
-          <div className="text-gray-500 text-sm py-8 text-center">
+          <div className="text-muted-foreground text-sm py-8 text-center">
             No {activeType} templates configured. Add your first template to get started.
           </div>
         ) : (
@@ -273,9 +273,9 @@ export function TemplateSettings() {
               <div key={template.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{template.name}</h4>
+                    <h4 className="font-semibold text-foreground">{template.name}</h4>
                     {template.description && (
-                      <p className="text-sm text-gray-500 mt-1">{template.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
                     )}
                     {template.category && (
                       <span className="inline-block mt-2 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
@@ -300,12 +300,12 @@ export function TemplateSettings() {
                 </div>
                 {activeType === 'email' && 'subject' in template && (
                   <div className="mt-3 text-sm">
-                    <div className="font-medium text-gray-700">Subject:</div>
-                    <div className="text-gray-600">{template.subject}</div>
+                    <div className="font-medium text-muted-foreground">Subject:</div>
+                    <div className="text-muted-foreground">{template.subject}</div>
                   </div>
                 )}
                 {activeType === 'sms' && 'message' in template && (
-                  <div className="mt-3 text-sm text-gray-600">
+                  <div className="mt-3 text-sm text-muted-foreground">
                     {template.message.substring(0, 100)}{template.message.length > 100 ? '...' : ''}
                   </div>
                 )}
@@ -318,14 +318,14 @@ export function TemplateSettings() {
       {/* Add/Edit Form - Email */}
       {showAddForm && activeType === 'email' && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingTemplate ? 'Edit Email Template' : 'Add Email Template'}
           </h3>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Template Name *
                 </label>
                 <Input
@@ -335,7 +335,7 @@ export function TemplateSettings() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Category
                 </label>
                 <Input
@@ -347,7 +347,7 @@ export function TemplateSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Description
               </label>
               <Input
@@ -358,7 +358,7 @@ export function TemplateSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Email Subject *
               </label>
               <Input
@@ -369,7 +369,7 @@ export function TemplateSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Email Body *
               </label>
               <textarea
@@ -379,7 +379,7 @@ export function TemplateSettings() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                 placeholder="Hi {{contact_name}},&#10;&#10;Welcome to {{company_name}}!&#10;&#10;Best regards,&#10;{{user_name}}"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Available variables: {'{'}{'{'} contact_name {'}'}{'}'}, {'{'}{'{'} company_name {'}'}{'}'}, {'{'}{'{'} user_name {'}'}{'}'}, {'{'}{'{'} project_name {'}'}{'}'}
               </p>
             </div>
@@ -403,14 +403,14 @@ export function TemplateSettings() {
       {/* Add/Edit Form - SMS */}
       {showAddForm && activeType === 'sms' && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingTemplate ? 'Edit SMS Template' : 'Add SMS Template'}
           </h3>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Template Name *
                 </label>
                 <Input
@@ -420,7 +420,7 @@ export function TemplateSettings() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Category
                 </label>
                 <Input
@@ -432,7 +432,7 @@ export function TemplateSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Description
               </label>
               <Input
@@ -443,7 +443,7 @@ export function TemplateSettings() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 SMS Message * ({smsFormData.message.length}/1600 characters)
               </label>
               <textarea
@@ -454,7 +454,7 @@ export function TemplateSettings() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Hi {{contact_name}}, this is a reminder about your appointment on {{date}}. - {{company_name}}"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Available variables: {'{'}{'{'} contact_name {'}'}{'}'}, {'{'}{'{'} company_name {'}'}{'}'}, {'{'}{'{'} date {'}'}{'}'}, {'{'}{'{'} time {'}'}{'}'}
               </p>
               {smsFormData.message.length > 160 && (

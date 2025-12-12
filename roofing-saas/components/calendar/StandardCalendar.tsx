@@ -147,23 +147,23 @@ export function StandardCalendar({
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
-          <span className="text-gray-600">Appointment</span>
+          <span className="text-muted-foreground">Appointment</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
-          <span className="text-gray-600">Inspection</span>
+          <span className="text-muted-foreground">Inspection</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }} />
-          <span className="text-gray-600">Meeting</span>
+          <span className="text-muted-foreground">Meeting</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
-          <span className="text-gray-600">Callback</span>
+          <span className="text-muted-foreground">Callback</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
-          <span className="text-gray-600">Deadline</span>
+          <span className="text-muted-foreground">Deadline</span>
         </div>
       </div>
     </div>

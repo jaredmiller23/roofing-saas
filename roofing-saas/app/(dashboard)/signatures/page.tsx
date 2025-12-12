@@ -70,7 +70,7 @@ export default function SignaturesPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'draft':
-        return <FileText className="h-5 w-5 text-gray-500" />
+        return <FileText className="h-5 w-5 text-muted-foreground" />
       case 'sent':
         return <Send className="h-5 w-5 text-blue-500" />
       case 'viewed':
@@ -82,13 +82,13 @@ export default function SignaturesPage() {
       case 'declined':
         return <XCircle className="h-5 w-5 text-red-500" />
       default:
-        return <FileText className="h-5 w-5 text-gray-500" />
+        return <FileText className="h-5 w-5 text-muted-foreground" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      draft: 'bg-muted text-gray-700',
+      draft: 'bg-muted text-muted-foreground',
       sent: 'bg-blue-100 text-blue-700',
       viewed: 'bg-purple-100 text-purple-700',
       signed: 'bg-green-100 text-green-700',
@@ -133,7 +133,7 @@ export default function SignaturesPage() {
               New Document
             </Button>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Create, send, and manage signature documents
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function SignaturesPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search documents..."
@@ -181,15 +181,15 @@ export default function SignaturesPage() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading documents...</p>
+            <p className="text-muted-foreground">Loading documents...</p>
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
               No documents found
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               {searchQuery
                 ? 'Try adjusting your search or filters'
                 : 'Get started by creating your first signature document'}
@@ -224,9 +224,9 @@ export default function SignaturesPage() {
                         {getStatusBadge(doc.status)}
                       </div>
                       {doc.description && (
-                        <p className="text-gray-600 text-sm mb-3">{doc.description}</p>
+                        <p className="text-muted-foreground text-sm mb-3">{doc.description}</p>
                       )}
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         <div>
                           <span className="font-medium">Type:</span>{' '}
                           <span className="capitalize">{doc.document_type.replace('_', ' ')}</span>

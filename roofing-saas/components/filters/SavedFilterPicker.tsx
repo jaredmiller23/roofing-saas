@@ -16,7 +16,7 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
 
   if (filters.length === 0) {
     return (
-      <div className="text-sm text-gray-500 italic px-3 py-2">
+      <div className="text-sm text-muted-foreground italic px-3 py-2">
         No saved filters yet
       </div>
     )
@@ -54,7 +54,7 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
               {/* Default Filters */}
               {defaultFilters.length > 0 && (
                 <div className="mb-2">
-                  <div className="text-xs font-semibold text-gray-500 mb-1 px-2">
+                  <div className="text-xs font-semibold text-muted-foreground mb-1 px-2">
                     Default
                   </div>
                   {defaultFilters.map(filter => (
@@ -74,7 +74,7 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
               {/* Shared Filters */}
               {sharedFilters.length > 0 && (
                 <div className="mb-2">
-                  <div className="text-xs font-semibold text-gray-500 mb-1 px-2">
+                  <div className="text-xs font-semibold text-muted-foreground mb-1 px-2">
                     Shared with Team
                   </div>
                   {sharedFilters.map(filter => (
@@ -94,14 +94,14 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
               {/* Personal Filters */}
               {personalFilters.length > 0 && (
                 <div>
-                  <div className="text-xs font-semibold text-gray-500 mb-1 px-2">
+                  <div className="text-xs font-semibold text-muted-foreground mb-1 px-2">
                     My Filters
                   </div>
                   {personalFilters.map(filter => (
                     <FilterOption
                       key={filter.id}
                       filter={filter}
-                      icon={<User className="h-4 w-4 text-gray-500" />}
+                      icon={<User className="h-4 w-4 text-muted-foreground" />}
                       onSelect={() => {
                         onSelect(filter.id)
                         setIsOpen(false)
@@ -132,15 +132,15 @@ function FilterOption({ filter, icon, onSelect }: FilterOptionProps) {
     >
       <div className="mt-0.5">{icon}</div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-900 truncate">
+        <div className="text-sm font-medium text-foreground truncate">
           {filter.name}
         </div>
         {filter.description && (
-          <div className="text-xs text-gray-500 truncate mt-0.5">
+          <div className="text-xs text-muted-foreground truncate mt-0.5">
             {filter.description}
           </div>
         )}
-        <div className="text-xs text-gray-400 mt-1">
+        <div className="text-xs text-muted-foreground mt-1">
           {Object.keys(filter.filter_criteria).length} filter{Object.keys(filter.filter_criteria).length !== 1 ? 's' : ''}
           {filter.usage_count > 0 && ` • Used ${filter.usage_count} times`}
         </div>

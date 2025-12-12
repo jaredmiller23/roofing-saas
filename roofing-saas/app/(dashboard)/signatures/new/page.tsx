@@ -139,7 +139,7 @@ export default function NewSignatureDocumentPage() {
             </div>
             <h1 className="text-3xl font-bold text-foreground">Create Signature Document</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Create a new document that requires signatures
           </p>
         </div>
@@ -245,7 +245,7 @@ export default function NewSignatureDocumentPage() {
                   onChange={(e) => setRequiresCustomerSignature(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="customer-signature" className="text-sm text-gray-700">
+                <label htmlFor="customer-signature" className="text-sm text-muted-foreground">
                   Requires customer signature
                 </label>
               </div>
@@ -257,7 +257,7 @@ export default function NewSignatureDocumentPage() {
                   onChange={(e) => setRequiresCompanySignature(e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="company-signature" className="text-sm text-gray-700">
+                <label htmlFor="company-signature" className="text-sm text-muted-foreground">
                   Requires company signature
                 </label>
               </div>
@@ -275,7 +275,7 @@ export default function NewSignatureDocumentPage() {
                 onChange={(e) => setExpirationDays(parseInt(e.target.value))}
                 className="mt-2"
               />
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Document will expire on {new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </p>
             </div>

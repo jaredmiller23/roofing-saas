@@ -49,8 +49,8 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
           <div key={index}>
             <div className="flex items-center justify-between mb-1">
               <div>
-                <span className="text-sm font-medium text-gray-700">{data.type}</span>
-                <span className="text-xs text-gray-500 ml-2">
+                <span className="text-sm font-medium text-muted-foreground">{data.type}</span>
+                <span className="text-xs text-muted-foreground ml-2">
                   {formatCurrency(data.profit)} profit
                 </span>
               </div>
@@ -58,7 +58,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
                 {data.margin.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-muted rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-300 ${getMarginColor(data.margin)}`}
                 style={{ width: `${(data.margin / maxMargin) * 100}%` }}
@@ -69,7 +69,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
       </div>
 
       {chartData.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <p>No project data available</p>
         </div>
       )}
@@ -77,27 +77,27 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
       {/* Legend */}
       {chartData.length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">Margin Indicators:</p>
+          <p className="text-xs text-muted-foreground mb-2">Margin Indicators:</p>
           <div className="flex flex-wrap gap-3 text-xs">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded" />
-              <span className="text-gray-600">Excellent (≥30%)</span>
+              <span className="text-muted-foreground">Excellent (≥30%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-500 rounded" />
-              <span className="text-gray-600">Good (20-29%)</span>
+              <span className="text-muted-foreground">Good (20-29%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-yellow-500 rounded" />
-              <span className="text-gray-600">Fair (10-19%)</span>
+              <span className="text-muted-foreground">Fair (10-19%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-orange-500 rounded" />
-              <span className="text-gray-600">Low (0-9%)</span>
+              <span className="text-muted-foreground">Low (0-9%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-red-500 rounded" />
-              <span className="text-gray-600">Negative (&lt;0%)</span>
+              <span className="text-muted-foreground">Negative (&lt;0%)</span>
             </div>
           </div>
         </div>

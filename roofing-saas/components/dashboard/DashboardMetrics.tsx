@@ -9,7 +9,7 @@ import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from 'luci
 const RevenueChart = dynamic(
   () => import('./DashboardCharts').then(mod => ({ default: mod.RevenueChart })),
   {
-    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    loading: () => <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading chart...</div>,
     ssr: false
   }
 )
@@ -17,7 +17,7 @@ const RevenueChart = dynamic(
 const PipelineChart = dynamic(
   () => import('./DashboardCharts').then(mod => ({ default: mod.PipelineChart })),
   {
-    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    loading: () => <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading chart...</div>,
     ssr: false
   }
 )
@@ -25,7 +25,7 @@ const PipelineChart = dynamic(
 const ActivityChart = dynamic(
   () => import('./DashboardCharts').then(mod => ({ default: mod.ActivityChart })),
   {
-    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">Loading chart...</div>,
+    loading: () => <div className="h-[300px] flex items-center justify-center text-muted-foreground">Loading chart...</div>,
     ssr: false
   }
 )
@@ -83,7 +83,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading metrics...</div>
+        <div className="text-muted-foreground">Loading metrics...</div>
       </div>
     )
   }
@@ -91,7 +91,7 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
   if (!data) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">No data available</div>
+        <div className="text-muted-foreground">No data available</div>
       </div>
     )
   }
@@ -227,13 +227,13 @@ function KPICard({ title, value, icon, subtitle, trend }: KPICardProps) {
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <div className="text-gray-400">{icon}</div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div className="text-muted-foreground">{icon}</div>
         </div>
         <div className="space-y-1">
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-500">{subtitle}</p>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
           )}
           {trend && (
             <div className="flex items-center gap-1 text-xs">
@@ -245,7 +245,7 @@ function KPICard({ title, value, icon, subtitle, trend }: KPICardProps) {
               <span className={trend.isPositive ? 'text-green-600' : 'text-red-600'}>
                 {Math.abs(trend.value)}%
               </span>
-              <span className="text-gray-500">vs last month</span>
+              <span className="text-muted-foreground">vs last month</span>
             </div>
           )}
         </div>

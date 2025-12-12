@@ -88,8 +88,8 @@ export default function InspectionPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-96 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ export default function InspectionPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-600 mb-4">Project not found</p>
+            <p className="text-muted-foreground mb-4">Project not found</p>
             <Button onClick={() => router.push('/projects')}>
               Back to Projects
             </Button>
@@ -123,9 +123,9 @@ export default function InspectionPage() {
           Back to Claims
         </Button>
         <h1 className="text-3xl font-bold">Property Inspection</h1>
-        <p className="text-gray-600 mt-1">{project.name}</p>
+        <p className="text-muted-foreground mt-1">{project.name}</p>
         {project.property_address && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {project.property_address}, {project.property_city}, {project.property_state} {project.property_zip}
           </p>
         )}

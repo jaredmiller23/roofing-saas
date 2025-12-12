@@ -70,11 +70,11 @@ export function Leaderboard({
       case 1:
         return <Crown className="h-5 w-5 text-yellow-500" />
       case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />
+        return <Medal className="h-5 w-5 text-muted-foreground" />
       case 3:
         return <Award className="h-5 w-5 text-amber-600" />
       default:
-        return <span className="text-sm font-semibold text-gray-600">#{rank}</span>
+        return <span className="text-sm font-semibold text-muted-foreground">#{rank}</span>
     }
   }
 
@@ -133,7 +133,7 @@ export function Leaderboard({
     <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Header with Period Selector */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-3">{title}</h3>
         <div className="flex gap-2">
           {(['daily', 'weekly', 'monthly', 'all'] as const).map((p) => (
             <button
@@ -142,7 +142,7 @@ export function Leaderboard({
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 selectedPeriod === p
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-muted-foreground hover:bg-muted'
               }`}
             >
               {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -165,9 +165,9 @@ export function Leaderboard({
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
-              <div className="w-8 h-8 bg-gray-200 rounded-full" />
-              <div className="flex-1 h-4 bg-gray-200 rounded" />
-              <div className="w-16 h-4 bg-gray-200 rounded" />
+              <div className="w-8 h-8 bg-muted rounded-full" />
+              <div className="flex-1 h-4 bg-muted rounded" />
+              <div className="w-16 h-4 bg-muted rounded" />
             </div>
           ))}
         </div>
@@ -182,7 +182,7 @@ export function Leaderboard({
               className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                 entry.isCurrentUser
                   ? 'bg-blue-50 border border-blue-200'
-                  : 'hover:bg-gray-50'
+                  : 'hover:bg-accent'
               }`}
             >
               {/* Rank */}
@@ -209,7 +209,7 @@ export function Leaderboard({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <p className={`font-medium ${
-                    entry.isCurrentUser ? 'text-blue-900' : 'text-gray-900'
+                    entry.isCurrentUser ? 'text-blue-900' : 'text-foreground'
                   }`}>
                     {entry.name}
                     {entry.isCurrentUser && ' (You)'}
@@ -225,17 +225,17 @@ export function Leaderboard({
                     </span>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Level {entry.level} • {entry.role || 'Team Member'}
                 </p>
               </div>
 
               {/* Points */}
               <div className="text-right">
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-foreground">
                   {entry.points.toLocaleString()}
                 </p>
-                <p className="text-xs text-gray-500">{metricLabel}</p>
+                <p className="text-xs text-muted-foreground">{metricLabel}</p>
               </div>
             </div>
           ))}
@@ -246,7 +246,7 @@ export function Leaderboard({
       {!loading && leaderboard.length === 0 && (
         <div className="text-center py-8">
           <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-500">No leaderboard data available</p>
+          <p className="text-muted-foreground">No leaderboard data available</p>
         </div>
       )}
     </div>

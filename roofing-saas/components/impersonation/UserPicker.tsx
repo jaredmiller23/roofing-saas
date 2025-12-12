@@ -126,7 +126,7 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
         {/* Search input */}
         <div className="p-2">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search by name or email..."
@@ -142,11 +142,11 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
         {/* User list */}
         <div className="max-h-[400px] overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-gray-500">
+            <div className="p-4 text-center text-sm text-muted-foreground">
               Loading users...
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="p-4 text-center text-sm text-gray-500">
+            <div className="p-4 text-center text-sm text-muted-foreground">
               {searchQuery ? 'No users found' : 'No users available'}
             </div>
           ) : (
@@ -154,7 +154,7 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
               <DropdownMenuItem
                 key={user.id}
                 onClick={() => handleUserSelect(user)}
-                className="flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50"
+                className="flex items-start gap-3 p-3 cursor-pointer hover:bg-accent"
               >
                 <div className="flex-shrink-0 mt-1">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
@@ -165,14 +165,14 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
                   <div className="font-medium text-sm truncate">
                     {getUserDisplayName(user)}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {user.email}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
                       {user.role}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {formatLastActive(user.last_active)}
                     </span>
                   </div>
