@@ -74,7 +74,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
       )}
 
       {/* Call Details */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Phone className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Call Details</h2>
@@ -89,7 +89,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               <select
                 value={formData.direction}
                 onChange={(e) => setFormData({ ...formData, direction: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="inbound">Inbound</option>
                 <option value="outbound">Outbound</option>
@@ -105,7 +105,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
                 required
                 value={formData.phone_number}
                 onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="+1234567890"
               />
             </div>
@@ -120,7 +120,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
                 type="number"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="0"
               />
             </div>
@@ -132,7 +132,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               <select
                 value={formData.outcome}
                 onChange={(e) => setFormData({ ...formData, outcome: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="answered">Answered</option>
                 <option value="voicemail">Voicemail</option>
@@ -176,14 +176,14 @@ export function CallLogForm({ call }: CallLogFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
+          className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? 'Saving...' : call ? 'Update Call Log' : 'Save Call Log'}
         </button>
