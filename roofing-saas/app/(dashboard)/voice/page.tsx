@@ -73,7 +73,7 @@ export default function VoicePage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-600 rounded-lg">
+            <div className="p-2 bg-primary rounded-lg">
               <Mic className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">AI Voice Assistant</h1>
@@ -84,12 +84,12 @@ export default function VoicePage() {
         </div>
 
         {/* Info Banner */}
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mb-6 bg-primary/10 border border-primary/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-900">
+            <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-primary">
               <p className="font-medium mb-1">How to use the Voice Assistant:</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-800">
+              <ul className="list-disc list-inside space-y-1 text-primary/90">
                 <li>Click &ldquo;Start Voice Assistant&rdquo; and allow microphone access</li>
                 <li><strong>CRM Actions:</strong> &ldquo;Create a new contact named Sarah Johnson with phone 555-9876&rdquo;</li>
                 <li><strong>Field Work:</strong> &ldquo;Log a door knock at 456 Oak Street, disposition interested&rdquo;</li>
@@ -118,7 +118,7 @@ export default function VoicePage() {
         )}
 
         {/* Context Selection (Optional) */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border p-6">
+        <div className="mb-6 bg-card rounded-lg shadow-sm border border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Optional Context
           </h2>
@@ -135,7 +135,7 @@ export default function VoicePage() {
               <select
                 value={selectedContact}
                 onChange={(e) => setSelectedContact(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 disabled={isLoadingData}
               >
                 <option value="">No contact selected</option>
@@ -180,7 +180,7 @@ export default function VoicePage() {
         </div>
 
         {/* Technical Details */}
-        <div className="bg-white rounded-lg shadow-sm border border p-6">
+        <div className="bg-card rounded-lg shadow-sm border border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Technical Details
           </h2>
@@ -219,25 +219,25 @@ export default function VoicePage() {
         </div>
 
         {/* Coming Soon */}
-        <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 p-6">
+        <div className="mt-6 bg-gradient-to-r from-secondary/10 to-primary/10 rounded-lg border border-secondary/30 p-6">
           <h3 className="text-lg font-semibold text-foreground mb-2">
             Coming Soon: Phase 4.2 & 4.3
           </h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
+              <span className="text-secondary font-bold">•</span>
               <span><strong>ElevenLabs Integration:</strong> Premium voice quality at 75% lower cost ($0.08/min)</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
+              <span className="text-secondary font-bold">•</span>
               <span><strong>Mobile Optimization:</strong> Perfect for iOS Safari and Android Chrome</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
+              <span className="text-secondary font-bold">•</span>
               <span><strong>Roofing Knowledge Base:</strong> Domain-specific terminology and insights</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
+              <span className="text-secondary font-bold">•</span>
               <span><strong>Multi-turn Conversations:</strong> Natural follow-up questions</span>
             </li>
           </ul>
