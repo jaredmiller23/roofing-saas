@@ -164,6 +164,8 @@
     "app/card/[slug]/page.tsx:223:text-white",
     "app/card/[slug]/page.tsx:265:text-white",
     "app/offline/page.tsx:49:text-white",
+    "components/settings/TemplateSettings.tsx:243:text-white",
+    "components/settings/TemplateSettings.tsx:250:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

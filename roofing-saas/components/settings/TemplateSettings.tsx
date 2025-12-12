@@ -210,7 +210,7 @@ export function TemplateSettings() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -240,14 +240,14 @@ export function TemplateSettings() {
           <div className="flex gap-2">
             <Button
               onClick={() => { setActiveType('email'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-foreground'}
+              className={activeType === 'email' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}
             >
               <Mail className="h-4 w-4 mr-2" />
               Email Templates
             </Button>
             <Button
               onClick={() => { setActiveType('sms'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'sms' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-muted-foreground'}
+              className={activeType === 'sms' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               SMS Templates
@@ -255,7 +255,7 @@ export function TemplateSettings() {
           </div>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Template
@@ -270,7 +270,7 @@ export function TemplateSettings() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {templates.map((template) => (
-              <div key={template.id} className="border border rounded-lg p-4 hover:border-blue-300 transition-colors">
+              <div key={template.id} className="border border rounded-lg p-4 hover:border-primary/30 transition-colors">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
                     <h4 className="font-semibold text-foreground">{template.name}</h4>
@@ -278,7 +278,7 @@ export function TemplateSettings() {
                       <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
                     )}
                     {template.category && (
-                      <span className="inline-block mt-2 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                      <span className="inline-block mt-2 px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
                         {template.category}
                       </span>
                     )}
@@ -286,7 +286,7 @@ export function TemplateSettings() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => activeType === 'email' ? handleEditEmail(template as EmailTemplate) : handleEditSMS(template as SMSTemplate)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-primary hover:text-primary/80"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -376,7 +376,7 @@ export function TemplateSettings() {
                 value={emailFormData.body}
                 onChange={(e) => setEmailFormData({ ...emailFormData, body: e.target.value })}
                 rows={10}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
                 placeholder="Hi {{contact_name}},&#10;&#10;Welcome to {{company_name}}!&#10;&#10;Best regards,&#10;{{user_name}}"
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -391,7 +391,7 @@ export function TemplateSettings() {
               <Button
                 onClick={handleSaveEmail}
                 disabled={saving || !emailFormData.name || !emailFormData.subject || !emailFormData.body}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 {saving ? 'Saving...' : editingTemplate ? 'Update Template' : 'Add Template'}
               </Button>
@@ -451,7 +451,7 @@ export function TemplateSettings() {
                 onChange={(e) => setSMSFormData({ ...smsFormData, message: e.target.value })}
                 rows={6}
                 maxLength={1600}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Hi {{contact_name}}, this is a reminder about your appointment on {{date}}. - {{company_name}}"
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -471,7 +471,7 @@ export function TemplateSettings() {
               <Button
                 onClick={handleSaveSMS}
                 disabled={saving || !smsFormData.name || !smsFormData.message}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 {saving ? 'Saving...' : editingTemplate ? 'Update Template' : 'Add Template'}
               </Button>
