@@ -92,7 +92,7 @@ export default function EventsPage() {
 
           <Link
             href="/events/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
           >
             + Schedule Event
           </Link>

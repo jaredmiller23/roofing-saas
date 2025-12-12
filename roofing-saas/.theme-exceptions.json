@@ -111,6 +111,7 @@
     "app/(dashboard)/financial/reports/page.tsx:111:text-white",
     "app/(dashboard)/financial/commissions/page.tsx:90:text-white",
     "app/(dashboard)/contacts/page.tsx:37:text-white",
+    "app/(dashboard)/events/page.tsx:95:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
