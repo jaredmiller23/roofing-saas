@@ -205,9 +205,9 @@ export function TerritoryMapEditor({
 
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center bg-gray-100 rounded-lg" style={{ height }}>
+      <div className="flex items-center justify-center bg-muted rounded-lg" style={{ height }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
           <p className="text-sm text-muted-foreground">Loading map editor...</p>
         </div>
       </div>
@@ -238,15 +238,15 @@ export function TerritoryMapEditor({
           <h4 className="font-semibold text-sm text-foreground mb-2">Draw Territory Boundary</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 font-semibold">•</span>
+              <span className="text-primary font-semibold">•</span>
               <span>Use the rectangle or polygon tool (top center)</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 font-semibold">•</span>
+              <span className="text-primary font-semibold">•</span>
               <span>Click on the map to create boundary points</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 font-semibold">•</span>
+              <span className="text-primary font-semibold">•</span>
               <span>Double-click to finish drawing</span>
             </li>
           </ul>
