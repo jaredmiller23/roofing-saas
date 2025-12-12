@@ -127,8 +127,8 @@ export function AdminSettings() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-48 w-full bg-gray-100 animate-pulse rounded-lg" />
-        <div className="h-64 w-full bg-gray-100 animate-pulse rounded-lg" />
+        <div className="h-48 w-full bg-muted animate-pulse rounded-lg" />
+        <div className="h-64 w-full bg-muted animate-pulse rounded-lg" />
       </div>
     )
   }
@@ -185,11 +185,11 @@ export function AdminSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <Eye className="h-5 w-5 text-blue-600 mt-0.5" />
+          <div className="flex items-start gap-4 p-4 bg-primary/10 rounded-lg border border-primary/30">
+            <Eye className="h-5 w-5 text-primary mt-0.5" />
             <div className="flex-1">
-              <h4 className="font-medium text-blue-900">View as Another User</h4>
-              <p className="text-sm text-blue-700 mt-1">
+              <h4 className="font-medium text-primary">View as Another User</h4>
+              <p className="text-sm text-primary mt-1">
                 Select a team member to view the application exactly as they see it.
                 Use this to help with support requests or verify permissions.
               </p>
@@ -199,7 +199,7 @@ export function AdminSettings() {
             </div>
           </div>
 
-          <div className="rounded-lg border border bg-gray-50 p-4">
+          <div className="rounded-lg border border bg-muted p-4">
             <h4 className="font-medium text-foreground mb-2">Security Notes</h4>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
               <li>All impersonation sessions are logged with timestamps and reasons</li>
@@ -225,9 +225,9 @@ export function AdminSettings() {
         <CardContent>
           {logsLoading ? (
             <div className="space-y-3">
-              <div className="h-12 w-full bg-gray-100 animate-pulse rounded" />
-              <div className="h-12 w-full bg-gray-100 animate-pulse rounded" />
-              <div className="h-12 w-full bg-gray-100 animate-pulse rounded" />
+              <div className="h-12 w-full bg-muted animate-pulse rounded" />
+              <div className="h-12 w-full bg-muted animate-pulse rounded" />
+              <div className="h-12 w-full bg-muted animate-pulse rounded" />
             </div>
           ) : recentLogs.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
