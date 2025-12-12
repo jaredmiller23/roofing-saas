@@ -131,6 +131,7 @@
     "app/(dashboard)/messages/page.tsx:61:text-white",
     "app/(dashboard)/jobs/[id]/page.tsx:95:text-white",
     "app/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx:253:text-white",
+    "app/(dashboard)/projects/[id]/costing/page.tsx:260:text-white",
     "app/(dashboard)/project-files/[id]/page.tsx:79:text-white",
     "app/(dashboard)/signatures/new/page.tsx:138:text-white",
     "app/(dashboard)/signatures/page.tsx:124:text-white",

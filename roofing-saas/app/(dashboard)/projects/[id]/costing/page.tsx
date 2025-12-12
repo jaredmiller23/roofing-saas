@@ -151,7 +151,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
         <div className="mb-6">
           <Link
             href={`/projects/${id}`}
-            className="text-sm text-blue-600 hover:text-blue-800 mb-4 inline-block"
+            className="text-sm text-primary hover:text-primary/80 mb-4 inline-block"
           >
             ← Back to Project
           </Link>
@@ -169,16 +169,16 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
         {/* P&L Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Revenue Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-primary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Revenue</h3>
-              <DollarSign className="h-5 w-5 text-blue-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(revenue)}</p>
           </div>
 
           {/* Estimated Cost Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-gray-400">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-border">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Estimated Cost</h3>
             </div>
