@@ -60,9 +60,9 @@ export function ActivityFeed() {
       case 'project_lost':
         return <XCircle className="h-5 w-5 text-muted-foreground" />
       case 'project_created':
-        return <FolderPlus className="h-5 w-5 text-blue-600" />
+        return <FolderPlus className="h-5 w-5 text-primary" />
       case 'contact_added':
-        return <UserPlus className="h-5 w-5 text-purple-600" />
+        return <UserPlus className="h-5 w-5 text-primary" />
       case 'status_change':
         return <TrendingUp className="h-5 w-5 text-orange-600" />
       default:
@@ -181,7 +181,7 @@ export function ActivityFeed() {
 
                   {/* Value Display for New Projects */}
                   {activity.type === 'project_created' && activity.metadata?.value && activity.metadata.value > 0 && (
-                    <div className="mt-2 flex items-center gap-1 text-blue-700">
+                    <div className="mt-2 flex items-center gap-1 text-primary">
                       <span className="text-xs">
                         Est. {formatCurrency(activity.metadata.value)}
                       </span>
@@ -214,7 +214,7 @@ export function ActivityFeed() {
       {/* Empty State */}
       {!loading && activities.length === 0 && (
         <div className="text-center py-8">
-          <Clock className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+          <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No recent activity</p>
           <p className="text-sm text-muted-foreground mt-1">Activity will appear here as your team works</p>
         </div>
