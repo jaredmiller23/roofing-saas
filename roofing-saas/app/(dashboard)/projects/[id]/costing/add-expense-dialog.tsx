@@ -69,7 +69,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 id="expense_type"
                 name="expense_type"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select type...</option>
                 <option value="labor">Labor</option>
@@ -92,7 +92,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 id="category"
                 name="category"
                 placeholder="e.g., shingles, flashing"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -108,7 +108,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
               required
               rows={3}
               placeholder="Describe the expense..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -126,7 +126,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 min="0"
                 required
                 placeholder="0.00"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -142,7 +142,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -158,7 +158,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 id="vendor_name"
                 name="vendor_name"
                 placeholder="e.g., ABC Supply"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -188,7 +188,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 id="invoice_number"
                 name="invoice_number"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -205,7 +205,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 name="expense_date"
                 required
                 defaultValue={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -218,7 +218,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
                 type="date"
                 id="paid_date"
                 name="paid_date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -233,7 +233,7 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
               name="notes"
               rows={2}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -243,14 +243,14 @@ export function AddExpenseDialog({ projectId, isOpen, onClose }: AddExpenseDialo
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
+              className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? 'Adding...' : 'Add Expense'}
             </button>
