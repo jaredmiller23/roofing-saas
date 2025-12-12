@@ -169,6 +169,8 @@
     "components/settings/SettingsTabs.tsx:*:text-white",
     "components/pipeline/project-card.tsx:331:text-white",
     "components/pipeline/project-card.tsx:377:text-white",
+    "components/call-logs/audio-player.tsx:228:text-white",
+    "components/call-logs/audio-player.tsx:254:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
