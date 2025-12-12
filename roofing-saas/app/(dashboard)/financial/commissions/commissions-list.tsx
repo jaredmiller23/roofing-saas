@@ -49,7 +49,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />
       case 'approved':
-        return <CheckCircle className="h-4 w-4 text-blue-500" />
+        return <CheckCircle className="h-4 w-4 text-primary" />
       case 'paid':
         return <DollarSign className="h-4 w-4 text-green-500" />
       case 'cancelled':
@@ -66,7 +66,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
       paid: 'bg-green-100 text-green-800',
       cancelled: 'bg-red-100 text-red-800',
     }
-    return badges[status] || 'bg-muted text-gray-800'
+    return badges[status] || 'bg-muted text-foreground'
   }
 
   const handleApprove = (commissionId: string) => {
@@ -142,7 +142,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                     {formatDate(commission.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-muted text-gray-800 capitalize">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-muted text-foreground capitalize">
                       {commission.commission_type}
                     </span>
                   </td>
@@ -173,7 +173,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                       <button
                         onClick={() => handleApprove(commission.id)}
                         disabled={isPending}
-                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50 mr-3"
+                        className="text-primary hover:text-primary/80 disabled:opacity-50 mr-3"
                       >
                         Approve
                       </button>
