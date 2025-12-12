@@ -98,7 +98,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-1">Pipeline Value</p>
-            <p className="text-2xl font-bold text-blue-600">{formatCurrency(forecast.pipelineValue)}</p>
+            <p className="text-2xl font-bold text-primary">{formatCurrency(forecast.pipelineValue)}</p>
             <p className="text-xs text-muted-foreground mt-1">{pipelineProjects.length} opportunities</p>
           </div>
 
@@ -110,7 +110,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
 
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-1">Monthly Average</p>
-            <p className="text-2xl font-bold text-purple-600">{formatCurrency(forecast.avgMonthlyRevenue)}</p>
+            <p className="text-2xl font-bold text-secondary">{formatCurrency(forecast.avgMonthlyRevenue)}</p>
             <p className="text-xs text-muted-foreground mt-1">Based on historical data</p>
           </div>
         </div>
@@ -129,7 +129,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Confidence</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {forecast.forecasts.map((item, index) => (
                   <tr key={index} className="hover:bg-background">
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{item.month}</td>
@@ -152,8 +152,8 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
         </div>
 
         {/* Methodology Note */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-800">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg">
+          <p className="text-xs text-primary">
             <strong>Methodology:</strong> Forecast combines historical average revenue (60% weight) with pipeline value adjusted by close rate (40% weight).
             Confidence intervals show ±20% variance. Enhanced with seasonal adjustments when available.
           </p>
