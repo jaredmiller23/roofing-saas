@@ -48,14 +48,14 @@ export function InspectionSummary({
         <div className="space-y-4">
           {/* Status overview */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-muted rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-primary">
                 {summary.totalPhotoCount}
               </div>
               <div className="text-xs text-muted-foreground">Photos</div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-muted rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-primary">
                 {summary.selectedAreaCount}
               </div>
               <div className="text-xs text-muted-foreground">Areas</div>
@@ -85,7 +85,7 @@ export function InspectionSummary({
               {summary.areas.map(area => (
                 <div
                   key={area.type}
-                  className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded"
+                  className="flex items-center justify-between py-2 px-3 bg-muted rounded"
                 >
                   <span className="text-sm text-muted-foreground">{area.label}</span>
                   <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function InspectionSummary({
             <button
               onClick={onBack}
               disabled={isSubmitting}
-              className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent disabled:opacity-50"
+              className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent disabled:opacity-50"
             >
               Back
             </button>
