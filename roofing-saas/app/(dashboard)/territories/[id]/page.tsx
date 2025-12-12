@@ -96,7 +96,7 @@ export default function TerritoryDetailPage() {
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function TerritoryDetailPage() {
           </div>
           <Link
             href="/territories"
-            className="inline-block mt-4 text-blue-600 hover:text-blue-700"
+            className="inline-block mt-4 text-primary hover:text-primary/80"
           >
             ← Back to Territories
           </Link>
@@ -188,7 +188,7 @@ export default function TerritoryDetailPage() {
           <div className="flex gap-3 mt-6 pt-6 border-t border">
             <Link
               href={`/territories/${territory.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
             >
               Edit Territory
             </Link>
