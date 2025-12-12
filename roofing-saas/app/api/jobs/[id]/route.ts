@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { triggerWorkflow } from '@/lib/automation/engine'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/jobs/[id]
@@ -34,7 +35,7 @@ export async function GET(
       .single()
 
     if (error) {
-      console.error('Error fetching job:', error)
+      logger.error('Error fetching job:', { error })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -44,7 +45,7 @@ export async function GET(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error in GET /api/jobs/[id]:', error)
+    logger.error('Error in GET /api/jobs/[id]:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -107,7 +108,7 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating job:', error)
+      logger.error('Error updating job:', { error })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -135,11 +136,11 @@ export async function PATCH(
         .eq('pipeline_stage', 'production') // Only update if still in production
 
       if (projectError) {
-        console.error('Error updating project after job completion:', projectError)
+        logger.error('Error updating project after job completion:', { error: projectError })
         // Don't fail the job update, just log the error
       } else {
         projectUpdated = true
-        console.log(`[Workflow] Job ${id} completed → Project ${existingJob.project_id} moved to "complete" stage`)
+        logger.debug(`[Workflow] Job ${id} completed → Project ${existingJob.project_id} moved to "complete" stage`)
       }
 
       // Trigger job_completed workflow for automations (surveys, follow-ups, etc.)
@@ -150,7 +151,7 @@ export async function PATCH(
         completion_date: data.completion_date,
         completed_by: user.id,
       }).catch((error) => {
-        console.error('[API] Workflow trigger (job_completed) failed:', error)
+        logger.error('[API] Workflow trigger (job_completed) failed:', { error })
       })
     }
 
@@ -161,7 +162,7 @@ export async function PATCH(
         : undefined,
     })
   } catch (error) {
-    console.error('Error in PATCH /api/jobs/[id]:', error)
+    logger.error('Error in PATCH /api/jobs/[id]:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -204,7 +205,7 @@ export async function DELETE(
       .single()
 
     if (error) {
-      console.error('Error deleting job:', error)
+      logger.error('Error deleting job:', { error })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -214,7 +215,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/jobs/[id]:', error)
+    logger.error('Error in DELETE /api/jobs/[id]:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

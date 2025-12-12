@@ -6,6 +6,7 @@ import {
   getStatusForPipelineStage,
 } from '@/lib/pipeline/validation'
 import { triggerWorkflow } from '@/lib/automation/engine'
+import { logger } from '@/lib/logger'
 import type { PipelineStage } from '@/lib/types/api'
 
 export const dynamic = 'force-dynamic'
@@ -105,7 +106,7 @@ export async function GET(
       .single()
 
     if (fetchError || !project) {
-      console.error('[API] Error fetching project:', fetchError)
+      logger.error('[API] Error fetching project:', { error: fetchError })
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
@@ -114,7 +115,7 @@ export async function GET(
 
     return NextResponse.json({ project })
   } catch (error) {
-    console.error('[API] Projects GET error:', error)
+    logger.error('[API] Projects GET error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -264,7 +265,7 @@ export async function PATCH(
       .single()
 
     if (updateError) {
-      console.error('[API] Error updating project:', updateError)
+      logger.error('[API] Error updating project:', { error: updateError })
       return NextResponse.json(
         { error: 'Failed to update project' },
         { status: 500 }
@@ -290,13 +291,13 @@ export async function PATCH(
 
       // Fire general stage change workflow (async - don't block response)
       triggerWorkflow(tenantId, 'pipeline_stage_changed', triggerData).catch((error) => {
-        console.error('[API] Workflow trigger (pipeline_stage_changed) failed:', error)
+        logger.error('[API] Workflow trigger (pipeline_stage_changed) failed:', { error })
       })
 
       // Fire specific 'project_won' trigger when moving to won stage
       if (newStage === 'won') {
         triggerWorkflow(tenantId, 'project_won', triggerData).catch((error) => {
-          console.error('[API] Workflow trigger (project_won) failed:', error)
+          logger.error('[API] Workflow trigger (project_won) failed:', { error })
         })
       }
     }
@@ -306,7 +307,7 @@ export async function PATCH(
       data: updatedProject,
     })
   } catch (error) {
-    console.error('[API] Projects PATCH error:', error)
+    logger.error('[API] Projects PATCH error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

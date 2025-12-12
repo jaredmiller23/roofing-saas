@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle2, XCircle, RefreshCw, ExternalLink, AlertCircle, Download, Upload, Users, FileText } from 'lucide-react'
+import { CheckCircle2, XCircle, RefreshCw, ExternalLink, AlertCircle, Upload, Users, FileText } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
 interface QuickBooksStatus {
@@ -171,14 +172,12 @@ export function QuickBooksIntegration() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <img
+            <Image
               src="/quickbooks-logo.svg"
               alt="QuickBooks"
+              width={24}
+              height={24}
               className="h-6 w-6"
-              onError={(e) => {
-                // Fallback to text if image doesn't load
-                e.currentTarget.style.display = 'none'
-              }}
             />
             QuickBooks Online
           </CardTitle>
@@ -197,14 +196,12 @@ export function QuickBooksIntegration() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <img
+          <Image
             src="/quickbooks-logo.svg"
             alt="QuickBooks"
+            width={24}
+            height={24}
             className="h-6 w-6"
-            onError={(e) => {
-              // Fallback to text if image doesn't load
-              e.currentTarget.style.display = 'none'
-            }}
           />
           QuickBooks Online
         </CardTitle>
@@ -454,7 +451,7 @@ export function QuickBooksIntegration() {
 
         {/* Help Text */}
         <div className="text-xs text-gray-500 pt-2 border-t">
-          <strong>Note:</strong> You'll be redirected to QuickBooks to authorize this connection.
+          <strong>Note:</strong> You&apos;ll be redirected to QuickBooks to authorize this connection.
           Make sure pop-ups are enabled in your browser.
         </div>
       </CardContent>

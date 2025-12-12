@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 // Force recompile
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     const { data: pins, error } = await query
 
     if (error) {
-      console.error('[API] Error fetching pins:', error)
+      logger.error('[API] Error fetching pins:', { error })
       return NextResponse.json(
         { error: 'Failed to fetch pins' },
         { status: 500 }
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
       pins: pinsWithUsers  // Changed from 'data' to 'pins' to match frontend expectation
     })
   } catch (error) {
-    console.error('[API] Error in GET /api/pins:', error)
+    logger.error('[API] Error in GET /api/pins:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       create_contact
     } = body
 
-    console.log('[API] POST /api/pins - Creating pin:', {
+    logger.debug('[API] POST /api/pins - Creating pin:', {
       latitude,
       longitude,
       territory_id,
@@ -142,14 +143,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (tenantError || !tenantUser) {
-      console.error('[API] Error fetching tenant:', tenantError)
+      logger.error('[API] Error fetching tenant:', { error: tenantError })
       return NextResponse.json(
         { error: 'User not associated with a tenant' },
         { status: 403 }
       )
     }
 
-    console.log('[API] Creating pin for tenant:', tenantUser.tenant_id)
+    logger.debug('[API] Creating pin for tenant:', { tenant_id: tenantUser.tenant_id })
 
     // Create the pin
     const { data: newPin, error: insertError } = await supabase
@@ -174,20 +175,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('[API] Error creating pin:', insertError)
+      logger.error('[API] Error creating pin:', { error: insertError })
       return NextResponse.json(
         { error: 'Failed to create pin', details: insertError.message },
         { status: 500 }
       )
     }
 
-    console.log('[API] Pin created successfully:', newPin.id)
+    logger.debug('[API] Pin created successfully:', { pin_id: newPin.id })
 
     let createdContactId: string | null = null
 
     // If creating contact
     if (create_contact && contact_data) {
-      console.log('[API] Creating contact from pin...')
+      logger.debug('[API] Creating contact from pin...')
       const { data: contact, error: contactError } = await supabase
         .rpc('create_contact_from_pin', {
           p_knock_id: newPin.id,
@@ -198,9 +199,9 @@ export async function POST(request: NextRequest) {
         })
 
       if (contactError) {
-        console.error('[API] Error creating contact:', contactError)
+        logger.error('[API] Error creating contact:', { error: contactError })
       } else {
-        console.log('[API] Contact created successfully:', contact)
+        logger.debug('[API] Contact created successfully:', { contact_id: contact })
         createdContactId = contact
 
         // Verify contact was actually created and update pin
@@ -254,7 +255,7 @@ export async function POST(request: NextRequest) {
       })
 
     if (activityError) {
-      console.error('[API] Error creating activity:', activityError)
+      logger.error('[API] Error creating activity:', { error: activityError })
       // Continue even if activity creation fails
     }
 
@@ -266,7 +267,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('[API] Error in POST /api/pins:', error)
+    logger.error('[API] Error in POST /api/pins:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -327,7 +328,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (updateError) {
-      console.error('[API] Error updating pin:', updateError)
+      logger.error('[API] Error updating pin:', { error: updateError })
       return NextResponse.json(
         { error: 'Failed to update pin' },
         { status: 500 }
@@ -347,7 +348,7 @@ export async function PUT(request: NextRequest) {
         })
 
       if (contactError) {
-        console.error('[API] Error creating contact:', contactError)
+        logger.error('[API] Error creating contact:', { error: contactError })
         // Don't fail the whole request if contact creation fails
       }
     }
@@ -357,7 +358,7 @@ export async function PUT(request: NextRequest) {
       data: updatedPin
     })
   } catch (error) {
-    console.error('[API] Error in PUT /api/pins:', error)
+    logger.error('[API] Error in PUT /api/pins:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -415,7 +416,7 @@ export async function DELETE(request: NextRequest) {
       .eq('id', id)
 
     if (deleteError) {
-      console.error('[API] Error deleting pin:', deleteError)
+      logger.error('[API] Error deleting pin:', { error: deleteError })
       return NextResponse.json(
         { error: 'Failed to delete pin' },
         { status: 500 }
@@ -427,7 +428,7 @@ export async function DELETE(request: NextRequest) {
       message: 'Pin deleted successfully'
     })
   } catch (error) {
-    console.error('[API] Error in DELETE /api/pins:', error)
+    logger.error('[API] Error in DELETE /api/pins:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

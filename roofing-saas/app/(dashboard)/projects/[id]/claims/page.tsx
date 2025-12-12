@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,11 +48,7 @@ export default function ProjectClaimsPage() {
   const [claims, setClaims] = useState<ClaimData[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchData()
-  }, [projectId])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch project
       const projectRes = await fetch(`/api/projects/${projectId}`)
@@ -72,7 +68,11 @@ export default function ProjectClaimsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [projectId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleStartInspection = () => {
     router.push(`/projects/${projectId}/claims/inspection`)

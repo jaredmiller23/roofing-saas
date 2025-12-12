@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * PATCH /api/settings/email-templates/[id]
@@ -52,7 +53,7 @@ export async function PATCH(
 
     return NextResponse.json({ template })
   } catch (error) {
-    console.error('Error updating email template:', error)
+    logger.error('Error updating email template:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -94,7 +95,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting email template:', error)
+    logger.error('Error deleting email template:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

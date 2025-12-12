@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/settings/email-templates
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ templates: templates || [] })
   } catch (error) {
-    console.error('Error fetching email templates:', error)
+    logger.error('Error fetching email templates:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ template }, { status: 201 })
   } catch (error) {
-    console.error('Error creating email template:', error)
+    logger.error('Error creating email template:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

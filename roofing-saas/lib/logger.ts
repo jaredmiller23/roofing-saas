@@ -2,8 +2,10 @@
  * Application Logger
  *
  * Centralized logging with structured data and log levels
- * In production, this should integrate with a service like Sentry, LogRocket, or Datadog
+ * Integrates with Sentry for error tracking and performance monitoring
  */
+
+import * as Sentry from '@sentry/nextjs'
 
 export enum LogLevel {
   DEBUG = 'debug',
@@ -52,10 +54,20 @@ class Logger {
         break
       case LogLevel.ERROR:
         console.error(formatted)
-        // In production, send to error tracking service
-        if (process.env.NODE_ENV === 'production') {
-          // TODO: Send to Sentry or similar
-          // Sentry.captureException(new Error(message), { extra: context })
+        // Send errors to Sentry in all environments
+        // Sentry config filters by environment (development/staging/production)
+        if (context?.error instanceof Error) {
+          // If context has an actual Error object, send it
+          Sentry.captureException(context.error, {
+            level: 'error',
+            extra: { ...context, message },
+          })
+        } else {
+          // Otherwise create an Error with the message
+          Sentry.captureException(new Error(message), {
+            level: 'error',
+            extra: context,
+          })
         }
         break
     }
@@ -71,6 +83,12 @@ class Logger {
 
   warn(message: string, context?: LogContext): void {
     this.log(LogLevel.WARN, message, context)
+    // Optionally send warnings to Sentry as breadcrumbs
+    Sentry.addBreadcrumb({
+      message,
+      level: 'warning',
+      data: context,
+    })
   }
 
   error(message: string, context?: LogContext): void {

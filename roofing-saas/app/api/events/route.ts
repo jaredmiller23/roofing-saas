@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/events
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     const { data: events, error, count } = await query
 
     if (error) {
-      console.error('Error fetching events:', error)
+      logger.error('Error fetching events:', { error })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       limit,
     })
   } catch (error) {
-    console.error('Error in GET /api/events:', error)
+    logger.error('Error in GET /api/events:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -101,13 +102,13 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating event:', error)
+      logger.error('Error creating event:', { error })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/events:', error)
+    logger.error('Error in POST /api/events:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

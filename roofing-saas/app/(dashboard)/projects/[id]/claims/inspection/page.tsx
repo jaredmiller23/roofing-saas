@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { InspectionWizard } from '@/components/claims'
 import { Card, CardContent } from '@/components/ui/card'
@@ -33,11 +33,7 @@ export default function InspectionPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchProject()
-  }, [projectId])
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const res = await fetch(`/api/projects/${projectId}`)
       if (res.ok) {
@@ -53,7 +49,11 @@ export default function InspectionPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [projectId, router])
+
+  useEffect(() => {
+    fetchProject()
+  }, [fetchProject])
 
   const handleComplete = async (state: InspectionState) => {
     try {

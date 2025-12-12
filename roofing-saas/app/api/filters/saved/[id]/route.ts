@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 import type {
   SavedFilter,
   UpdateSavedFilterRequest,
@@ -89,7 +90,7 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating saved filter:', error)
+      logger.error('Error updating saved filter:', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
         return NextResponse.json(
@@ -109,7 +110,7 @@ export async function PATCH(
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in PATCH /api/filters/saved/:id:', error)
+    logger.error('Error in PATCH /api/filters/saved/:id:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -164,7 +165,7 @@ export async function DELETE(
     const { error } = await supabase.from('saved_filters').delete().eq('id', id)
 
     if (error) {
-      console.error('Error deleting saved filter:', error)
+      logger.error('Error deleting saved filter:', { error })
       return NextResponse.json(
         { error: 'Failed to delete saved filter' },
         { status: 500 }
@@ -173,7 +174,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/filters/saved/:id:', error)
+    logger.error('Error in DELETE /api/filters/saved/:id:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

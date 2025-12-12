@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export async function PUT(
     const resolvedParams = await params
     const id = resolvedParams.id
 
-    console.log('[API] PUT /api/pins/[id] - ID:', id, 'Type:', typeof id)
+    logger.debug('[API] PUT /api/pins/[id] - ID:', { id, type: typeof id })
 
     if (!id) {
       return NextResponse.json(
@@ -32,7 +33,7 @@ export async function PUT(
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(id)) {
-      console.error('[API] Invalid UUID format:', id)
+      logger.error('[API] Invalid UUID format:', { id })
       return NextResponse.json(
         { error: 'Invalid pin ID format' },
         { status: 400 }
@@ -74,7 +75,7 @@ export async function PUT(
       .single()
 
     if (updateError) {
-      console.error('[API] Error updating pin:', updateError)
+      logger.error('[API] Error updating pin:', { error: updateError })
       return NextResponse.json(
         { error: 'Failed to update pin' },
         { status: 500 }
@@ -94,7 +95,7 @@ export async function PUT(
         })
 
       if (contactError) {
-        console.error('[API] Error creating contact:', contactError)
+        logger.error('[API] Error creating contact:', { error: contactError })
         // Don't fail the whole request if contact creation fails
       }
     }
@@ -104,7 +105,7 @@ export async function PUT(
       data: updatedPin
     })
   } catch (error) {
-    console.error('[API] Error in PUT /api/pins/[id]:', error)
+    logger.error('[API] Error in PUT /api/pins/[id]:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

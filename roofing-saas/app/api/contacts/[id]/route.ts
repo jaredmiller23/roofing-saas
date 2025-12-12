@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { updateContactSchema } from '@/lib/validations/contact'
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/contacts/[id]
@@ -42,7 +43,7 @@ export async function GET(
 
     return NextResponse.json({ contact })
   } catch (error) {
-    console.error('Get contact error:', error)
+    logger.error('Get contact error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -91,7 +92,7 @@ export async function PATCH(
       .single()
 
     if (error || !contact) {
-      console.error('Error updating contact:', error)
+      logger.error('Error updating contact:', { error })
 
       if (error?.code === '23505') {
         return NextResponse.json(
@@ -108,7 +109,7 @@ export async function PATCH(
 
     return NextResponse.json({ contact })
   } catch (error) {
-    console.error('Update contact error:', error)
+    logger.error('Update contact error:', { error })
 
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
@@ -154,7 +155,7 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      console.error('Error deleting contact:', error)
+      logger.error('Error deleting contact:', { error })
       return NextResponse.json(
         { error: 'Failed to delete contact' },
         { status: 500 }
@@ -163,7 +164,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Delete contact error:', error)
+    logger.error('Delete contact error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 import type {
   SavedFilter,
   GetSavedFiltersResponse,
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
       .order('name', { ascending: true })
 
     if (error) {
-      console.error('Error fetching saved filters:', error)
+      logger.error('Error fetching saved filters:', { error })
       return NextResponse.json(
         { error: 'Failed to fetch saved filters' },
         { status: 500 }
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in GET /api/filters/saved:', error)
+    logger.error('Error in GET /api/filters/saved:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating saved filter:', error)
+      logger.error('Error creating saved filter:', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
         return NextResponse.json(
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/filters/saved:', error)
+    logger.error('Error in POST /api/filters/saved:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -110,10 +111,11 @@ export function PublicCardView({ card }: PublicCardViewProps) {
         }}
       >
         {card.background_image_url && (
-          <img
+          <Image
             src={card.background_image_url}
             alt="Background"
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            fill
+            className="object-cover opacity-20"
           />
         )}
       </div>
@@ -127,9 +129,11 @@ export function PublicCardView({ card }: PublicCardViewProps) {
               {/* Profile Photo */}
               <div className="shrink-0">
                 {card.profile_photo_url ? (
-                  <img
+                  <Image
                     src={card.profile_photo_url}
                     alt={card.full_name}
+                    width={128}
+                    height={128}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
                   />
                 ) : (
@@ -328,7 +332,7 @@ export function PublicCardView({ card }: PublicCardViewProps) {
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
                     <p className="text-gray-600">
-                      Thank you for reaching out. We'll get back to you soon.
+                      Thank you for reaching out. We&apos;ll get back to you soon.
                     </p>
                   </div>
                 ) : (

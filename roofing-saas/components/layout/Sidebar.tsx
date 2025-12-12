@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   LogOut,
-  Megaphone
+  Megaphone,
+  FileText
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -44,6 +45,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
+      { href: '/claims', label: 'Claims', icon: FileText },
       { href: '/call-logs', label: 'Call Logs', icon: Phone },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
       { href: '/territories', label: 'Field Activity', icon: Map },

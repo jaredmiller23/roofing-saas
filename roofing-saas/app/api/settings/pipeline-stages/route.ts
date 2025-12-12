@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/settings/pipeline-stages
@@ -32,7 +33,7 @@ export async function GET() {
 
     return NextResponse.json({ stages: stages || [] })
   } catch (error) {
-    console.error('Error fetching pipeline stages:', error)
+    logger.error('Error fetching pipeline stages:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ stage }, { status: 201 })
   } catch (error) {
-    console.error('Error creating pipeline stage:', error)
+    logger.error('Error creating pipeline stage:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

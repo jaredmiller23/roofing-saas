@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/organizations/[id]
@@ -41,7 +42,7 @@ export async function GET(
 
     return NextResponse.json({ organization })
   } catch (error) {
-    console.error('Get organization error:', error)
+    logger.error('Get organization error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -90,7 +91,7 @@ export async function PATCH(
 
     return NextResponse.json({ organization })
   } catch (error) {
-    console.error('Update organization error:', error)
+    logger.error('Update organization error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -135,7 +136,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Delete organization error:', error)
+    logger.error('Delete organization error:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

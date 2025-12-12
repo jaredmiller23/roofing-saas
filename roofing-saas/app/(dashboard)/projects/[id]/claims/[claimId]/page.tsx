@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,15 +11,27 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  AlertCircle,
   Download,
   Upload,
   Clock,
   CheckCircle,
-  XCircle,
 } from 'lucide-react'
 import { format } from 'date-fns'
-import type { ClaimData, ClaimStatus, TN_LAW_THRESHOLDS } from '@/lib/claims/types'
+import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
+import { ClaimStatusWorkflow } from '@/components/claims/ClaimStatusWorkflow'
+import { ClaimDocuments } from '@/components/claims/ClaimDocuments'
+import { ClaimApprovalWorkflow } from '@/components/claims/ClaimApprovalWorkflow'
+
+interface ClaimDocument {
+  id: string
+  name: string
+  file_url: string
+  file_size?: number
+  mime_type?: string
+  type?: string
+  created_at: string
+  created_by?: string
+}
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
   'new': 'bg-blue-500',
@@ -52,14 +64,11 @@ export default function ClaimDetailPage() {
   const claimId = params.claimId as string
 
   const [claim, setClaim] = useState<ClaimData | null>(null)
+  const [documents, setDocuments] = useState<ClaimDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
 
-  useEffect(() => {
-    fetchClaim()
-  }, [claimId])
-
-  const fetchClaim = async () => {
+  const fetchClaim = useCallback(async () => {
     try {
       const res = await fetch(`/api/claims/${claimId}`)
       if (res.ok) {
@@ -73,7 +82,26 @@ export default function ClaimDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [claimId])
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}/documents`)
+      if (res.ok) {
+        const data = await res.json()
+        setDocuments(data.documents || [])
+      } else {
+        console.error('Failed to fetch documents')
+      }
+    } catch (error) {
+      console.error('Error fetching documents:', error)
+    }
+  }, [claimId])
+
+  useEffect(() => {
+    fetchClaim()
+    fetchDocuments()
+  }, [fetchClaim, fetchDocuments])
 
   const handleSyncToClaims = async () => {
     setSyncing(true)
@@ -118,6 +146,27 @@ export default function ClaimDetailPage() {
     } catch (error) {
       console.error('Error exporting claim package:', error)
       alert('Failed to export claim package')
+    }
+  }
+
+  const handleStatusChange = async (newStatus: ClaimStatus, data?: Record<string, unknown>) => {
+    try {
+      const res = await fetch(`/api/claims/${claimId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, status: newStatus }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Failed to update claim status')
+      }
+
+      // Refresh claim data
+      await fetchClaim()
+    } catch (error) {
+      console.error('Error updating claim status:', error)
+      throw error
     }
   }
 
@@ -188,6 +237,12 @@ export default function ClaimDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Status Workflow */}
+      <ClaimStatusWorkflow claim={claim} onStatusChange={handleStatusChange} />
+
+      {/* Approval Workflow */}
+      <ClaimApprovalWorkflow claim={claim} onApprovalChange={fetchClaim} />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -425,23 +480,11 @@ export default function ClaimDetailPage() {
 
         {/* Documents Tab */}
         <TabsContent value="documents" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documents</CardTitle>
-              <CardDescription>
-                View and manage claim documentation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>No documents available yet</p>
-                <p className="text-sm mt-1">
-                  Documents will appear here once uploaded
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ClaimDocuments
+            claimId={claimId}
+            documents={documents}
+            onDocumentsChange={fetchDocuments}
+          />
         </TabsContent>
       </Tabs>
     </div>

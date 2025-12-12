@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,17 +19,7 @@ export default function CardQRCodePage() {
   const [copied, setCopied] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
-    fetchCard()
-  }, [cardId])
-
-  useEffect(() => {
-    if (card) {
-      generateQRCode()
-    }
-  }, [card])
-
-  const fetchCard = async () => {
+  const fetchCard = useCallback(async () => {
     try {
       const res = await fetch(`/api/digital-cards/${cardId}`)
       if (res.ok) {
@@ -41,9 +31,9 @@ export default function CardQRCodePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [cardId])
 
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     if (!card) return
 
     const url = `${window.location.origin}/card/${card.slug}`
@@ -75,7 +65,17 @@ export default function CardQRCodePage() {
     } catch (error) {
       console.error('Error generating QR code:', error)
     }
-  }
+  }, [card])
+
+  useEffect(() => {
+    fetchCard()
+  }, [fetchCard])
+
+  useEffect(() => {
+    if (card) {
+      generateQRCode()
+    }
+  }, [card, generateQRCode])
 
   const handleDownloadQR = () => {
     if (!canvasRef.current || !card) return
@@ -157,6 +157,7 @@ export default function CardQRCodePage() {
           <CardContent className="flex flex-col items-center space-y-6">
             {qrDataUrl && (
               <div className="p-8 bg-white rounded-lg border-2 border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full" />
               </div>
             )}

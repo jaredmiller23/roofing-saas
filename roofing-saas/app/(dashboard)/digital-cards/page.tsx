@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Plus,
   Eye,
-  Download,
   QrCode,
   BarChart3,
   Globe,
@@ -150,9 +150,11 @@ export default function DigitalCardsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     {card.profile_photo_url ? (
-                      <img
+                      <Image
                         src={card.profile_photo_url}
                         alt={card.full_name}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 rounded-full border-4 border-white object-cover"
                       />
                     ) : (

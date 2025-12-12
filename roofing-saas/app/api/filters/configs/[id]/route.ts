@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 import type {
   FilterConfig,
   UpdateFilterConfigRequest,
@@ -73,7 +74,7 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating filter config:', error)
+      logger.error('Error updating filter config:', { error })
       return NextResponse.json(
         { error: 'Failed to update filter configuration' },
         { status: 500 }
@@ -93,7 +94,7 @@ export async function PATCH(
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in PATCH /api/filters/configs/:id:', error)
+    logger.error('Error in PATCH /api/filters/configs/:id:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -138,7 +139,7 @@ export async function DELETE(
       .eq('id', id)
 
     if (error) {
-      console.error('Error deleting filter config:', error)
+      logger.error('Error deleting filter config:', { error })
       return NextResponse.json(
         { error: 'Failed to delete filter configuration' },
         { status: 500 }
@@ -147,7 +148,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/filters/configs/:id:', error)
+    logger.error('Error in DELETE /api/filters/configs/:id:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

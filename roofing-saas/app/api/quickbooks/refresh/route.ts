@@ -3,6 +3,7 @@ import { getOAuthClient } from '@/lib/quickbooks/oauth-client'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 /**
  * Refresh QuickBooks OAuth tokens
@@ -69,19 +70,37 @@ export async function POST(request: NextRequest) {
     // Calculate new expiration time
     const tokenExpiresAt = new Date(Date.now() + newToken.expires_in * 1000)
 
-    // Update tokens in database
+    // Encrypt tokens before storing (security requirement)
+    const { data: encryptedAccessToken, error: encryptAccessError } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: newToken.access_token })
+
+    const { data: encryptedRefreshToken, error: encryptRefreshError } = await supabase
+      .rpc('encrypt_qb_token', { plaintext: newToken.refresh_token })
+
+    if (encryptAccessError || encryptRefreshError || !encryptedAccessToken || !encryptedRefreshToken) {
+      logger.error('Failed to encrypt QB tokens during refresh', {
+        encryptAccessError,
+        encryptRefreshError
+      })
+      return NextResponse.json(
+        { error: 'Failed to encrypt refreshed tokens' },
+        { status: 500 }
+      )
+    }
+
+    // Update encrypted tokens in database
     // IMPORTANT: Always update refresh_token as it rotates with each refresh
     const { error: updateError } = await supabase
       .from('quickbooks_tokens')
       .update({
-        access_token: newToken.access_token,
-        refresh_token: newToken.refresh_token,
+        access_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
         expires_at: tokenExpiresAt.toISOString(),
       })
       .eq('tenant_id', tenantId)
 
     if (updateError) {
-      console.error('Failed to update tokens:', updateError)
+      logger.error('Failed to update tokens in database', { error: updateError })
       return NextResponse.json(
         { error: 'Failed to store refreshed tokens' },
         { status: 500 }
@@ -94,7 +113,7 @@ export async function POST(request: NextRequest) {
     })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.error('Token refresh error:', error)
+    logger.error('Token refresh error', { error })
 
     // If refresh fails with auth error, delete the tokens (reauth required)
     if (error.authResponse?.status === 401) {

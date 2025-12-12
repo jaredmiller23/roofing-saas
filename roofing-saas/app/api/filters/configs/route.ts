@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
 import type {
   FilterConfig,
   GetFilterConfigsResponse,
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query
 
     if (error) {
-      console.error('Error fetching filter configs:', error)
+      logger.error('Error fetching filter configs:', { error })
       return NextResponse.json(
         { error: 'Failed to fetch filter configurations' },
         { status: 500 }
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in GET /api/filters/configs:', error)
+    logger.error('Error in GET /api/filters/configs:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating filter config:', error)
+      logger.error('Error creating filter config:', { error })
       return NextResponse.json(
         { error: 'Failed to create filter configuration' },
         { status: 500 }
@@ -165,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/filters/configs:', error)
+    logger.error('Error in POST /api/filters/configs:', { error })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
