@@ -96,6 +96,7 @@
     "components/contacts/*:*:bg-red-500",
     "components/contacts/*:*:text-green-",
     "components/contacts/*:*:text-red-",
+    "components/jobs/job-form.tsx:369:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

@@ -101,7 +101,7 @@ export function JobForm({ job }: JobFormProps) {
       )}
 
       {/* Job Details */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Briefcase className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Job Details</h2>
@@ -116,7 +116,7 @@ export function JobForm({ job }: JobFormProps) {
               type="text"
               value={formData.project_id}
               onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Enter project ID (optional)"
             />
             <p className="mt-1 text-xs text-muted-foreground">
@@ -132,7 +132,7 @@ export function JobForm({ job }: JobFormProps) {
               <select
                 value={formData.job_type}
                 onChange={(e) => setFormData({ ...formData, job_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="roof_replacement">Roof Replacement</option>
                 <option value="roof_repair">Roof Repair</option>
@@ -150,7 +150,7 @@ export function JobForm({ job }: JobFormProps) {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="scheduled">Scheduled</option>
                 <option value="in_progress">In Progress</option>
@@ -169,7 +169,7 @@ export function JobForm({ job }: JobFormProps) {
               value={formData.scope_of_work}
               onChange={(e) => setFormData({ ...formData, scope_of_work: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Describe the work to be done..."
             />
           </div>
@@ -177,7 +177,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Scheduling */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Scheduling</h2>
@@ -193,7 +193,7 @@ export function JobForm({ job }: JobFormProps) {
                 type="date"
                 value={formData.scheduled_date}
                 onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -205,7 +205,7 @@ export function JobForm({ job }: JobFormProps) {
                 type="time"
                 value={formData.scheduled_start_time}
                 onChange={(e) => setFormData({ ...formData, scheduled_start_time: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -217,7 +217,7 @@ export function JobForm({ job }: JobFormProps) {
                 type="time"
                 value={formData.scheduled_end_time}
                 onChange={(e) => setFormData({ ...formData, scheduled_end_time: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -232,7 +232,7 @@ export function JobForm({ job }: JobFormProps) {
                 step="0.5"
                 value={formData.estimated_duration_hours}
                 onChange={(e) => setFormData({ ...formData, estimated_duration_hours: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="8.5"
               />
             </div>
@@ -247,7 +247,7 @@ export function JobForm({ job }: JobFormProps) {
                 max="100"
                 value={formData.completion_percentage}
                 onChange={(e) => setFormData({ ...formData, completion_percentage: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="0"
               />
             </div>
@@ -256,7 +256,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Cost Tracking */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <DollarSign className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Cost Tracking</h2>
@@ -272,7 +272,7 @@ export function JobForm({ job }: JobFormProps) {
               step="0.01"
               value={formData.labor_cost}
               onChange={(e) => setFormData({ ...formData, labor_cost: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="0.00"
             />
           </div>
@@ -286,7 +286,7 @@ export function JobForm({ job }: JobFormProps) {
               step="0.01"
               value={formData.material_cost}
               onChange={(e) => setFormData({ ...formData, material_cost: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="0.00"
             />
           </div>
@@ -300,7 +300,7 @@ export function JobForm({ job }: JobFormProps) {
               step="0.01"
               value={formData.equipment_cost}
               onChange={(e) => setFormData({ ...formData, equipment_cost: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="0.00"
             />
           </div>
@@ -314,7 +314,7 @@ export function JobForm({ job }: JobFormProps) {
               step="0.01"
               value={formData.other_costs}
               onChange={(e) => setFormData({ ...formData, other_costs: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="0.00"
             />
           </div>
@@ -322,7 +322,7 @@ export function JobForm({ job }: JobFormProps) {
       </div>
 
       {/* Notes */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <h2 className="text-lg font-semibold text-foreground mb-6">Notes</h2>
 
         <div className="space-y-6">
@@ -334,7 +334,7 @@ export function JobForm({ job }: JobFormProps) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="General job notes..."
             />
           </div>
@@ -347,7 +347,7 @@ export function JobForm({ job }: JobFormProps) {
               value={formData.internal_notes}
               onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Internal notes (not visible to customers)..."
             />
           </div>
@@ -359,14 +359,14 @@ export function JobForm({ job }: JobFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
+          className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? 'Saving...' : job ? 'Update Job' : 'Schedule Job'}
         </button>
