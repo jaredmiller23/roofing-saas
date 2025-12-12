@@ -56,11 +56,11 @@ export default async function ProjectFileDetailPage({
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 h-16 w-16 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="flex-shrink-0 h-16 w-16 bg-primary/10 rounded-lg flex items-center justify-center">
               {file.file_type === 'photo' ? (
-                <ImageIcon className="h-8 w-8 text-blue-600" />
+                <ImageIcon className="h-8 w-8 text-primary" />
               ) : (
-                <FileText className="h-8 w-8 text-blue-600" />
+                <FileText className="h-8 w-8 text-primary" />
               )}
             </div>
             <div>
@@ -76,13 +76,13 @@ export default async function ProjectFileDetailPage({
           <div className="flex gap-2">
             <Link
               href={`/project-files/${file.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               Edit
             </Link>
             <Link
               href="/project-files"
-              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>
@@ -96,7 +96,7 @@ export default async function ProjectFileDetailPage({
             href={file.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-primary hover:text-primary/80 underline"
           >
             {file.file_url}
           </a>
