@@ -37,7 +37,7 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
   if (message.role === 'system') {
     return (
       <div className="flex justify-center my-2">
-        <div className="px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium flex items-center gap-1.5">
+        <div className="px-3 py-1.5 bg-secondary/10 text-secondary rounded-full text-xs font-medium flex items-center gap-1.5">
           <AlertCircle className="h-3 w-3" />
           {message.content}
         </div>
@@ -49,15 +49,15 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
   if (message.role === 'function' || message.function_call) {
     return (
       <div className="flex justify-center my-2">
-        <div className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm max-w-md">
-          <div className="flex items-center gap-2 text-blue-900">
+        <div className="px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg text-sm max-w-md">
+          <div className="flex items-center gap-2 text-primary">
             <span className="font-semibold">Function:</span>
-            <code className="text-xs bg-blue-100 px-2 py-0.5 rounded">
+            <code className="text-xs bg-primary/20 px-2 py-0.5 rounded">
               {message.function_call?.name || 'unknown'}
             </code>
           </div>
           {message.function_call?.result ? (
-            <div className="mt-1 text-xs text-blue-700">
+            <div className="mt-1 text-xs text-primary/80">
               Result: {typeof message.function_call.result === 'string'
                 ? message.function_call.result
                 : JSON.stringify(message.function_call.result).slice(0, 100)}
@@ -80,13 +80,13 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
         <div
           className={`px-4 py-2.5 rounded-2xl ${
             isUser
-              ? 'bg-blue-600 text-white rounded-br-sm'
+              ? 'bg-primary text-white rounded-br-sm'
               : 'bg-muted text-foreground rounded-bl-sm'
           } ${message.isStreaming ? 'animate-pulse' : ''} ${message.error ? 'border-2 border-red-500' : ''}`}
         >
           {/* Voice indicator */}
           {isVoice && (
-            <div className={`flex items-center gap-1 mb-1 text-xs ${isUser ? 'text-blue-100' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-1 mb-1 text-xs ${isUser ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
               <Mic className="h-3 w-3" />
               <span>Voice message</span>
               {message.metadata?.provider && (

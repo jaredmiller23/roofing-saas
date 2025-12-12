@@ -194,8 +194,8 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
         )}
 
         {/* Methodology Note */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-800">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg">
+          <p className="text-xs text-primary">
             <strong>Collection Rates:</strong> Current AR: 80% month 1, 15% month 2, 5% month 3 |
             30-60 days: 60% month 1, 30% month 2, 10% month 3 |
             60-90 days: 50% month 2, 30% month 3 |
