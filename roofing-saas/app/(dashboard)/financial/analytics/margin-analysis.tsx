@@ -85,7 +85,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
 
   const getMarginColor = (margin: number) => {
     if (margin >= 30) return 'text-green-600'
-    if (margin >= 20) return 'text-blue-600'
+    if (margin >= 20) return 'text-primary'
     if (margin >= 10) return 'text-yellow-600'
     if (margin >= 0) return 'text-orange-600'
     return 'text-red-600'
@@ -93,7 +93,7 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
 
   const getMarginBgColor = (margin: number) => {
     if (margin >= 30) return 'bg-green-100'
-    if (margin >= 20) return 'bg-blue-100'
+    if (margin >= 20) return 'bg-primary/10'
     if (margin >= 10) return 'bg-yellow-100'
     if (margin >= 0) return 'bg-orange-100'
     return 'bg-red-100'
@@ -203,9 +203,9 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
         </div>
 
         {/* Insights */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm font-semibold text-blue-900 mb-2">Key Insights</p>
-          <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg">
+          <p className="text-sm font-semibold text-primary mb-2">Key Insights</p>
+          <ul className="text-xs text-primary space-y-1 list-disc list-inside">
             {analysis.marginByType.length > 0 && (
               <li>
                 <strong>{analysis.marginByType[0].type}</strong> jobs have the highest margin at{' '}
