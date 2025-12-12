@@ -155,6 +155,8 @@
     "components/events/events-table.tsx:147:text-white",
     "app/(dashboard)/territories/[id]/page.tsx:191:text-white",
     "components/project-files/project-files-table.tsx:145:text-white",
+    "components/voice/VoiceSession.tsx:569:text-white",
+    "components/voice/VoiceSession.tsx:592:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

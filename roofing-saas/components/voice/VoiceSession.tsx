@@ -566,7 +566,7 @@ export function VoiceSession({
         {status === 'idle' && (
           <button
             onClick={startSession}
-            className="flex items-center px-6 py-4 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors font-medium text-base md:text-sm touch-manipulation"
+            className="flex items-center px-6 py-4 md:py-3 bg-primary text-white rounded-lg hover:bg-primary/90 active:bg-primary/80 transition-colors font-medium text-base md:text-sm touch-manipulation"
           >
             <Mic className="w-5 h-5 md:w-5 md:h-5 mr-2" />
             Start Voice Assistant
@@ -580,7 +580,7 @@ export function VoiceSession({
               className={`p-5 md:p-4 rounded-full transition-colors touch-manipulation ${
                 isMuted
                   ? 'bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300'
-                  : 'bg-gray-100 text-muted-foreground hover:bg-muted active:bg-gray-300'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80 active:bg-muted/70'
               }`}
               aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             >
@@ -606,7 +606,7 @@ export function VoiceSession({
           </p>
           <p className="mt-2">You can create contacts, add notes, search your CRM, log door knocks, and update pipeline stages using voice commands.</p>
           {isMobileDevice() && (
-            <p className="mt-2 text-xs text-blue-600">
+            <p className="mt-2 text-xs text-primary">
               📱 Mobile optimized for field use
             </p>
           )}
@@ -618,7 +618,7 @@ export function VoiceSession({
           <p className="font-medium">🎤 Listening... You can now speak to your assistant.</p>
           <p className="mt-2 text-xs md:text-sm">Try: &quot;Log a door knock at 123 Main St, disposition interested&quot;</p>
           {isMobileDevice() && (
-            <p className="mt-2 text-xs text-blue-600">
+            <p className="mt-2 text-xs text-primary">
               Optimized for {isIOSDevice() ? 'iOS' : 'Android'} audio
             </p>
           )}
@@ -629,7 +629,7 @@ export function VoiceSession({
       {conversationHistory.length > 0 && (
         <div className="w-full max-w-2xl mt-6">
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">Conversation Transcript</h3>
-          <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto space-y-3">
+          <div className="bg-muted/30 rounded-lg p-4 max-h-96 overflow-y-auto space-y-3">
             {conversationHistory.map((message) => (
               <div
                 key={message.id}
