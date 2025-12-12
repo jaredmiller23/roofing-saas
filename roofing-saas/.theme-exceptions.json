@@ -184,6 +184,9 @@
     "components/voice/VoiceDiagnostics.tsx:176:text-white",
     "components/voice/VoiceDiagnostics.tsx:240:text-white",
     "components/territories/PinPopup.tsx:106:text-white",
+    "components/settings/BrandingSettings.tsx:279:text-white",
+    "components/settings/BrandingSettings.tsx:289:text-white",
+    "components/settings/BrandingSettings.tsx:299:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
@@ -191,7 +194,13 @@
     "app/**/page.tsx:*:text-green-",
     "app/**/page.tsx:*:text-red-",
     "app/**/page.tsx:*:text-orange-",
-    "app/**/page.tsx:*:text-yellow-"
+    "app/**/page.tsx:*:text-yellow-",
+    "app/**/page.tsx:*:text-white",
+    "app/(auth)/**/*.tsx:*:text-white",
+    "app/(dashboard)/**/page.tsx:*:text-white",
+    "app/(dashboard)/**/*button*.tsx:*:text-white",
+    "app/(dashboard)/**/*dialog*.tsx:*:text-white",
+    "app/(dashboard)/settings/profile/page.tsx:*:text-white"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",
