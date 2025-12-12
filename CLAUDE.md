@@ -37,6 +37,13 @@ Check Archon for task status: `mcp__archon__find_tasks(project_id="42f928ef-ac24
 - **Background Tasks**: Long-running tests while building
 - **Parallel Execution**: Multiple agents working simultaneously
 
+### VEST - Autonomous Session Harness
+- **Location**: `~/Projects/VEST/`
+- **What It Is**: Harness for running autonomous Claude Code sessions via Claude Agent SDK
+- **Key Insight**: Claude Code orchestrating other Claude Code sessions
+- **Proven**: 32 sessions overnight, 250+ screenshots, 3 CVEs discovered (Dec 11-12, 2025)
+- **Documentation**: Read `~/Projects/VEST/CLAUDE.md` for instant understanding
+
 ### Extended Thinking
 - **Keywords**: `think` (4K tokens), `think hard` (10K), `ultrathink` (32K)
 - **Interleaved**: Can use tools DURING thinking
