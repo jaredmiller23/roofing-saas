@@ -152,6 +152,7 @@
     "app/(dashboard)/tasks/page.tsx:35:text-white",
     "app/(dashboard)/tasks/[id]/page.tsx:122:text-white",
     "app/(dashboard)/voice/page.tsx:77:text-white",
+    "components/events/events-table.tsx:147:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

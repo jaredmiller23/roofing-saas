@@ -39,7 +39,7 @@ export default async function ProjectFilesPage({
 
           <Link
             href="/project-files/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
           >
             + Upload File
           </Link>
