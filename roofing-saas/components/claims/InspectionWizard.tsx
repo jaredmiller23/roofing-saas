@@ -183,7 +183,7 @@ export function InspectionWizard({
   const currentArea = selectedAreas[state.currentCaptureIndex]
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-muted">
       {/* Progress header */}
       <div className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3">
@@ -203,7 +203,7 @@ export function InspectionWizard({
           </div>
           <div className="w-full bg-muted rounded-full h-1">
             <div
-              className="bg-blue-600 h-1 rounded-full transition-all duration-300"
+              className="bg-primary h-1 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -248,7 +248,7 @@ export function InspectionWizard({
             />
             <button
               onClick={goBack}
-              className="w-full py-2 border border-gray-300 text-muted-foreground rounded-lg"
+              className="w-full py-2 border border-border text-muted-foreground rounded-lg"
             >
               Back
             </button>
@@ -302,7 +302,7 @@ export function InspectionWizard({
             <div className="flex gap-2">
               <button
                 onClick={goBack}
-                className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+                className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
               >
                 Back
               </button>
