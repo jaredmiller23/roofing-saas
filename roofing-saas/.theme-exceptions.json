@@ -182,6 +182,7 @@
     "components/photos/PhotoViewer.tsx:277:text-white",
     "components/voice/VoiceDiagnostics.tsx:176:text-white",
     "components/voice/VoiceDiagnostics.tsx:240:text-white",
+    "components/territories/PinPopup.tsx:106:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",

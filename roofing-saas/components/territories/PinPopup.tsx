@@ -143,7 +143,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
                   type="checkbox"
                   checked={createContact}
                   onChange={(e) => setCreateContact(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 />
                 <span className="text-sm font-medium text-foreground">
                   Create lead in CRM
@@ -227,7 +227,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gray-50 px-4 py-3 flex gap-3 border-t">
+        <div className="sticky bottom-0 bg-muted/30 px-4 py-3 flex gap-3 border-t">
           {isEditMode && onDelete && (
             <Button
               variant="destructive"
