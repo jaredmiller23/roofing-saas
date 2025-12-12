@@ -109,7 +109,7 @@ export function GeneralSettings() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -171,7 +171,7 @@ export function GeneralSettings() {
             <select
               value={settings.timezone}
               onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
@@ -185,7 +185,7 @@ export function GeneralSettings() {
             <select
               value={settings.date_format}
               onChange={(e) => setSettings({ ...settings, date_format: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="MM/DD/YYYY">MM/DD/YYYY</option>
               <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -199,7 +199,7 @@ export function GeneralSettings() {
             <select
               value={settings.time_format}
               onChange={(e) => setSettings({ ...settings, time_format: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="12h">12-hour (AM/PM)</option>
               <option value="24h">24-hour</option>
@@ -212,7 +212,7 @@ export function GeneralSettings() {
             <select
               value={settings.currency}
               onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -241,7 +241,7 @@ export function GeneralSettings() {
                         [day]: { ...settings.business_hours[day], enabled: e.target.checked }
                       }
                     })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                    className="h-4 w-4 text-primary focus:ring-primary border-border rounded mr-2"
                   />
                   <span className="text-sm font-medium text-muted-foreground capitalize">{day}</span>
                 </label>
@@ -289,7 +289,7 @@ export function GeneralSettings() {
               type="checkbox"
               checked={settings.email_notifications_enabled}
               onChange={(e) => setSettings({ ...settings, email_notifications_enabled: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <span className="ml-2 text-sm text-muted-foreground">Email Notifications</span>
           </label>
@@ -298,7 +298,7 @@ export function GeneralSettings() {
               type="checkbox"
               checked={settings.sms_notifications_enabled}
               onChange={(e) => setSettings({ ...settings, sms_notifications_enabled: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <span className="ml-2 text-sm text-muted-foreground">SMS Notifications</span>
           </label>
@@ -307,7 +307,7 @@ export function GeneralSettings() {
               type="checkbox"
               checked={settings.push_notifications_enabled}
               onChange={(e) => setSettings({ ...settings, push_notifications_enabled: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <span className="ml-2 text-sm text-muted-foreground">Push Notifications</span>
           </label>
@@ -319,7 +319,7 @@ export function GeneralSettings() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-primary hover:bg-primary/90"
         >
           {saving ? 'Saving...' : 'Save Settings'}
         </Button>
