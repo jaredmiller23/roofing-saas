@@ -305,7 +305,7 @@ export function TaskBoard() {
                           </span>
                         ))}
                         {task.tags.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded text-xs">
+                          <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-xs">
                             +{task.tags.length - 3}
                           </span>
                         )}
