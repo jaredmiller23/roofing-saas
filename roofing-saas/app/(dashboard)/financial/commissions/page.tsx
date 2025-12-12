@@ -77,7 +77,7 @@ export default async function CommissionsPage() {
             <div>
               <Link
                 href="/financial/reports"
-                className="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block"
+                className="text-sm text-primary hover:text-primary/80 mb-2 inline-block"
               >
                 ← Back to Reports
               </Link>
@@ -87,7 +87,7 @@ export default async function CommissionsPage() {
             <div className="flex gap-3">
               <Link
                 href="/financial/commissions/plans"
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                className="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90"
               >
                 Manage Plans
               </Link>
@@ -99,10 +99,10 @@ export default async function CommissionsPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Total Earned Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-primary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Total Earned</h3>
-              <DollarSign className="h-5 w-5 text-blue-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalEarned)}</p>
             <p className="text-xs text-muted-foreground mt-1">All time</p>
@@ -129,10 +129,10 @@ export default async function CommissionsPage() {
           </div>
 
           {/* Active Users Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-secondary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Active Users</h3>
-              <Users className="h-5 w-5 text-purple-500" />
+              <Users className="h-5 w-5 text-secondary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{totalUsers}</p>
             <p className="text-xs text-muted-foreground mt-1">With commissions</p>
