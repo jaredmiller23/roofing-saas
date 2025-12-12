@@ -144,6 +144,7 @@
     "app/(dashboard)/project-files/[id]/page.tsx:79:text-white",
     "app/(dashboard)/signatures/new/page.tsx:138:text-white",
     "app/(dashboard)/signatures/page.tsx:124:text-white",
+    "app/(dashboard)/tasks/page.tsx:35:text-white",
     "app/(dashboard)/voice/page.tsx:77:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",

@@ -31,7 +31,7 @@ export default async function TasksPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
+              <div className="p-2 bg-primary rounded-lg">
                 <CheckCircle2 className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-foreground">Tasks</h1>
@@ -43,7 +43,7 @@ export default async function TasksPage() {
                 </Button>
               </Link>
               <Link href="/tasks/new">
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-primary hover:bg-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
                   New Task
                 </Button>
