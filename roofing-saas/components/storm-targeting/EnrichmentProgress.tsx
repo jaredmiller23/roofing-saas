@@ -330,7 +330,7 @@ export function EnrichmentProgress({
           {/* Cached */}
           <div className="space-y-1">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-blue-600" />
+              <TrendingUp className="h-3 w-3 text-primary" />
               Cached
             </div>
             <p className="text-2xl font-bold">{status.progress.cached}</p>
