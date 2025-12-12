@@ -28,7 +28,7 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/50 backdrop-blur mb-8 animate-fade-in-up">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-glow" />
+            <span className="w-2 h-2 rounded-full bg-cyan animate-pulse-glow" />
             <span className="text-sm text-muted-foreground">
               Now with AI Voice Assistant
             </span>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-cyan flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -259,36 +259,36 @@ const features = [
     title: 'Contact Management',
     description: 'Keep all your leads and customers organized with smart tagging, notes, and complete interaction history.',
     icon: Users,
-    iconBg: 'bg-teal-500/10',
-    iconColor: 'text-teal-500',
+    iconBg: 'bg-secondary/10',
+    iconColor: 'text-secondary',
   },
   {
     title: 'Sales Pipeline',
     description: 'Visual Kanban board to track deals from first contact to closed job. Never lose a lead again.',
     icon: BarChart3,
-    iconBg: 'bg-orange-500/10',
-    iconColor: 'text-orange-500',
+    iconBg: 'bg-terracotta/10',
+    iconColor: 'text-terracotta',
   },
   {
     title: 'Communication Hub',
     description: 'Send texts, emails, and log calls all from one place. Automated follow-ups keep leads warm.',
     icon: MessageSquare,
-    iconBg: 'bg-pink-500/10',
-    iconColor: 'text-pink-500',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
   },
   {
     title: 'Territory Mapping',
     description: 'Plan door-knocking routes, drop pins, and track field activity with our mobile-first mapping tools.',
     icon: MapPin,
-    iconBg: 'bg-green-500/10',
-    iconColor: 'text-green-500',
+    iconBg: 'bg-cyan/10',
+    iconColor: 'text-cyan',
   },
   {
     title: 'E-Signatures',
     description: 'Send contracts and get them signed digitally. Legally binding and professionally formatted.',
     icon: FileSignature,
-    iconBg: 'bg-blue-500/10',
-    iconColor: 'text-blue-500',
+    iconBg: 'bg-slate/10',
+    iconColor: 'text-slate',
   },
   {
     title: 'AI Voice Assistant',
