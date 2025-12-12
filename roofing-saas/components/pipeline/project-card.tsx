@@ -215,7 +215,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       <div className="flex items-start justify-between mb-2">
         <Link
           href={`/projects/${project.id}`}
-          className="font-semibold text-foreground hover:text-blue-600 flex-1"
+          className="font-semibold text-foreground hover:text-primary flex-1"
           onClick={(e) => e.stopPropagation()}
         >
           {project.name || 'Untitled Project'}
@@ -233,7 +233,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         <User className="h-3.5 w-3.5" />
         <Link
           href={`/contacts/${project.contact_id}`}
-          className="hover:text-blue-600"
+          className="hover:text-primary"
           onClick={(e) => e.stopPropagation()}
         >
           {contactName}
@@ -355,7 +355,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           >
             {markingLost ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent" />
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-muted-foreground border-t-transparent" />
                 Updating...
               </>
             ) : (
@@ -374,7 +374,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           <button
             onClick={handleReactivate}
             disabled={reactivating}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white rounded-md text-sm font-medium transition-colors"
           >
             {reactivating ? (
               <>
