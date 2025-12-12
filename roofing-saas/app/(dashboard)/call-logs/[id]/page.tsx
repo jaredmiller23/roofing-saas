@@ -71,7 +71,7 @@ export default async function CallLogDetailPage({
             </div>
             <Link
               href={`/call-logs/${call.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
             >
               Edit
             </Link>
@@ -90,9 +90,9 @@ export default async function CallLogDetailPage({
               <label className="block text-sm font-medium text-muted-foreground mb-1">Direction</label>
               <div className="flex items-center gap-2">
                 {call.direction === 'inbound' ? (
-                  <PhoneIncoming className="h-5 w-5 text-blue-600" />
+                  <PhoneIncoming className="h-5 w-5 text-primary" />
                 ) : (
-                  <PhoneOutgoing className="h-5 w-5 text-green-600" />
+                  <PhoneOutgoing className="h-5 w-5 text-secondary" />
                 )}
                 <span className="text-foreground capitalize">{call.direction}</span>
               </div>
@@ -154,7 +154,7 @@ export default async function CallLogDetailPage({
         <div className="mt-6 flex justify-end gap-3">
           <Link
             href="/call-logs"
-            className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background"
+            className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-background"
           >
             Back to Call Logs
           </Link>
