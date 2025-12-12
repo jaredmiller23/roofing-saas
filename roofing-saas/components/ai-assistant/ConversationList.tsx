@@ -81,7 +81,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
   return (
     <div className={`flex flex-col h-full bg-card ${className}`}>
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200">
+      <div className="flex-shrink-0 px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-foreground">Conversations</h3>
           {onClose && (
@@ -103,14 +103,14 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search conversations..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
 
         {/* New conversation button */}
         <button
           onClick={handleNewConversation}
-          className="w-full mt-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-3 px-3 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <Plus className="h-4 w-4" />
           New Conversation
@@ -121,7 +121,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
       <div className="flex-1 overflow-y-auto">
         {isLoadingConversations ? (
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+            <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-center px-4">
@@ -134,7 +134,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {conversations.map((conversation) => {
               const isActive = conversation.id === activeConversationId
               const isDeleting = deletingId === conversation.id
@@ -145,12 +145,12 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                   onClick={() => handleSelectConversation(conversation.id)}
                   disabled={isDeleting}
                   className={`w-full px-4 py-3 text-left hover:bg-accent transition-colors group relative ${
-                    isActive ? 'bg-blue-50' : ''
+                    isActive ? 'bg-primary/10' : ''
                   } ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {/* Active indicator */}
                   {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                   )}
 
                   {/* Content */}
@@ -161,7 +161,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
                         <MessageSquare className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                         <h4
                           className={`text-sm font-medium truncate ${
-                            isActive ? 'text-blue-900' : 'text-foreground'
+                            isActive ? 'text-primary' : 'text-foreground'
                           }`}
                         >
                           {conversation.title || 'Untitled conversation'}
@@ -209,7 +209,7 @@ export function ConversationList({ className = '', onClose }: ConversationListPr
       </div>
 
       {/* Footer info */}
-      <div className="flex-shrink-0 px-4 py-2 border-t border-gray-200 bg-gray-50">
+      <div className="flex-shrink-0 px-4 py-2 border-t border-border bg-muted/30">
         <p className="text-xs text-muted-foreground text-center">
           {conversations.length} conversation{conversations.length === 1 ? '' : 's'}
         </p>
