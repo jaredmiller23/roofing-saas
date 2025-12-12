@@ -156,7 +156,7 @@ export default function CardQRCodePage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
             {qrDataUrl && (
-              <div className="p-8 bg-white rounded-lg border-2 border">
+              <div className="p-8 bg-card rounded-lg border-2 border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full" />
               </div>

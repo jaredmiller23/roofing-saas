@@ -263,7 +263,7 @@ export default function ClaimsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>New</CardDescription>
-            <CardTitle className="text-3xl text-blue-600">{stats.new}</CardTitle>
+            <CardTitle className="text-3xl text-primary">{stats.new}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
