@@ -134,7 +134,7 @@ export default function NewSignatureDocumentPage() {
             Back to Signatures
           </Button>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-600 rounded-lg">
+            <div className="p-2 bg-primary rounded-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">Create Signature Document</h1>
@@ -187,7 +187,7 @@ export default function NewSignatureDocumentPage() {
                 id="document-type"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full mt-2 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 required
               >
                 <option value="contract">Contract</option>
@@ -205,7 +205,7 @@ export default function NewSignatureDocumentPage() {
                 id="project"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full mt-2 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">No project</option>
                 {projects.map((project) => (
@@ -223,7 +223,7 @@ export default function NewSignatureDocumentPage() {
                 id="contact"
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
-                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full mt-2 px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">No contact</option>
                 {contacts.map((contact) => (
@@ -243,7 +243,7 @@ export default function NewSignatureDocumentPage() {
                   id="customer-signature"
                   checked={requiresCustomerSignature}
                   onChange={(e) => setRequiresCustomerSignature(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
                 />
                 <label htmlFor="customer-signature" className="text-sm text-muted-foreground">
                   Requires customer signature
@@ -255,7 +255,7 @@ export default function NewSignatureDocumentPage() {
                   id="company-signature"
                   checked={requiresCompanySignature}
                   onChange={(e) => setRequiresCompanySignature(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
                 />
                 <label htmlFor="company-signature" className="text-sm text-muted-foreground">
                   Requires company signature
@@ -294,7 +294,7 @@ export default function NewSignatureDocumentPage() {
             <Button
               type="submit"
               disabled={isLoading || !title}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1 bg-primary hover:bg-primary/90"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? 'Creating...' : 'Create Document'}
@@ -303,8 +303,8 @@ export default function NewSignatureDocumentPage() {
         </form>
 
         {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-900">
+        <div className="mt-6 bg-primary/10 border border-primary/30 rounded-lg p-4">
+          <p className="text-sm text-primary">
             <strong>Next steps after creating:</strong> You can upload a PDF document, add content from a template,
             or use our document builder. Once ready, send the document to recipients for signature.
           </p>

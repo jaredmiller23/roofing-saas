@@ -130,6 +130,7 @@
     "app/(dashboard)/jobs/[id]/page.tsx:95:text-white",
     "app/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx:253:text-white",
     "app/(dashboard)/project-files/[id]/page.tsx:79:text-white",
+    "app/(dashboard)/signatures/new/page.tsx:138:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
