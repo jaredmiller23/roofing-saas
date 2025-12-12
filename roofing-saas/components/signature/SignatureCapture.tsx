@@ -168,7 +168,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
           <div className="relative">
             <canvas
               ref={canvasRef}
-              className="border-2 border-gray-300 rounded-lg w-full cursor-crosshair bg-card"
+              className="border-2 border-border rounded-lg w-full cursor-crosshair bg-card"
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -208,7 +208,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {typedSignature && (
-            <div className="border-2 border-gray-300 rounded-lg bg-card p-4">
+            <div className="border-2 border-border rounded-lg bg-card p-4">
               <canvas ref={typeCanvasRef} className="w-full" />
             </div>
           )}
@@ -229,7 +229,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {uploadedImage && (
-            <div className="border-2 border-gray-300 rounded-lg bg-card p-4 h-56 relative">
+            <div className="border-2 border-border rounded-lg bg-card p-4 h-56 relative">
               <Image
                 src={uploadedImage}
                 alt="Uploaded signature"
@@ -259,7 +259,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
         <Button
           type="button"
           onClick={captureSignature}
-          className="flex-1 bg-blue-600 hover:bg-blue-700"
+          className="flex-1 bg-primary hover:bg-primary/90"
           disabled={
             (activeTab === 'draw' && !canvasRef.current) ||
             (activeTab === 'type' && !typedSignature) ||
