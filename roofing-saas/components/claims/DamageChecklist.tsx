@@ -45,14 +45,14 @@ export function DamageChecklist({
                   'p-3 rounded-lg border-2 text-left transition-all',
                   area.selected
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-gray-200 hover:border-border'
                 )}
               >
                 <div className="flex items-center gap-2">
                   <div
                     className={cn(
                       'w-5 h-5 rounded flex items-center justify-center',
-                      area.selected ? 'bg-blue-500' : 'border border-gray-300'
+                      area.selected ? 'bg-blue-500' : 'border border-border'
                     )}
                   >
                     {area.selected && (
@@ -82,22 +82,22 @@ export function DamageChecklist({
           <div className="flex gap-2">
             <button
               onClick={() => areas.forEach(a => !a.selected && onToggle(a.type))}
-              className="flex-1 py-2 text-sm border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+              className="flex-1 py-2 text-sm border border-border text-muted-foreground rounded-lg hover:bg-accent"
             >
               Select All
             </button>
             <button
               onClick={() => areas.forEach(a => a.selected && onToggle(a.type))}
-              className="flex-1 py-2 text-sm border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+              className="flex-1 py-2 text-sm border border-border text-muted-foreground rounded-lg hover:bg-accent"
             >
               Clear All
             </button>
           </div>
 
           {/* Selection summary */}
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="bg-muted/30 rounded-lg p-3 text-center">
             <span className="text-muted-foreground">
-              <span className="font-medium text-blue-600">{selectedCount}</span> area
+              <span className="font-medium text-primary">{selectedCount}</span> area
               {selectedCount !== 1 ? 's' : ''} selected
             </span>
             {selectedCount === 0 && (
@@ -109,7 +109,7 @@ export function DamageChecklist({
           <div className="flex gap-2">
             <button
               onClick={onBack}
-              className="px-4 py-3 border border-gray-300 text-muted-foreground rounded-lg hover:bg-accent"
+              className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
             >
               Back
             </button>

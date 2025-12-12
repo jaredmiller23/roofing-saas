@@ -171,6 +171,7 @@
     "components/pipeline/project-card.tsx:377:text-white",
     "components/call-logs/audio-player.tsx:228:text-white",
     "components/call-logs/audio-player.tsx:254:text-white",
+    "components/claims/DamageChecklist.tsx:59:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
