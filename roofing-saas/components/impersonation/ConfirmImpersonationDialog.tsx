@@ -88,12 +88,12 @@ export function ConfirmImpersonationDialog({
 
         <div className="space-y-4 py-4">
           {/* User details */}
-          <div className="rounded-lg bg-gray-50 p-4 space-y-2">
+          <div className="rounded-lg bg-muted/30 p-4 space-y-2">
             <div className="text-sm text-muted-foreground">You will impersonate:</div>
             <div className="font-semibold text-lg">{getUserDisplayName(user)}</div>
             <div className="text-sm text-muted-foreground">{user.email}</div>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                 {user.role}
               </span>
             </div>
