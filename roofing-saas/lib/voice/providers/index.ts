@@ -6,10 +6,12 @@
 import { VoiceProvider, VoiceProviderType } from './types'
 import { OpenAIProvider } from './openai-provider'
 import { ElevenLabsProvider } from './elevenlabs-provider'
+import { GeminiProvider } from './gemini-provider'
 
 export * from './types'
 export { OpenAIProvider } from './openai-provider'
 export { ElevenLabsProvider } from './elevenlabs-provider'
+export { GeminiProvider } from './gemini-provider'
 
 /**
  * Create a voice provider instance
@@ -20,6 +22,8 @@ export function createVoiceProvider(type: VoiceProviderType): VoiceProvider {
       return new OpenAIProvider()
     case 'elevenlabs':
       return new ElevenLabsProvider()
+    case 'gemini':
+      return new GeminiProvider()
     default:
       throw new Error(`Unknown voice provider: ${type}`)
   }
@@ -56,6 +60,20 @@ export function getAvailableProviders() {
       ],
       status: 'ready' as const,
       note: 'Requires ELEVENLABS_API_KEY and NEXT_PUBLIC_ELEVENLABS_AGENT_ID in environment',
+    },
+    {
+      type: 'gemini' as const,
+      name: 'Google Gemini 2.0 Live API',
+      description: 'Most cost-effective option with 83% savings vs OpenAI',
+      costPerMinute: 0.05,
+      features: [
+        'Native audio output (24kHz)',
+        '30 HD voices in 24 languages',
+        'Function calling support',
+        'Low latency WebSocket streaming',
+      ],
+      status: 'ready' as const,
+      note: 'Requires GOOGLE_GEMINI_API_KEY or GEMINI_API_KEY in environment',
     },
   ]
 }

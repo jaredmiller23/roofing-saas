@@ -1,9 +1,9 @@
 /**
  * Voice Provider Abstraction
- * Allows switching between OpenAI Realtime API and ElevenLabs Conversational AI
+ * Allows switching between OpenAI Realtime API, ElevenLabs Conversational AI, and Google Gemini Live API
  */
 
-export type VoiceProviderType = 'openai' | 'elevenlabs'
+export type VoiceProviderType = 'openai' | 'elevenlabs' | 'gemini'
 
 export interface VoiceProviderConfig {
   provider: VoiceProviderType
@@ -48,6 +48,7 @@ export interface SessionResponse {
   ephemeral_token: string
   voice_id?: string // For ElevenLabs
   agent_id?: string // For ElevenLabs
+  model?: string // For Gemini (e.g., 'gemini-2.5-flash-native-audio-preview-09-2025')
   config?: {
     instructions?: string
     voice?: string
