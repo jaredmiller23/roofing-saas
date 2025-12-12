@@ -208,7 +208,7 @@ export default function TerritoriesPage() {
       <CardContent>
         {knocksLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : knocksError ? (
           <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
@@ -258,7 +258,7 @@ export default function TerritoriesPage() {
                     {knock.contact_created && knock.contact_id && (
                       <Link
                         href={`/contacts/${knock.contact_id}`}
-                        className="text-xs text-blue-600 hover:text-blue-700 mt-1 inline-block"
+                        className="text-xs text-primary hover:text-primary/90 mt-1 inline-block"
                       >
                         View Contact →
                       </Link>
@@ -315,7 +315,7 @@ export default function TerritoriesPage() {
           />
         </div>
       ) : (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+        <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
           <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
           <p className="text-muted-foreground font-medium">No territory selected</p>
           <p className="text-sm text-muted-foreground mt-1">
