@@ -217,7 +217,7 @@ export function QuickBooksIntegration() {
         )}
 
         {/* Connection Status */}
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
           <div className="flex items-center gap-3">
             {status?.connected ? (
               <>
@@ -320,15 +320,15 @@ export function QuickBooksIntegration() {
 
             {/* Sync Progress */}
             {syncStatus.syncing && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
-                <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
-                <span className="text-sm text-blue-900">{syncStatus.progress}</span>
+              <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-center gap-3">
+                <RefreshCw className="h-4 w-4 text-primary animate-spin" />
+                <span className="text-sm text-primary">{syncStatus.progress}</span>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Sync Contacts */}
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-5 w-5 text-muted-foreground" />
                   <span className="font-medium text-foreground">Contacts</span>
@@ -358,7 +358,7 @@ export function QuickBooksIntegration() {
               </div>
 
               {/* Sync Projects */}
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <span className="font-medium text-foreground">Projects</span>
@@ -432,7 +432,7 @@ export function QuickBooksIntegration() {
             <Button
               onClick={handleConnect}
               disabled={actionLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {actionLoading ? (
                 <>
