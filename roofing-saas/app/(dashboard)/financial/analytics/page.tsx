@@ -106,7 +106,7 @@ export default async function FinancialAnalyticsPage() {
             <div>
               <Link
                 href="/financial/reports"
-                className="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block"
+                className="text-sm text-primary hover:text-primary/80 mb-2 inline-block"
               >
                 ← Back to Reports
               </Link>
@@ -118,17 +118,17 @@ export default async function FinancialAnalyticsPage() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-card rounded-lg shadow p-4 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-4 border-l-4 border-primary">
             <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               <h3 className="text-xs font-medium text-muted-foreground">Close Rate</h3>
             </div>
             <p className="text-xl font-bold text-foreground">{closeRate.toFixed(1)}%</p>
           </div>
 
-          <div className="bg-card rounded-lg shadow p-4 border-l-4 border-purple-500">
+          <div className="bg-card rounded-lg shadow p-4 border-l-4 border-secondary">
             <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 text-purple-500" />
+              <BarChart3 className="h-4 w-4 text-secondary" />
               <h3 className="text-xs font-medium text-muted-foreground">Pipeline</h3>
             </div>
             <p className="text-xl font-bold text-foreground">{pipelineProjects.length}</p>
