@@ -182,7 +182,7 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
                   <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Cost Impact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {analysis.wasteByType.map((item, index) => (
                   <tr key={index} className="hover:bg-background">
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{item.type}</td>
@@ -262,9 +262,9 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
         )}
 
         {/* Recommendations */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm font-semibold text-blue-900 mb-2">Recommendations</p>
-          <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
+        <div className="mt-6 p-4 bg-primary/10 rounded-lg">
+          <p className="text-sm font-semibold text-primary mb-2">Recommendations</p>
+          <ul className="text-xs text-primary space-y-1 list-disc list-inside">
             {analysis.overallWastePercent > 10 && (
               <li>Overall waste is high ({analysis.overallWastePercent.toFixed(1)}%). Target &lt;8% waste rate.</li>
             )}
