@@ -118,7 +118,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -142,7 +142,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
         <div className="mt-6">
           <Link
             href="/project-files/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
           >
             + Upload File
           </Link>
@@ -152,10 +152,10 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
   }
 
   return (
-    <div className="bg-card shadow-sm rounded-lg border border-gray-200">
+    <div className="bg-card shadow-sm rounded-lg border border-border">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted/30">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 File
@@ -174,16 +174,16 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-card divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {files.map((file) => (
               <tr key={file.id} className="hover:bg-accent">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded flex items-center justify-center">
+                    <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded flex items-center justify-center">
                       {file.file_type === 'photo' ? (
-                        <ImageIcon className="h-5 w-5 text-blue-600" />
+                        <ImageIcon className="h-5 w-5 text-primary" />
                       ) : (
-                        <FileText className="h-5 w-5 text-blue-600" />
+                        <FileText className="h-5 w-5 text-primary" />
                       )}
                     </div>
                     <div className="ml-4">
@@ -208,7 +208,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link
                     href={`/project-files/${file.id}`}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
+                    className="text-primary hover:text-primary/80 mr-4"
                   >
                     <ExternalLink className="h-4 w-4 inline" />
                   </Link>
@@ -227,19 +227,19 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
       {/* Pagination */}
       {total > 10 && (
-        <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-border sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => router.push(`/project-files?page=${page - 1}`)}
               disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => router.push(`/project-files?page=${page + 1}`)}
               disabled={page * 10 >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
             >
               Next
             </button>
@@ -257,14 +257,14 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                 <button
                   onClick={() => router.push(`/project-files?page=${page - 1}`)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => router.push(`/project-files?page=${page + 1}`)}
                   disabled={page * 10 >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
                 >
                   Next
                 </button>
