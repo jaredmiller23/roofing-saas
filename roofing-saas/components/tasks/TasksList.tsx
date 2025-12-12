@@ -110,7 +110,7 @@ export function TasksList({ params = {} }: TasksListProps) {
       case 'todo':
         return <Circle className="h-5 w-5 text-muted-foreground" />
       case 'in_progress':
-        return <Clock className="h-5 w-5 text-blue-500" />
+        return <Clock className="h-5 w-5 text-primary" />
       case 'completed':
         return <CheckCircle2 className="h-5 w-5 text-green-500" />
       case 'cancelled':
@@ -173,7 +173,7 @@ export function TasksList({ params = {} }: TasksListProps) {
       {/* Tasks List */}
       {isLoading ? (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading tasks...</p>
         </div>
       ) : tasks.length === 0 ? (
@@ -187,7 +187,7 @@ export function TasksList({ params = {} }: TasksListProps) {
             </p>
             <Button
               onClick={() => router.push('/tasks/new')}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Task
@@ -245,7 +245,7 @@ export function TasksList({ params = {} }: TasksListProps) {
                       {task.tags && task.tags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {task.tags.map((tag, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-gray-100 text-muted-foreground rounded text-xs">
+                            <span key={idx} className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs">
                               {tag}
                             </span>
                           ))}
