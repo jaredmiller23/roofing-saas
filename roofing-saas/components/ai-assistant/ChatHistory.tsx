@@ -43,8 +43,8 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
   if (!isLoadingMessages && messages.length === 0) {
     return (
       <div className={`flex flex-col items-center justify-center h-full text-center p-8 ${className}`}>
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-          <MessageSquare className="h-8 w-8 text-blue-600" />
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <MessageSquare className="h-8 w-8 text-primary" />
         </div>
         <h3 className="text-lg font-semibold text-foreground mb-2">
           Start a conversation
@@ -53,13 +53,13 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
           Ask me anything! I can help you manage contacts, create projects, log door knocks, and more.
         </p>
         <div className="mt-6 grid grid-cols-1 gap-2 text-left max-w-md">
-          <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+          <div className="p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
             <p className="text-sm text-foreground">&quot;Create a new contact named John Smith&quot;</p>
           </div>
-          <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+          <div className="p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
             <p className="text-sm text-foreground">&quot;Search for contacts in Nashville&quot;</p>
           </div>
-          <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+          <div className="p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
             <p className="text-sm text-foreground">&quot;Log a door knock at 123 Main St&quot;</p>
           </div>
         </div>
@@ -72,7 +72,7 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
     return (
       <div className={`flex items-center justify-center h-full ${className}`}>
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
           <p className="text-sm text-muted-foreground">Loading conversation...</p>
         </div>
       </div>
@@ -101,9 +101,9 @@ export function ChatHistory({ className = '' }: ChatHistoryProps) {
           <div className="flex justify-start mb-3">
             <div className="px-4 py-3 bg-muted rounded-2xl rounded-bl-sm">
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
