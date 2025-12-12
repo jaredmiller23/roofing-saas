@@ -105,7 +105,7 @@ export function SubstatusSelector({
         {currentSubstatus ? (
           <SubstatusBadge substatus={currentSubstatus} size={size} showIcon />
         ) : (
-          <div className="px-2.5 py-1 text-sm text-muted-foreground border-2 border-dashed border-gray-300 rounded-full flex items-center gap-1">
+          <div className="px-2.5 py-1 text-sm text-muted-foreground border-2 border-dashed border-border rounded-full flex items-center gap-1">
             <span>Set substatus</span>
             {!disabled && <ChevronDown className="h-3 w-3" />}
           </div>
@@ -153,7 +153,7 @@ export function SubstatusSelector({
                     >
                       {/* Selection indicator */}
                       <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
-                        {isSelected && <Check className="h-4 w-4 text-blue-600" />}
+                        {isSelected && <Check className="h-4 w-4 text-primary" />}
                       </div>
 
                       {/* Color dot */}
