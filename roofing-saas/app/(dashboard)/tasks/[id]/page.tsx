@@ -94,11 +94,11 @@ export default async function TaskDetailPage({
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="flex-shrink-0 h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
               {task.status === 'completed' ? (
                 <CheckCircle className="h-8 w-8 text-green-600" />
               ) : (
-                <Clock className="h-8 w-8 text-blue-600" />
+                <Clock className="h-8 w-8 text-primary" />
               )}
             </div>
             <div>
@@ -119,13 +119,13 @@ export default async function TaskDetailPage({
           <div className="flex gap-2">
             <Link
               href={`/tasks/${task.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               Edit
             </Link>
             <Link
               href="/tasks"
-              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>
