@@ -72,9 +72,9 @@ export default function SignaturesPage() {
       case 'draft':
         return <FileText className="h-5 w-5 text-muted-foreground" />
       case 'sent':
-        return <Send className="h-5 w-5 text-blue-500" />
+        return <Send className="h-5 w-5 text-primary" />
       case 'viewed':
-        return <Eye className="h-5 w-5 text-purple-500" />
+        return <Eye className="h-5 w-5 text-secondary" />
       case 'signed':
         return <CheckCircle className="h-5 w-5 text-green-500" />
       case 'expired':
@@ -89,8 +89,8 @@ export default function SignaturesPage() {
   const getStatusBadge = (status: string) => {
     const colors = {
       draft: 'bg-muted text-muted-foreground',
-      sent: 'bg-blue-100 text-blue-700',
-      viewed: 'bg-purple-100 text-purple-700',
+      sent: 'bg-primary/10 text-primary',
+      viewed: 'bg-secondary/10 text-secondary',
       signed: 'bg-green-100 text-green-700',
       expired: 'bg-yellow-100 text-yellow-700',
       declined: 'bg-red-100 text-red-700'
@@ -120,14 +120,14 @@ export default function SignaturesPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
+              <div className="p-2 bg-primary rounded-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-foreground">E-Signatures</h1>
             </div>
             <Button
               onClick={() => router.push('/signatures/new')}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               New Document
@@ -157,7 +157,7 @@ export default function SignaturesPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="all">All Statuses</option>
                 <option value="draft">Draft</option>
@@ -180,7 +180,7 @@ export default function SignaturesPage() {
         {/* Documents List */}
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading documents...</p>
           </div>
         ) : filteredDocuments.length === 0 ? (
@@ -197,7 +197,7 @@ export default function SignaturesPage() {
             {!searchQuery && (
               <Button
                 onClick={() => router.push('/signatures/new')}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Document
