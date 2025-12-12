@@ -113,6 +113,7 @@
     "app/(dashboard)/events/[id]/page.tsx:79:text-white",
     "app/(dashboard)/financial/reports/page.tsx:99:text-white",
     "app/(dashboard)/financial/reports/page.tsx:105:text-white",
+    "app/(dashboard)/inspect/[projectId]/page.tsx:158:text-white",
     "app/(dashboard)/financial/reports/page.tsx:111:text-white",
     "app/(dashboard)/financial/commissions/page.tsx:90:text-white",
     "app/(dashboard)/financial/commissions/add-commission-button.tsx:24:text-white",
