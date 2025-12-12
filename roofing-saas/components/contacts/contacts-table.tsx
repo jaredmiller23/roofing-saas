@@ -186,7 +186,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
         <div className="text-muted-foreground mb-4">No contacts found</div>
         <Link
           href="/contacts/new"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
         >
           Create your first contact
         </Link>
@@ -197,12 +197,12 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
       onClick={() => handleSort(field)}
-      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/10 select-none"
     >
       <div className="flex items-center gap-1">
         {children}
         {sortField === field && (
-          <span className="text-blue-600">
+          <span className="text-primary">
             {sortDirection === 'asc' ? '↑' : '↓'}
           </span>
         )}
@@ -214,14 +214,14 @@ export function ContactsTable({ params }: ContactsTableProps) {
     <div className="bg-card rounded-lg shadow overflow-hidden">
       {/* Bulk Actions Bar */}
       {selectedContacts.size > 0 && (
-        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center justify-between">
+        <div className="bg-primary/10 border-b border-primary px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-blue-900">
+            <span className="text-sm font-medium text-primary">
               {selectedContacts.size} contact{selectedContacts.size > 1 ? 's' : ''} selected
             </span>
             <button
               onClick={() => setSelectedContacts(new Set())}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              className="text-sm text-primary hover:text-primary/80 underline"
             >
               Clear
             </button>
@@ -230,7 +230,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
             <select
               onChange={(e) => handleBulkAction('stage', e.target.value)}
               disabled={bulkActionLoading}
-              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-primary"
               defaultValue=""
             >
               <option value="" disabled>Change Stage</option>
@@ -242,7 +242,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
             <select
               onChange={(e) => handleBulkAction('priority', e.target.value)}
               disabled={bulkActionLoading}
-              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500"
+              className="text-sm border border-input rounded-md px-3 py-1 focus:ring-2 focus:ring-primary"
               defaultValue=""
             >
               <option value="" disabled>Change Priority</option>
@@ -268,15 +268,15 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted">
             <tr>
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
                   checked={contacts.length > 0 && selectedContacts.size === contacts.length}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 text-blue-600 border-input rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
                 />
               </th>
               <SortableHeader field="name">Name</SortableHeader>
@@ -291,21 +291,21 @@ export function ContactsTable({ params }: ContactsTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-card divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-border">
             {contacts.map((contact) => (
-              <tr key={contact.id} className={`hover:bg-accent ${selectedContacts.has(contact.id) ? 'bg-blue-50' : ''}`}>
+              <tr key={contact.id} className={`hover:bg-accent ${selectedContacts.has(contact.id) ? 'bg-primary/10' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedContacts.has(contact.id)}
                     onChange={() => toggleSelectContact(contact.id)}
-                    className="w-4 h-4 text-blue-600 border-input rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Link
                     href={`/contacts/${contact.id}`}
-                    className="text-blue-600 hover:text-blue-900 font-medium"
+                    className="text-primary hover:text-primary/80 font-medium"
                   >
                     {contact.first_name} {contact.last_name}
                   </Link>
@@ -352,7 +352,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {(contact.phone || contact.mobile_phone) && (
                       <a
                         href={`sms:${contact.phone || contact.mobile_phone}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-8 h-8 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
                         title="Text"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -362,7 +362,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {contact.email && (
                       <a
                         href={`mailto:${contact.email}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-8 h-8 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-md transition-colors"
                         title="Email"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -370,11 +370,11 @@ export function ContactsTable({ params }: ContactsTableProps) {
                       </a>
                     )}
                     {/* Divider */}
-                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    <div className="w-px h-6 bg-border mx-1"></div>
                     {/* Edit/Delete */}
                     <Link
                       href={`/contacts/${contact.id}/edit`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-primary hover:text-primary/80"
                     >
                       Edit
                     </Link>
@@ -393,7 +393,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
       </div>
 
       {/* Pagination */}
-      <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border">
+      <div className="bg-muted px-6 py-4 flex items-center justify-between border-t border">
         <div className="text-sm text-muted-foreground">
           Showing {contacts.length} of {total} contacts
         </div>
@@ -404,7 +404,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={page <= 1}
-            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
           >
             Previous
           </button>
@@ -417,7 +417,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={contacts.length < 20}
-            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
           >
             Next
           </button>
@@ -429,10 +429,10 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
 function getStageColor(stage: string) {
   const colors: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-800',
+    new: 'bg-primary/10 text-primary',
     contacted: 'bg-yellow-100 text-yellow-800',
-    qualified: 'bg-purple-100 text-purple-800',
-    proposal: 'bg-indigo-100 text-indigo-800',
+    qualified: 'bg-secondary/10 text-secondary',
+    proposal: 'bg-primary/10 text-primary',
     negotiation: 'bg-orange-100 text-orange-800',
     won: 'bg-green-100 text-green-800',
     lost: 'bg-muted text-muted-foreground',
