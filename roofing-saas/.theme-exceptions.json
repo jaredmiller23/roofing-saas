@@ -166,6 +166,7 @@
     "app/offline/page.tsx:49:text-white",
     "components/settings/TemplateSettings.tsx:243:text-white",
     "components/settings/TemplateSettings.tsx:250:text-white",
+    "components/settings/SettingsTabs.tsx:*:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
