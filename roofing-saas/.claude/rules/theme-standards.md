@@ -333,12 +333,127 @@ import { Button } from '@/components/ui/button'
 - [ ] Using shadcn/ui Button component for buttons
 - [ ] All colors adapt to theme
 
+## Automated Theme Enforcement
+
+### Theme Compliance Scanner
+**Status**: ✅ **ZERO VIOLATIONS** (as of December 12, 2025)
+
+The project uses automated scanning to enforce theme standards:
+
+```bash
+# Run scanner manually
+node scripts/check-theme-compliance.js
+
+# Pre-commit hook runs automatically
+git commit -m "..." # Scanner runs before commit
+```
+
+### Exception Patterns
+**Total Exceptions**: 212 patterns (`.theme-exceptions.json`)
+
+**Legitimate Exception Categories**:
+
+1. **Status Indicators** - Semantic colors with universal meaning:
+   ```tsx
+   <Badge className="bg-green-500">Success</Badge>  // ✅ OK
+   <Badge className="bg-red-500">Error</Badge>      // ✅ OK
+   <Badge className="bg-orange-500">Warning</Badge> // ✅ OK
+   <Badge className="bg-yellow-500">Pending</Badge> // ✅ OK
+   ```
+
+2. **Data Visualization** - Charts require specific colors:
+   ```tsx
+   // margin-by-type-chart.tsx - Profit margin indicators
+   <div className="bg-green-500" />  // Excellent (≥30%)
+   <div className="bg-blue-500" />   // Good (20-29%)
+   <div className="bg-yellow-500" /> // Fair (10-19%)
+   <div className="bg-red-500" />    // Poor (<10%)
+   ```
+
+3. **Contrast Requirements** - Text on colored backgrounds:
+   ```tsx
+   <Button className="bg-primary text-white">Save</Button> // ✅ OK
+   <div className="bg-orange-500 text-white">Alert</div>   // ✅ OK
+   ```
+
+4. **Star Ratings** - Universal pattern:
+   ```tsx
+   <Star className="fill-yellow-500 text-yellow-500" /> // ✅ OK
+   ```
+
+### Adding Exception Patterns
+
+**Pattern Format**: `"path/to/file.tsx:line:color-class"`
+
+**Important**: Escape regex special characters in paths:
+- `(dashboard)` → `\\(dashboard\\)`
+- `[id]` → `\\[id\\)`
+
+**Examples**:
+```json
+{
+  "allowedPatterns": [
+    // Specific line
+    "components/ui/badge.tsx:42:bg-green-500",
+
+    // Any line in file (wildcard)
+    "components/charts/PieChart.tsx:*:fill-blue-500",
+
+    // All files in directory
+    "components/gamification/*:*:bg-yellow-500",
+
+    // Paths with special characters (MUST ESCAPE!)
+    "app/\\(dashboard\\)/reports/page.tsx:87:bg-blue-500",
+    "app/\\(dashboard\\)/projects/\\[id\\]/page.tsx:*:text-white"
+  ]
+}
+```
+
+### December 2025 Theme Cleanup
+
+**Scope**: 800+ component and page files
+**Duration**: 2 sessions (~12 hours total)
+**Result**: 97 violations → 0 violations (100% compliance)
+
+**Key Fixes**:
+- Fixed 20+ component files with hardcoded colors
+- Batch-fixed 5 gamification tabs (text-gray-300 → text-muted-foreground)
+- Fixed gradients in error pages (from-gray-50 → from-background)
+- Standardized loading spinners (border-blue-600 → border-primary)
+- Added 24 exception patterns for legitimate semantic colors
+
+**Established Patterns**:
+```tsx
+// Loading states
+<div className="animate-spin border-b-2 border-primary" />
+
+// Empty states
+<div className="bg-muted/30 border-dashed border-border" />
+
+// Muted backgrounds
+<div className="bg-muted rounded-lg" />
+
+// Status badges (use semantic colors - add to exceptions)
+<Badge className="bg-green-500">Active</Badge>
+<Badge className="bg-red-500">Failed</Badge>
+```
+
+**Common Replacements**:
+- `bg-gray-100` → `bg-muted`
+- `bg-gray-50` → `bg-muted/30`
+- `border-gray-300` → `border-border`
+- `text-blue-600` → `text-primary`
+- `hover:bg-blue-700` → `hover:bg-primary/90`
+- `text-gray-300` → `text-muted-foreground`
+
 ## Resources
 
 - **Tailwind CSS v4 Docs**: https://tailwindcss.com/docs/customizing-colors#using-css-variables
 - **Theme Configuration**: `app/globals.css` (lines 46-231)
 - **shadcn/ui Components**: https://ui.shadcn.com/docs/components
 - **Accessibility**: Use Chrome DevTools accessibility checker
+- **Theme Scanner**: `scripts/check-theme-compliance.js`
+- **Exception Patterns**: `.theme-exceptions.json` (212 patterns)
 
 ## Questions?
 
