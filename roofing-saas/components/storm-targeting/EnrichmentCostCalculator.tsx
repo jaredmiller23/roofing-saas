@@ -221,7 +221,7 @@ export function EnrichmentCostCalculator({
                 <span className="text-muted-foreground">Monthly Subscription</span>
                 <span className="font-medium">{formatCost(provider.subscriptionCost!)}</span>
               </div>
-              <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950 rounded text-xs text-blue-600 dark:text-blue-400">
+              <div className="flex items-center gap-2 p-2 bg-primary/10 rounded text-xs text-primary">
                 <Info className="h-4 w-4" />
                 <span>Subscription includes limited queries per month</span>
               </div>
@@ -280,7 +280,7 @@ export function EnrichmentCostCalculator({
 
         {/* Free providers note */}
         {costs.totalCost === 0 && addressCount > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded text-sm">
+          <div className="flex items-center gap-2 p-3 bg-muted/30 rounded text-sm">
             <Info className="h-4 w-4 text-muted-foreground" />
             <p className="text-muted-foreground">
               {provider.paymentModel === 'free'
