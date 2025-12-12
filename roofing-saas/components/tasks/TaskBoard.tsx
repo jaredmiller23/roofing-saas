@@ -31,8 +31,8 @@ interface Task {
 }
 
 const columns = [
-  { id: 'todo', title: 'To Do', color: 'border-gray-300 bg-gray-50' },
-  { id: 'in_progress', title: 'In Progress', color: 'border-blue-300 bg-blue-50' },
+  { id: 'todo', title: 'To Do', color: 'border-border bg-muted/30' },
+  { id: 'in_progress', title: 'In Progress', color: 'border-primary bg-primary/10' },
   { id: 'completed', title: 'Completed', color: 'border-green-300 bg-green-50' }
 ]
 
@@ -138,19 +138,19 @@ export function TaskBoard() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
+              <div className="p-2 bg-primary rounded-lg">
                 <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                 </svg>
@@ -159,7 +159,7 @@ export function TaskBoard() {
             </div>
             <Button
               onClick={() => router.push('/tasks/new')}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               New Task
@@ -189,7 +189,7 @@ export function TaskBoard() {
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="all">All Priority</option>
                 <option value="low">Low</option>
@@ -222,7 +222,7 @@ export function TaskBoard() {
               onDrop={() => handleDrop(column.id)}
             >
               {/* Column Header */}
-              <div className="p-4 border-b border-gray-300">
+              <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground">{column.title}</h3>
                   <span className="px-2 py-1 bg-card rounded-full text-xs font-medium text-muted-foreground">
@@ -286,7 +286,7 @@ export function TaskBoard() {
                         </div>
                         <div className="w-full bg-muted rounded-full h-1.5">
                           <div
-                            className="bg-blue-600 h-1.5 rounded-full"
+                            className="bg-primary h-1.5 rounded-full"
                             style={{ width: `${task.progress}%` }}
                           />
                         </div>
@@ -299,7 +299,7 @@ export function TaskBoard() {
                         {task.tags.slice(0, 3).map((tag, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded text-xs"
+                            className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-xs"
                           >
                             {tag}
                           </span>
@@ -313,7 +313,7 @@ export function TaskBoard() {
                     )}
 
                     {/* Actions */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-100">
+                    <div className="flex gap-2 pt-3 border-t border-border">
                       <Button
                         size="sm"
                         variant="ghost"
