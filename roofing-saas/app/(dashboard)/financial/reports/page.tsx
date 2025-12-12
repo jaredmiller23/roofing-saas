@@ -96,19 +96,19 @@ export default async function FinancialReportsPage() {
             <div className="flex gap-3">
               <Link
                 href="/financial/analytics"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
               >
                 Advanced Analytics
               </Link>
               <Link
                 href="/financial/commissions"
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                className="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90"
               >
                 Commissions
               </Link>
               <Link
                 href="/financial/export"
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
               >
                 Export Reports
               </Link>
@@ -119,10 +119,10 @@ export default async function FinancialReportsPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Revenue Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-primary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-              <DollarSign className="h-5 w-5 text-blue-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenue)}</p>
             <div className={`text-sm mt-2 flex items-center gap-1 ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -150,10 +150,10 @@ export default async function FinancialReportsPage() {
           </div>
 
           {/* Active Projects Card */}
-          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-purple-500">
+          <div className="bg-card rounded-lg shadow p-6 border-l-4 border-secondary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Active Projects</h3>
-              <Briefcase className="h-5 w-5 text-purple-500" />
+              <Briefcase className="h-5 w-5 text-secondary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{activeProjects}</p>
             <p className="text-sm text-muted-foreground mt-2">
@@ -222,7 +222,7 @@ export default async function FinancialReportsPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Margin</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-border">
                   {Object.entries(byType).map(([type, data]) => {
                     const margin = data.revenue > 0 ? (data.profit / data.revenue) * 100 : 0
                     return (
