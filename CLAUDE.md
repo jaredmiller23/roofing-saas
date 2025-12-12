@@ -12,15 +12,15 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 **Phase 2 Completed**: October 1, 2025
 **Phase 3 Started**: October 1, 2025 (6:30 PM)
 **Phase 4 Started**: October 2, 2025
-**Current Date**: December 11, 2025
 **Current Phase**: Phase 5 - Workflow Automation & Polish
-**Status**: 18/26 Features Complete (69%) | 17/26 Production Ready (65%) | Phase 5: In Progress 🔄
-**Phase 4 Complete**: E-Signature ✅, TypeScript Cleanup ✅, Voice AI Assistant ✅ (Crown Jewel), Substatus System ✅, Configurable Filters ✅, Workflow Automation ✅, Storm Targeting ✅
-**Phase 4 Gaps**: Campaign Builder (needs E2E tests), Claims Management (needs UI), QuickBooks Integration (backend ✅, needs UI)
-**Phase 5 Progress**: Pipeline consolidation ✅, Value statistics ✅, Workflow automation ✅, Stage validation ✅, 156 E2E tests ✅, Code cleanup ✅
-**Latest Update**: December 11 - PRODUCTION DEPLOYMENT FIXES: Fixed routing conflicts causing 500 errors, applied dark theme across 52 files, pushed to production. Previous: COMPLETE CODEBASE AUDIT - 18/26 features production-ready, 156 E2E tests verified, overall health B+ (87/100)
-**Critical Blockers**: QuickBooks UI (12-16h), Campaign Builder tests (4-6h), Claims Management UI (16-20h)
-**Security Issue**: QB OAuth tokens need encryption (URGENT - 2-3h)
+
+### Current Status (Validated)
+Run `./roofing-saas/scripts/validate-status.sh` for verified codebase status.
+Check Archon for task status: `mcp__archon__find_tasks(project_id="42f928ef-ac24-4eed-b539-61799e3dc325")`
+
+**Key Completed Features**: E-Signature, Voice AI Assistant, Pipeline System, Workflow Automation, Storm Targeting, QuickBooks Integration (with token encryption), Claims Management (~80%)
+
+**Note**: Do not manually update counts here. They drift when multiple CC instances work in parallel. The validation script outputs verified data from the actual codebase.
 
 ## 🌟 CLAUDE CAPABILITIES (December 2025)
 
@@ -84,9 +84,18 @@ This file provides guidance to Claude Code when working with the Roofing SaaS pr
 ### MANDATORY Workflow (NO EXCEPTIONS):
 
 **1. START OF SESSION - ALWAYS:**
-```
+```bash
+# Validate actual state (prevents drift)
+./roofing-saas/scripts/validate-status.sh
+
+# Check for uncommitted work from previous sessions
+git status
+
+# Get tasks from Archon
 mcp__archon__find_tasks(filter_by="status", filter_value="todo")
 ```
+- Run validation script first to see actual codebase state
+- Check git for any uncommitted work
 - Get current TODO tasks from Archon
 - Review what needs to be done
 - Ask user which task to work on OR suggest priority based on task_order
@@ -112,16 +121,22 @@ mcp__archon__manage_task("update", task_id="...", status="review")
 - Mark "done" if fully complete
 - Mark "review" if needs user verification
 
-**5. END OF SESSION - DOCUMENT WORK:**
-```
+**5. END OF SESSION - COMMIT & DOCUMENT:**
+```bash
+# Commit all work (NEVER leave uncommitted changes)
+git add -A && git commit -m "..."
+git push origin main
+
+# Document in Archon
 mcp__archon__manage_task("create",
-  project_id="...",
+  project_id="42f928ef-ac24-4eed-b539-61799e3dc325",
   title="Clear descriptive title",
   description="Detailed description of what was accomplished",
   status="done",
   feature="Phase X or Infrastructure or Component"
 )
 ```
+- **COMMIT ALL WORK** - Never leave migrations, code, or docs uncommitted
 - Create tasks for ALL work completed during session
 - Include file paths, key decisions, status
 - Create follow-up tasks if verification needed
