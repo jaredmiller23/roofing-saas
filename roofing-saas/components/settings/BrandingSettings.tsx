@@ -96,7 +96,7 @@ export function BrandingSettings() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -137,7 +137,7 @@ export function BrandingSettings() {
                       <Image src={settings.logo_url} alt="Logo" fill className="object-contain" />
                     </div>
                   ) : (
-                    <div className="h-20 w-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                    <div className="h-20 w-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted">
                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}
@@ -181,7 +181,7 @@ export function BrandingSettings() {
                     type="color"
                     value={settings.primary_color}
                     onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                    className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                    className="h-10 w-16 rounded border border-border cursor-pointer"
                   />
                   <Input
                     value={settings.primary_color}
@@ -201,7 +201,7 @@ export function BrandingSettings() {
                     type="color"
                     value={settings.secondary_color}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
-                    className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                    className="h-10 w-16 rounded border border-border cursor-pointer"
                   />
                   <Input
                     value={settings.secondary_color}
@@ -221,7 +221,7 @@ export function BrandingSettings() {
                     type="color"
                     value={settings.accent_color}
                     onChange={(e) => setSettings({ ...settings, accent_color: e.target.value })}
-                    className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                    className="h-10 w-16 rounded border border-border cursor-pointer"
                   />
                   <Input
                     value={settings.accent_color}
@@ -257,7 +257,7 @@ export function BrandingSettings() {
                   value={settings.email_signature || ''}
                   onChange={(e) => setSettings({ ...settings, email_signature: e.target.value })}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Best regards,&#10;Your Name&#10;Your Title"
                 />
               </div>
@@ -306,7 +306,7 @@ export function BrandingSettings() {
               {settings.logo_url && (
                 <div className="pt-4 border-t border">
                   <p className="text-xs text-muted-foreground mb-2">Logo Preview</p>
-                  <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center h-24 relative">
+                  <div className="bg-muted rounded-lg p-4 flex items-center justify-center h-24 relative">
                     <Image src={settings.logo_url} alt="Logo Preview" fill className="object-contain" />
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export function BrandingSettings() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-primary hover:bg-primary/90"
         >
           {saving ? 'Saving...' : 'Save Branding'}
         </Button>
