@@ -133,7 +133,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
       )}
 
       {/* File Details */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">File Details</h2>
@@ -149,7 +149,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
               required
               value={formData.file_name}
               onChange={(e) => setFormData({ ...formData, file_name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -161,7 +161,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
               <select
                 value={formData.file_type}
                 onChange={(e) => setFormData({ ...formData, file_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="photo">Photo</option>
                 <option value="document">Document</option>
@@ -181,7 +181,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 value={formData.file_category}
                 onChange={(e) => setFormData({ ...formData, file_category: e.target.value })}
                 placeholder="e.g., before, after, damage"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -197,8 +197,8 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 onClick={() => setUploadMode('upload')}
                 className={`flex-1 px-4 py-2 rounded-md font-medium ${
                   uploadMode === 'upload'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
+                    ? 'bg-primary text-white'
+                    : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <Upload className="inline h-4 w-4 mr-2" />
@@ -209,8 +209,8 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 onClick={() => setUploadMode('url')}
                 className={`flex-1 px-4 py-2 rounded-md font-medium ${
                   uploadMode === 'url'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-muted-foreground hover:bg-muted'
+                    ? 'bg-primary text-white'
+                    : 'bg-muted text-muted-foreground hover:bg-muted'
                 }`}
               >
                 <FileText className="inline h-4 w-4 mr-2" />
@@ -221,12 +221,12 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
             {uploadMode === 'upload' ? (
               <div>
                 <label className="block w-full">
-                  <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-md hover:border-blue-500 cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                  <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-md hover:border-primary cursor-pointer bg-muted hover:bg-muted/80 transition">
                     <div className="text-center">
                       <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
                       <p className="mt-2 text-sm text-muted-foreground">
                         {selectedFile ? (
-                          <span className="font-medium text-blue-600">{selectedFile.name}</span>
+                          <span className="font-medium text-primary">{selectedFile.name}</span>
                         ) : (
                           <>
                             Click to upload or drag and drop
@@ -247,7 +247,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                   />
                 </label>
                 {uploading && (
-                  <p className="mt-2 text-sm text-blue-600">Uploading file...</p>
+                  <p className="mt-2 text-sm text-primary">Uploading file...</p>
                 )}
               </div>
             ) : (
@@ -257,7 +257,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                 value={formData.file_url}
                 onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
                 placeholder="https://"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             )}
           </div>
@@ -270,7 +270,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="File description..."
             />
           </div>
@@ -282,14 +282,14 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
+          className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading || uploading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {uploading ? 'Uploading...' : loading ? 'Saving...' : file ? 'Update File' : 'Save File'}
         </button>
