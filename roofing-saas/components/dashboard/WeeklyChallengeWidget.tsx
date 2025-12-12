@@ -96,12 +96,12 @@ export function WeeklyChallengeWidget() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg shadow-sm p-6 border border-purple-100">
+    <div className="bg-gradient-to-br from-secondary/10 to-primary/10 rounded-lg shadow-sm p-6 border border-secondary/30">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-bold text-foreground">This Week&apos;s Challenge</h3>
-          <p className="text-sm text-purple-700 font-medium mt-0.5">{getChallengeTitle()}</p>
+          <p className="text-sm text-secondary font-medium mt-0.5">{getChallengeTitle()}</p>
         </div>
         <div className="bg-primary text-white rounded-full p-3">
           <Trophy className="h-6 w-6" />
@@ -116,7 +116,7 @@ export function WeeklyChallengeWidget() {
               key={leader.id}
               className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
                 index === 0
-                  ? 'bg-card border-yellow-300 shadow-md'
+                  ? 'bg-card border-primary/50 shadow-md'
                   : 'bg-card border hover:border-border'
               }`}
             >
@@ -127,7 +127,7 @@ export function WeeklyChallengeWidget() {
 
               {/* User Info */}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold truncate ${index === 0 ? 'text-purple-900' : 'text-foreground'}`}>
+                <p className={`text-sm font-semibold truncate ${index === 0 ? 'text-primary' : 'text-foreground'}`}>
                   {leader.user_name}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -137,7 +137,7 @@ export function WeeklyChallengeWidget() {
 
               {/* Stats */}
               <div className="text-right">
-                <p className={`text-lg font-bold ${index === 0 ? 'text-purple-700' : 'text-foreground'}`}>
+                <p className={`text-lg font-bold ${index === 0 ? 'text-primary' : 'text-foreground'}`}>
                   {leader.points_this_week.toLocaleString()}
                 </p>
                 <p className="text-xs text-muted-foreground">points</p>
@@ -152,12 +152,12 @@ export function WeeklyChallengeWidget() {
       )}
 
       {/* Challenge Info */}
-      <div className="mt-4 pt-4 border-t border-purple-200">
+      <div className="mt-4 pt-4 border-t border-border">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">
             Resets every Monday
           </span>
-          <span className="text-purple-700 font-medium">
+          <span className="text-secondary font-medium">
             {7 - new Date().getDay()} days left
           </span>
         </div>
