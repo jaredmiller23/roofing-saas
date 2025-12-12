@@ -73,7 +73,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
                 id="commission_plan_id"
                 name="commission_plan_id"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select plan...</option>
                 {plans.map((plan) => (
@@ -93,7 +93,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
                 id="commission_type"
                 name="commission_type"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select type...</option>
                 <option value="sale">Sale</option>
@@ -116,7 +116,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               name="user_email"
               required
               placeholder="user@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground mt-1">Enter the email of the user earning this commission</p>
           </div>
@@ -134,7 +134,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               min="0"
               required
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground mt-1">Contract value, profit, or other calculation base</p>
           </div>
@@ -149,7 +149,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               id="project_id"
               name="project_id"
               placeholder="UUID of associated project"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               name="notes"
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -173,14 +173,14 @@ export function AddCommissionDialog({ plans, isOpen, onClose }: AddCommissionDia
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
+              className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-background disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? 'Calculating...' : 'Create Commission'}
             </button>
