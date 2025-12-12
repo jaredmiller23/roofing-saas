@@ -76,14 +76,14 @@ export function SyncStatus({ tenantId }: SyncStatusProps) {
 
       {/* Pending items badge */}
       {totalPending > 0 && (
-        <div className="bg-card border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px]">
+        <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[200px]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 {isSyncing ? (
-                  <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
                 ) : (
-                  <RefreshCw className="w-4 h-4 text-blue-600" />
+                  <RefreshCw className="w-4 h-4 text-primary" />
                 )}
                 <span className="text-sm font-medium text-foreground">
                   {isSyncing ? 'Syncing...' : `${totalPending} pending`}
@@ -107,7 +107,7 @@ export function SyncStatus({ tenantId }: SyncStatusProps) {
             {!isSyncing && navigator.onLine && (
               <button
                 onClick={handleSyncClick}
-                className="flex-shrink-0 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                className="flex-shrink-0 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded hover:bg-primary/90 transition-colors"
               >
                 Sync Now
               </button>

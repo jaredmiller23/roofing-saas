@@ -173,6 +173,8 @@
     "components/call-logs/audio-player.tsx:254:text-white",
     "components/claims/DamageChecklist.tsx:59:text-white",
     "components/pwa/InstallPrompt.tsx:95:text-white",
+    "components/pwa/SyncStatus.tsx:71:text-white",
+    "components/pwa/SyncStatus.tsx:110:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
