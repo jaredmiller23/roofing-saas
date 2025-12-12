@@ -142,7 +142,7 @@ export function TerritoryList({
           <button
             onClick={fetchTerritories}
             disabled={loading}
-            className="px-3 py-1 text-sm border border-gray-300 text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
+            className="px-3 py-1 text-sm border border-border text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Refresh'}
           </button>
@@ -159,7 +159,7 @@ export function TerritoryList({
         {/* Loading state */}
         {loading && territories.length === 0 && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         )}
 
@@ -273,7 +273,7 @@ export function TerritoryList({
                           e.stopPropagation()
                           onTerritoryEdit(territory.id)
                         }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        className="p-2 text-primary hover:bg-primary/10 rounded-md transition-colors"
                         title="Edit"
                       >
                         <svg
@@ -310,7 +310,7 @@ export function TerritoryList({
                                 e.stopPropagation()
                                 setDeleteConfirm(null)
                               }}
-                              className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                              className="px-2 py-1 bg-muted text-white text-xs rounded hover:bg-muted/80"
                             >
                               Cancel
                             </button>
