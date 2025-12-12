@@ -206,8 +206,8 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0">
-                        <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                          <Icon className="h-6 w-6 text-blue-600" />
+                        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Icon className="h-6 w-6 text-primary" />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -286,7 +286,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer"
+              className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
               onClick={() => document.getElementById('file-upload')?.click()}
             >
               <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -314,7 +314,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                   {selectedFiles.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
+                      className="flex items-center justify-between p-2 bg-muted/30 rounded text-sm"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
@@ -346,7 +346,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 transition-all duration-300"
+                    className="h-full bg-primary transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
