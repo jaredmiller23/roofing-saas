@@ -1,3 +1,17 @@
 cd roofing-saas
+
+# Run lint-staged (ESLint on staged files)
 npx lint-staged
+
+# TypeScript type checking
 npm run typecheck
+
+# Theme compliance check
+echo "🎨 Checking theme compliance..."
+node scripts/check-theme-compliance.js
+if [ $? -ne 0 ]; then
+  echo "❌ Theme violations detected. Fix violations or add to .theme-exceptions.json"
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"

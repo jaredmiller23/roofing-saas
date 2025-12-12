@@ -3,6 +3,7 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import themeCompliancePlugin from './eslint-plugin-theme-compliance.js'
 
 const eslintConfig = [
   {
@@ -43,6 +44,7 @@ const eslintConfig = [
       '@typescript-eslint': typescriptPlugin,
       'react': reactPlugin,
       'react-hooks': reactHooksPlugin,
+      'theme-compliance': themeCompliancePlugin,
     },
     rules: {
       // Next.js core rules
@@ -71,6 +73,9 @@ const eslintConfig = [
 
       // General code quality
       'prefer-const': 'warn',
+
+      // Theme compliance (Coral Jade theme enforcement)
+      'theme-compliance/no-hardcoded-colors': 'error',
     },
   },
 ]

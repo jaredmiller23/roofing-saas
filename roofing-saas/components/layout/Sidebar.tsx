@@ -115,7 +115,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors"
         aria-label="Toggle menu"
       >
         {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -131,17 +131,16 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white w-64 flex flex-col z-40 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground w-64 flex flex-col z-40 transition-transform duration-300 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gray-800">
+        <div className="p-6 border-b border-sidebar-border">
           <Link href="/dashboard" className="block">
-            <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Pacifico', cursive" }}>
-              Clarity
+            <h1 className="text-4xl font-bold text-sidebar-foreground" style={{ fontFamily: "'Pacifico', cursive" }}>
+              Clarity AI
             </h1>
-            <p className="text-xs text-muted-foreground mt-1 tracking-wide">ROOFING CRM</p>
           </Link>
         </div>
 
@@ -171,8 +170,8 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
                       onClick={() => setIsMobileOpen(false)}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                         active
-                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/50'
-                          : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                          ? 'bg-primary text-white shadow-lg shadow-primary/50'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white'
                       }`}
                     >
                       <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-muted-foreground'}`} />
@@ -184,20 +183,20 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
 
               {/* Divider after each section except last */}
               {sectionIndex < navSections.length - 1 && (
-                <div className="border-t border-gray-800 my-2"></div>
+                <div className="border-t border-sidebar-border my-2"></div>
               )}
             </div>
           ))}
         </nav>
 
         {/* User Section */}
-        <div className="border-t border-gray-800 p-4 space-y-2">
+        <div className="border-t border-sidebar-border p-4 space-y-2">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-sm">
               {userEmail.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{userEmail}</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{userEmail}</p>
               <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
             </div>
           </div>
@@ -212,7 +211,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
           <form action={signOut} className="w-full">
             <button
               type="submit"
-              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground transition-colors"
             >
               <LogOut className="h-4 w-4" />
               <span className="text-sm font-medium">Sign Out</span>
