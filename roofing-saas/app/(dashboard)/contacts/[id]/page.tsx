@@ -61,10 +61,10 @@ export default async function ContactDetailPage({
               {contact.first_name} {contact.last_name}
             </h1>
             <div className="flex gap-2 mt-2 items-center">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full capitalize">
+              <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full capitalize">
                 {contact.type}
               </span>
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full capitalize">
+              <span className="px-3 py-1 bg-secondary/10 text-secondary text-sm font-semibold rounded-full capitalize">
                 {contact.stage}
               </span>
               <ContactSubstatusManager
@@ -78,13 +78,13 @@ export default async function ContactDetailPage({
           <div className="flex gap-2">
             <Link
               href={`/contacts/${contact.id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
             >
               Edit
             </Link>
             <Link
               href="/contacts"
-              className="px-4 py-2 border border-gray-300 text-muted-foreground rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-background"
             >
               Back
             </Link>

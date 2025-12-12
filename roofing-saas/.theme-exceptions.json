@@ -100,6 +100,7 @@
     "components/events/event-form.tsx:356:text-white",
     "components/contacts/contact-form.tsx:512:text-white",
     "app/(dashboard)/financial/commissions/add-commission-dialog.tsx:183:text-white",
+    "app/(dashboard)/contacts/[id]/page.tsx:81:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
