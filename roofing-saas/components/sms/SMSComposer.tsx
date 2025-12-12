@@ -205,7 +205,7 @@ export default function SMSComposer({
             id="template"
             value={selectedTemplate}
             onChange={(e) => handleTemplateSelect(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             disabled={!canSend}
           >
             <option value="">Custom message (no template)</option>
@@ -237,7 +237,7 @@ export default function SMSComposer({
                     type="text"
                     value={variables[variable] || ''}
                     onChange={(e) => setVariables({ ...variables, [variable]: e.target.value })}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-2 py-1.5 text-sm border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder={`Enter ${variable}`}
                   />
                 </div>
@@ -257,7 +257,7 @@ export default function SMSComposer({
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message here..."
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+            className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
             disabled={!canSend || isSending}
             maxLength={1600}
           />
@@ -271,7 +271,7 @@ export default function SMSComposer({
 
         {/* Preview */}
         {selectedTemplate && previewMessage !== message && (
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+          <div className="bg-muted border border-border rounded-md p-3">
             <label className="block text-xs font-medium text-muted-foreground mb-2">Preview:</label>
             <p className="text-sm text-foreground whitespace-pre-wrap">{previewMessage}</p>
           </div>
@@ -296,7 +296,7 @@ export default function SMSComposer({
         <button
           onClick={handleSend}
           disabled={!canSend || !message.trim() || isSending}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
+          className="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
         >
           {isSending ? (
             <>
