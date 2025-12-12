@@ -109,9 +109,9 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
   return (
     <div className="space-y-4">
       {/* Quick Filter Chips */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+      <div className="bg-gradient-to-r from-primary/10 to-purple-50 rounded-lg p-4 border border-blue-100">
         <div className="flex items-center gap-2 mb-3">
-          <Filter className="h-4 w-4 text-blue-600" />
+          <Filter className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-muted-foreground">Quick Filters</span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -131,7 +131,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           </button>
           <button
             onClick={() => handleQuickFilter('stage', 'lead')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-blue-200 text-blue-800 rounded-full text-sm font-medium transition-colors"
           >
             <Clock className="h-3.5 w-3.5" />
             New Leads
@@ -152,7 +152,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           </button>
           <button
             onClick={() => handleQuickFilter('type', 'lead')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 hover:bg-purple-200 text-purple-800 rounded-full text-sm font-medium transition-colors"
           >
             Leads Only
           </button>
@@ -164,26 +164,26 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium text-muted-foreground">Active Filters ({activeFilterCount}):</span>
           {search && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-blue-800 rounded-full text-sm">
               <Search className="h-3 w-3" />
               Search: {search}
-              <button onClick={() => removeFilter('search')} className="ml-1 hover:text-blue-900">
+              <button onClick={() => removeFilter('search')} className="ml-1 hover:text-primary">
                 <X className="h-3 w-3" />
               </button>
             </span>
           )}
           {stage && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm capitalize">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-blue-800 rounded-full text-sm capitalize">
               Stage: {stage}
-              <button onClick={() => removeFilter('stage')} className="ml-1 hover:text-blue-900">
+              <button onClick={() => removeFilter('stage')} className="ml-1 hover:text-primary">
                 <X className="h-3 w-3" />
               </button>
             </span>
           )}
           {type && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm capitalize">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-blue-800 rounded-full text-sm capitalize">
               Type: {type}
-              <button onClick={() => removeFilter('type')} className="ml-1 hover:text-blue-900">
+              <button onClick={() => removeFilter('type')} className="ml-1 hover:text-primary">
                 <X className="h-3 w-3" />
               </button>
             </span>
@@ -198,7 +198,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           )}
           <button
             onClick={handleClear}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium underline"
+            className="text-sm text-primary hover:text-blue-800 font-medium underline"
           >
             Clear All
           </button>
@@ -222,7 +222,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Name, email, or phone..."
-                className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -236,7 +236,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
               id="stage"
               value={stage}
               onChange={(e) => setStage(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Stages</option>
               <option value="lead">Lead</option>
@@ -255,7 +255,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
               id="type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Types</option>
               <option value="lead">Lead</option>
@@ -273,7 +273,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
               id="priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Priorities</option>
               <option value="urgent">Urgent</option>
@@ -289,7 +289,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           <button
             onClick={handleSearch}
             disabled={isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
             <Search className="h-4 w-4" />
             {isPending ? 'Searching...' : 'Apply Filters'}

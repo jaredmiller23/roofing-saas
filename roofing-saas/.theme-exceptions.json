@@ -116,6 +116,7 @@
     "components/contacts/contacts-table.tsx:261:text-white",
     "components/projects/leads-table.tsx:238:text-white",
     "components/projects/leads-table.tsx:314:text-white",
+    "components/contacts/contacts-search.tsx:292:text-white",
     "app/**/page.tsx:*:bg-green-500",
     "app/**/page.tsx:*:bg-red-500",
     "app/**/page.tsx:*:bg-orange-500",
