@@ -253,7 +253,7 @@ export function AutomationSettings() {
   const _getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'running': return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
+      case 'running': return <Clock className="h-4 w-4 text-primary animate-spin" />
       case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
@@ -357,7 +357,7 @@ export function AutomationSettings() {
             <div className="text-center py-8 text-muted-foreground">Loading workflows...</div>
           ) : workflows.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Zap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p>No automations yet</p>
               <p className="text-sm mt-1">Use the templates above to get started</p>
             </div>
@@ -366,7 +366,7 @@ export function AutomationSettings() {
               {workflows.map(workflow => (
                 <div
                   key={workflow.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                  className="flex items-center justify-between p-4 bg-muted rounded-lg border"
                 >
                   <div className="flex items-center gap-4">
                     <Switch
@@ -414,8 +414,8 @@ export function AutomationSettings() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">1</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">1</span>
               </div>
               <h4 className="font-medium">Trigger Event</h4>
               <p className="text-sm text-muted-foreground mt-1">
@@ -423,8 +423,8 @@ export function AutomationSettings() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">2</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">2</span>
               </div>
               <h4 className="font-medium">Workflow Runs</h4>
               <p className="text-sm text-muted-foreground mt-1">
@@ -432,8 +432,8 @@ export function AutomationSettings() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">3</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">3</span>
               </div>
               <h4 className="font-medium">Action Complete</h4>
               <p className="text-sm text-muted-foreground mt-1">
