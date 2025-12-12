@@ -58,6 +58,11 @@ next-env.d.ts
 /test-results/
 /playwright/.auth/
 
+# Analysis and session documents
+/.harness/
+/docs/modernization-analysis/
+/docs/PRD/.modernization_project.json
+
 # ============================================
 # SECURITY: Credentials & Secrets
 # ============================================
