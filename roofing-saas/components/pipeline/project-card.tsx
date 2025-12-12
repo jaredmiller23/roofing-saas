@@ -408,7 +408,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
               <a
                 href={`sms:${contactPhone}`}
                 onClick={(e) => e.stopPropagation()}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-md text-xs font-medium transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-md text-xs font-medium transition-colors"
                 title="Text"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
@@ -420,7 +420,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
             <a
               href={`mailto:${contactEmail}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-md text-xs font-medium transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-secondary/20 hover:bg-secondary/30 text-secondary rounded-md text-xs font-medium transition-colors"
               title="Email"
             >
               <Mail className="h-3.5 w-3.5" />
