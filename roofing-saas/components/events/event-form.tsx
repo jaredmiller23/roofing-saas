@@ -103,7 +103,7 @@ export function EventForm({ event }: EventFormProps) {
       )}
 
       {/* Event Details */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <CalendarDays className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Event Details</h2>
@@ -119,7 +119,7 @@ export function EventForm({ event }: EventFormProps) {
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Event title"
             />
           </div>
@@ -132,7 +132,7 @@ export function EventForm({ event }: EventFormProps) {
               <select
                 value={formData.event_type}
                 onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="appointment">Appointment</option>
                 <option value="inspection">Inspection</option>
@@ -152,7 +152,7 @@ export function EventForm({ event }: EventFormProps) {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="scheduled">Scheduled</option>
                 <option value="confirmed">Confirmed</option>
@@ -171,7 +171,7 @@ export function EventForm({ event }: EventFormProps) {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Event description..."
             />
           </div>
@@ -179,7 +179,7 @@ export function EventForm({ event }: EventFormProps) {
       </div>
 
       {/* Date & Time */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Clock className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Date & Time</h2>
@@ -191,7 +191,7 @@ export function EventForm({ event }: EventFormProps) {
               type="checkbox"
               checked={formData.all_day}
               onChange={(e) => setFormData({ ...formData, all_day: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <label className="ml-2 block text-sm text-foreground">
               All Day Event
@@ -208,7 +208,7 @@ export function EventForm({ event }: EventFormProps) {
                 required
                 value={formData.start_at}
                 onChange={(e) => setFormData({ ...formData, start_at: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -221,7 +221,7 @@ export function EventForm({ event }: EventFormProps) {
                 required
                 value={formData.end_at}
                 onChange={(e) => setFormData({ ...formData, end_at: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -229,7 +229,7 @@ export function EventForm({ event }: EventFormProps) {
       </div>
 
       {/* Location */}
-      <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <MapPin className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Location</h2>
@@ -244,7 +244,7 @@ export function EventForm({ event }: EventFormProps) {
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Location name or venue"
             />
           </div>
@@ -257,7 +257,7 @@ export function EventForm({ event }: EventFormProps) {
               type="text"
               value={formData.address_street}
               onChange={(e) => setFormData({ ...formData, address_street: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="123 Main St"
             />
           </div>
@@ -271,7 +271,7 @@ export function EventForm({ event }: EventFormProps) {
                 type="text"
                 value={formData.address_city}
                 onChange={(e) => setFormData({ ...formData, address_city: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="City"
               />
             </div>
@@ -284,7 +284,7 @@ export function EventForm({ event }: EventFormProps) {
                 type="text"
                 value={formData.address_state}
                 onChange={(e) => setFormData({ ...formData, address_state: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="TN"
                 maxLength={2}
               />
@@ -298,7 +298,7 @@ export function EventForm({ event }: EventFormProps) {
                 type="text"
                 value={formData.address_zip}
                 onChange={(e) => setFormData({ ...formData, address_zip: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="12345"
               />
             </div>
@@ -308,7 +308,7 @@ export function EventForm({ event }: EventFormProps) {
 
       {/* Outcome */}
       {event && (
-        <div className="bg-card shadow-sm rounded-lg border border-gray-200 p-6">
+        <div className="bg-card shadow-sm rounded-lg border border-border p-6">
           <h2 className="text-lg font-semibold text-foreground mb-6">Outcome</h2>
 
           <div className="space-y-6">
@@ -320,7 +320,7 @@ export function EventForm({ event }: EventFormProps) {
                 type="text"
                 value={formData.outcome}
                 onChange={(e) => setFormData({ ...formData, outcome: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="e.g., signed contract, scheduled follow-up"
               />
             </div>
@@ -333,7 +333,7 @@ export function EventForm({ event }: EventFormProps) {
                 value={formData.outcome_notes}
                 onChange={(e) => setFormData({ ...formData, outcome_notes: e.target.value })}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Detailed notes about the outcome..."
               />
             </div>
@@ -346,14 +346,14 @@ export function EventForm({ event }: EventFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md text-muted-foreground hover:bg-accent"
+          className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-accent"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? 'Saving...' : event ? 'Update Event' : 'Schedule Event'}
         </button>
