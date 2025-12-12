@@ -179,7 +179,7 @@ export function SubstatusSettings() {
   if (loading && substatuses.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -214,7 +214,7 @@ export function SubstatusSettings() {
             <select
               value={entityTypeFilter}
               onChange={(e) => setEntityTypeFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="contacts">Contacts</option>
               <option value="projects">Projects</option>
@@ -233,7 +233,7 @@ export function SubstatusSettings() {
           </div>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Substatus
@@ -257,7 +257,7 @@ export function SubstatusSettings() {
                 value={formData.entity_type}
                 onChange={(e) => setFormData({ ...formData, entity_type: e.target.value as 'contacts' | 'projects' | 'leads' })}
                 disabled={!!editingSubstatus}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-muted"
               >
                 <option value="contacts">Contacts</option>
                 <option value="projects">Projects</option>
@@ -339,7 +339,7 @@ export function SubstatusSettings() {
                   type="color"
                   value={formData.color}
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                  className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                  className="h-10 w-16 rounded border border-border cursor-pointer"
                 />
                 <Input
                   value={formData.color}
@@ -369,7 +369,7 @@ export function SubstatusSettings() {
                 value={formData.substatus_description}
                 onChange={(e) => setFormData({ ...formData, substatus_description: e.target.value })}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Brief description of this substatus..."
               />
             </div>
@@ -381,7 +381,7 @@ export function SubstatusSettings() {
                     type="checkbox"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Active</span>
                 </label>
@@ -391,7 +391,7 @@ export function SubstatusSettings() {
                     type="checkbox"
                     checked={formData.is_default}
                     onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Default</span>
                   <span className="text-xs text-muted-foreground">(Auto-set when status changes)</span>
@@ -402,7 +402,7 @@ export function SubstatusSettings() {
                     type="checkbox"
                     checked={formData.is_terminal}
                     onChange={(e) => setFormData({ ...formData, is_terminal: e.target.checked })}
-                    className="rounded border-gray-300"
+                    className="rounded border-border"
                   />
                   <span className="text-sm text-muted-foreground">Terminal</span>
                   <span className="text-xs text-muted-foreground">(Final state)</span>
@@ -449,7 +449,7 @@ export function SubstatusSettings() {
             <Button
               onClick={handleSave}
               disabled={saving || !formData.status_value || !formData.substatus_value || !formData.substatus_label}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               {saving ? 'Saving...' : editingSubstatus ? 'Update Substatus' : 'Add Substatus'}
             </Button>
@@ -502,7 +502,7 @@ export function SubstatusSettings() {
 
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         {!substatus.is_active && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-muted-foreground rounded">
+                          <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded">
                             Inactive
                           </span>
                         )}
@@ -547,7 +547,7 @@ export function SubstatusSettings() {
           </p>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Substatus
