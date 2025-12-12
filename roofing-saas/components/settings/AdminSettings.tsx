@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { UserCog, History, AlertTriangle, Shield, Eye } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -270,8 +271,11 @@ export function AdminSettings() {
 
           {recentLogs.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <Button variant="outline" size="sm" className="w-full">
-                View All Audit Logs
+              <Button variant="outline" size="sm" className="w-full" asChild>
+                <Link href="/admin/audit-logs">
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All Audit Logs
+                </Link>
               </Button>
             </div>
           )}
