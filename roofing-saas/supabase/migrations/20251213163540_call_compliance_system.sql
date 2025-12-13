@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS call_compliance_log (
   contact_local_time TIME, -- Local time at contact location when check occurred
 
   -- Metadata (JSONB for flexibility)
-  metadata JSONB, -- { "calling_hours": "8am-9pm", "holidays_checked": true, etc. }
+  metadata JSONB, -- { "calling_hours": "9am-8pm", "holidays_checked": true, etc. }
 
   -- Audit
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -403,14 +403,14 @@ BEGIN
     );
   END IF;
 
-  -- Check calling hours (8am-9pm local time)
+  -- Check calling hours (9am-8pm local time)
   v_timezone := COALESCE(v_timezone, 'America/New_York');
   v_local_hour := EXTRACT(HOUR FROM NOW() AT TIME ZONE v_timezone);
 
-  IF v_local_hour < 8 OR v_local_hour >= 21 THEN
+  IF v_local_hour < 9 OR v_local_hour >= 20 THEN
     RETURN json_build_object(
       'can_call', false,
-      'reason', 'Outside calling hours (8am-9pm local time)',
+      'reason', 'Outside calling hours (9am-8pm local time)',
       'checks', json_build_object(
         'time_check', 'fail',
         'local_hour', v_local_hour,
@@ -548,7 +548,7 @@ BEGIN
   RAISE NOTICE '';
   RAISE NOTICE 'COMPLIANCE FEATURES:';
   RAISE NOTICE '  ✓ DNC registry (federal, state TN, internal)';
-  RAISE NOTICE '  ✓ Time restrictions (8am-9pm local time)';
+  RAISE NOTICE '  ✓ Time restrictions (9am-8pm local time)';
   RAISE NOTICE '  ✓ Opt-out tracking';
   RAISE NOTICE '  ✓ Explicit consent tracking';
   RAISE NOTICE '  ✓ Recording announcement tracking';
