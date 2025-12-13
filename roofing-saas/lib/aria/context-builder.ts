@@ -165,7 +165,7 @@ async function enrichFromCallerId(context: ARIAContext): Promise<void> {
         context.entityId = session.contact_id
         await enrichEntityData(context)
       }
-    } catch (error) {
+    } catch (_error) {
       logger.debug('No session found for caller ID enrichment')
     }
   }

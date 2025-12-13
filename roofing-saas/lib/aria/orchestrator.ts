@@ -147,7 +147,7 @@ Authorization rules:
   /**
    * Get available functions for a given context
    */
-  getAvailableFunctions(integrations: string[] = []): typeof ariaFunctionRegistry {
+  getAvailableFunctions(_integrations: string[] = []): typeof ariaFunctionRegistry {
     // Could filter based on integrations, but for now return all
     return ariaFunctionRegistry
   }

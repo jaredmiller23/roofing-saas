@@ -6,7 +6,10 @@ import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError
 import { errorResponse } from '@/lib/api/response'
 import type { AIMessage, SendMessageRequest, SendMessageResponse } from '@/lib/ai-assistant/types'
 import OpenAI from 'openai'
-import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+// ARIA - AI Roofing Intelligent Assistant
+import { ariaFunctionRegistry, buildARIAContext, getARIASystemPrompt, executeARIAFunction } from '@/lib/aria'
+import type { ARIAContext } from '@/lib/aria'
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -105,11 +108,22 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: true })
       .limit(20) // Last 20 messages for context
 
+    // Build ARIA context for enhanced capabilities
+    const ariaContext: ARIAContext = await buildARIAContext({
+      tenantId,
+      userId: user.id,
+      supabase,
+      channel: 'chat',
+      page: context?.page,
+      entityType: context?.entity_type as ARIAContext['entityType'],
+      entityId: context?.entity_id,
+    })
+
     // Build messages array for OpenAI
     const messages: ChatCompletionMessageParam[] = [
       {
         role: 'system',
-        content: getSystemPrompt(context),
+        content: getARIASystemPrompt(ariaContext),
       },
       // Add conversation history
       ...(previousMessages || []).map(msg => ({
@@ -123,11 +137,14 @@ export async function POST(request: NextRequest) {
       },
     ]
 
+    // Get ARIA's enhanced function tools (CRM + QuickBooks + Actions + Weather)
+    const tools = ariaFunctionRegistry.getChatCompletionTools()
+
     // Call OpenAI Chat Completions API
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages,
-      tools: getCRMFunctionTools(),
+      tools: tools.length > 0 ? tools : undefined,
       temperature: 0.7,
       max_tokens: 1000,
     })
@@ -148,11 +165,11 @@ export async function POST(request: NextRequest) {
       const functionName = toolCall.function.name
       const functionArgs = JSON.parse(toolCall.function.arguments)
 
-      // Execute the function
-      const functionResult = await executeCRMFunction(
+      // Execute the function using ARIA orchestrator
+      const functionResult = await executeARIAFunction(
         functionName,
         functionArgs,
-        { tenantId, userId: user.id, supabase }
+        ariaContext
       )
 
       functionCallData = {
@@ -222,284 +239,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Get system prompt based on current page context
- */
-function getSystemPrompt(context?: { page?: string; entity_type?: string; entity_id?: string }): string {
-  let contextInfo = ''
-
-  if (context?.entity_type === 'contact' && context.entity_id) {
-    contextInfo = '\n\nThe user is currently viewing a contact page. You can help them with actions related to this specific contact.'
-  } else if (context?.entity_type === 'project' && context.entity_id) {
-    contextInfo = '\n\nThe user is currently viewing a project/job page. You can help them with actions related to this project.'
-  } else if (context?.page === '/territories') {
-    contextInfo = '\n\nThe user is currently on the territories/field activity page. You can help them with door knocking activities.'
-  } else if (context?.page === '/pipeline') {
-    contextInfo = '\n\nThe user is currently on the pipeline page. You can help them with deal management and pipeline analytics.'
-  }
-
-  return `You are an AI assistant for a roofing company CRM system. You help users manage their contacts, projects, door-knocking activities, pipeline, and more.
-
-Your capabilities include:
-- Searching and finding contacts, projects, and activities
-- Creating new contacts with contact information
-- Adding notes and activities to records
-- Checking pipeline status and deal stages
-- Providing helpful information about the CRM
-
-Be concise, professional, and action-oriented. When users ask you to perform an action, use the available functions to actually do it.${contextInfo}
-
-Current page: ${context?.page || 'Unknown'}`
-}
-
-/**
- * Get CRM function tools for OpenAI function calling
- */
-function getCRMFunctionTools(): ChatCompletionTool[] {
-  return [
-    {
-      type: 'function',
-      function: {
-        name: 'search_contacts',
-        description: 'Search for contacts in the CRM by name, phone, email, or address',
-        parameters: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'The search query (name, phone, email, or address)',
-            },
-            limit: {
-              type: 'number',
-              description: 'Maximum number of results to return (default: 10)',
-              default: 10,
-            },
-          },
-          required: ['query'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'create_contact',
-        description: 'Create a new contact in the CRM',
-        parameters: {
-          type: 'object',
-          properties: {
-            first_name: {
-              type: 'string',
-              description: 'First name of the contact',
-            },
-            last_name: {
-              type: 'string',
-              description: 'Last name of the contact',
-            },
-            email: {
-              type: 'string',
-              description: 'Email address',
-            },
-            phone: {
-              type: 'string',
-              description: 'Phone number',
-            },
-            mobile_phone: {
-              type: 'string',
-              description: 'Mobile phone number',
-            },
-            address_street: {
-              type: 'string',
-              description: 'Street address',
-            },
-            address_city: {
-              type: 'string',
-              description: 'City',
-            },
-            address_state: {
-              type: 'string',
-              description: 'State',
-            },
-            address_zip: {
-              type: 'string',
-              description: 'ZIP code',
-            },
-          },
-          required: ['first_name', 'last_name'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'add_note',
-        description: 'Add a note or activity to a contact or project',
-        parameters: {
-          type: 'object',
-          properties: {
-            contact_id: {
-              type: 'string',
-              description: 'UUID of the contact (optional if project_id provided)',
-            },
-            project_id: {
-              type: 'string',
-              description: 'UUID of the project (optional if contact_id provided)',
-            },
-            content: {
-              type: 'string',
-              description: 'The note content',
-            },
-            type: {
-              type: 'string',
-              enum: ['note', 'call', 'email', 'meeting', 'task'],
-              description: 'Type of activity',
-              default: 'note',
-            },
-          },
-          required: ['content'],
-        },
-      },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'get_pipeline_stats',
-        description: 'Get current pipeline statistics and deal counts by stage',
-        parameters: {
-          type: 'object',
-          properties: {},
-        },
-      },
-    },
-  ]
-}
-
-/**
- * Execute a CRM function and return the result
- */
-async function executeCRMFunction(
-  functionName: string,
-  args: Record<string, unknown>,
-  context: { tenantId: string; userId: string; supabase: Awaited<ReturnType<typeof createClient>> }
-): Promise<unknown> {
-  const { tenantId, userId, supabase } = context
-
-  switch (functionName) {
-    case 'search_contacts': {
-      const { query, limit = 10 } = args as { query: string; limit?: number }
-
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('id, first_name, last_name, email, phone, mobile_phone, address_street, address_city, address_state, address_zip, source, stage')
-        .eq('tenant_id', tenantId)
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,mobile_phone.ilike.%${query}%,address_street.ilike.%${query}%,address_city.ilike.%${query}%`)
-        .limit(limit as number)
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return {
-        success: true,
-        contacts: data,
-        count: data.length,
-      }
-    }
-
-    case 'create_contact': {
-      const contactData = args as {
-        first_name: string
-        last_name: string
-        email?: string
-        phone?: string
-        mobile_phone?: string
-        address_street?: string
-        address_city?: string
-        address_state?: string
-        address_zip?: string
-      }
-
-      const { data, error } = await supabase
-        .from('contacts')
-        .insert({
-          tenant_id: tenantId,
-          created_by: userId,
-          ...contactData,
-          source: 'AI Assistant',
-          stage: 'new',
-        })
-        .select()
-        .single()
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return {
-        success: true,
-        contact: data,
-      }
-    }
-
-    case 'add_note': {
-      const { contact_id, project_id, content, type = 'note' } = args as {
-        contact_id?: string
-        project_id?: string
-        content: string
-        type?: string
-      }
-
-      const { data, error } = await supabase
-        .from('activities')
-        .insert({
-          tenant_id: tenantId,
-          user_id: userId,
-          contact_id: contact_id || null,
-          project_id: project_id || null,
-          type: type as string,
-          content,
-          direction: 'outbound',
-        })
-        .select()
-        .single()
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      return {
-        success: true,
-        activity: data,
-      }
-    }
-
-    case 'get_pipeline_stats': {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('stage')
-        .eq('tenant_id', tenantId)
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      // Count by stage
-      const stageCounts = data.reduce((acc: Record<string, number>, project) => {
-        const stage = project.stage || 'unknown'
-        acc[stage] = (acc[stage] || 0) + 1
-        return acc
-      }, {})
-
-      return {
-        success: true,
-        total_deals: data.length,
-        by_stage: stageCounts,
-      }
-    }
-
-    default:
-      return {
-        success: false,
-        error: `Unknown function: ${functionName}`,
-      }
-  }
-}
+// NOTE: System prompt, function tools, and function execution are now provided by ARIA
+// See lib/aria/ for the unified orchestrator implementation

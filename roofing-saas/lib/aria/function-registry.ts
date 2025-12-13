@@ -78,8 +78,6 @@ export const ariaFunctionRegistry = new FunctionRegistry()
 // CRM Functions (from existing AI messages route)
 // =============================================================================
 
-import { createClient } from '@/lib/supabase/server'
-
 ariaFunctionRegistry.register({
   name: 'search_contacts',
   category: 'crm',
@@ -281,7 +279,7 @@ ariaFunctionRegistry.register({
       return { success: false, error: 'Provide contact_id or project_id' }
     }
 
-    const { data, error } = await context.supabase.from('activities').insert({
+    const { error } = await context.supabase.from('activities').insert({
       tenant_id: context.tenantId,
       contact_id: finalContactId,
       project_id: finalProjectId,
@@ -428,7 +426,7 @@ ariaFunctionRegistry.register({
       required: ['location'],
     },
   },
-  execute: async (args, context) => {
+  execute: async (args, _context) => {
     const { location } = args as { location: string }
 
     try {

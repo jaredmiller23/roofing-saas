@@ -185,81 +185,21 @@ export function VoiceSession({
       const voiceProvider = createVoiceProvider(provider)
       voiceProviderRef.current = voiceProvider
 
-      // Step 3: Define CRM tools for the provider
-      const crmTools: VoiceFunction[] = [
-        {
-          type: 'function' as const,
-          name: 'create_contact',
-          description: 'Create a new contact (lead/customer) in the CRM',
-          parameters: {
-            type: 'object' as const,
-            properties: {
-              first_name: { type: 'string' },
-              last_name: { type: 'string' },
-              phone: { type: 'string' },
-              address: { type: 'string' },
-            },
-            required: ['first_name', 'last_name']
-          }
-        },
-        {
-          type: 'function' as const,
-          name: 'search_contact',
-          description: 'Search for a contact by name or address',
-          parameters: {
-            type: 'object' as const,
-            properties: {
-              query: { type: 'string' }
-            },
-            required: ['query']
-          }
-        },
-        {
-          type: 'function' as const,
-          name: 'add_note',
-          description: 'Add a note to an existing contact or project',
-          parameters: {
-            type: 'object' as const,
-            properties: {
-              entity_id: { type: 'string' },
-              note: { type: 'string' }
-            },
-            required: ['entity_id', 'note']
-          }
-        },
-        {
-          type: 'function' as const,
-          name: 'log_knock',
-          description: 'Log a door knock activity at an address',
-          parameters: {
-            type: 'object' as const,
-            properties: {
-              address: { type: 'string' },
-              disposition: {
-                type: 'string',
-                enum: ['interested', 'not_interested', 'not_home']
-              }
-            },
-            required: ['address', 'disposition']
-          }
-        },
-        {
-          type: 'function' as const,
-          name: 'update_contact_stage',
-          description: 'Update the pipeline stage of a contact',
-          parameters: {
-            type: 'object' as const,
-            properties: {
-              contact_id: { type: 'string' },
-              stage: {
-                type: 'string',
-                enum: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
-              }
-            },
-            required: ['contact_id', 'stage']
-          }
+      // Step 3: Fetch ARIA function tools from the server
+      // This includes CRM, QuickBooks, SMS, Email, Weather, and more
+      let ariaTools: VoiceFunction[] = []
+      try {
+        const toolsResponse = await fetch('/api/aria/execute')
+        if (toolsResponse.ok) {
+          const toolsData = await toolsResponse.json()
+          ariaTools = toolsData.data?.functions || []
+          console.log(`✓ Loaded ${ariaTools.length} ARIA functions`)
+        } else {
+          console.warn('Failed to load ARIA functions, using fallback')
         }
-      ]
+      } catch (err) {
+        console.warn('Error loading ARIA functions:', err)
+      }
 
       // Step 4: Initialize session with provider
       const sessionResponse = await voiceProvider.initSession({
@@ -269,7 +209,7 @@ export function VoiceSession({
         instructions: undefined, // Use provider defaults
         voice: undefined,
         temperature: undefined,
-        tools: crmTools,
+        tools: ariaTools,
       })
 
       setSessionId(sessionResponse.session_id)
@@ -280,8 +220,8 @@ export function VoiceSession({
         sessionResponse,
         stream,
         (event: FunctionCallEvent) => {
-          // Handle function calls
-          executeCRMFunction(event.name, event.parameters, event.call_id)
+          // Handle function calls via ARIA orchestrator
+          executeARIAFunction(event.name, event.parameters, event.call_id)
         },
         async () => {
           // On connected
@@ -319,139 +259,49 @@ export function VoiceSession({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider, contactId, projectId, onError])
-  // Note: cleanup and executeCRMFunction are stable refs, intentionally excluded
+  // Note: cleanup and executeARIAFunction are defined below - intentionally excluded to avoid circular dependency
 
 
   /**
-   * Execute CRM function and send result back to provider
+   * Execute ARIA function via API and send result back to provider
+   * Uses the unified ARIA orchestrator for all function calls
    */
-  const executeCRMFunction = useCallback(async (
+  const executeARIAFunction = useCallback(async (
     functionName: string,
     parameters: Record<string, unknown>,
     callId: string
   ) => {
     try {
-      console.log(`Executing function: ${functionName}`, parameters)
+      console.log(`Executing ARIA function: ${functionName}`, parameters)
 
-      let apiResult: unknown
+      // Call ARIA execute endpoint - handles all function types
+      const response = await fetch('/api/aria/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          function_name: functionName,
+          parameters,
+          context: {
+            contact_id: contactId,
+            project_id: projectId,
+            channel: 'voice_outbound',
+            session_id: sessionId,
+          },
+        }),
+      })
 
-      switch (functionName) {
-        case 'create_contact':
-          apiResult = await fetch('/api/contacts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(parameters)
-          }).then(r => r.json())
-          break
-
-        case 'add_note':
-          apiResult = await fetch('/api/activities', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              activity_type: 'note',
-              ...parameters
-            })
-          }).then(r => r.json())
-          break
-
-        case 'search_contact':
-          apiResult = await fetch(`/api/contacts?search=${encodeURIComponent(parameters.query as string)}`)
-            .then(r => r.json())
-          break
-
-        case 'log_knock':
-          apiResult = await fetch('/api/knocks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address: parameters.address,
-              disposition: parameters.disposition,
-              notes: parameters.notes,
-              contact_id: parameters.contact_id,
-              latitude: 0,
-              longitude: 0
-            })
-          }).then(r => r.json())
-          break
-
-        case 'update_contact_stage':
-          apiResult = await fetch(`/api/contacts/${parameters.contact_id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              stage: parameters.stage
-            })
-          }).then(r => r.json())
-          break
-
-        case 'send_sms':
-          apiResult = await fetch('/api/sms/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: parameters.to,
-              body: parameters.body,
-              contactId: parameters.contact_id
-            })
-          }).then(r => r.json())
-          break
-
-        case 'make_call':
-          apiResult = await fetch('/api/voice/call', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              to: parameters.to,
-              contactId: parameters.contact_id,
-              record: parameters.record !== false
-            })
-          }).then(r => r.json())
-          break
-
-        case 'get_weather':
-          apiResult = await fetch('/api/voice/weather', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: parameters.location || 'Nashville,TN,US',
-              days: parameters.days || 3
-            })
-          }).then(r => r.json())
-          break
-
-        case 'search_roofing_knowledge':
-          apiResult = await fetch('/api/voice/search-rag', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: parameters.query
-            })
-          }).then(r => r.json())
-          break
-
-        case 'search_web':
-          apiResult = await fetch('/api/voice/search-web', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: parameters.query
-            })
-          }).then(r => r.json())
-          break
-
-        default:
-          throw new Error(`Unknown function: ${functionName}`)
-      }
+      const result = await response.json()
 
       // Send result back to provider
       if (voiceProviderRef.current) {
         voiceProviderRef.current.sendFunctionResult({
           call_id: callId,
           result: {
-            success: true,
-            data: apiResult as Record<string, unknown> | Array<Record<string, unknown>> | string | number | boolean | null
-          }
+            success: result.data?.success ?? result.success,
+            data: result.data?.data ?? result.data,
+            message: result.data?.message,
+            error: result.data?.error,
+          },
         })
       }
     } catch (error) {
@@ -463,12 +313,12 @@ export function VoiceSession({
           call_id: callId,
           result: {
             success: false,
-            error: (error as Error).message
-          }
+            error: (error as Error).message,
+          },
         })
       }
     }
-  }, [])
+  }, [contactId, projectId, sessionId])
 
   /**
    * Toggle microphone mute

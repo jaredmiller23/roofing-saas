@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import OpenAI from 'openai'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import { logger } from '@/lib/logger'
+// ARIA - AI Roofing Intelligent Assistant
+import { buildARIAContext, getARIASystemPrompt } from '@/lib/aria'
+import type { ARIAContext } from '@/lib/aria'
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -95,11 +99,22 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: true })
       .limit(20)
 
-    // Build messages for OpenAI
+    // Build ARIA context for consistent persona across all channels
+    const ariaContext: ARIAContext = await buildARIAContext({
+      tenantId,
+      userId: user.id,
+      supabase,
+      channel: 'chat',
+      page: context?.page,
+      entityType: context?.entity_type as ARIAContext['entityType'],
+      entityId: context?.entity_id,
+    })
+
+    // Build messages for OpenAI with ARIA system prompt
     const messages: ChatCompletionMessageParam[] = [
       {
         role: 'system',
-        content: getSystemPrompt(context),
+        content: getARIASystemPrompt(ariaContext),
       },
       ...(previousMessages || []).map(msg => ({
         role: msg.role as 'user' | 'assistant',
@@ -157,7 +172,7 @@ export async function POST(request: NextRequest) {
 
           controller.close()
         } catch (error) {
-          console.error('Streaming error:', error)
+          logger.error('Streaming error:', { error })
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Streaming failed' })}\n\n`)
           )
@@ -174,36 +189,10 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error in POST /api/ai/chat/stream:', error)
+    logger.error('Error in POST /api/ai/chat/stream:', { error })
     return new Response('Internal server error', { status: 500 })
   }
 }
 
-/**
- * Get system prompt based on context
- */
-function getSystemPrompt(context?: { page?: string; entity_type?: string; entity_id?: string }): string {
-  let contextInfo = ''
-
-  if (context?.entity_type === 'contact' && context.entity_id) {
-    contextInfo = '\n\nThe user is currently viewing a contact page. You can help them with actions related to this specific contact.'
-  } else if (context?.entity_type === 'project' && context.entity_id) {
-    contextInfo = '\n\nThe user is currently viewing a project/job page. You can help them with actions related to this project.'
-  } else if (context?.page === '/territories') {
-    contextInfo = '\n\nThe user is currently on the territories/field activity page. You can help them with door knocking activities.'
-  } else if (context?.page === '/pipeline') {
-    contextInfo = '\n\nThe user is currently on the pipeline page. You can help them with deal management and pipeline analytics.'
-  }
-
-  return `You are an AI assistant for a roofing company CRM system. You help users manage their contacts, projects, door-knocking activities, pipeline, and more.
-
-Your capabilities include:
-- Answering questions about the CRM and how to use it
-- Providing helpful tips for sales and door-knocking
-- Helping analyze data and pipeline status
-- Offering roofing industry expertise
-
-Be concise, professional, and helpful. For actions that modify data (creating contacts, adding notes), let users know they can do this through the interface or by using specific commands.${contextInfo}
-
-Current page: ${context?.page || 'Unknown'}`
-}
+// NOTE: System prompt is now provided by ARIA
+// See lib/aria/ for the unified orchestrator implementation

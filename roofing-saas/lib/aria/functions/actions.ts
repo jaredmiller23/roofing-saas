@@ -6,7 +6,7 @@
 import { ariaFunctionRegistry } from '../function-registry'
 import { sendSMS } from '@/lib/twilio/sms'
 import { canSendSMS } from '@/lib/twilio/compliance'
-import { sendEmail, type SendEmailParams } from '@/lib/resend/email'
+import { sendEmail } from '@/lib/resend/email'
 import { canSendEmail } from '@/lib/resend/compliance'
 import { logger } from '@/lib/logger'
 
