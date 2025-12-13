@@ -2,6 +2,7 @@
   "task_id": "ARIA-VALIDATE-001",
   "files_read": [
     "lib/aria/index.ts",
+    "lib/auth/mfa.ts",
     "lib/aria/orchestrator.ts",
     "app/api/aria/execute/route.ts",
     "lib/aria/context-builder.ts",
@@ -16,6 +17,7 @@
   "files_modified": [
     "app/(dashboard)/settings/profile/page.tsx",
     "components/settings/CallComplianceSettings.tsx",
+    "lib/auth/mfa.ts",
     "docs/validation/ARIA-VALIDATION-REPORT.md"
   ],
   "validation_passed": false,
