@@ -632,6 +632,11 @@ export default function ProfileSettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* Notifications Tab */}
+        <TabsContent value="notifications" className="space-y-6">
+          <NotificationPreferences />
+        </TabsContent>
+
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6">
           {/* Change Password */}
