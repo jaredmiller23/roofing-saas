@@ -102,10 +102,10 @@ export const NO_PERMISSIONS: Permissions = PERMISSION_MODULES.reduce(
 export async function getUserPermissions(userId: string): Promise<Permissions> {
   const supabase = await createClient()
 
-  // First get user's role
+  // First get user's tenant and role
   const { data: tenantUser, error: userError } = await supabase
     .from('tenant_users')
-    .select('role')
+    .select('role, tenant_id')
     .eq('user_id', userId)
     .single()
 
@@ -114,6 +114,7 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
   }
 
   const role = tenantUser.role
+  const tenantId = tenantUser.tenant_id
 
   // Owner and admin have predefined permissions
   if (role === 'owner') {
@@ -124,26 +125,51 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
     return ADMIN_PERMISSIONS
   }
 
-  // For custom roles, look up the user_roles table
-  const { data: roleData, error: roleError } = await supabase
-    .from('user_roles')
-    .select('permissions')
-    .eq('name', role)
+  // Check for custom role assignment
+  const { data: roleAssignment, error: assignmentError } = await supabase
+    .from('user_role_assignments')
+    .select('role_id')
+    .eq('user_id', userId)
+    .eq('tenant_id', tenantId)
     .single()
 
-  if (roleError || !roleData) {
-    // If no custom role found, return default user permissions
-    return {
-      ...NO_PERMISSIONS,
-      ...(DEFAULT_USER_PERMISSIONS as Permissions),
+  if (!assignmentError && roleAssignment) {
+    // Get role permissions from user_roles table
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('permissions')
+      .eq('id', roleAssignment.role_id)
+      .single()
+
+    if (!roleError && roleData) {
+      const rolePermissions = roleData.permissions as Partial<Permissions>
+      return {
+        ...NO_PERMISSIONS,
+        ...rolePermissions,
+      }
     }
   }
 
-  // Merge role permissions with defaults
-  const rolePermissions = roleData.permissions as Partial<Permissions>
+  // Fall back to looking up by role name for backwards compatibility
+  const { data: roleByName, error: roleNameError } = await supabase
+    .from('user_roles')
+    .select('permissions')
+    .eq('tenant_id', tenantId)
+    .eq('name', role)
+    .single()
+
+  if (!roleNameError && roleByName) {
+    const rolePermissions = roleByName.permissions as Partial<Permissions>
+    return {
+      ...NO_PERMISSIONS,
+      ...rolePermissions,
+    }
+  }
+
+  // If no custom role found, return default user permissions
   return {
     ...NO_PERMISSIONS,
-    ...rolePermissions,
+    ...(DEFAULT_USER_PERMISSIONS as Permissions),
   }
 }
 
