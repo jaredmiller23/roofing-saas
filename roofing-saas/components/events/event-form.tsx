@@ -1,8 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { CalendarDays, Clock, MapPin } from 'lucide-react'
+import { CalendarDays, Clock, MapPin, User } from 'lucide-react'
+
+interface TeamMember {
+  id: string
+  email: string
+  first_name?: string
+  last_name?: string
+  full_name: string
+  role: string
+}
 
 interface EventFormProps {
   event?: {
@@ -21,6 +30,7 @@ interface EventFormProps {
     address_zip: string | null
     outcome: string | null
     outcome_notes: string | null
+    organizer: string | null
   }
 }
 
@@ -28,6 +38,26 @@ export function EventForm({ event }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [loadingMembers, setLoadingMembers] = useState(true)
+
+  // Fetch team members for assignment dropdown
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const response = await fetch('/api/team-members')
+        if (response.ok) {
+          const data = await response.json()
+          setTeamMembers(data.members || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch team members:', err)
+      } finally {
+        setLoadingMembers(false)
+      }
+    }
+    fetchTeamMembers()
+  }, [])
 
   // Format datetime for input (convert from ISO to datetime-local format)
   const formatDateTimeLocal = (isoString: string | null) => {
@@ -56,6 +86,7 @@ export function EventForm({ event }: EventFormProps) {
     address_zip: event?.address_zip || '',
     outcome: event?.outcome || '',
     outcome_notes: event?.outcome_notes || '',
+    organizer: event?.organizer || '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +104,7 @@ export function EventForm({ event }: EventFormProps) {
         ...formData,
         start_at: formData.start_at ? new Date(formData.start_at).toISOString() : null,
         end_at: formData.end_at ? new Date(formData.end_at).toISOString() : null,
+        organizer: formData.organizer || null,
       }
 
       const response = await fetch(url, {
@@ -124,7 +156,7 @@ export function EventForm({ event }: EventFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Event Type
@@ -159,6 +191,30 @@ export function EventForm({ event }: EventFormProps) {
                 <option value="cancelled">Cancelled</option>
                 <option value="completed">Completed</option>
                 <option value="no_show">No Show</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                <span className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  Assigned To
+                </span>
+              </label>
+              <select
+                value={formData.organizer}
+                onChange={(e) => setFormData({ ...formData, organizer: e.target.value })}
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={loadingMembers}
+              >
+                <option value="">
+                  {loadingMembers ? 'Loading...' : 'Select team member'}
+                </option>
+                {teamMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.full_name} ({member.role})
+                  </option>
+                ))}
               </select>
             </div>
           </div>

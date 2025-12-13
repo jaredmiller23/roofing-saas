@@ -55,15 +55,24 @@ export function HousePinDropper({
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map())
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null)
 
-  // Load existing pins for the territory
+  // Load existing pins (for territory or orphaned pins when no territory selected)
   useEffect(() => {
-    if (!territoryId || !map) {
+    if (!map) {
       return
     }
 
     const fetchPins = async () => {
       try {
-        const response = await fetch(`/api/pins?territory_id=${territoryId}`)
+        // Fetch pins for territory OR fetch orphaned pins (no territory)
+        const params = new URLSearchParams()
+        if (territoryId) {
+          params.append('territory_id', territoryId)
+        } else {
+          params.append('orphaned', 'true') // Fetch pins without a territory
+        }
+        params.append('limit', '200')
+
+        const response = await fetch(`/api/pins?${params.toString()}`)
         const data = await response.json()
 
         if (response.ok && data.success) {

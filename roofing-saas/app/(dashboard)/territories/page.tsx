@@ -276,53 +276,58 @@ export default function TerritoriesPage() {
   const mapViewJSX = useMemo(() => (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-foreground">
-          {selectedTerritory ? selectedTerritory.name : 'Territory Map'}
-        </h2>
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">
+            {selectedTerritory ? selectedTerritory.name : 'Pin Drop Map'}
+          </h2>
+          {!selectedTerritory && (
+            <p className="text-sm text-muted-foreground">
+              Drop pins anywhere • Select a territory below to focus the view
+            </p>
+          )}
+        </div>
 
-        {selectedTerritory && (
-          <Button
-            onClick={() => setPinDropEnabled(!pinDropEnabled)}
-            variant={pinDropEnabled ? 'default' : 'outline'}
-            size="sm"
-            className="gap-2"
-          >
-            <MapPin className="h-4 w-4" />
-            {pinDropEnabled ? 'Stop Dropping' : 'Drop Pins'}
-          </Button>
-        )}
+        <Button
+          onClick={() => setPinDropEnabled(!pinDropEnabled)}
+          variant={pinDropEnabled ? 'default' : 'outline'}
+          size="sm"
+          className="gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          {pinDropEnabled ? 'Stop Dropping' : 'Drop Pins'}
+        </Button>
       </div>
 
-      {selectedTerritory && selectedTerritory.boundary_data ? (
-        <div className="relative rounded-lg overflow-hidden border border">
-          <TerritoryMap
-            territories={territoriesArray}
-            selectedTerritory={selectedTerritory}
-            height="500px"
-            onMapReady={setMap}
-            disableTerritoryInteractions={pinDropEnabled}
-          />
+      <div className="relative rounded-lg overflow-hidden border border">
+        <TerritoryMap
+          territories={territoriesArray}
+          selectedTerritory={selectedTerritory}
+          height="500px"
+          onMapReady={setMap}
+          disableTerritoryInteractions={pinDropEnabled}
+        />
 
-          <HousePinDropper
-            map={map}
-            territoryId={selectedTerritory.id}
-            enabled={pinDropEnabled}
-            onPinCreated={(pin) => {
-              console.log('Pin created:', pin)
-              // Refresh knocks list
-              fetchKnocks(selectedTerritory.id)
-            }}
-          />
-        </div>
-      ) : (
-        <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
-          <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground font-medium">No territory selected</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Select a territory from the list to view its map
-          </p>
-        </div>
-      )}
+        <HousePinDropper
+          map={map}
+          territoryId={selectedTerritory?.id}
+          enabled={pinDropEnabled}
+          onPinCreated={(pin) => {
+            console.log('Pin created:', pin)
+            // Refresh knocks list
+            fetchKnocks(selectedTerritory?.id)
+          }}
+        />
+
+        {/* Orphaned pin indicator */}
+        {pinDropEnabled && !selectedTerritory && (
+          <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            Pins will be unassigned (no territory)
+          </div>
+        )}
+      </div>
     </div>
     // Note: 'map' is intentionally excluded from deps to avoid infinite loop
     // (map updates via onMapReady callback would trigger re-render infinitely)
@@ -360,24 +365,45 @@ export default function TerritoriesPage() {
         {/* Stats Cards */}
         <StatsCards />
 
-        {/* Desktop: Split View */}
-        <div className="hidden md:grid md:grid-cols-3 gap-6">
-          {/* Left: Territory List (1/3 width) */}
-          <div className="col-span-1">
-            <TerritoryList
-              autoLoad={true}
-              onTerritorySelect={handleTerritorySelect}
-              onTerritoryEdit={(territoryId) => {
-                router.push(`/territories/${territoryId}/edit`)
-              }}
-            />
-          </div>
+        {/* Desktop: Map on top, Territory list below */}
+        <div className="hidden md:block space-y-6">
+          {/* Map View - Full Width (bigger) */}
+          {mapViewJSX}
 
-          {/* Right: Map + Activity (2/3 width) */}
-          <div className="col-span-2 space-y-6">
-            {mapViewJSX}
-            {activityFeedJSX}
-          </div>
+          {/* Territory Selector - Below Map */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Select Territory</CardTitle>
+                  <CardDescription>Choose a territory to view on the map and drop pins</CardDescription>
+                </div>
+                {selectedTerritory && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedTerritory(null)}
+                  >
+                    Clear Selection
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <TerritoryList
+                autoLoad={true}
+                onTerritorySelect={handleTerritorySelect}
+                onTerritoryEdit={(territoryId) => {
+                  router.push(`/territories/${territoryId}/edit`)
+                }}
+                compact={true}
+                selectedTerritoryId={selectedTerritory?.id}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Activity Feed */}
+          {activityFeedJSX}
         </div>
 
         {/* Mobile: Tabs */}

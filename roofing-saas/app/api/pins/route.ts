@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams
     const territoryId = searchParams.get('territory_id')
+    const orphaned = searchParams.get('orphaned') === 'true'
     const limit = searchParams.get('limit') || '100'
 
     // Get current user
@@ -44,15 +45,18 @@ export async function GET(request: NextRequest) {
         pin_type,
         created_at,
         user_id,
-        contact_id
+        contact_id,
+        territory_id
       `)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(parseInt(limit))
 
-    // Filter by territory if provided
+    // Filter by territory OR get orphaned pins
     if (territoryId) {
       query = query.eq('territory_id', territoryId)
+    } else if (orphaned) {
+      query = query.is('territory_id', null)
     }
 
     const { data: pins, error } = await query
@@ -118,10 +122,10 @@ export async function POST(request: NextRequest) {
       pin_type
     })
 
-    // Validate required fields
-    if (!latitude || !longitude || !territory_id) {
+    // Validate required fields (territory_id is now optional for orphaned pins)
+    if (!latitude || !longitude) {
       return NextResponse.json(
-        { error: 'latitude, longitude, and territory_id are required' },
+        { error: 'latitude and longitude are required' },
         { status: 400 }
       )
     }
@@ -152,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     logger.debug('[API] Creating pin for tenant:', { tenant_id: tenantUser.tenant_id })
 
-    // Create the pin
+    // Create the pin (territory_id can be null for orphaned pins)
     const { data: newPin, error: insertError } = await supabase
       .from('knocks')
       .insert({
@@ -163,7 +167,7 @@ export async function POST(request: NextRequest) {
         address_city,
         address_state,
         address_zip,
-        territory_id,
+        territory_id: territory_id || null,  // Allow null for orphaned pins
         disposition: disposition || 'not_home',
         notes,
         pin_type: pin_type || 'knock',

@@ -23,6 +23,10 @@ interface TerritoryListProps {
   onTerritoryEdit?: (territoryId: string) => void
   onTerritoryDelete?: (territoryId: string) => void
   autoLoad?: boolean
+  /** Compact mode: horizontal grid, no card wrapper, minimal details */
+  compact?: boolean
+  /** Currently selected territory ID (for highlighting in compact mode) */
+  selectedTerritoryId?: string
 }
 
 export function TerritoryList({
@@ -31,6 +35,8 @@ export function TerritoryList({
   onTerritoryEdit,
   onTerritoryDelete,
   autoLoad = true,
+  compact = false,
+  selectedTerritoryId,
 }: TerritoryListProps) {
   const [territories, setTerritories] = useState<Territory[]>([])
   const [loading, setLoading] = useState(false)
@@ -129,6 +135,78 @@ export function TerritoryList({
     }
   }
 
+  // Compact mode: horizontal grid of territory buttons
+  if (compact) {
+    if (loading && territories.length === 0) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      )
+    }
+
+    if (error) {
+      return (
+        <div className="text-sm text-red-600 py-4">{error}</div>
+      )
+    }
+
+    if (territories.length === 0) {
+      return (
+        <div className="text-center py-6 text-muted-foreground text-sm">
+          No territories yet. Create one to start tracking.
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {territories.map(territory => (
+          <button
+            key={territory.id}
+            onClick={() => onTerritorySelect?.(territory)}
+            className={`
+              p-4 rounded-lg border text-left transition-all
+              ${selectedTerritoryId === territory.id
+                ? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-2'
+                : 'border-border hover:border-primary hover:bg-accent'
+              }
+            `}
+          >
+            <h3 className="font-medium text-foreground truncate">{territory.name}</h3>
+            {territory.description && (
+              <p className="text-xs text-muted-foreground truncate mt-1">{territory.description}</p>
+            )}
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              {territory.boundary_data ? (
+                <span className="flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  {countBoundaryPoints(territory)} pts
+                </span>
+              ) : (
+                <span className="text-orange-600">No boundary</span>
+              )}
+            </div>
+            {onTerritoryEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onTerritoryEdit(territory.id)
+                }}
+                className="mt-2 text-xs text-primary hover:underline"
+              >
+                Edit
+              </button>
+            )}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  // Full mode: Card with detailed list
   return (
     <Card>
       <CardHeader>

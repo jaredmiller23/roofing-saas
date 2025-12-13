@@ -162,7 +162,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="first_name" className="text-xs">
+                  <Label htmlFor="first_name" className="text-sm font-medium">
                     First Name
                   </Label>
                   <Input
@@ -176,7 +176,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
                   />
                 </div>
                 <div>
-                  <Label htmlFor="last_name" className="text-xs">
+                  <Label htmlFor="last_name" className="text-sm font-medium">
                     Last Name
                   </Label>
                   <Input
@@ -192,7 +192,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-xs">
+                <Label htmlFor="phone" className="text-sm font-medium">
                   Phone
                 </Label>
                 <Input
@@ -208,7 +208,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-xs">
+                <Label htmlFor="email" className="text-sm font-medium">
                   Email
                 </Label>
                 <Input

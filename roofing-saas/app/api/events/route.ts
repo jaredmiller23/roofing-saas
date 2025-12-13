@@ -90,13 +90,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const supabase = await createClient()
 
+    // Use organizer from body if provided, otherwise default to current user
+    const organizer = body.organizer || user.id
+
     const { data, error } = await supabase
       .from('events')
       .insert({
         ...body,
         tenant_id: tenantId,
         created_by: user.id,
-        organizer: user.id,
+        organizer: organizer,
       })
       .select()
       .single()

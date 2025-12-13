@@ -5,9 +5,90 @@
  * Displays individual chat messages in the AI assistant
  */
 
-import { Copy, Check, Mic, AlertCircle } from 'lucide-react'
+import { Copy, Check, Mic, AlertCircle, Users, FileText, Search, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
 import type { ChatMessage as ChatMessageType } from '@/lib/ai-assistant/types'
+
+/**
+ * Format function call results into human-readable text
+ */
+function formatFunctionResult(functionName: string, result: unknown): { icon: React.ReactNode; text: string } | null {
+  if (!result || typeof result !== 'object') return null
+
+  const data = result as Record<string, unknown>
+
+  // Handle error responses
+  if (data.error) {
+    return { icon: <AlertCircle className="h-4 w-4" />, text: `Error: ${data.error}` }
+  }
+
+  switch (functionName) {
+    case 'search_contacts': {
+      const contacts = data.contacts as Array<{ first_name?: string; last_name?: string; name?: string; email?: string; phone?: string }> | undefined
+      const count = data.count as number || contacts?.length || 0
+
+      if (count === 0) {
+        return { icon: <Users className="h-4 w-4" />, text: 'No contacts found matching your search.' }
+      }
+
+      const names = contacts?.slice(0, 3).map(c =>
+        c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email || 'Unknown'
+      ).join(', ') || ''
+
+      const more = count > 3 ? ` and ${count - 3} more` : ''
+      return { icon: <Users className="h-4 w-4" />, text: `Found ${count} contact${count === 1 ? '' : 's'}: ${names}${more}` }
+    }
+
+    case 'get_contact': {
+      const contact = data.contact as { first_name?: string; last_name?: string; name?: string; email?: string; phone?: string } | undefined
+      if (!contact) return { icon: <Users className="h-4 w-4" />, text: 'Contact not found.' }
+
+      const name = contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
+      const details = [contact.email, contact.phone].filter(Boolean).join(' • ')
+      return { icon: <Users className="h-4 w-4" />, text: `${name}${details ? ` (${details})` : ''}` }
+    }
+
+    case 'search_projects':
+    case 'get_projects': {
+      const projects = data.projects as Array<{ name?: string; title?: string; status?: string }> | undefined
+      const count = data.count as number || projects?.length || 0
+
+      if (count === 0) {
+        return { icon: <FileText className="h-4 w-4" />, text: 'No projects found.' }
+      }
+
+      const names = projects?.slice(0, 3).map(p => p.name || p.title || 'Untitled').join(', ') || ''
+      const more = count > 3 ? ` and ${count - 3} more` : ''
+      return { icon: <FileText className="h-4 w-4" />, text: `Found ${count} project${count === 1 ? '' : 's'}: ${names}${more}` }
+    }
+
+    case 'create_contact':
+    case 'create_project': {
+      const item = (data.contact || data.project) as { name?: string; first_name?: string; last_name?: string; title?: string } | undefined
+      if (!item) return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Created successfully!' }
+
+      const name = item.name || item.title || `${item.first_name || ''} ${item.last_name || ''}`.trim()
+      return { icon: <CheckCircle2 className="h-4 w-4" />, text: `Created: ${name}` }
+    }
+
+    case 'update_contact':
+    case 'update_project': {
+      return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Updated successfully!' }
+    }
+
+    default: {
+      // For unknown functions, show success/count if available
+      if (data.success === true) {
+        const count = data.count as number | undefined
+        if (count !== undefined) {
+          return { icon: <Search className="h-4 w-4" />, text: `Found ${count} result${count === 1 ? '' : 's'}` }
+        }
+        return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Completed successfully' }
+      }
+      return null
+    }
+  }
+}
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -45,25 +126,35 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
     )
   }
 
-  // Render function call messages (collapsed cards)
+  // Render function call messages (formatted nicely)
   if (message.role === 'function' || message.function_call) {
+    const functionName = message.function_call?.name || 'unknown'
+    const formattedResult = message.function_call?.result
+      ? formatFunctionResult(functionName, message.function_call.result)
+      : null
+
+    // If we have a nicely formatted result, show it cleanly
+    if (formattedResult) {
+      return (
+        <div className="flex justify-center my-2">
+          <div className="px-4 py-2.5 bg-secondary/10 border border-secondary/30 rounded-lg text-sm max-w-md">
+            <div className="flex items-center gap-2 text-secondary">
+              {formattedResult.icon}
+              <span className="text-foreground">{formattedResult.text}</span>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Fallback: show function name with truncated result (for debugging/unknown functions)
     return (
       <div className="flex justify-center my-2">
-        <div className="px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg text-sm max-w-md">
-          <div className="flex items-center gap-2 text-primary">
-            <span className="font-semibold">Function:</span>
-            <code className="text-xs bg-primary/20 px-2 py-0.5 rounded">
-              {message.function_call?.name || 'unknown'}
-            </code>
+        <div className="px-4 py-2 bg-muted/50 border border-border rounded-lg text-sm max-w-md">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Search className="h-4 w-4" />
+            <span>Processing: {functionName.replace(/_/g, ' ')}</span>
           </div>
-          {message.function_call?.result ? (
-            <div className="mt-1 text-xs text-primary/80">
-              Result: {typeof message.function_call.result === 'string'
-                ? message.function_call.result
-                : JSON.stringify(message.function_call.result).slice(0, 100)}
-              {JSON.stringify(message.function_call.result).length > 100 && '...'}
-            </div>
-          ) : null}
         </div>
       </div>
     )

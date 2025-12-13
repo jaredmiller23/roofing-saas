@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CalendarDays, Clock, MapPin, ExternalLink } from 'lucide-react'
+import { CalendarDays, Clock, MapPin, ExternalLink, User } from 'lucide-react'
 
 interface Event {
   id: string
@@ -16,6 +16,12 @@ interface Event {
   all_day: boolean
   description: string | null
   created_at: string
+  organizer: string | null
+}
+
+interface TeamMember {
+  id: string
+  full_name: string
 }
 
 interface EventsTableProps {
@@ -29,6 +35,30 @@ export function EventsTable({ params }: EventsTableProps) {
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(parseInt((params.page as string) || '1'))
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+
+  // Fetch team members for displaying organizer names
+  useEffect(() => {
+    async function fetchTeamMembers() {
+      try {
+        const response = await fetch('/api/team-members')
+        if (response.ok) {
+          const data = await response.json()
+          setTeamMembers(data.members || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch team members:', err)
+      }
+    }
+    fetchTeamMembers()
+  }, [])
+
+  // Get organizer name from team members
+  const getOrganizerName = (organizerId: string | null) => {
+    if (!organizerId) return null
+    const member = teamMembers.find((m) => m.id === organizerId)
+    return member?.full_name || 'Unknown'
+  }
 
   useEffect(() => {
     async function fetchEvents() {
@@ -166,6 +196,9 @@ export function EventsTable({ params }: EventsTableProps) {
                 Type
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Assigned To
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Start
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -201,6 +234,16 @@ export function EventsTable({ params }: EventsTableProps) {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEventTypeBadge(event.event_type)}`}>
                     {event.event_type?.replace('_', ' ')}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {event.organizer ? (
+                    <div className="flex items-center text-sm text-foreground">
+                      <User className="h-4 w-4 text-muted-foreground mr-2" />
+                      {getOrganizerName(event.organizer)}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Unassigned</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-foreground">
