@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { TerritoryList } from '@/components/territories/TerritoryList'
@@ -79,6 +79,21 @@ export default function TerritoriesPage() {
   const { location: userLocation, error: locationError, isTracking } = useUserLocation({
     enabled: activeView === 'map'
   })
+
+  // Track if we've already centered on user location (only do it once per session)
+  const hasCenteredOnUserRef = useRef(false)
+
+  // Auto-center map on user's location when it first becomes available
+  useEffect(() => {
+    if (map && userLocation && !hasCenteredOnUserRef.current && !selectedTerritory) {
+      map.setCenter({
+        lat: userLocation.latitude,
+        lng: userLocation.longitude
+      })
+      map.setZoom(16) // Street-level zoom for field work
+      hasCenteredOnUserRef.current = true
+    }
+  }, [map, userLocation, selectedTerritory])
 
   // Fetch knocks for selected territory (or all knocks if no territory selected)
   const fetchKnocks = useCallback(async (territoryId?: string) => {
@@ -265,15 +280,6 @@ export default function TerritoriesPage() {
           disableTerritoryInteractions={pinDropEnabled}
         />
 
-        {/* User location marker */}
-        <UserLocationMarker
-          map={map}
-          latitude={userLocation?.latitude ?? null}
-          longitude={userLocation?.longitude ?? null}
-          accuracy={userLocation?.accuracy}
-          heading={userLocation?.heading}
-        />
-
         <HousePinDropper
           map={map}
           territoryId={selectedTerritory?.id}
@@ -319,7 +325,7 @@ export default function TerritoriesPage() {
     // Note: 'map' is intentionally excluded from deps to avoid infinite loop
     // (map updates via onMapReady callback would trigger re-render infinitely)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks, userLocation, isTracking, locationError])
+  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks, isTracking, locationError])
 
   return (
     <div className="p-4 md:p-8">
@@ -383,6 +389,15 @@ export default function TerritoriesPage() {
           <div className="space-y-6">
             {/* Map View */}
             {mapViewJSX}
+
+            {/* User location marker - rendered outside useMemo to get fresh map reference */}
+            <UserLocationMarker
+              map={map}
+              latitude={userLocation?.latitude ?? null}
+              longitude={userLocation?.longitude ?? null}
+              accuracy={userLocation?.accuracy}
+              heading={userLocation?.heading}
+            />
 
             {/* Territory Selector - Compact below map */}
             <Card>
