@@ -152,10 +152,8 @@ export async function GET() {
     const limitedActivities = activities.slice(0, 3)
 
     return successResponse({
-      data: {
-        activities: limitedActivities,
-        count: limitedActivities.length
-      }
+      activities: limitedActivities,
+      count: limitedActivities.length
     })
   } catch (error) {
     logger.error('Error fetching activity feed:', { error })
