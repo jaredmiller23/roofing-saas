@@ -1,10 +1,16 @@
+---
+name: quickbooks
+description: QuickBooks Online API integration best practices. Use when implementing OAuth flow, syncing invoices/customers/payments, handling rate limits, or planning financial integration architecture.
+allowed-tools: Bash, Read, WebFetch
+---
+
 # QuickBooks Integration Skill
 
 **Domain**: QuickBooks Online API Integration
 **Purpose**: Best practices for syncing invoices, customers, and payments
-**Last Updated**: November 17, 2025
+**Last Updated**: December 13, 2025
 
-## 🎯 When This Skill Loads
+## When This Skill Loads
 
 This skill automatically loads when you're:
 - Implementing QuickBooks OAuth flow
@@ -13,15 +19,15 @@ This skill automatically loads when you're:
 - Discussing payment processing
 - Planning QuickBooks integration architecture
 
-## 📚 Core Knowledge Areas
+## Core Knowledge Areas
 
 ### 1. OAuth 2.0 Flow (PKCE)
 ### 2. API Rate Limiting & Error Handling
-### 3. Entity Mapping (Our App ↔ QuickBooks)
+### 3. Entity Mapping (Our App <-> QuickBooks)
 ### 4. Best Practices (Polling vs Webhooks)
 ### 5. Common Pitfalls & Solutions
 
-## 🔐 OAuth 2.0 with PKCE
+## OAuth 2.0 with PKCE
 
 ### Flow Steps
 ```
@@ -50,7 +56,7 @@ This skill automatically loads when you're:
 - Validate redirect URLs
 - Use state parameter to prevent CSRF
 
-## 🚦 Rate Limiting
+## Rate Limiting
 
 ### Limits
 - **500 requests per minute** (per company/realm ID)
@@ -92,9 +98,9 @@ For bulk operations (e.g., sync 100 invoices):
 - Respect rate limits
 ```
 
-## 🔄 Entity Mapping
+## Entity Mapping
 
-### Our App → QuickBooks
+### Our App -> QuickBooks
 
 | Our App Entity | QB Entity | Notes |
 |----------------|-----------|-------|
@@ -106,7 +112,7 @@ For bulk operations (e.g., sync 100 invoices):
 
 ### Field Mapping Examples
 
-**Contact → Customer**:
+**Contact -> Customer**:
 ```json
 {
   "DisplayName": contact.fullName,
@@ -123,7 +129,7 @@ For bulk operations (e.g., sync 100 invoices):
 }
 ```
 
-**Project → Invoice**:
+**Project -> Invoice**:
 ```json
 {
   "CustomerRef": { "value": qbCustomerId },
@@ -132,11 +138,11 @@ For bulk operations (e.g., sync 100 invoices):
       "Amount": project.totalAmount,
       "DetailType": "SalesItemLineDetail",
       "SalesItemLineDetail": {
-        "ItemRef": { "value": "1" }, // QB item ID for "Roofing Service"
-        "Qty": project.squareFootage / 100, // Squares
+        "ItemRef": { "value": "1" },
+        "Qty": project.squareFootage / 100,
         "UnitPrice": project.pricePerSquare
       },
-      "Description": `Roof replacement - ${project.squareFootage} sq ft`
+      "Description": "Roof replacement - X sq ft"
     },
     {
       "Amount": project.laborCost,
@@ -149,32 +155,17 @@ For bulk operations (e.g., sync 100 invoices):
 }
 ```
 
-## ⚠️ Error Handling
+## Error Handling
 
 ### Common Errors
 
 **401 Unauthorized**
 - **Cause**: Access token expired
 - **Solution**: Refresh token automatically
-- **Code**:
-```typescript
-if (error.status === 401) {
-  const newTokens = await refreshQuickBooksToken(refreshToken);
-  // Retry request with new access token
-}
-```
 
 **429 Too Many Requests**
 - **Cause**: Rate limit exceeded
 - **Solution**: Exponential backoff, reduce polling frequency
-- **Code**:
-```typescript
-if (error.status === 429) {
-  const retryAfter = error.headers['Retry-After'] || 60;
-  await wait(retryAfter * 1000);
-  // Retry request
-}
-```
 
 **400 Bad Request**
 - **Cause**: Invalid data (missing required field, wrong format)
@@ -187,27 +178,26 @@ if (error.status === 429) {
 **500 Internal Server Error**
 - **Cause**: QuickBooks outage or bug
 - **Solution**: Retry with exponential backoff, log for review
-- **Fallback**: Queue for later, notify user
 
 **404 Not Found**
 - **Cause**: Entity doesn't exist (maybe deleted in QB)
 - **Solution**: Re-sync to find correct ID or create new entity
 
-## 🎯 Best Practices (Learned from Experience)
+## Best Practices (Learned from Experience)
 
-### ❌ DON'T Use Webhooks (Unreliable)
+### DON'T Use Webhooks (Unreliable)
 **Problem**: QB webhooks are finicky, often miss events
 **Solution**: Use polling every 15 minutes instead
 **Rationale**: More reliable, easier to debug, respects rate limits
 
-### ✅ DO Use Batch API for Multiple Operations
+### DO Use Batch API for Multiple Operations
 **Example**: Syncing 20 invoices
 ```
 Bad: 20 individual API calls (slow, hits rate limit)
 Good: 2 batch requests (10 invoices each) - fast, efficient
 ```
 
-### ✅ DO Use Idempotency Keys
+### DO Use Idempotency Keys
 **Purpose**: Prevent duplicate invoices if request retries
 **Implementation**:
 ```typescript
@@ -215,11 +205,11 @@ const idempotencyKey = `invoice-${projectId}-${Date.now()}`;
 // Store key with invoice, check before creating duplicate
 ```
 
-### ✅ DO Sync in Background
-**Pattern**: User triggers sync → Job queued → Background worker processes
+### DO Sync in Background
+**Pattern**: User triggers sync -> Job queued -> Background worker processes
 **Benefits**: No blocking UI, can retry failures, respect rate limits
 
-### ✅ DO Handle Partial Failures
+### DO Handle Partial Failures
 **Scenario**: Batch of 20 invoices, 3 fail
 **Solution**:
 - Log which ones failed
@@ -227,7 +217,7 @@ const idempotencyKey = `invoice-${projectId}-${Date.now()}`;
 - Notify user of partial success
 - Don't block on failures
 
-### ✅ DO Cache QB Entity IDs
+### DO Cache QB Entity IDs
 **Why**: Avoid redundant lookups
 **How**: Store QB Customer ID with our Contact record
 **Example**:
@@ -235,13 +225,13 @@ const idempotencyKey = `invoice-${projectId}-${Date.now()}`;
 ALTER TABLE contacts ADD COLUMN qb_customer_id TEXT;
 ```
 
-### ❌ DON'T Assume Immediate Consistency
-**Reality**: QB sometimes lags (create invoice → query → not found yet)
+### DON'T Assume Immediate Consistency
+**Reality**: QB sometimes lags (create invoice -> query -> not found yet)
 **Solution**:
 - Use ID from create response (most reliable)
 - If querying, wait 1-2 seconds or poll until exists
 
-## 🔧 Code Patterns
+## Code Patterns
 
 ### OAuth Token Refresh Pattern
 ```typescript
@@ -303,18 +293,15 @@ async function createQBInvoice(project: Project) {
 
   } catch (error) {
     if (error.status === 401) {
-      // Token expired, refresh and retry
       await refreshToken();
       return createQBInvoice(project); // Retry
     }
 
     if (error.status === 429) {
-      // Rate limited, wait and retry
       await wait(60000); // 1 minute
       return createQBInvoice(project);
     }
 
-    // Log error, notify user
     console.error('QB invoice creation failed:', error);
     throw new Error('Failed to sync invoice to QuickBooks');
   }
@@ -331,21 +318,19 @@ async function syncQuickBooksInvoices() {
     try {
       await createOrUpdateQBInvoice(project);
 
-      // Mark as synced
       await supabase
         .from('projects')
         .update({ qb_synced_at: new Date().toISOString() })
         .eq('id', project.id);
 
     } catch (error) {
-      // Log failure, will retry in 15 minutes
       await logSyncError(project.id, error);
     }
   }
 }
 ```
 
-## 📊 Integration Checklist
+## Integration Checklist
 
 Before deploying QB integration:
 - [ ] OAuth flow working (PKCE)
@@ -363,7 +348,7 @@ Before deploying QB integration:
 - [ ] Audit logging for compliance
 - [ ] Test with QB sandbox account
 
-## 🔗 Resources
+## Resources
 
 **Official Docs**: https://developer.intuit.com/app/developer/qbo/docs
 **OAuth Guide**: https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization

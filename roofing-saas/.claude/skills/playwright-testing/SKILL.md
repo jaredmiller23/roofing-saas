@@ -1,3 +1,9 @@
+---
+name: playwright-testing
+description: Expert guidance on Playwright E2E testing patterns for Next.js + Supabase applications. Use when writing or debugging Playwright tests, setting up authentication, troubleshooting test failures, or implementing error handling in tests.
+allowed-tools: Bash, Read, Glob, Grep
+---
+
 # Playwright E2E Testing Skill
 
 ## Purpose
@@ -40,11 +46,11 @@ export default defineConfig({
 
 **Critical: Wait for Navigation After Login**
 ```typescript
-// ❌ WRONG - saves too early
+// WRONG - saves too early
 await page.getByRole('button', { name: 'Sign in' }).click()
 await page.context().storageState({ path: authFile })
 
-// ✅ CORRECT - wait for final destination
+// CORRECT - wait for final destination
 await page.getByRole('button', { name: 'Sign in' }).click()
 await page.waitForURL('/dashboard', { timeout: 15000 })
 await page.context().storageState({ path: authFile })
@@ -72,7 +78,7 @@ await page.context().storageState({ path: authFile })
 Tests should handle API failures gracefully:
 
 ```typescript
-// ✅ GOOD - Accepts error/timeout as valid state
+// GOOD - Accepts error/timeout as valid state
 test('should load data or show error', async ({ page }) => {
   await page.goto('/dashboard')
 
@@ -165,10 +171,10 @@ console.log('LocalStorage keys:', storage)
 
 **Prefer data-testid over CSS selectors:**
 ```typescript
-// ✅ GOOD - Stable and semantic
+// GOOD - Stable and semantic
 await page.getByTestId('table-view-button').click()
 
-// ❌ AVOID - Fragile, breaks with styling changes
+// AVOID - Fragile, breaks with styling changes
 await page.locator('.bg-gray-100.p-1.rounded-lg').nth(1).click()
 ```
 
@@ -232,16 +238,16 @@ const hasElement = await page.locator('.element')
 
 ## Best Practices Summary
 
-1. ✅ Use storageState with project dependencies for auth
-2. ✅ Wait for navigation/elements after login before saving state
-3. ✅ Delete old auth files to avoid stale state
-4. ✅ Accept error/timeout states as valid test outcomes
-5. ✅ Use data-testid attributes for reliable selectors
-6. ✅ Implement fetch timeouts in components
-7. ✅ Run with fresh state when debugging failures
-8. ✅ Use debug/trace mode to investigate issues
-9. ❌ Don't use manual login in individual tests (use storageState)
-10. ❌ Don't rely on CSS class selectors (use semantic selectors)
+1. Use storageState with project dependencies for auth
+2. Wait for navigation/elements after login before saving state
+3. Delete old auth files to avoid stale state
+4. Accept error/timeout states as valid test outcomes
+5. Use data-testid attributes for reliable selectors
+6. Implement fetch timeouts in components
+7. Run with fresh state when debugging failures
+8. Use debug/trace mode to investigate issues
+9. Don't use manual login in individual tests (use storageState)
+10. Don't rely on CSS class selectors (use semantic selectors)
 
 ## References
 - [Playwright Authentication Guide](https://playwright.dev/docs/auth)

@@ -1,14 +1,19 @@
+---
+name: compliance
+description: Legal and regulatory compliance guidance for TCPA, call recording, and data retention. Use when building SMS campaigns, implementing call recording, designing consent workflows, or planning data retention policies.
+---
+
 # Compliance Skill
 
 **Domain**: Legal & Regulatory Compliance
 **Focus Areas**: TCPA, Call Recording, Data Retention
 **Jurisdiction**: United States (primary: Tennessee)
-**Last Updated**: November 17, 2025
+**Last Updated**: December 13, 2025
 
-## ⚠️ DISCLAIMER
+## DISCLAIMER
 This skill provides general guidance. Consult legal counsel for specific compliance questions. Laws change frequently - verify current requirements.
 
-## 🎯 When This Skill Loads
+## When This Skill Loads
 
 This skill automatically loads when you're:
 - Building SMS campaign features
@@ -17,7 +22,7 @@ This skill automatically loads when you're:
 - Planning data retention policies
 - Discussing privacy/compliance requirements
 
-## 📚 Core Compliance Areas
+## Core Compliance Areas
 
 ### 1. TCPA (Telephone Consumer Protection Act)
 ### 2. Call Recording Laws (One-Party vs Two-Party States)
@@ -25,7 +30,7 @@ This skill automatically loads when you're:
 ### 4. State-Specific Variations
 ### 5. Best Practices for Roofing Sales
 
-## 📱 TCPA Compliance (SMS & Autodialed Calls)
+## TCPA Compliance (SMS & Autodialed Calls)
 
 ### What is TCPA?
 **Law**: Federal law regulating automated calls/texts
@@ -43,10 +48,10 @@ This skill automatically loads when you're:
 
 **Good Consent Example**:
 ```
-☑ I agree to receive text messages from [Company Name] at [phone number]
-  regarding roofing services, promotions, and appointment reminders.
-  Message frequency varies. Reply STOP to opt-out.
-  Message and data rates may apply.
+[ ] I agree to receive text messages from [Company Name] at [phone number]
+    regarding roofing services, promotions, and appointment reminders.
+    Message frequency varies. Reply STOP to opt-out.
+    Message and data rates may apply.
 ```
 
 **Bad Consent**:
@@ -57,7 +62,7 @@ This skill automatically loads when you're:
 **2. Time Restrictions**
 - **Only 8am - 9pm** in recipient's local time zone
 - No texts/calls outside this window
-- Must account for time zones (TN → CA = 2 hour difference)
+- Must account for time zones (TN -> CA = 2 hour difference)
 
 **3. Opt-Out Mechanism**
 - Must honor opt-out within **30 days**
@@ -90,27 +95,13 @@ Before launching SMS campaigns:
 
 ### Common TCPA Violations to Avoid
 
-**❌ Sending to "wrong number" repeatedly**
-- If customer says "wrong number", stop immediately
-- Don't rely on "we had consent" - stop anyway
+- **Sending to "wrong number" repeatedly**: If customer says "wrong number", stop immediately
+- **Ignoring STOP requests**: Must honor within 30 days (best practice: immediately)
+- **Sending outside 8am-9pm**: Account for time zones!
+- **No opt-out method**: Every message must allow opt-out
+- **Pre-checked consent boxes**: User must actively check box
 
-**❌ Ignoring STOP requests**
-- Must honor within 30 days
-- Best practice: Honor immediately
-
-**❌ Sending outside 8am-9pm**
-- Account for time zones!
-- Tennessee sales rep sending to California customer: 8am PST, not 8am EST
-
-**❌ No opt-out method**
-- Every message must allow opt-out
-- "Reply STOP" is standard
-
-**❌ Pre-checked consent boxes**
-- User must actively check box
-- Can't be checked by default
-
-## 📞 Call Recording Laws
+## Call Recording Laws
 
 ### One-Party vs Two-Party Consent States
 
@@ -123,10 +114,6 @@ Before launching SMS campaigns:
 - ALL parties must consent to recording
 - Must announce "This call is being recorded" before recording
 - **California, Florida, Pennsylvania, Washington** are two-party
-
-**Mixed/Complex** (8 states):
-- Varies by situation
-- Consult legal counsel
 
 ### Best Practice: ALWAYS Announce Recording
 
@@ -155,8 +142,8 @@ Even in Tennessee (one-party state), announce recording:
 
 ### State-by-State Quick Reference
 
-| State | Consent Type | Tennessee Roofing Company Action |
-|-------|--------------|----------------------------------|
+| State | Consent Type | Action |
+|-------|--------------|--------|
 | Tennessee | One-party | Announce anyway (best practice) |
 | California | Two-party | MUST announce before recording |
 | Florida | Two-party | MUST announce before recording |
@@ -166,7 +153,7 @@ Even in Tennessee (one-party state), announce recording:
 
 **Rule of Thumb**: If calling someone in a two-party state, announce recording. Our app should announce for ALL calls to be safe.
 
-## 🗄️ Data Retention Requirements
+## Data Retention Requirements
 
 ### Financial Records (IRS)
 - **Minimum**: 3 years
@@ -213,7 +200,7 @@ Even in Tennessee (one-party state), announce recording:
 6. Respond within 30-45 days
 ```
 
-## 🌍 State-Specific Considerations
+## State-Specific Considerations
 
 ### Tennessee (Our Primary Market)
 - **Call Recording**: One-party consent (can record without notice)
@@ -229,7 +216,7 @@ If calling customers in other states:
 - **Texas**: One-party consent, but TCPA still applies
 - **Always**: Announce call recording to be safe
 
-## 🎯 Roofing Industry Specific Compliance
+## Roofing Industry Specific Compliance
 
 ### Insurance Claim Assignments
 - **What**: Customer assigns insurance payment to contractor
@@ -248,7 +235,7 @@ If calling customers in other states:
 - **Best Practice**: Check local rules after major storms
 - **Tennessee**: Generally allows storm targeting
 
-## ✅ Compliance Features for Our App
+## Compliance Features for Our App
 
 ### SMS Campaigns
 ```typescript
@@ -322,7 +309,7 @@ async function enforceRetentionPolicy() {
 }
 ```
 
-## 📋 Compliance Audit Checklist
+## Compliance Audit Checklist
 
 Run this quarterly:
 - [ ] SMS consent records complete and accessible
@@ -336,7 +323,7 @@ Run this quarterly:
 - [ ] No TCPA violations reported
 - [ ] Legal review (annual at minimum)
 
-## ⚠️ Red Flags (Legal Risk)
+## Red Flags (Legal Risk)
 
 **Immediate Attention Required**:
 - Customer says "wrong number" but still receiving texts

@@ -1,10 +1,15 @@
+---
+name: roofing-business
+description: Domain knowledge for Tennessee roofing contractor operations. Use when designing customer workflows, pipeline stages, estimate calculations, inspections, project workflows, or any roofing-specific business logic.
+---
+
 # Roofing Business Skill
 
 **Domain**: Residential & Commercial Roofing Industry
 **Client**: Tennessee Roofing Contractor
-**Last Updated**: November 17, 2025
+**Last Updated**: December 13, 2025
 
-## 🎯 When This Skill Loads
+## When This Skill Loads
 
 This skill automatically loads when you're:
 - Designing customer workflows or pipeline stages
@@ -13,7 +18,7 @@ This skill automatically loads when you're:
 - Discussing roofing-specific business logic
 - Planning customer journey features
 
-## 📚 Core Knowledge Areas
+## Core Knowledge Areas
 
 ### 1. Industry Terminology
 ### 2. Customer Journey & Pipeline
@@ -21,21 +26,20 @@ This skill automatically loads when you're:
 ### 4. Project Workflows
 ### 5. Common Pain Points (Why they're replacing Proline + Enzy)
 
-## 📖 Contents
+## Contents
 
 See additional files in this skill:
 - `terminology.md` - Industry-specific terms and definitions
 - `workflows.md` - Common processes and business workflows
-- `compliance-basics.md` - Permitting, inspections, and regulatory basics
 
-## 🎯 Key Business Rules
+## Key Business Rules
 
 ### Estimate Calculation Formula
 ```
 Total Estimate = Material Cost + Labor Cost + Permits + Markup
 
-Material Cost = (Square Footage / 100) × Price per Square
-Labor Cost = Crew Size × Hours × Hourly Rate
+Material Cost = (Square Footage / 100) x Price per Square
+Labor Cost = Crew Size x Hours x Hourly Rate
 Typical Markup = 20-30%
 ```
 
@@ -47,8 +51,8 @@ Typical Markup = 20-30%
 - 25% markup
 
 ```
-Material: (2000 / 100) × $350 = $7,000
-Labor: 3 × 16 × $75 = $3,600
+Material: (2000 / 100) x $350 = $7,000
+Labor: 3 x 16 x $75 = $3,600
 Permits: $500
 Subtotal: $11,100
 Markup (25%): $2,775
@@ -69,7 +73,7 @@ TOTAL: $13,875
 - **Final Inspection**: 1-3 days after installation
 - **Total Timeline**: 2-4 weeks from contract to completion
 
-## 🎯 Customer Journey Stages
+## Customer Journey Stages
 
 ### 1. Lead Generation
 **Sources**:
@@ -104,7 +108,7 @@ TOTAL: $13,875
 
 ### 4. Estimate Preparation
 **Calculations**:
-- Square footage → material quantity
+- Square footage -> material quantity
 - Labor hours (based on pitch, complexity)
 - Permit costs (municipality lookup)
 - Markup application
@@ -188,7 +192,7 @@ TOTAL: $13,875
 - Warranty registration
 - Request review/referral
 
-## 🎨 Pipeline Stages (for CRM)
+## Pipeline Stages (for CRM)
 
 Based on the customer journey, here are the recommended pipeline stages:
 
@@ -206,7 +210,7 @@ Based on the customer journey, here are the recommended pipeline stages:
 12. **Closed Won** - Final payment received, project complete
 13. **Closed Lost** - Customer declined (track reason)
 
-## 🚧 Common Pain Points
+## Common Pain Points
 
 ### Why Replacing Proline CRM
 - Too many clicks to update a lead
@@ -230,7 +234,7 @@ Based on the customer journey, here are the recommended pipeline stages:
 - **Visual**: Map-based territory management
 - **Photos**: Easy capture, storage, and sharing
 
-## 🎯 Unique Aspects of This Business
+## Unique Aspects of This Business
 
 ### Storm Targeting
 - After hail/wind storms, they target affected areas
@@ -256,7 +260,7 @@ Based on the customer journey, here are the recommended pipeline stages:
 - Typical roof replacement: $8,000-$15,000
 - Main competitors: 5-10 other local roofing companies
 
-## 🔧 Technical Implications
+## Technical Implications
 
 ### For Estimate Calculator
 - Must support square-based pricing
@@ -285,7 +289,7 @@ Based on the customer journey, here are the recommended pipeline stages:
 - Email automation for follow-ups
 - Template messages for common scenarios
 
-## 💡 Using This Skill
+## Using This Skill
 
 When Claude loads this skill, expect:
 - Correct roofing terminology in features
@@ -295,7 +299,7 @@ When Claude loads this skill, expect:
 - Mobile-first, field-optimized suggestions
 - Awareness of Proline + Enzy pain points
 
-## 🔄 Updates
+## Updates
 
 Add to this skill as you learn more about:
 - Specific customer preferences

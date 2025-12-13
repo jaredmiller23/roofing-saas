@@ -1,10 +1,16 @@
+---
+name: archon
+description: Task and project management via curl-based API. Use when checking tasks, updating task status, managing project lifecycle, querying the knowledge base, or documenting work at session start/end. Zero token overhead replacement for MCP.
+allowed-tools: Bash, Read
+---
+
 # Archon Task Management Skill
 
 **Domain**: Project & Task Management, RAG Knowledge Base
 **Purpose**: curl-based patterns for Archon API (replaces MCP with zero token overhead)
 **Last Updated**: December 13, 2025
 
-## 🎯 When This Skill Loads
+## When This Skill Loads
 
 This skill automatically loads when you're:
 - Working with project tasks or status updates
@@ -13,7 +19,7 @@ This skill automatically loads when you're:
 - Managing project lifecycle or documentation
 - Discussing task workflows or status transitions
 
-## 📚 Core Knowledge Areas
+## Core Knowledge Areas
 
 ### 1. Task Management (CRUD)
 ### 2. Project Management
@@ -21,7 +27,7 @@ This skill automatically loads when you're:
 ### 4. Document Management
 ### 5. Session Workflow Patterns
 
-## 🔧 Task Management
+## Task Management
 
 ### API Endpoint: `http://localhost:8181/api/tasks`
 
@@ -86,7 +92,7 @@ curl -X DELETE http://localhost:8181/api/tasks/TASK_ID | jq
 
 ### Task Status Flow
 ```
-todo → doing → review → done
+todo -> doing -> review -> done
 ```
 
 **Rules**:
@@ -99,7 +105,7 @@ todo → doing → review → done
 - `"AI IDE Agent"` - Claude Code will handle
 - `"Archon"` - Archon system task
 
-## 📋 Project Management
+## Project Management
 
 ### API Endpoint: `http://localhost:8181/api/projects`
 
@@ -139,7 +145,7 @@ curl -X PUT http://localhost:8181/api/projects/PROJECT_ID \
 Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 ```
 
-## 🔍 RAG Knowledge Base
+## RAG Knowledge Base
 
 ### API Endpoint: `http://localhost:8181/api/rag`
 
@@ -175,7 +181,7 @@ curl -X POST http://localhost:8181/api/rag/code-examples \
 curl -s "http://localhost:8181/api/rag/sources" | jq
 ```
 
-## 📄 Document Management
+## Document Management
 
 ### API Endpoint: `http://localhost:8181/api/projects/PROJECT_ID/docs`
 
@@ -210,7 +216,7 @@ curl -X POST http://localhost:8181/api/projects/PROJECT_ID/docs \
 - `api` - API documentation
 - `guide` - How-to guides
 
-## 🎯 Session Workflow Patterns
+## Session Workflow Patterns
 
 ### START OF SESSION (MANDATORY)
 ```bash
@@ -276,11 +282,11 @@ curl -X POST http://localhost:8181/api/tasks \
   }' | jq
 ```
 
-## 🏥 Health & Diagnostics
+## Health & Diagnostics
 
 ### Health Check
 ```bash
-curl -s "http://localhost:8181/api/mcp/health" | jq
+curl -s "http://localhost:8181/health" | jq
 ```
 
 ### Session Info
@@ -288,7 +294,7 @@ curl -s "http://localhost:8181/api/mcp/health" | jq
 curl -s "http://localhost:8181/api/mcp/sessions" | jq
 ```
 
-## ⚠️ Error Handling
+## Error Handling
 
 ### Common Response Format
 ```json
@@ -315,7 +321,7 @@ curl -s "http://localhost:8181/api/mcp/sessions" | jq
 1. **Connection refused**: Archon server not running
    ```bash
    # Check if Archon is running
-   curl -s http://localhost:8181/api/mcp/health
+   curl -s http://localhost:8181/health
    ```
 
 2. **404 Not Found**: Invalid endpoint or ID
@@ -326,7 +332,7 @@ curl -s "http://localhost:8181/api/mcp/sessions" | jq
    - Retry with exponential backoff
    - Check server logs
 
-## 🔧 Shell Aliases (Optional Setup)
+## Shell Aliases (Optional Setup)
 
 Add to `~/.zshrc` or `~/.bashrc`:
 ```bash
@@ -334,7 +340,7 @@ Add to `~/.zshrc` or `~/.bashrc`:
 alias archon-tasks='curl -s "http://localhost:8181/api/tasks" | jq'
 alias archon-todo='curl -s "http://localhost:8181/api/tasks?status=todo" | jq'
 alias archon-doing='curl -s "http://localhost:8181/api/tasks?status=doing" | jq'
-alias archon-health='curl -s "http://localhost:8181/api/mcp/health" | jq'
+alias archon-health='curl -s "http://localhost:8181/health" | jq'
 
 # Function to update task status
 archon-status() {
@@ -345,23 +351,23 @@ archon-status() {
 # Usage: archon-status TASK_ID doing
 ```
 
-## 📊 Best Practices
+## Best Practices
 
-### ✅ DO
+### DO
 - Check tasks at session start
 - Update status before starting work
 - Document completed work with descriptive tasks
 - Commit all changes before session end
 - Create follow-up tasks for unfinished work
 
-### ❌ DON'T
+### DON'T
 - Start work without checking current tasks
 - Leave tasks in "doing" status indefinitely
 - End session without updating Archon
 - Assume task status without verification
 - Leave uncommitted changes
 
-## 🔗 Quick Reference
+## Quick Reference
 
 | Operation | Command |
 |-----------|---------|
@@ -370,7 +376,7 @@ archon-status() {
 | Mark done | `curl -X PUT .../tasks/ID -d '{"status":"done"}'` |
 | Create task | `curl -X POST .../tasks -d '{...}'` |
 | Search KB | `curl -X POST .../rag/query -d '{"query":"..."}'` |
-| Health | `curl -s "http://localhost:8181/api/mcp/health"` |
+| Health | `curl -s "http://localhost:8181/health"` |
 
 ---
 
