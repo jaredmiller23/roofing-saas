@@ -84,9 +84,13 @@ Check Archon for task status: `mcp__archon__find_tasks(project_id="42f928ef-ac24
 - **Playwright Browsers**: Chromium (1179), WebKit (2182), Firefox (1490) installed
 - **Testing Priority**: Safari (WebKit) first, then Chromium, then Firefox
 
-## 🎯 ARCHON MCP WORKFLOW - CRITICAL
+## 🎯 ARCHON WORKFLOW - CRITICAL
 
 **⚠️ ARCHON IS FIRST & LAST STOP FOR EVERY SESSION ⚠️**
+
+**Implementation**: Skill-based with curl commands (see `.claude/skills/archon/README.md`)
+**API Endpoint**: `http://localhost:8181/api`
+**MCP Removed**: December 13, 2025 (saves ~12.5k tokens per session)
 
 ### MANDATORY Workflow (NO EXCEPTIONS):
 
@@ -99,7 +103,7 @@ Check Archon for task status: `mcp__archon__find_tasks(project_id="42f928ef-ac24
 git status
 
 # Get tasks from Archon
-mcp__archon__find_tasks(filter_by="status", filter_value="todo")
+curl -s "http://localhost:8181/api/tasks?status=todo" | jq '.tasks[] | {id, title, feature}'
 ```
 - Run validation script first to see actual codebase state
 - Check git for any uncommitted work
@@ -108,8 +112,10 @@ mcp__archon__find_tasks(filter_by="status", filter_value="todo")
 - Ask user which task to work on OR suggest priority based on task_order
 
 **2. START OF WORK - MARK IN PROGRESS:**
-```
-mcp__archon__manage_task("update", task_id="...", status="doing")
+```bash
+curl -X PUT http://localhost:8181/api/tasks/TASK_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status": "doing"}'
 ```
 - Mark task as "doing" before starting work
 - ONLY ONE task should be "doing" at a time
@@ -120,10 +126,16 @@ mcp__archon__manage_task("update", task_id="...", status="doing")
 - Keep local todos aligned with Archon task
 
 **4. AFTER COMPLETING WORK - UPDATE STATUS:**
-```
-mcp__archon__manage_task("update", task_id="...", status="done")
-OR
-mcp__archon__manage_task("update", task_id="...", status="review")
+```bash
+# Mark done
+curl -X PUT http://localhost:8181/api/tasks/TASK_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status": "done"}'
+
+# Or mark for review
+curl -X PUT http://localhost:8181/api/tasks/TASK_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status": "review"}'
 ```
 - Mark "done" if fully complete
 - Mark "review" if needs user verification
@@ -135,13 +147,15 @@ git add -A && git commit -m "..."
 git push origin main
 
 # Document in Archon
-mcp__archon__manage_task("create",
-  project_id="42f928ef-ac24-4eed-b539-61799e3dc325",
-  title="Clear descriptive title",
-  description="Detailed description of what was accomplished",
-  status="done",
-  feature="Phase X or Infrastructure or Component"
-)
+curl -X POST http://localhost:8181/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "42f928ef-ac24-4eed-b539-61799e3dc325",
+    "title": "Clear descriptive title",
+    "description": "Detailed description of what was accomplished",
+    "status": "done",
+    "feature": "Phase X or Infrastructure"
+  }'
 ```
 - **COMMIT ALL WORK** - Never leave migrations, code, or docs uncommitted
 - Create tasks for ALL work completed during session
@@ -149,15 +163,17 @@ mcp__archon__manage_task("create",
 - Create follow-up tasks if verification needed
 
 **6. CREATE FOLLOW-UP TASKS:**
-```
-mcp__archon__manage_task("create",
-  project_id="...",
-  title="Verify [thing] after [time/condition]",
-  description="What needs verification and how to verify it",
-  status="todo",
-  assignee="User" or "AI IDE Agent",
-  task_order=100  // Higher priority
-)
+```bash
+curl -X POST http://localhost:8181/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "42f928ef-ac24-4eed-b539-61799e3dc325",
+    "title": "Verify [thing] after [condition]",
+    "description": "What needs verification",
+    "status": "todo",
+    "assignee": "User",
+    "task_order": 100
+  }'
 ```
 
 ### NEVER:
@@ -172,14 +188,19 @@ mcp__archon__manage_task("create",
 Tennessee Roofing SaaS: 42f928ef-ac24-4eed-b539-61799e3dc325
 ```
 
-### ✅ ARCHON OPERATIONAL STATUS (December 10, 2025)
-**Status**: 100% Operational - Technical ✅ Process ✅
+### ✅ ARCHON OPERATIONAL STATUS (December 13, 2025)
+**Status**: 100% Operational - Skill-based (zero MCP token overhead)
 
-**Health Check**: All systems functioning
-- MCP Server: Running and healthy
-- All tools: Accessible and functional
-- Database: Connected
-- Knowledge Base: 35+ documentation sources
+**Health Check**:
+```bash
+curl -s http://localhost:8181/health | jq
+```
+
+**Architecture**:
+- Backend API: `http://localhost:8181` (Docker: archon-server)
+- UI: `http://localhost:3737` (Docker: archon-ui)
+- Skill: `.claude/skills/archon/README.md` (replaces MCP)
+- Knowledge Base: 3+ documentation sources
 
 **December 10 Updates**:
 - **Phase 5 Started**: Workflow Automation & Polish
