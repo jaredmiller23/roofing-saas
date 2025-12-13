@@ -9,6 +9,23 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
+
+// Zod schema for signature field placements
+const signatureFieldSchema = z.object({
+  id: z.string(),
+  type: z.enum(['signature', 'initials', 'date', 'text', 'checkbox', 'name', 'email']),
+  label: z.string(),
+  page: z.number().int().positive(),
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  width: z.number().positive(),
+  height: z.number().positive(),
+  required: z.boolean(),
+  assignedTo: z.enum(['customer', 'company', 'any'])
+})
+
+const signatureFieldsSchema = z.array(signatureFieldSchema).optional().default([])
 
 /**
  * GET /api/signature-documents
@@ -141,6 +158,7 @@ export async function POST(request: NextRequest) {
       contact_id,
       template_id,
       file_url,
+      signature_fields: rawSignatureFields,
       requires_customer_signature = true,
       requires_company_signature = true,
       expires_at
@@ -158,6 +176,16 @@ export async function POST(request: NextRequest) {
     const validTypes = ['contract', 'estimate', 'change_order', 'waiver', 'other']
     if (!validTypes.includes(document_type)) {
       throw ValidationError(`Invalid document type. Must be one of: ${validTypes.join(', ')}`)
+    }
+
+    // Validate signature fields if provided
+    let signature_fields: z.infer<typeof signatureFieldsSchema> = []
+    if (rawSignatureFields !== undefined) {
+      const fieldsResult = signatureFieldsSchema.safeParse(rawSignatureFields)
+      if (!fieldsResult.success) {
+        throw ValidationError(`Invalid signature fields: ${fieldsResult.error.message}`)
+      }
+      signature_fields = fieldsResult.data
     }
 
     logger.apiRequest('POST', '/api/signature-documents', {
@@ -181,6 +209,7 @@ export async function POST(request: NextRequest) {
         contact_id,
         template_id,
         file_url,
+        signature_fields,
         requires_customer_signature,
         requires_company_signature,
         expires_at,
