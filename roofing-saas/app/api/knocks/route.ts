@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: Request) {
   try {
@@ -8,18 +10,12 @@ export async function POST(request: Request) {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'No tenant found' },
-        { status: 403 }
-      )
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -43,10 +39,7 @@ export async function POST(request: Request) {
 
     // Validate required fields
     if (!latitude || !longitude) {
-      return NextResponse.json(
-        { error: 'Latitude and longitude are required' },
-        { status: 400 }
-      )
+      throw ValidationError('Latitude and longitude are required')
     }
 
     // Insert knock record
@@ -76,11 +69,8 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating knock:', error)
-      return NextResponse.json(
-        { error: 'Failed to create knock' },
-        { status: 500 }
-      )
+      logger.error('Error creating knock:', { error })
+      throw InternalError('Failed to create knock')
     }
 
     // Create activity record for gamification
@@ -101,16 +91,13 @@ export async function POST(request: Request) {
         }
       })
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: knock
     })
   } catch (error) {
-    console.error('Knock API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Knock API error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -120,18 +107,12 @@ export async function GET(request: Request) {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'No tenant found' },
-        { status: 403 }
-      )
+      throw AuthorizationError('No tenant found')
     }
 
     const { searchParams } = new URL(request.url)
@@ -153,22 +134,16 @@ export async function GET(request: Request) {
     const { data: knocks, error } = await query
 
     if (error) {
-      console.error('Error fetching knocks:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch knocks' },
-        { status: 500 }
-      )
+      logger.error('Error fetching knocks:', { error })
+      throw InternalError('Failed to fetch knocks')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: knocks
     })
   } catch (error) {
-    console.error('Knock API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Knock API error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

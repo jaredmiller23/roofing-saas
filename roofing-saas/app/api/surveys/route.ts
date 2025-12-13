@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 /**
  * GET /api/surveys
@@ -10,12 +13,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { searchParams } = new URL(request.url)
@@ -53,22 +56,19 @@ export async function GET(request: NextRequest) {
     const { data: surveys, error, count } = await query
 
     if (error) {
-      console.error('Error fetching surveys:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Error fetching surveys:', { error })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({
+    return successResponse({
       surveys: surveys || [],
       total: count || 0,
       page,
       limit,
     })
   } catch (error) {
-    console.error('Error in GET /api/surveys:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/surveys:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -107,16 +107,13 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating survey:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Error creating survey:', { error })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json(data, { status: 201 })
+    return createdResponse(data)
   } catch (error) {
-    console.error('Error in POST /api/surveys:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/surveys:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

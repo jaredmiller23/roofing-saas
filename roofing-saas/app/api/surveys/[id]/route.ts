@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/surveys/[id]
@@ -13,12 +16,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -33,21 +36,18 @@ export async function GET(
       .single()
 
     if (error) {
-      console.error('Error fetching survey:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Error fetching survey:', { error })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Survey not found' }, { status: 404 })
+      throw NotFoundError('Survey not found')
     }
 
-    return NextResponse.json(data)
+    return successResponse(data)
   } catch (error) {
-    console.error('Error in GET /api/surveys/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/surveys/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -62,12 +62,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -87,21 +87,18 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating survey:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Error updating survey:', { error })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Survey not found' }, { status: 404 })
+      throw NotFoundError('Survey not found')
     }
 
-    return NextResponse.json(data)
+    return successResponse(data)
   } catch (error) {
-    console.error('Error in PATCH /api/surveys/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/surveys/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -116,12 +113,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -140,20 +137,17 @@ export async function DELETE(
       .single()
 
     if (error) {
-      console.error('Error deleting survey:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Error deleting survey:', { error })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Survey not found' }, { status: 404 })
+      throw NotFoundError('Survey not found')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/surveys/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/surveys/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

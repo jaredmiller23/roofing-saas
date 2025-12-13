@@ -5,9 +5,12 @@
  * Takes extracted addresses and creates contacts from them
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +20,12 @@ export async function POST(request: NextRequest) {
     // Get authenticated user
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     // Parse request body
@@ -36,13 +33,10 @@ export async function POST(request: NextRequest) {
     const { targetingAreaId } = body;
 
     if (!targetingAreaId) {
-      return NextResponse.json(
-        { success: false, error: 'targeting_area_id is required' },
-        { status: 400 }
-      );
+      throw ValidationError('targeting_area_id is required');
     }
 
-    console.log(`[${tenantId}] Starting bulk import from area: ${targetingAreaId}`);
+    logger.info(`Starting bulk import from area: ${targetingAreaId}`, { tenantId });
 
     // Get all extracted addresses for this targeting area
     const { data: addresses, error: fetchError } = await supabase
@@ -53,21 +47,15 @@ export async function POST(request: NextRequest) {
       .eq('is_selected', true); // Only import selected addresses
 
     if (fetchError) {
-      console.error('Failed to fetch addresses:', fetchError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch addresses: ' + fetchError.message },
-        { status: 500 }
-      );
+      logger.error('Failed to fetch addresses:', { error: fetchError });
+      throw InternalError('Failed to fetch addresses: ' + fetchError.message);
     }
 
     if (!addresses || addresses.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No addresses found to import' },
-        { status: 404 }
-      );
+      throw NotFoundError('No addresses found to import');
     }
 
-    console.log(`Found ${addresses.length} addresses to import`);
+    logger.info(`Found ${addresses.length} addresses to import`);
 
     // Transform extracted addresses to contacts
     const contacts = addresses.map((addr) => ({
@@ -95,15 +83,12 @@ export async function POST(request: NextRequest) {
       .select('id');
 
     if (insertError) {
-      console.error('Failed to insert contacts:', insertError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to import contacts: ' + insertError.message },
-        { status: 500 }
-      );
+      logger.error('Failed to insert contacts:', { error: insertError });
+      throw InternalError('Failed to import contacts: ' + insertError.message);
     }
 
     const importedCount = insertedContacts?.length || 0;
-    console.log(`✓ Successfully imported ${importedCount} contacts`);
+    logger.info(`Successfully imported ${importedCount} contacts`);
 
     // Update targeting area status
     await supabase
@@ -115,23 +100,12 @@ export async function POST(request: NextRequest) {
       .eq('id', targetingAreaId)
       .eq('tenant_id', tenantId);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       imported: importedCount,
       message: `Successfully imported ${importedCount} contacts`,
     });
   } catch (error) {
-    console.error('Bulk import error:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Unknown error during bulk import',
-      },
-      { status: 500 }
-    );
+    logger.error('Bulk import error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }

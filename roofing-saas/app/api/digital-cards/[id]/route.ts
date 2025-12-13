@@ -7,23 +7,18 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   DigitalBusinessCard,
   GetDigitalCardResponse,
   UpdateDigitalCardRequest,
   UpdateDigitalCardResponse,
 } from '@/lib/digital-cards/types'
-
-// Helper to get current user
-async function getCurrentUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
-}
 
 // =============================================
 // GET /api/digital-cards/:id
@@ -39,7 +34,7 @@ export async function GET(
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -52,10 +47,7 @@ export async function GET(
       .single()
 
     if (tenantError || !tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Fetch card
@@ -68,29 +60,20 @@ export async function GET(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Card not found' },
-          { status: 404 }
-        )
+        throw NotFoundError('Card not found')
       }
-      console.error('Error fetching card:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch card' },
-        { status: 500 }
-      )
+      logger.error('Error fetching card:', { error })
+      throw InternalError('Failed to fetch card')
     }
 
     const response: GetDigitalCardResponse = {
       card: data as DigitalBusinessCard,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Unexpected error in GET /api/digital-cards/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in GET /api/digital-cards/:id:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -109,7 +92,7 @@ export async function PATCH(
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -122,10 +105,7 @@ export async function PATCH(
       .single()
 
     if (tenantError || !tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Check if card exists and user has permission
@@ -137,10 +117,7 @@ export async function PATCH(
       .single()
 
     if (fetchError || !existingCard) {
-      return NextResponse.json(
-        { error: 'Card not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Card not found')
     }
 
     // Check permissions: own card or admin
@@ -148,10 +125,7 @@ export async function PATCH(
     const isAdmin = tenantUser.role === 'admin'
 
     if (!isOwnCard && !isAdmin) {
-      return NextResponse.json(
-        { error: 'Forbidden - You can only update your own card' },
-        { status: 403 }
-      )
+      throw AuthorizationError('You can only update your own card')
     }
 
     const body: UpdateDigitalCardRequest = await request.json()
@@ -198,32 +172,23 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating card:', error)
+      logger.error('Error updating card:', { error })
 
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A card with this slug already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A card with this slug already exists')
       }
 
-      return NextResponse.json(
-        { error: 'Failed to update card' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update card')
     }
 
     const response: UpdateDigitalCardResponse = {
       card: data as DigitalBusinessCard,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Unexpected error in PATCH /api/digital-cards/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in PATCH /api/digital-cards/:id:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -241,7 +206,7 @@ export async function DELETE(
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -254,10 +219,7 @@ export async function DELETE(
       .single()
 
     if (tenantError || !tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     // Delete the card
@@ -268,19 +230,13 @@ export async function DELETE(
       .eq('tenant_id', tenantUser.tenant_id)
 
     if (error) {
-      console.error('Error deleting card:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete card' },
-        { status: 500 }
-      )
+      logger.error('Error deleting card:', { error })
+      throw InternalError('Failed to delete card')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Unexpected error in DELETE /api/digital-cards/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in DELETE /api/digital-cards/:id:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

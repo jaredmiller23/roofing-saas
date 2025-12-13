@@ -3,10 +3,11 @@
  * CRUD operations for custom point-earning rules
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { pointRuleConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 /**
  * GET /api/gamification/point-rules
@@ -23,13 +24,13 @@ export async function GET() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     // Fetch point rules
@@ -42,18 +43,15 @@ export async function GET() {
 
     if (error) {
       logger.error('Failed to fetch point rules', { error, org_id })
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     logger.info('Fetched point rules', { org_id, count: data?.length || 0 })
 
-    return NextResponse.json({ data, success: true })
+    return successResponse({ data, success: true })
   } catch (error) {
     logger.error('Point rules GET error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error', success: false },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -72,13 +70,13 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     // Parse and validate request body
@@ -86,14 +84,7 @@ export async function POST(request: Request) {
     const validationResult = pointRuleConfigSchema.safeParse(body)
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: validationResult.error.format(),
-          success: false,
-        },
-        { status: 400 }
-      )
+      throw ValidationError('Validation failed')
     }
 
     const validated = validationResult.data
@@ -114,13 +105,10 @@ export async function POST(request: Request) {
 
       // Handle unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A point rule with this action type already exists', success: false },
-          { status: 409 }
-        )
+        throw ConflictError('A point rule with this action type already exists')
       }
 
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     logger.info('Created point rule', {
@@ -130,12 +118,9 @@ export async function POST(request: Request) {
       points: data.points_value,
     })
 
-    return NextResponse.json({ data, success: true }, { status: 201 })
+    return createdResponse({ data, success: true })
   } catch (error) {
     logger.error('Point rules POST error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error', success: false },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

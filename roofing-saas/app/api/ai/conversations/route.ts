@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import type { AIConversation, CreateConversationRequest } from '@/lib/ai-assistant/types'
 
 /**
@@ -11,12 +14,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -42,23 +45,17 @@ export async function GET(request: NextRequest) {
     const { data: conversations, error } = await query
 
     if (error) {
-      console.error('Error fetching conversations:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch conversations' },
-        { status: 500 }
-      )
+      logger.error('Error fetching conversations:', { error })
+      throw InternalError('Failed to fetch conversations')
     }
 
-    return NextResponse.json({
+    return successResponse({
       conversations: conversations as AIConversation[],
       total: conversations?.length || 0,
     })
   } catch (error) {
-    console.error('Error in GET /api/ai/conversations:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/ai/conversations:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -70,12 +67,12 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body: CreateConversationRequest = await request.json()
@@ -96,21 +93,15 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating conversation:', error)
-      return NextResponse.json(
-        { error: 'Failed to create conversation' },
-        { status: 500 }
-      )
+      logger.error('Error creating conversation:', { error })
+      throw InternalError('Failed to create conversation')
     }
 
-    return NextResponse.json({
+    return createdResponse({
       conversation: conversation as AIConversation,
     })
   } catch (error) {
-    console.error('Error in POST /api/ai/conversations:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/ai/conversations:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

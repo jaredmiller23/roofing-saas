@@ -3,10 +3,12 @@
  * One-time operation to generate embeddings for all knowledge entries
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateKnowledgeEmbedding, calculateEmbeddingCost } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(_request: NextRequest) {
   try {
@@ -19,7 +21,7 @@ export async function POST(_request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Check if user is admin
@@ -33,10 +35,7 @@ export async function POST(_request: NextRequest) {
       .single()
 
     if (!roleAssignment) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     // Get all knowledge entries without embeddings
@@ -48,14 +47,11 @@ export async function POST(_request: NextRequest) {
 
     if (fetchError) {
       logger.error('Failed to fetch knowledge entries', { error: fetchError })
-      return NextResponse.json(
-        { error: 'Failed to fetch knowledge entries' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch knowledge entries')
     }
 
     if (!knowledge || knowledge.length === 0) {
-      return NextResponse.json({
+      return successResponse({
         message: 'All knowledge entries already have embeddings',
         processed: 0,
         totalTokens: 0,
@@ -100,7 +96,7 @@ export async function POST(_request: NextRequest) {
 
     const estimatedCost = calculateEmbeddingCost(totalTokens)
 
-    return NextResponse.json({
+    return successResponse({
       message: 'Embeddings generated successfully',
       processed: successCount,
       total: knowledge.length,
@@ -110,9 +106,6 @@ export async function POST(_request: NextRequest) {
     })
   } catch (error) {
     logger.error('Generate embeddings API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

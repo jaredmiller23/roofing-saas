@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface ActivityItem {
   id: string
@@ -24,12 +26,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -149,21 +151,14 @@ export async function GET() {
     // Limit to most recent 3
     const limitedActivities = activities.slice(0, 3)
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       data: {
         activities: limitedActivities,
         count: limitedActivities.length
       }
     })
   } catch (error) {
-    console.error('Error fetching activity feed:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch activity feed'
-      },
-      { status: 500 }
-    )
+    logger.error('Error fetching activity feed:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

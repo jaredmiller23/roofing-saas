@@ -5,9 +5,11 @@
  * Returns list of targeting areas for the current tenant
  */
 
-import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 export async function GET() {
   try {
@@ -15,18 +17,12 @@ export async function GET() {
 
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     // Get all targeting areas for this tenant
@@ -37,22 +33,15 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Failed to fetch targeting areas:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch targeting areas' },
-        { status: 500 }
-      );
+      logger.error('Failed to fetch targeting areas:', { error });
+      throw InternalError('Failed to fetch targeting areas');
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       areas: areas || [],
     });
   } catch (error) {
-    console.error('Areas API error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error('Areas API error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }

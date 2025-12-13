@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/ai/conversations/[id]
@@ -15,12 +18,12 @@ export async function GET(
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -34,19 +37,13 @@ export async function GET(
       .single()
 
     if (error || !conversation) {
-      return NextResponse.json(
-        { error: 'Conversation not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Conversation not found')
     }
 
-    return NextResponse.json({ conversation })
+    return successResponse({ conversation })
   } catch (error) {
-    console.error('Error in GET /api/ai/conversations/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/ai/conversations/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -63,12 +60,12 @@ export async function PATCH(
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -92,19 +89,13 @@ export async function PATCH(
       .single()
 
     if (error || !conversation) {
-      return NextResponse.json(
-        { error: 'Failed to update conversation' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update conversation')
     }
 
-    return NextResponse.json({ conversation })
+    return successResponse({ conversation })
   } catch (error) {
-    console.error('Error in PATCH /api/ai/conversations/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/ai/conversations/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -121,12 +112,12 @@ export async function DELETE(
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -140,19 +131,13 @@ export async function DELETE(
       .eq('user_id', user.id)
 
     if (error) {
-      console.error('Error deleting conversation:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete conversation' },
-        { status: 500 }
-      )
+      logger.error('Error deleting conversation:', { error })
+      throw InternalError('Failed to delete conversation')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/ai/conversations/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/ai/conversations/[id]:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -5,9 +5,12 @@
  * Import only enriched addresses (those with owner data) to contacts
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,31 +18,22 @@ export async function POST(request: NextRequest) {
 
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     const body = await request.json();
     const { targetingAreaId } = body;
 
     if (!targetingAreaId) {
-      return NextResponse.json(
-        { success: false, error: 'targetingAreaId is required' },
-        { status: 400 }
-      );
+      throw ValidationError('targetingAreaId is required');
     }
 
-    console.log(`[${tenantId}] Importing enriched contacts from area: ${targetingAreaId}`);
+    logger.info(`Importing enriched contacts from area: ${targetingAreaId}`, { tenantId });
 
     // Get only enriched, selected addresses
     const { data: addresses, error: fetchError } = await supabase
@@ -51,21 +45,15 @@ export async function POST(request: NextRequest) {
       .eq('is_selected', true);
 
     if (fetchError) {
-      console.error('Failed to fetch addresses:', fetchError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch addresses' },
-        { status: 500 }
-      );
+      logger.error('Failed to fetch addresses:', { error: fetchError });
+      throw InternalError('Failed to fetch addresses');
     }
 
     if (!addresses || addresses.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No enriched addresses found to import' },
-        { status: 404 }
-      );
+      throw NotFoundError('No enriched addresses found to import');
     }
 
-    console.log(`Found ${addresses.length} enriched addresses to import`);
+    logger.info(`Found ${addresses.length} enriched addresses to import`);
 
     // Transform to contacts with full enrichment data
     const contacts = addresses.map((addr) => ({
@@ -93,15 +81,12 @@ export async function POST(request: NextRequest) {
       .select('id');
 
     if (insertError) {
-      console.error('Failed to insert contacts:', insertError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to import contacts: ' + insertError.message },
-        { status: 500 }
-      );
+      logger.error('Failed to insert contacts:', { error: insertError });
+      throw InternalError('Failed to import contacts: ' + insertError.message);
     }
 
     const importedCount = inserted?.length || 0;
-    console.log(`✓ Imported ${importedCount} enriched contacts`);
+    logger.info(`Imported ${importedCount} enriched contacts`);
 
     // Mark addresses as imported (not selected anymore)
     await supabase
@@ -122,15 +107,11 @@ export async function POST(request: NextRequest) {
       .eq('id', targetingAreaId)
       .eq('tenant_id', tenantId);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       imported: importedCount,
     });
   } catch (error) {
-    console.error('Import enriched error:', error);
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Failed to import' },
-      { status: 500 }
-    );
+    logger.error('Import enriched error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }

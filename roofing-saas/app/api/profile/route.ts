@@ -7,9 +7,12 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { UpdateProfileInput, UserProfile } from '@/lib/types/user-profile'
 
 /**
@@ -21,7 +24,7 @@ export async function GET() {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Build profile from user data and metadata
@@ -37,13 +40,10 @@ export async function GET() {
       updated_at: user.updated_at || user.created_at,
     }
 
-    return NextResponse.json({ success: true, profile })
+    return successResponse({ success: true, profile })
   } catch (error) {
-    console.error('Error fetching profile:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch profile' },
-      { status: 500 }
-    )
+    logger.error('Error fetching profile:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -56,17 +56,14 @@ export async function PATCH(request: NextRequest) {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const body: UpdateProfileInput = await request.json()
 
     // Validate input
     if (!body || typeof body !== 'object') {
-      return NextResponse.json(
-        { success: false, error: 'Invalid request body' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid request body')
     }
 
     const supabase = await createClient()
@@ -86,18 +83,12 @@ export async function PATCH(request: NextRequest) {
     const { data, error } = await supabase.auth.updateUser(updateData)
 
     if (error) {
-      console.error('Supabase update user error:', error)
-      return NextResponse.json(
-        { success: false, error: error.message || 'Failed to update profile' },
-        { status: 500 }
-      )
+      logger.error('Supabase update user error:', { error })
+      throw InternalError(error.message || 'Failed to update profile')
     }
 
     if (!data.user) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to update profile' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update profile')
     }
 
     // Build updated profile
@@ -113,16 +104,13 @@ export async function PATCH(request: NextRequest) {
       updated_at: data.user.updated_at || data.user.created_at,
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       profile: updatedProfile,
       message: 'Profile updated successfully',
     })
   } catch (error) {
-    console.error('Error updating profile:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to update profile' },
-      { status: 500 }
-    )
+    logger.error('Error updating profile:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

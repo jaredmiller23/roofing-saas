@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { AIMessage } from '@/lib/ai-assistant/types'
 
 /**
@@ -16,12 +19,12 @@ export async function GET(
 
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -36,10 +39,7 @@ export async function GET(
       .single()
 
     if (!conversation) {
-      return NextResponse.json(
-        { error: 'Conversation not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Conversation not found')
     }
 
     // Query parameters for pagination
@@ -62,23 +62,17 @@ export async function GET(
     const { data: messages, error } = await query
 
     if (error) {
-      console.error('Error fetching messages:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch messages' },
-        { status: 500 }
-      )
+      logger.error('Error fetching messages:', { error })
+      throw InternalError('Failed to fetch messages')
     }
 
-    return NextResponse.json({
+    return successResponse({
       messages: messages as AIMessage[],
       total: messages?.length || 0,
       has_more: (messages?.length || 0) === limit,
     })
   } catch (error) {
-    console.error('Error in GET /api/ai/conversations/[id]/messages:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/ai/conversations/[id]/messages:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

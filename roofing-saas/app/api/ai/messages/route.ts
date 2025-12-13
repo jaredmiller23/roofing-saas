@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 import type { AIMessage, SendMessageRequest, SendMessageResponse } from '@/lib/ai-assistant/types'
 import OpenAI from 'openai'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
@@ -18,22 +21,19 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body: SendMessageRequest = await request.json()
     const { conversation_id, content, role, metadata = {}, context } = body
 
     if (!content || !content.trim()) {
-      return NextResponse.json(
-        { error: 'Message content is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Message content is required')
     }
 
     const supabase = await createClient()
@@ -52,10 +52,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (!conversation) {
-        return NextResponse.json(
-          { error: 'Conversation not found' },
-          { status: 404 }
-        )
+        throw NotFoundError('Conversation not found')
       }
     } else {
       // Create new conversation with auto-generated title from first message
@@ -73,11 +70,8 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (createError || !newConversation) {
-        console.error('Error creating conversation:', createError)
-        return NextResponse.json(
-          { error: 'Failed to create conversation' },
-          { status: 500 }
-        )
+        logger.error('Error creating conversation:', { error: createError })
+        throw InternalError('Failed to create conversation')
       }
 
       conversationId = newConversation.id
@@ -99,11 +93,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (userMsgError || !userMessage) {
-      console.error('Error saving user message:', userMsgError)
-      return NextResponse.json(
-        { error: 'Failed to save message' },
-        { status: 500 }
-      )
+      logger.error('Error saving user message:', { error: userMsgError })
+      throw InternalError('Failed to save message')
     }
 
     // Load conversation history for context
@@ -209,19 +200,13 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (assistantMsgError || !savedAssistantMessage) {
-      console.error('Error saving assistant message:', assistantMsgError)
-      return NextResponse.json(
-        { error: 'Failed to save assistant response' },
-        { status: 500 }
-      )
+      logger.error('Error saving assistant message:', { error: assistantMsgError })
+      throw InternalError('Failed to save assistant response')
     }
 
     // Safety check (should never happen due to logic above)
     if (!conversationId) {
-      return NextResponse.json(
-        { error: 'Conversation ID not set' },
-        { status: 500 }
-      )
+      throw InternalError('Conversation ID not set')
     }
 
     const response: SendMessageResponse = {
@@ -232,11 +217,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error in POST /api/ai/messages:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/ai/messages:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 

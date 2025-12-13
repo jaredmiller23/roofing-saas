@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/jobs/[id]
@@ -15,12 +17,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -36,20 +38,17 @@ export async function GET(
 
     if (error) {
       logger.error('Error fetching job:', { error })
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+      throw NotFoundError('Job not found')
     }
 
-    return NextResponse.json(data)
+    return successResponse(data)
   } catch (error) {
     logger.error('Error in GET /api/jobs/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -65,12 +64,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -109,11 +108,11 @@ export async function PATCH(
 
     if (error) {
       logger.error('Error updating job:', { error })
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+      throw NotFoundError('Job not found')
     }
 
     // Workflow automation: When job is marked complete, update project to "complete" stage
@@ -155,7 +154,7 @@ export async function PATCH(
       })
     }
 
-    return NextResponse.json({
+    return successResponse({
       ...data,
       workflow: projectUpdated
         ? { project_moved_to_complete: true }
@@ -163,10 +162,7 @@ export async function PATCH(
     })
   } catch (error) {
     logger.error('Error in PATCH /api/jobs/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -181,12 +177,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -206,19 +202,16 @@ export async function DELETE(
 
     if (error) {
       logger.error('Error deleting job:', { error })
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+      throw NotFoundError('Job not found')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Error in DELETE /api/jobs/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

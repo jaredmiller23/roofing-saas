@@ -11,6 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createEnrichmentQueue } from '@/lib/enrichment/enrichment-queue';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   BatchEnrichmentRequest,
   AddressInput,
@@ -33,10 +36,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     // Parse request body
@@ -168,8 +168,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Return success response
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       job_id: result.job_id,
       status: result.status,
       total_addresses: result.total_addresses,
@@ -181,7 +180,7 @@ export async function POST(request: NextRequest) {
         : `Enrichment job started. Processing ${result.total_addresses - result.cached_count} addresses (${result.cached_count} cached).`,
     });
   } catch (error) {
-    console.error('Enrichment API error:', error);
+    logger.error('Enrichment API error:', { error });
 
     if (error instanceof Error) {
       // Handle specific error types
@@ -204,23 +203,9 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-
-      return NextResponse.json(
-        {
-          error: 'Enrichment failed',
-          message: error.message,
-        },
-        { status: 500 }
-      );
     }
 
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'An unexpected error occurred',
-      },
-      { status: 500 }
-    );
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }
 
@@ -239,10 +224,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     // Get job ID from query params
@@ -250,10 +232,7 @@ export async function GET(request: NextRequest) {
     const jobId = searchParams.get('jobId');
 
     if (!jobId) {
-      return NextResponse.json(
-        { error: 'Missing jobId parameter' },
-        { status: 400 }
-      );
+      throw ValidationError('Missing jobId parameter');
     }
 
     // Create enrichment queue manager
@@ -263,10 +242,7 @@ export async function GET(request: NextRequest) {
     const result = await enrichmentQueue.getJobStatus(jobId);
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Job not found' },
-        { status: 404 }
-      );
+      throw NotFoundError('Job not found');
     }
 
     // Calculate progress percentage
@@ -275,8 +251,7 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Return job status
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       job_id: result.job_id,
       status: result.status,
       progress: {
@@ -302,15 +277,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Enrichment status API error:', error);
-
-    return NextResponse.json(
-      {
-        error: 'Failed to get job status',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    logger.error('Enrichment status API error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }
 

@@ -7,8 +7,12 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   GetCardAnalyticsResponse,
   CardAnalyticsSummary,
@@ -18,15 +22,6 @@ import type {
   TimeSeriesDataPoint,
   BusinessCardInteraction,
 } from '@/lib/digital-cards/types'
-
-// Helper to get current user
-async function getCurrentUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
-}
 
 // =============================================
 // GET /api/digital-cards/:id/analytics
@@ -44,7 +39,7 @@ export async function GET(
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -60,10 +55,7 @@ export async function GET(
       .single()
 
     if (tenantError || !tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Fetch card and verify access
@@ -75,10 +67,7 @@ export async function GET(
       .single()
 
     if (cardError || !card) {
-      return NextResponse.json(
-        { error: 'Card not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Card not found')
     }
 
     // Calculate date range
@@ -111,7 +100,7 @@ export async function GET(
       .order('created_at', { ascending: false })
 
     if (interactionsError) {
-      console.error('Error fetching interactions:', interactionsError)
+      logger.error('Error fetching interactions:', { error: interactionsError })
     }
 
     const interactionsList = (interactions || []) as BusinessCardInteraction[]
@@ -268,12 +257,9 @@ export async function GET(
       chart_data,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Unexpected error in GET /api/digital-cards/:id/analytics:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in GET /api/digital-cards/:id/analytics:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

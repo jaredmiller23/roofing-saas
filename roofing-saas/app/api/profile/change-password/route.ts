@@ -7,9 +7,12 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { ChangePasswordInput } from '@/lib/types/user-profile'
 import { validatePasswordRequirements } from '@/lib/types/user-profile'
 
@@ -22,46 +25,30 @@ export async function POST(request: NextRequest) {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const body: ChangePasswordInput = await request.json()
 
     // Validate request body
     if (!body.current_password || !body.new_password || !body.confirm_password) {
-      return NextResponse.json(
-        { success: false, error: 'All fields are required' },
-        { status: 400 }
-      )
+      throw ValidationError('All fields are required')
     }
 
     // Validate new password matches confirmation
     if (body.new_password !== body.confirm_password) {
-      return NextResponse.json(
-        { success: false, error: 'New password and confirmation do not match' },
-        { status: 400 }
-      )
+      throw ValidationError('New password and confirmation do not match')
     }
 
     // Validate new password != current password
     if (body.new_password === body.current_password) {
-      return NextResponse.json(
-        { success: false, error: 'New password must be different from current password' },
-        { status: 400 }
-      )
+      throw ValidationError('New password must be different from current password')
     }
 
     // Validate password requirements
     const passwordValidation = validatePasswordRequirements(body.new_password)
     if (!passwordValidation.valid) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Password does not meet requirements',
-          validation_errors: passwordValidation.errors,
-        },
-        { status: 400 }
-      )
+      throw ValidationError('Password does not meet requirements')
     }
 
     const supabase = await createClient()
@@ -74,10 +61,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (signInError) {
-      return NextResponse.json(
-        { success: false, error: 'Current password is incorrect' },
-        { status: 401 }
-      )
+      throw AuthenticationError('Current password is incorrect')
     }
 
     // Update password
@@ -86,22 +70,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (updateError) {
-      console.error('Supabase update password error:', updateError)
-      return NextResponse.json(
-        { success: false, error: updateError.message || 'Failed to change password' },
-        { status: 500 }
-      )
+      logger.error('Supabase update password error:', { error: updateError })
+      throw InternalError(updateError.message || 'Failed to change password')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Password changed successfully',
     })
   } catch (error) {
-    console.error('Error changing password:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to change password' },
-      { status: 500 }
-    )
+    logger.error('Error changing password:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

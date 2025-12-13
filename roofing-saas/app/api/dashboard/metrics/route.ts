@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Dashboard Metrics API
@@ -23,12 +25,12 @@ export async function GET(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     // Get scope from query params
@@ -268,8 +270,7 @@ export async function GET(request: Request) {
     })
 
     // Return comprehensive metrics
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       metrics: {
         // Top-level KPIs
         totalContacts: totalContacts || 0,
@@ -288,10 +289,7 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
-    console.error('Dashboard metrics error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard metrics' },
-      { status: 500 }
-    )
+    logger.error('Dashboard metrics error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

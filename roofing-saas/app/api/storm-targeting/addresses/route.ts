@@ -5,9 +5,12 @@
  * Returns extracted addresses for a targeting area
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,28 +18,19 @@ export async function GET(request: NextRequest) {
 
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     const { searchParams } = new URL(request.url);
     const areaId = searchParams.get('areaId');
 
     if (!areaId) {
-      return NextResponse.json(
-        { success: false, error: 'areaId parameter required' },
-        { status: 400 }
-      );
+      throw ValidationError('areaId parameter required');
     }
 
     // Get all addresses for this targeting area
@@ -65,22 +59,15 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Failed to fetch addresses:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch addresses' },
-        { status: 500 }
-      );
+      logger.error('Failed to fetch addresses:', { error });
+      throw InternalError('Failed to fetch addresses');
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       addresses: addresses || [],
     });
   } catch (error) {
-    console.error('Addresses API error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    logger.error('Addresses API error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }

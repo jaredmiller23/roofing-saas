@@ -3,10 +3,12 @@
  * Search roofing knowledge using vector similarity
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateEmbedding } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,27 +21,21 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const body = await request.json()
     const { query, category, threshold = 0.7, limit = 5 } = body
 
     if (!query) {
-      return NextResponse.json(
-        { error: 'Query text is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Query text is required')
     }
 
     // Generate embedding for query
     const embeddingResult = await generateEmbedding(query)
 
     if (!embeddingResult) {
-      return NextResponse.json(
-        { error: 'Failed to generate query embedding' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to generate query embedding')
     }
 
     // Get tenant ID from JWT
@@ -59,10 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (searchError) {
       logger.error('Knowledge search error', { error: searchError })
-      return NextResponse.json(
-        { error: 'Search failed' },
-        { status: 500 }
-      )
+      throw InternalError('Search failed')
     }
 
     // Log search query for analytics
@@ -76,7 +69,7 @@ export async function POST(request: NextRequest) {
       relevance_score: results && results.length > 0 ? results[0].similarity : null,
     })
 
-    return NextResponse.json({
+    return successResponse({
       results: results || [],
       query,
       tokens_used: embeddingResult.tokens,
@@ -84,9 +77,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('Knowledge search API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

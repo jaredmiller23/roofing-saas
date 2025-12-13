@@ -3,24 +3,26 @@
  * Manage crew members and labor rates
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
+
+    const supabase = await createClient()
 
     const searchParams = request.nextUrl.searchParams
     const activeOnly = searchParams.get('active_only') === 'true'
@@ -44,30 +46,29 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch crew members', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to fetch crew members' }, { status: 500 })
+      throw InternalError('Failed to fetch crew members')
     }
 
-    return NextResponse.json({ crewMembers })
+    return successResponse({ crewMembers })
   } catch (error) {
     logger.error('Crew members API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
+    const supabase = await createClient()
     const body = await request.json()
     const {
       user_id,
@@ -84,10 +85,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!first_name || !last_name || !role || !hourly_rate) {
-      return NextResponse.json(
-        { error: 'Missing required fields: first_name, last_name, role, hourly_rate' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: first_name, last_name, role, hourly_rate')
     }
 
     const { data: crewMember, error } = await supabase
@@ -112,37 +110,36 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to create crew member', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to create crew member' }, { status: 500 })
+      throw InternalError('Failed to create crew member')
     }
 
     logger.info('Crew member created', { crewMemberId: crewMember.id, tenantId })
 
-    return NextResponse.json({ crewMember }, { status: 201 })
+    return createdResponse({ crewMember })
   } catch (error) {
     logger.error('Crew members API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
+    const supabase = await createClient()
     const body = await request.json()
     const { id, ...updates } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing crew member id' }, { status: 400 })
+      throw ValidationError('Missing crew member id')
     }
 
     const { data: crewMember, error } = await supabase
@@ -155,37 +152,36 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to update crew member', { error, tenantId, crewMemberId: id })
-      return NextResponse.json({ error: 'Failed to update crew member' }, { status: 500 })
+      throw InternalError('Failed to update crew member')
     }
 
     logger.info('Crew member updated', { crewMemberId: id, tenantId })
 
-    return NextResponse.json({ crewMember })
+    return successResponse({ crewMember })
   } catch (error) {
     logger.error('Crew members API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
+    const supabase = await createClient()
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing crew member id' }, { status: 400 })
+      throw ValidationError('Missing crew member id')
     }
 
     // Soft delete by marking inactive
@@ -199,14 +195,14 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to deactivate crew member', { error, tenantId, crewMemberId: id })
-      return NextResponse.json({ error: 'Failed to deactivate crew member' }, { status: 500 })
+      throw InternalError('Failed to deactivate crew member')
     }
 
     logger.info('Crew member deactivated', { crewMemberId: id, tenantId })
 
-    return NextResponse.json({ crewMember })
+    return successResponse({ crewMember })
   } catch (error) {
     logger.error('Crew members API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

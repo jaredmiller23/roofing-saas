@@ -13,6 +13,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 import {
   type StormEventData,
   type CausationResult,
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Parse query parameters
@@ -48,34 +50,22 @@ export async function GET(request: NextRequest) {
 
     // Validate required parameters
     if (!lat || !lng) {
-      return NextResponse.json(
-        { error: 'lat and lng parameters are required' },
-        { status: 400 }
-      )
+      throw ValidationError('lat and lng parameters are required')
     }
 
     const latitude = parseFloat(lat)
     const longitude = parseFloat(lng)
 
     if (isNaN(latitude) || isNaN(longitude)) {
-      return NextResponse.json(
-        { error: 'Invalid latitude or longitude' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid latitude or longitude')
     }
 
     if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      return NextResponse.json(
-        { error: 'Latitude must be -90 to 90, longitude must be -180 to 180' },
-        { status: 400 }
-      )
+      throw ValidationError('Latitude must be -90 to 90, longitude must be -180 to 180')
     }
 
     if (radiusMiles < 0.1 || radiusMiles > 50) {
-      return NextResponse.json(
-        { error: 'radius_miles must be between 0.1 and 50' },
-        { status: 400 }
-      )
+      throw ValidationError('radius_miles must be between 0.1 and 50')
     }
 
     // Calculate date range
@@ -85,10 +75,7 @@ export async function GET(request: NextRequest) {
     if (date) {
       const baseDate = new Date(date)
       if (isNaN(baseDate.getTime())) {
-        return NextResponse.json(
-          { error: 'Invalid date format. Use YYYY-MM-DD' },
-          { status: 400 }
-        )
+        throw ValidationError('Invalid date format. Use YYYY-MM-DD')
       }
       // Look for events within the days_range before and after the date
       startDate = new Date(baseDate)
@@ -131,10 +118,7 @@ export async function GET(request: NextRequest) {
 
       if (fallbackError) {
         logger.error('Storm events query failed', { error: fallbackError })
-        return NextResponse.json(
-          { error: 'Failed to query storm events' },
-          { status: 500 }
-        )
+        throw InternalError('Failed to query storm events')
       }
 
       // Calculate approximate distances for fallback events
@@ -186,10 +170,7 @@ export async function GET(request: NextRequest) {
     return buildCausationResponse(stormEvents, { latitude, longitude })
   } catch (error) {
     logger.error('Storm data causation API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 

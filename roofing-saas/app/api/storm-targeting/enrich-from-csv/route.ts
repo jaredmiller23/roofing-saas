@@ -6,9 +6,12 @@
  * Supports PropertyRadar format and custom formats
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 // =====================================================
 // TYPES
@@ -94,18 +97,12 @@ export async function POST(request: NextRequest) {
 
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     // Parse form data
@@ -114,17 +111,14 @@ export async function POST(request: NextRequest) {
     const targetingAreaId = formData.get('targetingAreaId') as string;
 
     if (!file || !targetingAreaId) {
-      return NextResponse.json(
-        { success: false, error: 'File and targetingAreaId required' },
-        { status: 400 }
-      );
+      throw ValidationError('File and targetingAreaId required');
     }
 
     // Read CSV content
     const csvText = await file.text();
     const csvRows = parseCSV(csvText);
 
-    console.log(`[${tenantId}] Processing CSV: ${csvRows.length} rows`);
+    logger.info(`Processing CSV: ${csvRows.length} rows`, { tenantId });
 
     // Get all extracted addresses for this area
     const { data: addresses, error: fetchError } = await supabase
@@ -134,14 +128,11 @@ export async function POST(request: NextRequest) {
       .eq('targeting_area_id', targetingAreaId);
 
     if (fetchError || !addresses) {
-      console.error('Failed to fetch addresses:', fetchError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch addresses' },
-        { status: 500 }
-      );
+      logger.error('Failed to fetch addresses:', { error: fetchError });
+      throw InternalError('Failed to fetch addresses');
     }
 
-    console.log(`[${tenantId}] Found ${addresses.length} addresses to enrich`);
+    logger.info(`Found ${addresses.length} addresses to enrich`, { tenantId });
 
     // Match and enrich
     let enrichedCount = 0;
@@ -184,7 +175,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[${tenantId}] Matched ${enrichedCount} addresses`);
+    logger.info(`Matched ${enrichedCount} addresses`, { tenantId });
 
     // Bulk update enriched addresses
     if (updates.length > 0) {
@@ -205,25 +196,21 @@ export async function POST(request: NextRequest) {
           .eq('tenant_id', tenantId);
 
         if (updateError) {
-          console.error('Update error:', updateError);
+          logger.error('Update error:', { error: updateError });
         }
       }
     }
 
-    console.log(`[${tenantId}] ✓ Enriched ${enrichedCount} addresses from CSV`);
+    logger.info(`Enriched ${enrichedCount} addresses from CSV`, { tenantId });
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       enrichedCount,
       total: csvRows.length,
       matched: enrichedCount,
       unmatched: csvRows.length - enrichedCount,
     });
   } catch (error) {
-    console.error('CSV enrichment error:', error);
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Failed to process CSV' },
-      { status: 500 }
-    );
+    logger.error('CSV enrichment error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }

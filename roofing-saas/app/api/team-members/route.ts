@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export interface TeamMember {
   id: string
@@ -21,12 +22,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -49,10 +50,7 @@ export async function GET() {
 
     if (usersError) {
       logger.error('Error fetching team members:', { error: usersError })
-      return NextResponse.json(
-        { error: 'Failed to fetch team members' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch team members')
     }
 
     // Transform to TeamMember format
@@ -81,15 +79,12 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({
+    return successResponse({
       members,
       total: members.length,
     })
   } catch (error) {
     logger.error('Error in GET /api/team-members:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

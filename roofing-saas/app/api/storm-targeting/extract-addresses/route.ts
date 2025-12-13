@@ -12,6 +12,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
 import { googlePlacesClient } from '@/lib/address-extraction/google-places-client';
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
+import { logger } from '@/lib/logger';
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
+import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   ExtractAddressesRequest,
   ExtractAddressesResponse,
@@ -66,35 +69,24 @@ export async function POST(request: NextRequest) {
     // Get authenticated user
     const user = await getCurrentUser();
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw AuthenticationError();
     }
 
     const tenantId = await getUserTenantId(user.id);
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with a tenant' },
-        { status: 403 }
-      );
+      throw AuthorizationError('User not associated with a tenant');
     }
 
     // Parse request body
     const body: ExtractAddressesRequest = await request.json();
     const { polygon, targetingAreaName, stormEventId } = body;
 
-    console.log(`[${tenantId}] === EXTRACTION REQUEST RECEIVED ===`);
-    console.log('Request body:', { targetingAreaName, stormEventId, polygonPoints: polygon?.coordinates?.length });
-    console.log('Polygon coordinates received:', polygon?.coordinates);
+    logger.info('Extraction request received', { tenantId, targetingAreaName, stormEventId, polygonPoints: polygon?.coordinates?.length });
 
     // Validate polygon
     if (!polygon || !polygon.coordinates || polygon.coordinates.length < 3) {
-      console.error('Invalid polygon received:', polygon);
-      return NextResponse.json(
-        { success: false, error: 'Invalid polygon: must have at least 3 coordinates' },
-        { status: 400 }
-      );
+      logger.error('Invalid polygon received:', { polygon });
+      throw ValidationError('Invalid polygon: must have at least 3 coordinates');
     }
 
     console.log(`[${tenantId}] Starting address extraction...`);
@@ -189,14 +181,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (areaError || !targetingArea) {
-      console.error('Failed to create targeting area:', areaError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Failed to save targeting area: ' + areaError?.message,
-        },
-        { status: 500 }
-      );
+      logger.error('Failed to create targeting area:', { error: areaError });
+      throw InternalError('Failed to save targeting area: ' + areaError?.message);
     }
 
     const targetingAreaId = targetingArea.id;
@@ -226,11 +212,11 @@ export async function POST(request: NextRequest) {
       .insert(addressRecords);
 
     if (addressError) {
-      console.error('Failed to save addresses:', addressError);
+      logger.error('Failed to save addresses:', { error: addressError });
       // Don't fail the request - addresses were extracted successfully
-      console.warn('Addresses extracted but not saved to DB');
+      logger.warn('Addresses extracted but not saved to DB');
     } else {
-      console.log(`[4/4] ✓ Saved ${addressRecords.length} addresses`);
+      logger.info(`Saved ${addressRecords.length} addresses`);
     }
 
     // STEP 5: Return response
@@ -248,22 +234,12 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    console.log(`[${tenantId}] ✓ Address extraction complete`);
+    logger.info('Address extraction complete', { tenantId });
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Address extraction error:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Unknown error during address extraction',
-      },
-      { status: 500 }
-    );
+    logger.error('Address extraction error:', { error });
+    return errorResponse(error instanceof Error ? error : InternalError());
   }
 }
 

@@ -3,10 +3,12 @@
  * Manage roofing knowledge entries
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateKnowledgeEmbedding } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -48,19 +50,13 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch knowledge', { error })
-      return NextResponse.json(
-        { error: 'Failed to fetch knowledge' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch knowledge')
     }
 
-    return NextResponse.json({ knowledge: knowledge || [] })
+    return successResponse({ knowledge: knowledge || [] })
   } catch (error) {
     logger.error('Knowledge API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -74,7 +70,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Check if user is admin
@@ -88,10 +84,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!roleAssignment) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const body = await request.json()
@@ -108,10 +101,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!title || !content || !category) {
-      return NextResponse.json(
-        { error: 'Title, content, and category are required' },
-        { status: 400 }
-      )
+      throw ValidationError('Title, content, and category are required')
     }
 
     // Generate embedding if requested
@@ -144,19 +134,13 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       logger.error('Failed to create knowledge entry', { error: insertError })
-      return NextResponse.json(
-        { error: 'Failed to create knowledge entry' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create knowledge entry')
     }
 
-    return NextResponse.json({ knowledge }, { status: 201 })
+    return createdResponse({ knowledge })
   } catch (error) {
     logger.error('Knowledge creation API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -170,7 +154,7 @@ export async function PATCH(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Check if user is admin
@@ -184,20 +168,14 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (!roleAssignment) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const body = await request.json()
     const { id, regenerate_embedding = false, ...updates } = body
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Knowledge ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Knowledge ID is required')
     }
 
     // Regenerate embedding if requested or if title/content changed
@@ -229,19 +207,13 @@ export async function PATCH(request: NextRequest) {
 
     if (updateError) {
       logger.error('Failed to update knowledge entry', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to update knowledge entry' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update knowledge entry')
     }
 
-    return NextResponse.json({ knowledge })
+    return successResponse({ knowledge })
   } catch (error) {
     logger.error('Knowledge update API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -255,7 +227,7 @@ export async function DELETE(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Check if user is admin
@@ -269,20 +241,14 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (!roleAssignment) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Knowledge ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Knowledge ID is required')
     }
 
     // Soft delete
@@ -293,18 +259,12 @@ export async function DELETE(request: NextRequest) {
 
     if (deleteError) {
       logger.error('Failed to delete knowledge entry', { error: deleteError })
-      return NextResponse.json(
-        { error: 'Failed to delete knowledge entry' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to delete knowledge entry')
     }
 
-    return NextResponse.json({ message: 'Knowledge entry deleted successfully' })
+    return successResponse({ message: 'Knowledge entry deleted successfully' })
   } catch (error) {
     logger.error('Knowledge deletion API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

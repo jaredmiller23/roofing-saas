@@ -3,10 +3,11 @@
  * CRUD operations for time-limited competitions
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { challengeConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 export async function GET() {
   try {
@@ -17,13 +18,13 @@ export async function GET() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     const { data, error } = await supabase
@@ -34,13 +35,13 @@ export async function GET() {
 
     if (error) {
       logger.error('Failed to fetch challenges', { error, org_id })
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ data, success: true })
+    return successResponse({ data, success: true })
   } catch (error) {
     logger.error('Challenges GET error', { error })
-    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -53,23 +54,20 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     const body = await request.json()
     const validationResult = challengeConfigSchema.safeParse(body)
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.format(), success: false },
-        { status: 400 }
-      )
+      throw ValidationError('Validation failed')
     }
 
     const validated = validationResult.data
@@ -82,14 +80,14 @@ export async function POST(request: Request) {
 
     if (error) {
       logger.error('Failed to create challenge', { error, org_id })
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     logger.info('Created challenge', { org_id, challenge_id: data.id, title: data.title })
 
-    return NextResponse.json({ data, success: true }, { status: 201 })
+    return createdResponse({ data, success: true })
   } catch (error) {
     logger.error('Challenges POST error', { error })
-    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

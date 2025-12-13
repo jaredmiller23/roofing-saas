@@ -7,23 +7,18 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import type {
   DigitalBusinessCard,
   GetDigitalCardsResponse,
   CreateDigitalCardRequest,
   CreateDigitalCardResponse,
 } from '@/lib/digital-cards/types'
-
-// Helper to get current user
-async function getCurrentUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
-}
 
 // =============================================
 // GET /api/digital-cards
@@ -37,7 +32,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -54,10 +49,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (tenantError || !tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Build query
@@ -81,11 +73,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching digital cards:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch digital cards' },
-        { status: 500 }
-      )
+      logger.error('Error fetching digital cards:', { error })
+      throw InternalError('Failed to fetch digital cards')
     }
 
     const response: GetDigitalCardsResponse = {
@@ -93,13 +82,10 @@ export async function GET(request: NextRequest) {
       total: data?.length || 0,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Unexpected error in GET /api/digital-cards:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in GET /api/digital-cards:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -113,7 +99,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -126,20 +112,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (tenantError || !tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const body: CreateDigitalCardRequest = await request.json()
 
     // Validate required fields
     if (!body.full_name) {
-      return NextResponse.json(
-        { error: 'Missing required field: full_name' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required field: full_name')
     }
 
     // Check if user already has a card (one card per user)
@@ -151,10 +131,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingCard) {
-      return NextResponse.json(
-        { error: 'User already has a digital business card. Use PATCH to update.' },
-        { status: 409 }
-      )
+      throw ConflictError('User already has a digital business card. Use PATCH to update.')
     }
 
     // Create the card
@@ -193,31 +170,22 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating digital card:', error)
+      logger.error('Error creating digital card:', { error })
 
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A card with this slug already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A card with this slug already exists')
       }
 
-      return NextResponse.json(
-        { error: 'Failed to create digital card' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create digital card')
     }
 
     const response: CreateDigitalCardResponse = {
       card: data as DigitalBusinessCard,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
-    console.error('Unexpected error in POST /api/digital-cards:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Unexpected error in POST /api/digital-cards:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

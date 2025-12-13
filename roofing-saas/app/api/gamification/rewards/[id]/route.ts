@@ -2,10 +2,11 @@
  * Reward by ID API
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { rewardConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -21,23 +22,20 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     const body = await request.json()
     const validationResult = rewardConfigSchema.partial().safeParse(body)
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.format(), success: false },
-        { status: 400 }
-      )
+      throw ValidationError('Validation failed')
     }
 
     const validated = validationResult.data
@@ -54,18 +52,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       logger.error('Failed to update reward', { error, org_id, reward_id: id })
 
       if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Reward not found', success: false }, { status: 404 })
+        throw NotFoundError('Reward not found')
       }
 
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     logger.info('Updated reward', { org_id, reward_id: data.id })
 
-    return NextResponse.json({ data, success: true })
+    return successResponse({ data, success: true })
   } catch (error) {
     logger.error('Reward PATCH error', { error })
-    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -79,27 +77,27 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const org_id = user.user_metadata?.org_id
 
     if (!org_id) {
-      return NextResponse.json({ error: 'Organization not found', success: false }, { status: 400 })
+      throw ValidationError('Organization not found')
     }
 
     const { error } = await supabase.from('reward_configs').delete().eq('id', id).eq('org_id', org_id)
 
     if (error) {
       logger.error('Failed to delete reward', { error, org_id, reward_id: id })
-      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     logger.info('Deleted reward', { org_id, reward_id: id })
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Reward DELETE error', { error })
-    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

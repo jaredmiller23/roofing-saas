@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface SearchResult {
   id: string
@@ -20,19 +23,19 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
     if (!query || query.trim().length === 0) {
-      return NextResponse.json({ results: [] })
+      return successResponse({ results: [] })
     }
 
     const supabase = await createClient()
@@ -197,16 +200,13 @@ export async function GET(request: NextRequest) {
       return a.title.localeCompare(b.title)
     })
 
-    return NextResponse.json({
+    return successResponse({
       results: results.slice(0, 50), // Limit total results
       total: results.length,
       query,
     })
   } catch (error) {
-    console.error('Error in GET /api/search:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/search:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

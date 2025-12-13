@@ -7,9 +7,12 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/profile/upload-photo
@@ -20,35 +23,26 @@ export async function POST(request: NextRequest) {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const formData = await request.formData()
     const file = formData.get('file') as File
 
     if (!file) {
-      return NextResponse.json(
-        { success: false, error: 'No file provided' },
-        { status: 400 }
-      )
+      throw ValidationError('No file provided')
     }
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid file type. Only images are allowed.' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid file type. Only images are allowed.')
     }
 
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024 // 5MB in bytes
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { success: false, error: 'File too large. Maximum size is 5MB.' },
-        { status: 400 }
-      )
+      throw ValidationError('File too large. Maximum size is 5MB.')
     }
 
     const supabase = await createClient()
@@ -67,7 +61,7 @@ export async function POST(request: NextRequest) {
         await supabase.storage.from('profile-photos').remove([oldFilePath])
       } catch (error) {
         // Ignore errors when deleting old avatar
-        console.warn('Failed to delete old avatar:', error)
+        logger.warn('Failed to delete old avatar:', { error })
       }
     }
 
@@ -80,11 +74,8 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
-      console.error('Supabase storage upload error:', uploadError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to upload photo' },
-        { status: 500 }
-      )
+      logger.error('Supabase storage upload error:', { error: uploadError })
+      throw InternalError('Failed to upload photo')
     }
 
     // Get public URL
@@ -103,24 +94,18 @@ export async function POST(request: NextRequest) {
     })
 
     if (updateError) {
-      console.error('Supabase update user metadata error:', updateError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to update profile photo' },
-        { status: 500 }
-      )
+      logger.error('Supabase update user metadata error:', { error: updateError })
+      throw InternalError('Failed to update profile photo')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       avatar_url: avatarUrl,
       message: 'Profile photo updated successfully',
     })
   } catch (error) {
-    console.error('Error uploading profile photo:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to upload profile photo' },
-      { status: 500 }
-    )
+    logger.error('Error uploading profile photo:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -133,16 +118,13 @@ export async function DELETE() {
     const user = await getCurrentUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const avatarUrl = user.user_metadata?.avatar_url
 
     if (!avatarUrl) {
-      return NextResponse.json(
-        { success: false, error: 'No profile photo to delete' },
-        { status: 404 }
-      )
+      throw NotFoundError('No profile photo to delete')
     }
 
     const supabase = await createClient()
@@ -156,11 +138,8 @@ export async function DELETE() {
       .remove([filePath])
 
     if (deleteError) {
-      console.error('Supabase storage delete error:', deleteError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to delete photo from storage' },
-        { status: 500 }
-      )
+      logger.error('Supabase storage delete error:', { error: deleteError })
+      throw InternalError('Failed to delete photo from storage')
     }
 
     // Update user metadata to remove avatar URL
@@ -172,22 +151,16 @@ export async function DELETE() {
     })
 
     if (updateError) {
-      console.error('Supabase update user metadata error:', updateError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to update profile' },
-        { status: 500 }
-      )
+      logger.error('Supabase update user metadata error:', { error: updateError })
+      throw InternalError('Failed to update profile')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Profile photo deleted successfully',
     })
   } catch (error) {
-    console.error('Error deleting profile photo:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete profile photo' },
-      { status: 500 }
-    )
+    logger.error('Error deleting profile photo:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
