@@ -12,10 +12,10 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Eye,
   Download,
   Search,
-  LayoutTemplate
+  LayoutTemplate,
+  Eye
 } from 'lucide-react'
 
 interface SignatureDocument {
@@ -230,7 +230,10 @@ export default function SignaturesPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-foreground">
+                        <h3
+                          className="text-lg font-semibold text-foreground hover:text-primary cursor-pointer"
+                          onClick={() => router.push(`/signatures/${doc.id}`)}
+                        >
                           {doc.title}
                         </h3>
                         {getStatusBadge(doc.status)}
@@ -290,14 +293,6 @@ export default function SignaturesPage() {
                         Download
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => router.push(`/signatures/${doc.id}`)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
                   </div>
                 </div>
               </div>
