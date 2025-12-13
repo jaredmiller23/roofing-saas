@@ -2,6 +2,8 @@
  * Contact/Lead type definitions
  */
 
+import type { DNCStatus } from '@/lib/compliance/types'
+
 export type ContactType = 'lead' | 'customer' | 'prospect'
 
 export type ContactStage =
@@ -84,6 +86,12 @@ export interface Contact {
   // Scoring
   lead_score: number
   priority: ContactPriority
+
+  // Compliance
+  dnc_status: DNCStatus | null
+  call_opt_out: boolean
+  call_consent: boolean
+  timezone: string | null
 
   // Flexible
   custom_fields: Record<string, unknown>

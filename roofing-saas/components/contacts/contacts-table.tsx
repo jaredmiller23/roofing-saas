@@ -5,6 +5,7 @@ import { Contact, getCombinedTypeLabel } from '@/lib/types/contact'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Phone, MessageSquare, Mail, Building2 } from 'lucide-react'
+import { DNCBadge } from './DNCBadge'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -186,7 +187,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
         <div className="text-muted-foreground mb-4">No contacts found</div>
         <Link
           href="/contacts/new"
-          className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
         >
           Create your first contact
         </Link>
@@ -258,7 +259,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                 }
               }}
               disabled={bulkActionLoading}
-              className="text-sm px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              className="text-sm px-3 py-1 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 disabled:opacity-50"
             >
               Delete
             </button>
@@ -303,12 +304,15 @@ export function ContactsTable({ params }: ContactsTableProps) {
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Link
-                    href={`/contacts/${contact.id}`}
-                    className="text-primary hover:text-primary/80 font-medium"
-                  >
-                    {contact.first_name} {contact.last_name}
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/contacts/${contact.id}`}
+                      className="text-primary hover:text-primary/80 font-medium"
+                    >
+                      {contact.first_name} {contact.last_name}
+                    </Link>
+                    <DNCBadge status={contact.dnc_status} />
+                  </div>
                   {contact.company && (
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {contact.company}
