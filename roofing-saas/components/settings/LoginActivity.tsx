@@ -17,7 +17,6 @@ import {
   Loader2,
   History,
   RefreshCw,
-  CheckCircle,
   XCircle,
   AlertCircle,
   LogIn,

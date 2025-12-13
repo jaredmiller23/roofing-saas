@@ -158,8 +158,6 @@ export default function StormTargetingPage() {
 
   const onOverlayComplete = useCallback(
     (event: google.maps.drawing.OverlayCompleteEvent) => {
-      console.log('Overlay complete:', event.type);
-
       // Clear previous overlay
       if (currentOverlay) {
         currentOverlay.setMap(null);
@@ -209,7 +207,6 @@ export default function StormTargetingPage() {
 
       setDrawnPolygon({ coordinates });
       setError(null);
-      console.log(`Polygon created with ${coordinates.length} points`);
 
       // Disable drawing mode after drawing
       if (drawingManagerRef.current) {
@@ -322,9 +319,6 @@ export default function StormTargetingPage() {
     setExtractionResult(null);
 
     try {
-      console.log('Sending extraction request with polygon:', drawnPolygon);
-      console.log('Polygon coordinates:', drawnPolygon.coordinates);
-
       const response = await fetch('/api/storm-targeting/extract-addresses', {
         method: 'POST',
         headers: {
@@ -337,7 +331,6 @@ export default function StormTargetingPage() {
       });
 
       const data: ExtractionResult = await response.json();
-      console.log('Extraction response:', data);
 
       if (!data.success) {
         throw new Error(data.error || 'Address extraction failed');
@@ -349,7 +342,6 @@ export default function StormTargetingPage() {
       }
 
       setExtractionResult(data);
-      console.log('Extraction complete:', data.stats);
     } catch (err) {
       console.error('Extraction error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error occurred');

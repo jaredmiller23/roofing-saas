@@ -50,7 +50,7 @@ async function calculateAreaSquareMiles(
   });
 
   if (error || !data) {
-    console.warn('Failed to calculate area, using estimate:', error);
+    logger.warn('Failed to calculate area, using estimate', { error });
     return 0;
   }
 
@@ -89,15 +89,14 @@ export async function POST(request: NextRequest) {
       throw ValidationError('Invalid polygon: must have at least 3 coordinates');
     }
 
-    console.log(`[${tenantId}] Starting address extraction...`);
-    console.log(`Polygon: ${polygon.coordinates.length} points`);
+    logger.info('Starting address extraction', { tenantId, polygonPoints: polygon.coordinates.length });
 
     // Convert to WKT for database operations
     const polygonWKT = polygonToPostGIS(polygon);
 
     // Calculate area to validate size (prevent timeouts)
     const areaSquareMiles = await calculateAreaSquareMiles(supabase, polygonWKT);
-    console.log(`Area: ${areaSquareMiles.toFixed(2)} square miles`);
+    logger.info('Calculated area', { areaSquareMiles: areaSquareMiles.toFixed(2) });
 
     // Validate area size
     const MAX_AREA_SQ_MILES = 10; // Limit to 10 sq mi to prevent timeouts
@@ -112,11 +111,11 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 1: Extract addresses using Google Places API
-    console.log('[1/4] Extracting addresses from Google Places (cost: $0.017)...');
+    logger.info('[1/4] Extracting addresses from Google Places');
 
     const extractionResult = await googlePlacesClient.extractAddresses(polygon);
 
-    console.log(`[1/4] ✓ Google Places Results:`, {
+    logger.info('[1/4] Google Places results', {
       total: extractionResult.stats.totalBuildings,
       residential: extractionResult.stats.residentialCount,
       commercial: extractionResult.stats.commercialCount,
@@ -128,7 +127,7 @@ export async function POST(request: NextRequest) {
         ? 'No buildings found in this area. This area may be too rural or sparsely populated.'
         : `Found ${extractionResult.stats.totalBuildings} buildings, but all were filtered as non-residential.`;
 
-      console.warn('[1/4] ⚠️ No residential addresses found:', debugMessage);
+      logger.warn('[1/4] No residential addresses found', { debugMessage });
 
       return NextResponse.json<ExtractAddressesResponse>({
         success: true,
@@ -145,10 +144,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`[1/4] ✓ Found ${extractionResult.stats.residentialCount} residential addresses`);
+    logger.info('[1/4] Found residential addresses', { count: extractionResult.stats.residentialCount });
 
     // STEP 2: Geocode addresses (lat/lng → full address)
-    console.log('[2/4] Geocoding addresses with Google Maps...');
+    logger.info('[2/4] Geocoding addresses with Google Maps');
     const enrichedAddresses = await geocodingClient.enrichAddressesWithGeocoding(
       extractionResult.addresses
     );
@@ -156,12 +155,10 @@ export async function POST(request: NextRequest) {
     const successfulGeocodes = enrichedAddresses.filter(
       (a) => a.fullAddress && a.confidence > 0.5
     ).length;
-    console.log(
-      `[2/4] ✓ Geocoded ${successfulGeocodes}/${enrichedAddresses.length} addresses`
-    );
+    logger.info('[2/4] Geocoding complete', { successfulGeocodes, total: enrichedAddresses.length });
 
     // STEP 3: Create targeting area in database
-    console.log('[3/4] Saving targeting area to database...');
+    logger.info('[3/4] Saving targeting area to database');
     const areaName = targetingAreaName || `Area ${new Date().toISOString().split('T')[0]}`;
 
     const { data: targetingArea, error: areaError } = await supabase
@@ -186,10 +183,10 @@ export async function POST(request: NextRequest) {
     }
 
     const targetingAreaId = targetingArea.id;
-    console.log(`[3/4] ✓ Created targeting area: ${targetingAreaId}`);
+    logger.info('[3/4] Created targeting area', { targetingAreaId });
 
     // STEP 4: Save extracted addresses to database
-    console.log('[4/4] Saving extracted addresses...');
+    logger.info('[4/4] Saving extracted addresses');
     const addressRecords = enrichedAddresses.map((addr) => ({
       tenant_id: tenantId,
       targeting_area_id: targetingAreaId,

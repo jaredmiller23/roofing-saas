@@ -20,7 +20,7 @@ import {
 import { ChatHistory } from './ChatHistory'
 import { ChatInput } from './ChatInput'
 import { QuickActionsMenu } from './QuickActionsMenu'
-import { ConversationList } from './ConversationList'
+import { AIConversationList } from './AIConversationList'
 import { useAIAssistant } from '@/lib/ai-assistant/context'
 
 export function AIAssistantBar() {
@@ -229,7 +229,7 @@ export function AIAssistantBar() {
             {/* Conversation history panel (if open) */}
             {showHistory && (
               <div className="flex-shrink-0 border-b border-border" style={{ maxHeight: '300px' }}>
-                <ConversationList onClose={() => setShowHistory(false)} />
+                <AIConversationList onClose={() => setShowHistory(false)} />
               </div>
             )}
 

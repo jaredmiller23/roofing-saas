@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -41,6 +41,7 @@ export async function GET() {
     }
 
     const supabase = await createClient()
+    const adminClient = await createAdminClient()
 
     // Fetch all users in tenant with auth data using view
     const { data: tenantUsers, error: usersError } = await supabase
@@ -66,7 +67,7 @@ export async function GET() {
     const userIds = tenantUsers?.map(tu => tu.user_id) || []
 
     // Use service role to query auth.users
-    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+    const { data: authUsers, error: authError } = await adminClient.auth.admin.listUsers()
 
     if (authError) {
       logger.error('Error fetching auth users', { error: authError })
@@ -147,9 +148,10 @@ export async function POST(request: NextRequest) {
 
     const { email, name, role } = validation.data
     const supabase = await createClient()
+    const adminClient = await createAdminClient()
 
     // Check if user already exists in auth
-    const { data: existingUsers } = await supabase.auth.admin.listUsers()
+    const { data: existingUsers } = await adminClient.auth.admin.listUsers()
     const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
 
     let userId: string
@@ -170,7 +172,7 @@ export async function POST(request: NextRequest) {
       userId = existingUser.id
     } else {
       // Create new auth user
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
         email,
         email_confirm: true,
         user_metadata: { name },
@@ -184,7 +186,7 @@ export async function POST(request: NextRequest) {
       userId = newUser.user.id
 
       // Send password reset email
-      await supabase.auth.admin.generateLink({
+      await adminClient.auth.admin.generateLink({
         type: 'recovery',
         email,
       })

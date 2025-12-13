@@ -7,7 +7,7 @@
 
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
-import { getUserSessions, revokeSession, getRequestContext, parseUserAgent, hashSessionToken } from '@/lib/auth/sessions'
+import { getUserSessions, revokeSession, getRequestContext, parseUserAgent } from '@/lib/auth/sessions'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'

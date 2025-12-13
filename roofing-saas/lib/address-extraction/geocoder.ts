@@ -10,6 +10,7 @@ import type {
   BatchGeocodingResult,
   ExtractedAddress,
 } from './types';
+import { logger } from '@/lib/logger';
 
 // =====================================================
 // CONSTANTS
@@ -232,9 +233,11 @@ export class GeocodingClient {
     for (let i = 0; i < requests.length; i += BATCH_SIZE) {
       const batch = requests.slice(i, i + BATCH_SIZE);
 
-      console.log(
-        `Geocoding batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(requests.length / BATCH_SIZE)} (${batch.length} addresses)...`
-      );
+      logger.info('Geocoding batch', {
+        batch: Math.floor(i / BATCH_SIZE) + 1,
+        totalBatches: Math.ceil(requests.length / BATCH_SIZE),
+        batchSize: batch.length,
+      });
 
       // Process batch in parallel
       const batchResults = await Promise.all(
@@ -263,11 +266,11 @@ export class GeocodingClient {
       costEstimate,
     };
 
-    console.log('Batch geocoding complete:', {
+    logger.info('Batch geocoding complete', {
       successful,
       failed,
-      time: (processingTimeMs / 1000).toFixed(1) + 's',
-      cost: '$' + costEstimate.toFixed(2),
+      timeSeconds: (processingTimeMs / 1000).toFixed(1),
+      costUSD: costEstimate.toFixed(2),
     });
 
     return {
@@ -283,7 +286,7 @@ export class GeocodingClient {
   async enrichAddressesWithGeocoding(
     addresses: ExtractedAddress[]
   ): Promise<ExtractedAddress[]> {
-    console.log(`Enriching ${addresses.length} addresses with geocoding...`);
+    logger.info('Enriching addresses with geocoding', { count: addresses.length });
 
     // Prepare geocoding requests
     const requests: GeocodingRequest[] = addresses.map((addr) => ({

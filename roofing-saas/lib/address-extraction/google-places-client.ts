@@ -10,6 +10,7 @@ import type {
   ExtractedAddress,
   AddressExtractionResult,
 } from './types';
+import { logger } from '@/lib/logger';
 
 // =====================================================
 // HELPER FUNCTIONS
@@ -83,13 +84,13 @@ export class GooglePlacesClient {
   async extractAddresses(polygon: Polygon): Promise<AddressExtractionResult> {
     const startTime = Date.now();
 
-    console.log('[Google Places] Extracting addresses using NEW API...');
+    logger.info('[Google Places] Extracting addresses using NEW API');
 
     const bbox = calculateBoundingBox(polygon);
     const center = calculateCenterPoint(polygon);
     const radius = Math.min(calculateRadius(bbox), 50000); // Max 50km
 
-    console.log(`[Google Places] Center: ${center.lat},${center.lng}, Radius: ${radius}m`);
+    logger.info('[Google Places] Search parameters', { center, radius });
 
     // Use the NEW Places API with Text Search
     // This searches for residential properties within the area
@@ -122,12 +123,12 @@ export class GooglePlacesClient {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[Google Places] API error:', data);
+      logger.error('[Google Places] API error', { error: data });
       throw new Error(`Google Places API error: ${data.error?.message || response.statusText}`);
     }
 
     const places = data.places || [];
-    console.log(`[Google Places] Found ${places.length} places`);
+    logger.info('[Google Places] Places found', { count: places.length });
 
     interface GooglePlace {
       location?: {

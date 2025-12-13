@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * ConversationList Component
- * Shows list of conversations with search and management options
+ * AIConversationList Component
+ * Shows list of AI assistant conversations with search and management options
  */
 
 import { useState } from 'react'
@@ -18,12 +18,12 @@ import {
 import { useAIAssistant } from '@/lib/ai-assistant/context'
 import { formatDistanceToNow } from 'date-fns'
 
-interface ConversationListProps {
+interface AIConversationListProps {
   className?: string
   onClose?: () => void
 }
 
-export function ConversationList({ className = '', onClose }: ConversationListProps) {
+export function AIConversationList({ className = '', onClose }: AIConversationListProps) {
   const {
     conversations,
     activeConversationId,

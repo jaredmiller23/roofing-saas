@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { SignatureCapture } from '@/components/signature/SignatureCapture'
+import { SignatureCapture } from '@/components/signatures/SignatureCapture'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

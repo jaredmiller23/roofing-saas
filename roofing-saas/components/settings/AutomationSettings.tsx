@@ -49,7 +49,7 @@ const WORKFLOW_TEMPLATES = [
     trigger_type: 'project_won',
     icon: Trophy,
     color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
+    bgColor: 'bg-yellow-500/10',
     steps: [
       {
         step_order: 1,
@@ -70,7 +70,7 @@ const WORKFLOW_TEMPLATES = [
     trigger_type: 'project_won',
     icon: ClipboardList,
     color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-blue-500/10',
     steps: [
       {
         step_order: 1,
@@ -92,7 +92,7 @@ const WORKFLOW_TEMPLATES = [
     trigger_type: 'job_completed',
     icon: Mail,
     color: 'text-green-600',
-    bgColor: 'bg-green-50',
+    bgColor: 'bg-green-500/10',
     steps: [
       {
         step_order: 1,
@@ -119,7 +119,7 @@ const WORKFLOW_TEMPLATES = [
     trigger_type: 'job_completed',
     icon: Bell,
     color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    bgColor: 'bg-purple-500/10',
     steps: [
       {
         step_order: 1,
@@ -141,7 +141,7 @@ const WORKFLOW_TEMPLATES = [
     trigger_type: 'pipeline_stage_changed',
     icon: MessageSquare,
     color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    bgColor: 'bg-orange-500/10',
     steps: [
       {
         step_order: 1,
