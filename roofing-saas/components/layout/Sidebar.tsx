@@ -18,7 +18,8 @@ import {
   LogOut,
   Megaphone,
   FileText,
-  MessageSquare
+  MessageSquare,
+  PenTool
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -47,6 +48,7 @@ const navSections: NavSection[] = [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
       { href: '/claims', label: 'Claims', icon: FileText },
       { href: '/call-logs', label: 'Call Logs', icon: Phone },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
@@ -192,7 +194,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         {/* User Section */}
         <div className="border-t border-sidebar-border p-4 space-y-2">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
               {userEmail.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
