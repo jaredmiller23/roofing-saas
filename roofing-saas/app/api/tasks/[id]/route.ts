@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/tasks/[id]
@@ -13,12 +16,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -42,19 +45,13 @@ export async function GET(
       .single()
 
     if (error || !task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Task')
     }
 
-    return NextResponse.json({ task })
+    return successResponse({ task })
   } catch (error) {
-    console.error('Get task error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/tasks/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -69,12 +66,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -100,10 +97,8 @@ export async function PATCH(
       .single()
 
     if (error || !task) {
-      return NextResponse.json(
-        { error: 'Failed to update task' },
-        { status: 400 }
-      )
+      logger.error('Error updating task', { error })
+      throw InternalError('Failed to update task')
     }
 
     // Log activity
@@ -130,13 +125,10 @@ export async function PATCH(
         })
     }
 
-    return NextResponse.json({ task })
+    return successResponse({ task })
   } catch (error) {
-    console.error('Update task error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/tasks/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -151,12 +143,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -169,18 +161,13 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      return NextResponse.json(
-        { error: 'Failed to delete task' },
-        { status: 400 }
-      )
+      logger.error('Error deleting task', { error })
+      throw InternalError('Failed to delete task')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Delete task error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/tasks/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

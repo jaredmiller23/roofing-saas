@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { updateContactSchema } from '@/lib/validations/contact'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/contacts/[id]
@@ -15,12 +17,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -35,19 +37,13 @@ export async function GET(
       .single()
 
     if (error || !contact) {
-      return NextResponse.json(
-        { error: 'Contact not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
-    return NextResponse.json({ contact })
+    return successResponse({ contact })
   } catch (error) {
-    logger.error('Get contact error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/contacts/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -62,12 +58,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -92,36 +88,24 @@ export async function PATCH(
       .single()
 
     if (error || !contact) {
-      logger.error('Error updating contact:', { error })
+      logger.error('Error updating contact', { error })
 
       if (error?.code === '23505') {
-        return NextResponse.json(
-          { error: 'A contact with this email already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A contact with this email already exists')
       }
 
-      return NextResponse.json(
-        { error: 'Contact not found or update failed' },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
-    return NextResponse.json({ contact })
+    return successResponse({ contact })
   } catch (error) {
-    logger.error('Update contact error:', { error })
+    logger.error('Error in PATCH /api/contacts/:id', { error })
 
     if (error instanceof Error && error.message.includes('validation')) {
-      return NextResponse.json(
-        { error: 'Invalid input data' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Invalid input data'))
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -136,12 +120,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -155,19 +139,13 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      logger.error('Error deleting contact:', { error })
-      return NextResponse.json(
-        { error: 'Failed to delete contact' },
-        { status: 500 }
-      )
+      logger.error('Error deleting contact', { error })
+      throw InternalError('Failed to delete contact')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    logger.error('Delete contact error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/contacts/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
