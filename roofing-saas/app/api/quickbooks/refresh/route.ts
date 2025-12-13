@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getOAuthClient } from '@/lib/quickbooks/oauth-client'
-import { getCurrentUser } from '@/lib/auth/session'
-import { getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Refresh QuickBooks OAuth tokens
@@ -15,19 +16,13 @@ export async function POST(request: NextRequest) {
     // Verify user is authenticated
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Get user's tenant
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'No tenant found' },
-        { status: 400 }
-      )
+      throw AuthorizationError('No tenant found')
     }
 
     // Get current connection from database
@@ -39,10 +34,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (fetchError || !connection) {
-      return NextResponse.json(
-        { error: 'QuickBooks connection not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('QuickBooks connection')
     }
 
     // Check if token is already expired
@@ -82,10 +74,7 @@ export async function POST(request: NextRequest) {
         encryptAccessError,
         encryptRefreshError
       })
-      return NextResponse.json(
-        { error: 'Failed to encrypt refreshed tokens' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to encrypt refreshed tokens')
     }
 
     // Update encrypted tokens in database
@@ -101,13 +90,10 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       logger.error('Failed to update tokens in database', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to store refreshed tokens' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to store refreshed tokens')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       expiresAt: tokenExpiresAt.toISOString(),
     })
@@ -129,15 +115,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      return NextResponse.json(
-        { error: 'REAUTH_REQUIRED', message: 'Please reconnect your QuickBooks account' },
-        { status: 401 }
-      )
+      throw AuthenticationError('Please reconnect your QuickBooks account')
     }
 
-    return NextResponse.json(
-      { error: 'Failed to refresh token' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to refresh token'))
   }
 }

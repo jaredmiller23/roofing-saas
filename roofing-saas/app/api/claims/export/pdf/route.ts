@@ -3,6 +3,8 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { getCurrentUser } from '@/lib/auth/session'
 import type { ClaimData } from '@/lib/claims/types'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 const STATUS_LABELS: Record<string, string> = {
   'new': 'New',
@@ -24,16 +26,13 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { claims } = await request.json() as { claims: ClaimData[] }
 
     if (!claims || claims.length === 0) {
-      return NextResponse.json(
-        { error: 'No claims provided for export' },
-        { status: 400 }
-      )
+      throw ValidationError('No claims provided for export')
     }
 
     // Create PDF document
@@ -199,10 +198,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('Error generating PDF export:', { error })
-    return NextResponse.json(
-      { error: 'Failed to generate PDF export' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to generate PDF export'))
   }
 }
 

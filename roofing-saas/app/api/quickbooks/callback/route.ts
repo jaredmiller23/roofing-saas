@@ -1,5 +1,5 @@
 /**
- * QuickBooks OAuth Callback Endpoint  
+ * QuickBooks OAuth Callback Endpoint
  * Handles the OAuth callback from QuickBooks
  */
 
@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { exchangeAuthCode } from '@/lib/quickbooks/client'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import { ValidationError, AuthenticationError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,10 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Validate required parameters
     if (!code || !state || !realmId) {
-      return NextResponse.json(
-        { error: 'Missing required OAuth parameters' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required OAuth parameters')
     }
 
     // Decode and validate state
@@ -37,12 +36,12 @@ export async function GET(request: NextRequest) {
     try {
       stateData = JSON.parse(Buffer.from(state, 'base64').toString())
     } catch (_e) {
-      return NextResponse.json({ error: 'Invalid state parameter' }, { status: 400 })
+      throw ValidationError('Invalid state parameter')
     }
 
     // Check state is not too old (5 minutes)
     if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
-      return NextResponse.json({ error: 'State token expired' }, { status: 400 })
+      throw ValidationError('State token expired')
     }
 
     const supabase = await createClient()
@@ -51,7 +50,7 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user || user.id !== stateData.user_id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Exchange authorization code for tokens
@@ -84,10 +83,7 @@ export async function GET(request: NextRequest) {
         encryptAccessError,
         encryptRefreshError
       })
-      return NextResponse.json(
-        { error: 'Failed to encrypt QuickBooks tokens' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to encrypt QuickBooks tokens')
     }
 
     // Store encrypted tokens in database
@@ -110,10 +106,7 @@ export async function GET(request: NextRequest) {
 
     if (insertError) {
       logger.error('Failed to store QB tokens', { error: insertError })
-      return NextResponse.json(
-        { error: 'Failed to save QuickBooks connection' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to save QuickBooks connection')
     }
 
     logger.info('QuickBooks connected successfully', {
@@ -128,6 +121,10 @@ export async function GET(request: NextRequest) {
     )
   } catch (error) {
     logger.error('QuickBooks callback error', { error })
+    // For OAuth flow, redirect with error rather than returning JSON
+    if (error instanceof Error && (error.message.includes('Missing required') || error.message.includes('Invalid state') || error.message.includes('expired'))) {
+      return errorResponse(error)
+    }
     return NextResponse.redirect(
       `${request.nextUrl.origin}/settings?qb_error=Failed+to+connect`
     )

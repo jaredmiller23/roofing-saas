@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/claims/[id]/reject
@@ -14,7 +16,12 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id: claimId } = await context.params
@@ -23,50 +30,27 @@ export async function POST(
 
     // Validate rejection reason is provided
     if (!reason || !reason.trim()) {
-      return NextResponse.json(
-        { error: 'Rejection reason is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Rejection reason is required')
     }
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
 
     // Verify claim exists and belongs to tenant
     const { data: claim, error: fetchError } = await supabase
       .from('claims')
       .select('*')
       .eq('id', claimId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !claim) {
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Claim')
     }
 
     // Check if claim is in a reviewable state
     const reviewableStatuses = ['under_review', 'escalated', 'disputed']
     if (!reviewableStatuses.includes(claim.status)) {
-      return NextResponse.json(
-        { error: 'Claim is not in a reviewable state' },
-        { status: 400 }
-      )
+      throw ValidationError('Claim is not in a reviewable state')
     }
 
     // Update claim to disputed status (representing rejection)
@@ -80,21 +64,18 @@ export async function POST(
       .from('claims')
       .update(updateData)
       .eq('id', claimId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .select()
       .single()
 
     if (updateError) {
       logger.error('Failed to reject claim:', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to reject claim' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to reject claim')
     }
 
     // Log rejection activity with detailed reason
     const activityData = {
-      tenant_id: tenantUser.tenant_id,
+      tenant_id: tenantId,
       entity_type: 'claim' as const,
       entity_id: claimId,
       activity_type: 'claim_rejected' as const,
@@ -120,19 +101,16 @@ export async function POST(
     logger.info('Claim rejected successfully', {
       claimId,
       userId: user.id,
-      tenantId: tenantUser.tenant_id,
+      tenantId,
       reason: reason.trim(),
     })
 
-    return NextResponse.json({
+    return successResponse({
       claim: updatedClaim,
       message: 'Claim rejected successfully',
     })
   } catch (error) {
     logger.error('Error in POST /api/claims/[id]/reject:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

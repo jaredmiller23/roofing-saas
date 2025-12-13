@@ -6,33 +6,29 @@
  * Creates or updates a claim based on project data.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { syncProjectToClaims, gatherProjectSyncData } from '@/lib/claims/sync-service'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify authentication
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
+    const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
+
+    const supabase = await createClient()
 
     // Parse request body
     const body = await request.json()
     const { project_id } = body
 
     if (!project_id) {
-      return NextResponse.json(
-        { error: 'project_id is required' },
-        { status: 400 }
-      )
+      throw ValidationError('project_id is required')
     }
 
     // Verify project exists and user has access
@@ -43,20 +39,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found or access denied' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project')
     }
 
     // Sync to Claims Agent
     const result = await syncProjectToClaims(supabase, project_id)
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 400 }
-      )
+      throw ValidationError(result.error || 'Sync failed')
     }
 
     logger.info('Project synced to claims', {
@@ -64,7 +54,7 @@ export async function POST(request: NextRequest) {
       claimId: result.claim_id,
     })
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       claim_id: result.claim_id,
       claim_number: result.claim_number,
@@ -73,10 +63,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('Claims sync API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -86,45 +73,31 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Verify authentication
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
+    const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
+    const supabase = await createClient()
     const projectId = request.nextUrl.searchParams.get('project_id')
 
     if (!projectId) {
-      return NextResponse.json(
-        { error: 'project_id parameter is required' },
-        { status: 400 }
-      )
+      throw ValidationError('project_id parameter is required')
     }
 
     // Gather sync data preview
     const syncData = await gatherProjectSyncData(supabase, projectId)
 
     if (!syncData) {
-      return NextResponse.json(
-        { error: 'Failed to gather project data' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project data')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       preview: syncData,
     })
   } catch (error) {
     logger.error('Claims sync preview API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

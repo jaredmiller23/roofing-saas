@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface LeaderboardEntry {
   user_id: string
@@ -52,11 +54,8 @@ export async function GET(request: Request) {
         .gte('created_at', getDateByPeriod(period))
 
       if (error) {
-        console.error('Error fetching knock activities:', error)
-        return NextResponse.json(
-          { error: 'Failed to fetch knock leaderboard' },
-          { status: 500 }
-        )
+        logger.error('Error fetching knock activities:', { error })
+        throw InternalError('Failed to fetch knock leaderboard')
       }
 
       // Aggregate counts by user
@@ -97,11 +96,8 @@ export async function GET(request: Request) {
         .gte('updated_at', getDateByPeriod(period))
 
       if (error) {
-        console.error('Error fetching sales:', error)
-        return NextResponse.json(
-          { error: 'Failed to fetch sales leaderboard' },
-          { status: 500 }
-        )
+        logger.error('Error fetching sales:', { error })
+        throw InternalError('Failed to fetch sales leaderboard')
       }
 
       // Aggregate counts by user
@@ -142,11 +138,8 @@ export async function GET(request: Request) {
         .limit(limit)
 
       if (error) {
-        console.error('Error fetching leaderboard:', error)
-        return NextResponse.json(
-          { error: 'Failed to fetch leaderboard' },
-          { status: 500 }
-        )
+        logger.error('Error fetching leaderboard:', { error })
+        throw InternalError('Failed to fetch leaderboard')
       }
 
       leaderboard = pointsData || []
@@ -188,8 +181,7 @@ export async function GET(request: Request) {
       }
     }) || []
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       data: {
         period,
         type,
@@ -198,10 +190,7 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
-    console.error('Leaderboard API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Leaderboard API error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -5,34 +5,26 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthorizationUrl } from '@/lib/quickbooks/client'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
-    // Get current user and tenant
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
 
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
     }
 
     // Generate state token for CSRF protection
     const state = Buffer.from(JSON.stringify({
-      tenant_id: tenantUser.tenant_id,
+      tenant_id: tenantId,
       user_id: user.id,
       timestamp: Date.now(),
     })).toString('base64')
@@ -45,16 +37,13 @@ export async function GET(request: NextRequest) {
 
     logger.info('Redirecting to QuickBooks OAuth', {
       userId: user.id,
-      tenantId: tenantUser.tenant_id,
+      tenantId,
     })
 
     // Redirect to QuickBooks authorization page
     return NextResponse.redirect(authUrl)
   } catch (error) {
     logger.error('QuickBooks auth error', { error })
-    return NextResponse.json(
-      { error: 'Failed to initiate QuickBooks authorization' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to initiate QuickBooks authorization'))
   }
 }

@@ -6,11 +6,13 @@
  * Updates project status based on claim changes.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { handleClaimWebhook } from '@/lib/claims/sync-service'
 import type { ClaimWebhookEvent } from '@/lib/claims/types'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Webhook secret for verification
 const WEBHOOK_SECRET = process.env.CLAIMS_WEBHOOK_SECRET
@@ -63,10 +65,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     if (!verifyWebhookSignature(rawBody, signature)) {
       logger.warn('Invalid webhook signature')
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      )
+      throw AuthenticationError('Invalid signature')
     }
 
     // Parse the event
@@ -74,18 +73,12 @@ export async function POST(request: NextRequest) {
     try {
       event = JSON.parse(rawBody)
     } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON payload' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid JSON payload')
     }
 
     // Validate required fields
     if (!event.claim_id || !event.event) {
-      return NextResponse.json(
-        { error: 'Missing required fields: claim_id, event' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: claim_id, event')
     }
 
     logger.info('Received claim webhook', {
@@ -106,22 +99,19 @@ export async function POST(request: NextRequest) {
 
     if (!success) {
       // Return 200 even if no project found - webhook was received
-      return NextResponse.json({
+      return successResponse({
         success: true,
         message: 'Webhook received but no matching project found',
       })
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Webhook processed successfully',
     })
   } catch (error) {
     logger.error('Claims webhook API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -130,7 +120,7 @@ export async function POST(request: NextRequest) {
  * Health check endpoint
  */
 export async function GET() {
-  return NextResponse.json({
+  return successResponse({
     status: 'healthy',
     endpoint: 'claims-webhook',
     timestamp: new Date().toISOString(),

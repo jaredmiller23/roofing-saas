@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -13,7 +15,12 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const formData = await request.formData()
@@ -22,35 +29,15 @@ export async function POST(request: NextRequest) {
     const documentType = formData.get('documentType') as string
 
     if (!file || !claimId) {
-      return NextResponse.json(
-        { error: 'File and claimId are required' },
-        { status: 400 }
-      )
+      throw ValidationError('File and claimId are required')
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: 'File size exceeds 10MB limit' },
-        { status: 400 }
-      )
+      throw ValidationError('File size exceeds 10MB limit')
     }
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
 
     // Ensure storage bucket exists
     const { data: buckets } = await supabase.storage.listBuckets()
@@ -72,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Generate unique file path: {tenant_id}/{claim_id}/{timestamp}_{filename}
     const timestamp = Date.now()
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const filePath = `${tenantUser.tenant_id}/${claimId}/${timestamp}_${sanitizedFileName}`
+    const filePath = `${tenantId}/${claimId}/${timestamp}_${sanitizedFileName}`
 
     // Upload file to Supabase Storage
     const fileBuffer = await file.arrayBuffer()
@@ -85,10 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       logger.error('Storage upload error:', { error: uploadError })
-      return NextResponse.json(
-        { error: 'Failed to upload file to storage' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to upload file to storage')
     }
 
     // Get public URL
@@ -100,7 +84,7 @@ export async function POST(request: NextRequest) {
     const { data: document, error: dbError } = await supabase
       .from('documents')
       .insert({
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         entity_type: 'claim',
         entity_id: claimId,
         name: file.name,
@@ -117,10 +101,7 @@ export async function POST(request: NextRequest) {
       logger.error('Database insert error:', { error: dbError })
       // Clean up uploaded file
       await supabase.storage.from('claim-documents').remove([filePath])
-      return NextResponse.json(
-        { error: 'Failed to save document metadata' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to save document metadata')
     }
 
     logger.info('Document uploaded successfully', {
@@ -130,12 +111,9 @@ export async function POST(request: NextRequest) {
       userId: user.id,
     })
 
-    return NextResponse.json({ document })
+    return successResponse({ document })
   } catch (error) {
     logger.error('Error in POST /api/claims/documents/upload:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

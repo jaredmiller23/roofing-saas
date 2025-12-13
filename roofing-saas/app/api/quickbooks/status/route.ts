@@ -3,41 +3,36 @@
  * Check if QuickBooks is connected for the current tenant
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(_request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
+
     const supabase = await createClient()
-
-    // Get current user and tenant
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
-    }
 
     // Check if QB is connected
     const { data: token, error: tokenError } = await supabase
       .from('quickbooks_tokens')
       .select('realm_id, company_name, country, expires_at, created_at')
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (tokenError || !token) {
-      return NextResponse.json({
+      return successResponse({
         connected: false,
         message: 'QuickBooks not connected',
       })
@@ -47,7 +42,7 @@ export async function GET(_request: NextRequest) {
     const expiresAt = new Date(token.expires_at)
     const isExpired = expiresAt <= new Date()
 
-    return NextResponse.json({
+    return successResponse({
       connected: true,
       realm_id: token.realm_id,
       company_name: token.company_name,
@@ -58,9 +53,6 @@ export async function GET(_request: NextRequest) {
     })
   } catch (error) {
     logger.error('QuickBooks status error', { error })
-    return NextResponse.json(
-      { error: 'Failed to check QuickBooks status' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to check QuickBooks status'))
   }
 }

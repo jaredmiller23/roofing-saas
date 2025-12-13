@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { ClaimData } from '@/lib/claims/types'
 
 /**
@@ -16,7 +18,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -25,25 +32,11 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
-
     // Build query
     let query = supabase
       .from('claims')
       .select('*')
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
 
     // Apply filters
@@ -58,22 +51,16 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      logger.error('Error fetching claims:', { error })
-      return NextResponse.json(
-        { error: 'Failed to fetch claims' },
-        { status: 500 }
-      )
+      logger.error('Error fetching claims', { error })
+      throw InternalError('Failed to fetch claims')
     }
 
-    return NextResponse.json({
+    return successResponse({
       claims: (data || []) as ClaimData[],
       total: data?.length || 0,
     })
   } catch (error) {
-    logger.error('Error in GET /api/claims:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/claims', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

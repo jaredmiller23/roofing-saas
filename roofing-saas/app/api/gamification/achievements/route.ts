@@ -1,20 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
     }
+
+    const supabase = await createClient()
 
     // Get all possible achievements
     const { data: allAchievements, error: achievementsError } = await supabase
@@ -23,11 +21,8 @@ export async function GET(request: Request) {
       .order('points_required', { ascending: true })
 
     if (achievementsError) {
-      console.error('Error fetching achievements:', achievementsError)
-      return NextResponse.json(
-        { error: 'Failed to fetch achievements' },
-        { status: 500 }
-      )
+      logger.error('Error fetching achievements:', { error: achievementsError })
+      throw InternalError('Failed to fetch achievements')
     }
 
     // Get user's unlocked achievements
@@ -37,11 +32,8 @@ export async function GET(request: Request) {
       .eq('user_id', user.id)
 
     if (userError) {
-      console.error('Error fetching user achievements:', userError)
-      return NextResponse.json(
-        { error: 'Failed to fetch user achievements' },
-        { status: 500 }
-      )
+      logger.error('Error fetching user achievements:', { error: userError })
+      throw InternalError('Failed to fetch user achievements')
     }
 
     // Combine the data
@@ -52,8 +44,7 @@ export async function GET(request: Request) {
       unlocked_at: userAchievements?.find(ua => ua.achievement_id === achievement.id)?.unlocked_at
     })) || []
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       data: {
         achievements: achievementsWithStatus,
         total: allAchievements?.length || 0,
@@ -61,10 +52,7 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
-    console.error('Achievements API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Achievements API error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

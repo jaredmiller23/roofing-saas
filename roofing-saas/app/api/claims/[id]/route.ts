@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { ClaimData } from '@/lib/claims/types'
 
 /**
@@ -15,51 +17,33 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id: claimId } = await context.params
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
 
     // Fetch claim
     const { data, error } = await supabase
       .from('claims')
       .select('*')
       .eq('id', claimId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (error || !data) {
-      logger.error('Error fetching claim:', { error })
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Claim')
     }
 
-    return NextResponse.json({
-      claim: data as ClaimData,
-    })
+    return successResponse({ claim: data as ClaimData })
   } catch (error) {
-    logger.error('Error in GET /api/claims/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/claims/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -74,40 +58,28 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id: claimId } = await context.params
     const body = await request.json()
     const supabase = await createClient()
 
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
-
     // Verify claim belongs to user's tenant
     const { data: existingClaim } = await supabase
       .from('claims')
       .select('*')
       .eq('id', claimId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (!existingClaim) {
-      return NextResponse.json(
-        { error: 'Claim not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Claim')
     }
 
     // Build update object
@@ -139,16 +111,13 @@ export async function PATCH(
       .from('claims')
       .update(updateData)
       .eq('id', claimId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .select()
       .single()
 
     if (error) {
-      logger.error('Error updating claim:', { error })
-      return NextResponse.json(
-        { error: 'Failed to update claim' },
-        { status: 500 }
-      )
+      logger.error('Error updating claim', { error })
+      throw InternalError('Failed to update claim')
     }
 
     logger.info('Claim updated successfully', {
@@ -157,14 +126,9 @@ export async function PATCH(
       userId: user.id,
     })
 
-    return NextResponse.json({
-      claim: data as ClaimData,
-    })
+    return successResponse({ claim: data as ClaimData })
   } catch (error) {
-    logger.error('Error in PATCH /api/claims/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/claims/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
