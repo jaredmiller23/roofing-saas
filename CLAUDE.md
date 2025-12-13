@@ -140,13 +140,15 @@ curl -X PUT http://localhost:8181/api/tasks/TASK_ID \
 - Mark "done" if fully complete
 - Mark "review" if needs user verification
 
-**5. END OF SESSION - COMMIT & DOCUMENT:**
+**5. END OF SESSION - COMMIT, PUSH & DOCUMENT:**
 ```bash
-# Commit all work (NEVER leave uncommitted changes)
-git add -A && git commit -m "..."
-git push origin main
+# ATOMIC: Commit AND push in one command (prevents "forgot to push" gap)
+git add -A && git commit -m "..." && git push origin main
 
-# Document in Archon
+# Document in Archon (use wrapper script for reliability)
+~/Projects/VEST/scripts/archon-task.sh create "Task title" "Description" --status done --feature "Phase 5"
+
+# Or with curl (more error-prone with special characters)
 curl -X POST http://localhost:8181/api/tasks \
   -H "Content-Type: application/json" \
   -d '{
@@ -176,12 +178,33 @@ curl -X POST http://localhost:8181/api/tasks \
   }'
 ```
 
+**7. SESSION REFLECTION (Before Ending Significant Sessions):**
+
+Ask yourself these questions before stopping:
+- **What was accomplished?** - List concrete deliverables
+- **What failed or was missed?** - Be honest about gaps
+- **What should the next session know?** - Key context to preserve
+
+For significant sessions, create a handoff document:
+```bash
+# Create handoff for next session
+echo "Restart command: Read ~/path/to/HANDOFF.md and continue..."
+```
+
+**Context Management:**
+- Monitor context usage with `/context` command
+- Compact proactively at 85% (don't wait for auto-compact at 95%)
+- High context (>85%) correlates with reduced reliability
+- When context is tight, prioritize completing current task over starting new ones
+
 ### NEVER:
 - ❌ Start work without checking Archon tasks
 - ❌ Complete work without updating Archon
 - ❌ Make assumptions about status without verification
 - ❌ Say "you're all set" or "up and running" without actual checks
 - ❌ End session without documenting work in Archon
+- ❌ Commit without pushing (use atomic: `git add && git commit && git push`)
+- ❌ Ignore user questions like "are you using your tools?" (answer directly!)
 
 ### Project ID:
 ```
