@@ -15,7 +15,8 @@ import {
   Plus,
   Trash2,
   GripVertical,
-  Loader2
+  Loader2,
+  PenLine
 } from 'lucide-react'
 
 interface SignatureField {
@@ -407,23 +408,33 @@ export default function EditTemplatePage() {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-between gap-3">
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push('/signatures/templates')}
+              onClick={() => router.push(`/signatures/templates/${templateId}/editor`)}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Cancel
+              <PenLine className="h-4 w-4 mr-2" />
+              Visual Editor
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || !formData.name}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/signatures/templates')}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formData.name}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

@@ -219,7 +219,8 @@
     "app/(dashboard)/**/page.tsx:*:text-white",
     "app/(dashboard)/**/*button*.tsx:*:text-white",
     "app/(dashboard)/**/*dialog*.tsx:*:text-white",
-    "app/(dashboard)/settings/profile/page.tsx:*:text-white"
+    "app/(dashboard)/settings/profile/page.tsx:*:text-white",
+    "components/signatures/*:*:text-white"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",
