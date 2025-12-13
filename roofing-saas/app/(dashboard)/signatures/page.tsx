@@ -50,12 +50,14 @@ export default function SignaturesPage() {
       }
 
       const res = await fetch(`/api/signature-documents?${params.toString()}`)
-      const data = await res.json()
+      const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to load documents')
+        throw new Error(result.error || result.data?.error || 'Failed to load documents')
       }
 
+      // Handle response format: { success, data: { documents, ... } } or { documents, ... }
+      const data = result.data || result
       setDocuments(data.documents || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load documents')

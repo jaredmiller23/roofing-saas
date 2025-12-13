@@ -48,12 +48,16 @@ export default function NewSignatureDocumentPage() {
     try {
       // Load contacts
       const contactsRes = await fetch('/api/contacts?limit=100')
-      const contactsData = await contactsRes.json()
+      const contactsResult = await contactsRes.json()
+      // Handle response format: { success, data: { contacts, ... } } or { contacts, ... }
+      const contactsData = contactsResult.data || contactsResult
       setContacts(contactsData.contacts || [])
 
       // Load projects
       const projectsRes = await fetch('/api/projects?limit=100')
-      const projectsData = await projectsRes.json()
+      const projectsResult = await projectsRes.json()
+      // Handle response format: { success, data: { projects, ... } } or { projects, ... }
+      const projectsData = projectsResult.data || projectsResult
       setProjects(projectsData.projects || [])
     } catch (err) {
       console.error('Error loading data:', err)

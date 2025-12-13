@@ -56,12 +56,14 @@ export default function SignatureTemplatesPage() {
       }
 
       const res = await fetch(`/api/signature-templates?${params.toString()}`)
-      const data = await res.json()
+      const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to load templates')
+        throw new Error(result.error || result.data?.error || 'Failed to load templates')
       }
 
+      // Handle response format: { success, data: { templates, ... } } or { templates, ... }
+      const data = result.data || result
       setTemplates(data.templates || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load templates')
