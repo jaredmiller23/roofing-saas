@@ -60,17 +60,22 @@ interface DashboardData {
 export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMetricsProps) {
   const [data, setData] = useState<DashboardData | null>(initialData || null)
   const [isLoading, setIsLoading] = useState(!initialData)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchMetrics = useCallback(async () => {
     setIsLoading(true)
+    setError(null)
     try {
       const response = await fetch(`/api/dashboard/metrics?scope=${scope}`)
       const result = await response.json()
-      if (result.success && result.data) {
+      if (result.success && result.data && result.data.metrics) {
         setData(result.data)
+      } else {
+        setError('Failed to load metrics data')
       }
     } catch (error) {
       console.error('Failed to fetch dashboard metrics:', error)
+      setError('Failed to connect to server')
     } finally {
       setIsLoading(false)
     }
@@ -88,7 +93,23 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
     )
   }
 
-  if (!data) {
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-muted-foreground mb-2">{error}</div>
+          <button
+            onClick={() => fetchMetrics()}
+            className="text-primary hover:underline text-sm"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data || !data.metrics) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">No data available</div>
