@@ -3,10 +3,12 @@
  * Track expenses for projects (labor, materials, equipment, etc.)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +16,12 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -54,13 +56,13 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch job expenses', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 })
+      throw InternalError('Failed to fetch expenses')
     }
 
-    return NextResponse.json({ expenses })
+    return successResponse({ expenses })
   } catch (error) {
     logger.error('Job expenses API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -70,12 +72,12 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -97,10 +99,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!project_id || !expense_type || !description || !amount || !expense_date) {
-      return NextResponse.json(
-        { error: 'Missing required fields: project_id, expense_type, description, amount, expense_date' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: project_id, expense_type, description, amount, expense_date')
     }
 
     const { data: expense, error } = await supabase
@@ -128,15 +127,15 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to create job expense', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 })
+      throw InternalError('Failed to create expense')
     }
 
     logger.info('Job expense created', { expenseId: expense.id, projectId: project_id, tenantId })
 
-    return NextResponse.json({ expense }, { status: 201 })
+    return createdResponse({ expense })
   } catch (error) {
     logger.error('Job expenses API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -146,19 +145,19 @@ export async function PATCH(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
     const { id, ...updates } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing expense id' }, { status: 400 })
+      throw ValidationError('Missing expense id')
     }
 
     const { data: expense, error } = await supabase
@@ -171,15 +170,15 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to update job expense', { error, tenantId, expenseId: id })
-      return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 })
+      throw InternalError('Failed to update expense')
     }
 
     logger.info('Job expense updated', { expenseId: id, tenantId })
 
-    return NextResponse.json({ expense })
+    return successResponse({ expense })
   } catch (error) {
     logger.error('Job expenses API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -189,19 +188,19 @@ export async function DELETE(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing expense id' }, { status: 400 })
+      throw ValidationError('Missing expense id')
     }
 
     const { error } = await supabase
@@ -212,14 +211,14 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to delete job expense', { error, tenantId, expenseId: id })
-      return NextResponse.json({ error: 'Failed to delete expense' }, { status: 500 })
+      throw InternalError('Failed to delete expense')
     }
 
     logger.info('Job expense deleted', { expenseId: id, tenantId })
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Job expenses API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   FilterConfig,
   UpdateFilterConfigRequest,
@@ -21,7 +23,7 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { id } = await params
@@ -35,10 +37,7 @@ export async function PATCH(
       .single()
 
     if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const body: UpdateFilterConfigRequest = await request.json()
@@ -60,10 +59,7 @@ export async function PATCH(
       updates.display_order = body.display_order
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: 'No fields to update' },
-        { status: 400 }
-      )
+      throw ValidationError('No fields to update')
     }
 
     const { data, error } = await supabase
@@ -75,30 +71,21 @@ export async function PATCH(
 
     if (error) {
       logger.error('Error updating filter config:', { error })
-      return NextResponse.json(
-        { error: 'Failed to update filter configuration' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update filter configuration')
     }
 
     if (!data) {
-      return NextResponse.json(
-        { error: 'Filter configuration not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Filter configuration not found')
     }
 
     const response: UpdateFilterConfigResponse = {
       config: data as FilterConfig,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     logger.error('Error in PATCH /api/filters/configs/:id:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -113,7 +100,7 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { id } = await params
@@ -127,10 +114,7 @@ export async function DELETE(
       .single()
 
     if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const { error } = await supabase
@@ -140,18 +124,12 @@ export async function DELETE(
 
     if (error) {
       logger.error('Error deleting filter config:', { error })
-      return NextResponse.json(
-        { error: 'Failed to delete filter configuration' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to delete filter configuration')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Error in DELETE /api/filters/configs/:id:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -3,10 +3,12 @@
  * Financial reporting and P&L calculations
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +16,12 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch P&L data', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to fetch P&L data' }, { status: 500 })
+      throw InternalError('Failed to fetch P&L data')
     }
 
     // Calculate summary metrics
@@ -77,9 +79,9 @@ export async function GET(request: NextRequest) {
       ? ((summary.total_profit / summary.total_revenue) * 100).toFixed(2)
       : '0.00'
 
-    return NextResponse.json({ profitLoss, summary })
+    return successResponse({ profitLoss, summary })
   } catch (error) {
     logger.error('P&L API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

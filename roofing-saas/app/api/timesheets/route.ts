@@ -3,10 +3,12 @@
  * Track labor hours and costs per project
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +16,12 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -63,13 +65,13 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to fetch timesheets', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to fetch timesheets' }, { status: 500 })
+      throw InternalError('Failed to fetch timesheets')
     }
 
-    return NextResponse.json({ timesheets })
+    return successResponse({ timesheets })
   } catch (error) {
     logger.error('Timesheets API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -79,12 +81,12 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -104,10 +106,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!project_id || !crew_member_id || !work_date || !regular_hours || !hourly_rate) {
-      return NextResponse.json(
-        { error: 'Missing required fields: project_id, crew_member_id, work_date, regular_hours, hourly_rate' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: project_id, crew_member_id, work_date, regular_hours, hourly_rate')
     }
 
     const { data: timesheet, error } = await supabase
@@ -133,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to create timesheet', { error, tenantId })
-      return NextResponse.json({ error: 'Failed to create timesheet' }, { status: 500 })
+      throw InternalError('Failed to create timesheet')
     }
 
     // Create corresponding job expense for labor
@@ -160,10 +159,10 @@ export async function POST(request: NextRequest) {
 
     logger.info('Timesheet created', { timesheetId: timesheet.id, projectId: project_id, tenantId })
 
-    return NextResponse.json({ timesheet }, { status: 201 })
+    return createdResponse({ timesheet })
   } catch (error) {
     logger.error('Timesheets API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -173,19 +172,19 @@ export async function PATCH(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
     const { id, ...updates } = body
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing timesheet id' }, { status: 400 })
+      throw ValidationError('Missing timesheet id')
     }
 
     // If approving, set approved fields
@@ -204,7 +203,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to update timesheet', { error, tenantId, timesheetId: id })
-      return NextResponse.json({ error: 'Failed to update timesheet' }, { status: 500 })
+      throw InternalError('Failed to update timesheet')
     }
 
     // If newly approved, create job expense
@@ -244,10 +243,10 @@ export async function PATCH(request: NextRequest) {
 
     logger.info('Timesheet updated', { timesheetId: id, tenantId })
 
-    return NextResponse.json({ timesheet })
+    return successResponse({ timesheet })
   } catch (error) {
     logger.error('Timesheets API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -257,19 +256,19 @@ export async function DELETE(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing timesheet id' }, { status: 400 })
+      throw ValidationError('Missing timesheet id')
     }
 
     const { error } = await supabase
@@ -280,14 +279,14 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       logger.error('Failed to delete timesheet', { error, tenantId, timesheetId: id })
-      return NextResponse.json({ error: 'Failed to delete timesheet' }, { status: 500 })
+      throw InternalError('Failed to delete timesheet')
     }
 
     logger.info('Timesheet deleted', { timesheetId: id, tenantId })
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Timesheets API error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

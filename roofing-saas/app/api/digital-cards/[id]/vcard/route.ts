@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateVCard } from '@/lib/digital-cards/vcard'
+import { logger } from '@/lib/logger'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 export async function GET(
   request: NextRequest,
@@ -19,7 +22,7 @@ export async function GET(
       .single()
 
     if (error || !card) {
-      return NextResponse.json({ error: 'Card not found' }, { status: 404 })
+      throw NotFoundError('Card not found')
     }
 
     // Generate vCard
@@ -50,10 +53,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error generating vCard:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error generating vCard:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

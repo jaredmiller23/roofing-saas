@@ -6,10 +6,12 @@
  * Returns all relevant data including photos, documents, and storm causation.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { generateClaimExportPackage } from '@/lib/claims/sync-service'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface RouteParams {
   params: Promise<{
@@ -31,15 +33,12 @@ export async function GET(
     } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Validate projectId
     if (!projectId) {
-      return NextResponse.json(
-        { error: 'Project ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Project ID is required')
     }
 
     // Verify project exists and user has access
@@ -50,20 +49,14 @@ export async function GET(
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found or access denied' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project not found or access denied')
     }
 
     // Generate export package
     const exportPackage = await generateClaimExportPackage(supabase, projectId)
 
     if (!exportPackage) {
-      return NextResponse.json(
-        { error: 'Failed to generate export package' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to generate export package')
     }
 
     logger.info('Claim export package generated', {
@@ -77,7 +70,7 @@ export async function GET(
     const format = request.nextUrl.searchParams.get('format') || 'json'
 
     if (format === 'json') {
-      return NextResponse.json({
+      return successResponse({
         success: true,
         data: exportPackage,
       })
@@ -86,16 +79,13 @@ export async function GET(
     // For future: ZIP download format
     // This would bundle all files into a downloadable ZIP
     // For now, return JSON with signed URLs
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: exportPackage,
       note: 'ZIP format not yet implemented. Use JSON format and download files individually.',
     })
   } catch (error) {
     logger.error('Claims export API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

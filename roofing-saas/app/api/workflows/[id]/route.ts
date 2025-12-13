@@ -1,6 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,12 +18,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -39,13 +42,13 @@ export async function GET(
       .single()
 
     if (error || !workflow) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow not found')
     }
 
-    return NextResponse.json({ workflow })
+    return successResponse({ workflow })
   } catch (error) {
-    console.error('[API] Get workflow error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    logger.error('[API] Get workflow error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -60,12 +63,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -94,18 +97,18 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('[API] Update workflow error:', error)
-      return NextResponse.json({ error: 'Failed to update workflow' }, { status: 500 })
+      logger.error('[API] Update workflow error:', { error })
+      throw InternalError('Failed to update workflow')
     }
 
     if (!workflow) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow not found')
     }
 
-    return NextResponse.json({ workflow })
+    return successResponse({ workflow })
   } catch (error) {
-    console.error('[API] Update workflow error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    logger.error('[API] Update workflow error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -120,12 +123,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -145,17 +148,17 @@ export async function DELETE(
       .single()
 
     if (error) {
-      console.error('[API] Delete workflow error:', error)
-      return NextResponse.json({ error: 'Failed to delete workflow' }, { status: 500 })
+      logger.error('[API] Delete workflow error:', { error })
+      throw InternalError('Failed to delete workflow')
     }
 
     if (!data) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow not found')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('[API] Delete workflow error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    logger.error('[API] Delete workflow error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

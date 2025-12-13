@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   FilterConfig,
   GetFilterConfigsResponse,
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -29,10 +31,7 @@ export async function GET(request: NextRequest) {
     const include_inactive = searchParams.get('include_inactive') === 'true'
 
     if (!entity_type) {
-      return NextResponse.json(
-        { error: 'entity_type query parameter required' },
-        { status: 400 }
-      )
+      throw ValidationError('entity_type query parameter required')
     }
 
     const supabase = await createClient()
@@ -53,10 +52,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Error fetching filter configs:', { error })
-      return NextResponse.json(
-        { error: 'Failed to fetch filter configurations' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch filter configurations')
     }
 
     const response: GetFilterConfigsResponse = {
@@ -64,13 +60,10 @@ export async function GET(request: NextRequest) {
       total: count || data?.length || 0,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     logger.error('Error in GET /api/filters/configs:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -84,7 +77,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -97,10 +90,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const body: CreateFilterConfigRequest = await request.json()
@@ -113,10 +103,7 @@ export async function POST(request: NextRequest) {
       !body.field_type ||
       !body.filter_operator
     ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields')
     }
 
     // Get tenant_id
@@ -127,10 +114,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!tenant) {
-      return NextResponse.json(
-        { error: 'Tenant not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Tenant not found')
     }
 
     // Insert filter config
@@ -154,22 +138,16 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       logger.error('Error creating filter config:', { error })
-      return NextResponse.json(
-        { error: 'Failed to create filter configuration' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create filter configuration')
     }
 
     const response: CreateFilterConfigResponse = {
       config: data as FilterConfig,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
     logger.error('Error in POST /api/filters/configs:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

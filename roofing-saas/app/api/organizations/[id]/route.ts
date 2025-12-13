@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/organizations/[id]
@@ -14,12 +16,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -34,19 +36,13 @@ export async function GET(
       .single()
 
     if (error || !organization) {
-      return NextResponse.json(
-        { error: 'Organization not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Organization not found')
     }
 
-    return NextResponse.json({ organization })
+    return successResponse({ organization })
   } catch (error) {
     logger.error('Get organization error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -61,12 +57,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -83,19 +79,13 @@ export async function PATCH(
       .single()
 
     if (error || !organization) {
-      return NextResponse.json(
-        { error: 'Failed to update organization' },
-        { status: 400 }
-      )
+      throw InternalError('Failed to update organization')
     }
 
-    return NextResponse.json({ organization })
+    return successResponse({ organization })
   } catch (error) {
     logger.error('Update organization error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -110,12 +100,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -128,18 +118,13 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      return NextResponse.json(
-        { error: 'Failed to delete organization' },
-        { status: 400 }
-      )
+      logger.error('Failed to delete organization:', { error })
+      throw InternalError('Failed to delete organization')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Delete organization error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   SavedFilter,
   GetSavedFiltersResponse,
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -29,10 +31,7 @@ export async function GET(request: NextRequest) {
     const include_shared = searchParams.get('include_shared') !== 'false'
 
     if (!entity_type) {
-      return NextResponse.json(
-        { error: 'entity_type query parameter required' },
-        { status: 400 }
-      )
+      throw ValidationError('entity_type query parameter required')
     }
 
     const supabase = await createClient()
@@ -47,10 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('Error fetching saved filters:', { error })
-      return NextResponse.json(
-        { error: 'Failed to fetch saved filters' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch saved filters')
     }
 
     // Filter based on include_shared param (RLS policy already filters by tenant + (created_by OR is_shared))
@@ -64,13 +60,10 @@ export async function GET(request: NextRequest) {
       total: filters.length,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     logger.error('Error in GET /api/filters/saved:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -84,7 +77,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -97,10 +90,7 @@ export async function POST(request: NextRequest) {
       !body.filter_criteria ||
       Object.keys(body.filter_criteria).length === 0
     ) {
-      return NextResponse.json(
-        { error: 'Missing required fields (entity_type, name, filter_criteria)' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields (entity_type, name, filter_criteria)')
     }
 
     // Get tenant_id
@@ -111,7 +101,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!tenant) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
+      throw NotFoundError('Tenant not found')
     }
 
     // If setting as default, unset other defaults for this entity type
@@ -144,27 +134,18 @@ export async function POST(request: NextRequest) {
       logger.error('Error creating saved filter:', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A filter with this name already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A filter with this name already exists')
       }
-      return NextResponse.json(
-        { error: 'Failed to create saved filter' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create saved filter')
     }
 
     const response: CreateSavedFilterResponse = {
       filter: data as SavedFilter,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
     logger.error('Error in POST /api/filters/saved:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

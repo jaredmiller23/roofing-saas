@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   SubstatusConfig,
   GetSubstatusConfigsResponse,
@@ -21,7 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -30,10 +33,7 @@ export async function GET(request: NextRequest) {
     const include_inactive = searchParams.get('include_inactive') === 'true'
 
     if (!entity_type) {
-      return NextResponse.json(
-        { error: 'entity_type query parameter required' },
-        { status: 400 }
-      )
+      throw ValidationError('entity_type query parameter required')
     }
 
     const supabase = await createClient()
@@ -59,11 +59,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching substatus configs:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch substatus configurations' },
-        { status: 500 }
-      )
+      logger.error('Error fetching substatus configs:', { error })
+      throw InternalError('Failed to fetch substatus configurations')
     }
 
     const response: GetSubstatusConfigsResponse = {
@@ -71,13 +68,10 @@ export async function GET(request: NextRequest) {
       total: data?.length || 0,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Error in GET /api/substatus/configs:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/substatus/configs:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -91,7 +85,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -104,10 +98,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const body: CreateSubstatusConfigRequest = await request.json()
@@ -120,10 +111,7 @@ export async function POST(request: NextRequest) {
       !body.substatus_value ||
       !body.substatus_label
     ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields')
     }
 
     // If setting as default, unset other defaults for this status
@@ -161,30 +149,21 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating substatus config:', error)
+      logger.error('Error creating substatus config:', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A substatus with this value already exists for this status' },
-          { status: 409 }
-        )
+        throw ConflictError('A substatus with this value already exists for this status')
       }
-      return NextResponse.json(
-        { error: 'Failed to create substatus configuration' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create substatus configuration')
     }
 
     const response: CreateSubstatusConfigResponse = {
       config: data as SubstatusConfig,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
-    console.error('Error in POST /api/substatus/configs:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/substatus/configs:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

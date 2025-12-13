@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { canStartProduction, getStatusForPipelineStage } from '@/lib/pipeline/validation'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { PipelineStage } from '@/lib/types/api'
 
 export const dynamic = 'force-dynamic'
@@ -20,12 +23,12 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -48,10 +51,7 @@ export async function POST(
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(projectId)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID format' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid project ID format')
     }
 
     // Fetch project with contact info
@@ -80,15 +80,13 @@ export async function POST(
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project not found')
     }
 
     // Validate project is in 'won' stage
     const currentStage = project.pipeline_stage as PipelineStage
     if (!canStartProduction(currentStage)) {
+      // Keep NextResponse for custom error object structure
       return NextResponse.json(
         {
           error: `Cannot start production. Project must be in 'Won' stage. Current stage: ${currentStage}`,
@@ -147,11 +145,8 @@ export async function POST(
       .single()
 
     if (jobError) {
-      console.error('[API] Error creating job:', jobError)
-      return NextResponse.json(
-        { error: 'Failed to create production job' },
-        { status: 500 }
-      )
+      logger.error('[API] Error creating job:', { error: jobError })
+      throw InternalError('Failed to create production job')
     }
 
     // Update project to 'production' stage with auto-synced status
@@ -170,11 +165,11 @@ export async function POST(
       .single()
 
     if (updateError) {
-      console.error('[API] Error updating project:', updateError)
+      logger.error('[API] Error updating project:', { error: updateError })
       // Job was created but project update failed - log but still return job
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Production started successfully',
       job: job,
@@ -182,10 +177,7 @@ export async function POST(
       job_number: jobNumber,
     })
   } catch (error) {
-    console.error('[API] Start production error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('[API] Start production error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

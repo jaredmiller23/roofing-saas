@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Projects Filters API
@@ -11,12 +13,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -30,8 +32,8 @@ export async function GET() {
       .neq('custom_fields->>proline_pipeline', 'OLD RECRUITING') // Exclude HR data
 
     if (error) {
-      console.error('Filters fetch error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Filters fetch error:', { error })
+      throw InternalError(error.message)
     }
 
     // Extract unique values
@@ -58,17 +60,14 @@ export async function GET() {
     const stages = Array.from(stagesSet).sort()
     const assignees = Array.from(assigneesSet).sort()
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       pipelines,
       stages,
       assignees,
     })
   } catch (error) {
-    console.error('Filters API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Filters API error:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

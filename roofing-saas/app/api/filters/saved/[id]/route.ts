@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   SavedFilter,
   UpdateSavedFilterRequest,
@@ -21,7 +23,7 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { id } = await params
@@ -36,23 +38,17 @@ export async function PATCH(
       .single()
 
     if (!existing) {
-      return NextResponse.json({ error: 'Filter not found' }, { status: 404 })
+      throw NotFoundError('Filter not found')
     }
 
     // Check ownership (RLS policy also enforces this)
     if (existing.created_by !== user.id) {
-      return NextResponse.json(
-        { error: 'Forbidden - You can only update your own filters' },
-        { status: 403 }
-      )
+      throw AuthorizationError('You can only update your own filters')
     }
 
     // Prevent updating system filters
     if (existing.is_system) {
-      return NextResponse.json(
-        { error: 'Cannot update system filters' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Cannot update system filters')
     }
 
     // Build update object
@@ -79,7 +75,7 @@ export async function PATCH(
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+      throw ValidationError('No fields to update')
     }
 
     const { data, error } = await supabase
@@ -93,28 +89,19 @@ export async function PATCH(
       logger.error('Error updating saved filter:', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A filter with this name already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A filter with this name already exists')
       }
-      return NextResponse.json(
-        { error: 'Failed to update saved filter' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update saved filter')
     }
 
     const response: UpdateSavedFilterResponse = {
       filter: data as SavedFilter,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     logger.error('Error in PATCH /api/filters/saved/:id:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -129,7 +116,7 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { id } = await params
@@ -143,41 +130,29 @@ export async function DELETE(
       .single()
 
     if (!existing) {
-      return NextResponse.json({ error: 'Filter not found' }, { status: 404 })
+      throw NotFoundError('Filter not found')
     }
 
     // Check ownership
     if (existing.created_by !== user.id) {
-      return NextResponse.json(
-        { error: 'Forbidden - You can only delete your own filters' },
-        { status: 403 }
-      )
+      throw AuthorizationError('You can only delete your own filters')
     }
 
     // Prevent deleting system filters
     if (existing.is_system) {
-      return NextResponse.json(
-        { error: 'Cannot delete system filters' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Cannot delete system filters')
     }
 
     const { error } = await supabase.from('saved_filters').delete().eq('id', id)
 
     if (error) {
       logger.error('Error deleting saved filter:', { error })
-      return NextResponse.json(
-        { error: 'Failed to delete saved filter' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to delete saved filter')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
     logger.error('Error in DELETE /api/filters/saved/:id:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { createdResponse, errorResponse } from '@/lib/api/response'
 import type { InspectionState } from '@/lib/claims/inspection-state'
 import type { ClaimStatus } from '@/lib/claims/types'
 
@@ -15,7 +18,7 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const { id: projectId } = await context.params
@@ -31,10 +34,7 @@ export async function POST(
       .single()
 
     if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Get project details
@@ -46,10 +46,7 @@ export async function POST(
       .single()
 
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project not found')
     }
 
     // Prepare claim data from inspection
@@ -85,11 +82,8 @@ export async function POST(
       .single()
 
     if (claimError) {
-      console.error('Error creating/updating claim:', claimError)
-      return NextResponse.json(
-        { error: 'Failed to save inspection' },
-        { status: 500 }
-      )
+      logger.error('Error creating/updating claim:', { error: claimError })
+      throw InternalError('Failed to save inspection')
     }
 
     // Create activity log
@@ -103,15 +97,12 @@ export async function POST(
       created_by: user.id,
     })
 
-    return NextResponse.json({
+    return createdResponse({
       claimId: claim.id,
       message: 'Inspection submitted successfully',
-    }, { status: 201 })
+    })
   } catch (error) {
-    console.error('Error in POST /api/projects/[id]/claims/inspection:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/projects/[id]/claims/inspection:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
