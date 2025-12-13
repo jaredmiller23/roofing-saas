@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select'
 import Image from 'next/image'
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences'
+import { TwoFactorSetup } from '@/components/settings/TwoFactorSetup'
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -639,6 +640,9 @@ export default function ProfileSettingsPage() {
 
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6">
+          {/* Two-Factor Authentication */}
+          <TwoFactorSetup />
+
           {/* Change Password */}
           <Card>
             <CardHeader>

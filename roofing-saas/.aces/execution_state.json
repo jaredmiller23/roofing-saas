@@ -3,22 +3,24 @@
   "files_read": [
     "lib/aria/index.ts",
     "lib/auth/mfa.ts",
-    "lib/aria/orchestrator.ts",
     "app/api/aria/execute/route.ts",
+    "lib/aria/types.ts",
+    "components/settings/TwoFactorSetup.tsx",
     "lib/aria/context-builder.ts",
-    "lib/aria/functions/quickbooks.ts",
     "lib/aria/functions/actions.ts",
     "lib/aria/function-registry.ts",
     "components/settings/CallComplianceSettings.tsx",
     "lib/aria/functions/index.ts",
     "app/(dashboard)/settings/profile/page.tsx",
-    "lib/aria/types.ts"
+    "lib/aria/functions/quickbooks.ts",
+    "lib/aria/orchestrator.ts"
   ],
   "files_modified": [
-    "app/(dashboard)/settings/profile/page.tsx",
-    "components/settings/CallComplianceSettings.tsx",
     "lib/auth/mfa.ts",
-    "docs/validation/ARIA-VALIDATION-REPORT.md"
+    "components/settings/TwoFactorSetup.tsx",
+    "docs/validation/ARIA-VALIDATION-REPORT.md",
+    "components/settings/CallComplianceSettings.tsx",
+    "app/(dashboard)/settings/profile/page.tsx"
   ],
   "validation_passed": false,
   "progress_updated": false,
