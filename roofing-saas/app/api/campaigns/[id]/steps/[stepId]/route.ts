@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 import type {
   CampaignStep,
   UpdateCampaignStepRequest,
@@ -20,26 +23,20 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
-    const { stepId } = await params
-    const supabase = await createClient()
-
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
+    }
+
+    const { id: campaign_id, stepId } = await params
     const body: UpdateCampaignStepRequest = await request.json()
 
     // Build update object
@@ -71,68 +68,65 @@ export async function PATCH(
         'exit_campaign',
       ]
       if (!validStepTypes.includes(body.step_type)) {
-        return NextResponse.json(
-          { error: 'Invalid step_type' },
-          { status: 400 }
-        )
+        throw ValidationError('Invalid step_type')
       }
     }
 
     // Validate delay_value if provided
     if (body.delay_value !== undefined && body.delay_value < 0) {
-      return NextResponse.json(
-        { error: 'delay_value must be >= 0' },
-        { status: 400 }
-      )
+      throw ValidationError('delay_value must be >= 0')
     }
 
     // Validate delay_unit if provided
     if (body.delay_unit !== undefined) {
       const validDelayUnits = ['hours', 'days', 'weeks']
       if (!validDelayUnits.includes(body.delay_unit)) {
-        return NextResponse.json(
-          { error: 'Invalid delay_unit' },
-          { status: 400 }
-        )
+        throw ValidationError('Invalid delay_unit')
       }
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: 'No fields to update' },
-        { status: 400 }
-      )
+      throw ValidationError('No fields to update')
+    }
+
+    const supabase = await createClient()
+
+    // Verify campaign belongs to tenant
+    const { data: campaign, error: campaignError } = await supabase
+      .from('campaigns')
+      .select('id')
+      .eq('id', campaign_id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (campaignError || !campaign) {
+      throw NotFoundError('Campaign')
     }
 
     const { data, error } = await supabase
       .from('campaign_steps')
       .update(updates)
       .eq('id', stepId)
+      .eq('campaign_id', campaign_id)
       .select()
       .single()
 
     if (error) {
-      console.error('Error updating campaign step:', error)
+      logger.error('Error updating campaign step', { error, stepId })
       if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Step not found' }, { status: 404 })
+        throw NotFoundError('Step')
       }
-      return NextResponse.json(
-        { error: 'Failed to update step' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update step')
     }
 
     const response: UpdateCampaignStepResponse = {
       step: data as CampaignStep,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Error in PATCH /api/campaigns/:id/steps/:stepId:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/campaigns/:id/steps/:stepId', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -147,24 +141,32 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
-    const { stepId } = await params
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
+    }
+
+    const { id: campaign_id, stepId } = await params
     const supabase = await createClient()
 
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
+    // Verify campaign belongs to tenant
+    const { data: campaign, error: campaignError } = await supabase
+      .from('campaigns')
+      .select('id')
+      .eq('id', campaign_id)
+      .eq('tenant_id', tenantId)
       .single()
 
-    if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+    if (campaignError || !campaign) {
+      throw NotFoundError('Campaign')
     }
 
     // Hard delete (cascades to executions)
@@ -172,21 +174,16 @@ export async function DELETE(
       .from('campaign_steps')
       .delete()
       .eq('id', stepId)
+      .eq('campaign_id', campaign_id)
 
     if (error) {
-      console.error('Error deleting campaign step:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete step' },
-        { status: 500 }
-      )
+      logger.error('Error deleting campaign step', { error, stepId })
+      throw InternalError('Failed to delete step')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/campaigns/:id/steps/:stepId:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/campaigns/:id/steps/:stepId', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

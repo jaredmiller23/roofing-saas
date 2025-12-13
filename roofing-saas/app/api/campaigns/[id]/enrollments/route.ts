@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse, paginatedResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 import type {
   CampaignEnrollment,
   EnrollContactRequest,
   EnrollContactResponse,
-  GetCampaignEnrollmentsResponse,
   EnrollmentStatus,
 } from '@/lib/campaigns/types'
 
@@ -26,7 +28,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id: campaign_id } = await params
@@ -38,11 +45,12 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // Build query
+    // Build query - filter by tenant through campaign relationship
     let query = supabase
       .from('campaign_enrollments')
       .select('*')
       .eq('campaign_id', campaign_id)
+      .eq('tenant_id', tenantId)
       .order('enrolled_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -58,11 +66,8 @@ export async function GET(
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching campaign enrollments:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch enrollments' },
-        { status: 500 }
-      )
+      logger.error('Error fetching campaign enrollments', { error, campaignId: campaign_id })
+      throw InternalError('Failed to fetch enrollments')
     }
 
     // Get total count for pagination
@@ -70,6 +75,7 @@ export async function GET(
       .from('campaign_enrollments')
       .select('*', { count: 'exact', head: true })
       .eq('campaign_id', campaign_id)
+      .eq('tenant_id', tenantId)
 
     if (status) {
       countQuery = countQuery.eq('status', status)
@@ -81,18 +87,13 @@ export async function GET(
 
     const { count } = await countQuery
 
-    const response: GetCampaignEnrollmentsResponse = {
-      enrollments: (data || []) as CampaignEnrollment[],
-      total: count || 0,
-    }
-
-    return NextResponse.json(response)
-  } catch (error) {
-    console.error('Error in GET /api/campaigns/:id/enrollments:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return paginatedResponse(
+      { enrollments: (data || []) as CampaignEnrollment[] },
+      { page: Math.floor(offset / limit) + 1, limit, total: count || 0 }
     )
+  } catch (error) {
+    logger.error('Error in GET /api/campaigns/:id/enrollments', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -109,56 +110,38 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id: campaign_id } = await params
-    const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
-
     const body: EnrollContactRequest = await request.json()
 
     // Validate required fields
     if (!body.contact_id) {
-      return NextResponse.json(
-        { error: 'Missing required field: contact_id' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required field: contact_id')
     }
+
+    const supabase = await createClient()
 
     // Check if campaign exists and is active
     const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
       .select('status, max_enrollments, total_enrolled, allow_re_enrollment')
       .eq('id', campaign_id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (campaignError || !campaign) {
-      return NextResponse.json(
-        { error: 'Campaign not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Campaign')
     }
 
     if (campaign.status !== 'active') {
-      return NextResponse.json(
-        { error: 'Campaign is not active' },
-        { status: 400 }
-      )
+      throw ValidationError('Campaign is not active')
     }
 
     // Check max enrollments
@@ -166,10 +149,7 @@ export async function POST(
       campaign.max_enrollments &&
       campaign.total_enrolled >= campaign.max_enrollments
     ) {
-      return NextResponse.json(
-        { error: 'Campaign has reached maximum enrollments' },
-        { status: 400 }
-      )
+      throw ValidationError('Campaign has reached maximum enrollments')
     }
 
     // Check if contact exists
@@ -177,14 +157,11 @@ export async function POST(
       .from('contacts')
       .select('id')
       .eq('id', body.contact_id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (contactError || !contact) {
-      return NextResponse.json(
-        { error: 'Contact not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
     // Check if already enrolled (unless re-enrollment is allowed)
@@ -197,17 +174,11 @@ export async function POST(
 
     if (existingEnrollment) {
       if (existingEnrollment.status === 'active') {
-        return NextResponse.json(
-          { error: 'Contact is already enrolled in this campaign' },
-          { status: 409 }
-        )
+        throw ConflictError('Contact is already enrolled in this campaign')
       }
 
       if (!campaign.allow_re_enrollment) {
-        return NextResponse.json(
-          { error: 'Re-enrollment is not allowed for this campaign' },
-          { status: 400 }
-        )
+        throw ValidationError('Re-enrollment is not allowed for this campaign')
       }
     }
 
@@ -225,7 +196,7 @@ export async function POST(
       .from('campaign_enrollments')
       .insert({
         campaign_id,
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         contact_id: body.contact_id,
         enrollment_source: body.enrollment_source || 'manual_admin',
         enrolled_by: user.id,
@@ -237,30 +208,21 @@ export async function POST(
       .single()
 
     if (error) {
-      console.error('Error creating enrollment:', error)
+      logger.error('Error creating enrollment', { error, campaignId: campaign_id })
       // Check for unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'Contact is already enrolled in this campaign' },
-          { status: 409 }
-        )
+        throw ConflictError('Contact is already enrolled in this campaign')
       }
-      return NextResponse.json(
-        { error: 'Failed to enroll contact' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to enroll contact')
     }
 
     const response: EnrollContactResponse = {
       enrollment: data as CampaignEnrollment,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
-    console.error('Error in POST /api/campaigns/:id/enrollments:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/campaigns/:id/enrollments', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

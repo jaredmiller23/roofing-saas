@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 import type {
   Campaign,
   UpdateCampaignRequest,
@@ -18,7 +21,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const { id } = await params
@@ -28,29 +36,21 @@ export async function GET(
       .from('campaigns')
       .select('*')
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (error) {
-      console.error('Error fetching campaign:', error)
+      logger.error('Error fetching campaign', { error, campaignId: id })
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Campaign not found' },
-          { status: 404 }
-        )
+        throw NotFoundError('Campaign')
       }
-      return NextResponse.json(
-        { error: 'Failed to fetch campaign' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch campaign')
     }
 
-    return NextResponse.json({ campaign: data as Campaign })
+    return successResponse({ campaign: data as Campaign })
   } catch (error) {
-    console.error('Error in GET /api/campaigns/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/campaigns/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -67,26 +67,20 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
     }
 
     const { id } = await params
-    const supabase = await createClient()
-
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
-    }
-
     const body: UpdateCampaignRequest = await request.json()
 
     // Build update object
@@ -114,60 +108,45 @@ export async function PATCH(
     if (body.status !== undefined) {
       const validStatuses = ['draft', 'active', 'paused', 'archived']
       if (!validStatuses.includes(body.status)) {
-        return NextResponse.json(
-          { error: 'Invalid status value' },
-          { status: 400 }
-        )
+        throw ValidationError('Invalid status value')
       }
     }
 
     // Validate goal_target if provided
     if (body.goal_target !== undefined && body.goal_target <= 0) {
-      return NextResponse.json(
-        { error: 'goal_target must be greater than 0' },
-        { status: 400 }
-      )
+      throw ValidationError('goal_target must be greater than 0')
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: 'No fields to update' },
-        { status: 400 }
-      )
+      throw ValidationError('No fields to update')
     }
+
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('campaigns')
       .update(updates)
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .select()
       .single()
 
     if (error) {
-      console.error('Error updating campaign:', error)
+      logger.error('Error updating campaign', { error, campaignId: id })
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Campaign not found' },
-          { status: 404 }
-        )
+        throw NotFoundError('Campaign')
       }
-      return NextResponse.json(
-        { error: 'Failed to update campaign' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update campaign')
     }
 
     const response: UpdateCampaignResponse = {
       campaign: data as Campaign,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Error in PATCH /api/campaigns/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/campaigns/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -182,46 +161,37 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
     }
 
     const { id } = await params
     const supabase = await createClient()
 
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
-    }
-
-    // Soft delete (set is_deleted = true)
+    // Soft delete (set is_deleted = true) - only for this tenant's campaigns
     const { error } = await supabase
       .from('campaigns')
       .update({ is_deleted: true })
       .eq('id', id)
+      .eq('tenant_id', tenantId)
 
     if (error) {
-      console.error('Error deleting campaign:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete campaign' },
-        { status: 500 }
-      )
+      logger.error('Error deleting campaign', { error, campaignId: id })
+      throw InternalError('Failed to delete campaign')
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error in DELETE /api/campaigns/:id:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in DELETE /api/campaigns/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

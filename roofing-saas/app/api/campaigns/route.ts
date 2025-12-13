@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 import type {
   Campaign,
   GetCampaignsResponse,
@@ -23,7 +26,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -35,25 +43,11 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Get user's tenant
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json(
-        { error: 'User not associated with any tenant' },
-        { status: 403 }
-      )
-    }
-
     // Build query
     let query = supabase
       .from('campaigns')
       .select('*')
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
 
     // Apply filters
@@ -72,11 +66,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching campaigns:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch campaigns' },
-        { status: 500 }
-      )
+      logger.error('Error fetching campaigns', { error })
+      throw InternalError('Failed to fetch campaigns')
     }
 
     const response: GetCampaignsResponse = {
@@ -84,13 +75,10 @@ export async function GET(request: NextRequest) {
       total: data?.length || 0,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Error in GET /api/campaigns:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/campaigns', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -104,33 +92,24 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
-    const supabase = await createClient()
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
 
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role, tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
     }
 
     const body: CreateCampaignRequest = await request.json()
 
     // Validate required fields
     if (!body.name || !body.campaign_type) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, campaign_type' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: name, campaign_type')
     }
 
     // Validate campaign_type
@@ -142,25 +121,21 @@ export async function POST(request: NextRequest) {
       'nurture',
     ]
     if (!validCampaignTypes.includes(body.campaign_type)) {
-      return NextResponse.json(
-        { error: 'Invalid campaign_type' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid campaign_type')
     }
 
     // Validate goal_target if provided (allow null/undefined, but reject non-positive numbers)
     if (body.goal_target !== undefined && body.goal_target !== null && body.goal_target <= 0) {
-      return NextResponse.json(
-        { error: 'goal_target must be greater than 0' },
-        { status: 400 }
-      )
+      throw ValidationError('goal_target must be greater than 0')
     }
+
+    const supabase = await createClient()
 
     // Insert campaign
     const { data, error } = await supabase
       .from('campaigns')
       .insert({
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         name: body.name,
         description: body.description || null,
         campaign_type: body.campaign_type,
@@ -179,30 +154,21 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating campaign:', error)
+      logger.error('Error creating campaign', { error })
       // Check for unique constraint violation
       if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'A campaign with this name already exists' },
-          { status: 409 }
-        )
+        throw ConflictError('A campaign with this name already exists')
       }
-      return NextResponse.json(
-        { error: 'Failed to create campaign' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create campaign')
     }
 
     const response: CreateCampaignResponse = {
       campaign: data as Campaign,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
-    console.error('Error in POST /api/campaigns:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/campaigns', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
