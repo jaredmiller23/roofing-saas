@@ -1,123 +1,269 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { VoiceSession } from '@/components/voice/VoiceSession'
 import { VoiceDiagnostics } from '@/components/voice/VoiceDiagnostics'
 import { getAvailableProviders, VoiceProviderType } from '@/lib/voice/providers'
+import { Mic, Info, AlertCircle } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface Contact {
+  id: string
+  first_name: string
+  last_name: string
+}
+
+interface Project {
+  id: string
+  name: string
+}
 
 export default function VoiceAssistantPage() {
+  // Provider state
   const [selectedProvider, setSelectedProvider] = useState<VoiceProviderType>('openai')
   const providers = getAvailableProviders()
   const currentProvider = providers.find(p => p.type === selectedProvider)
 
+  // Context state
+  const [selectedContact, setSelectedContact] = useState<string>('')
+  const [selectedProject, setSelectedProject] = useState<string>('')
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadContextData()
+  }, [])
+
+  const loadContextData = async () => {
+    setIsLoadingData(true)
+    try {
+      const [contactsRes, projectsRes] = await Promise.all([
+        fetch('/api/contacts?limit=50'),
+        fetch('/api/projects?limit=50')
+      ])
+
+      if (contactsRes.ok) {
+        const contactsData = await contactsRes.json()
+        setContacts(contactsData.contacts || [])
+      }
+
+      if (projectsRes.ok) {
+        const projectsData = await projectsRes.json()
+        setProjects(projectsData.projects || [])
+      }
+    } catch (err) {
+      console.error('Error loading context data:', err)
+    } finally {
+      setIsLoadingData(false)
+    }
+  }
+
+  const handleSessionEnd = () => {
+    console.log('Voice session ended')
+  }
+
+  const handleError = (err: Error) => {
+    console.error('Voice session error:', err)
+    setError(err.message)
+  }
+
   return (
     <div className="container mx-auto py-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          AI Voice Assistant
-        </h1>
-        <p className="text-muted-foreground mb-4">
-          Use voice commands to manage your CRM while in the field
-        </p>
-
-        {/* Provider Selection */}
-        <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Voice Provider</h3>
-          <div className="flex items-center gap-4">
-            {providers.map((provider) => (
-              <button
-                key={provider.type}
-                onClick={() => setSelectedProvider(provider.type)}
-                className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  selectedProvider === provider.type
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-white text-muted-foreground hover:bg-background border border'
-                }`}
-              >
-                <div className="text-left">
-                  <div className="font-semibold">{provider.name}</div>
-                  <div className={`text-xs mt-1 ${selectedProvider === provider.type ? 'text-white/80' : 'text-muted-foreground'}`}>
-                    ${provider.costPerMinute.toFixed(2)}/min
-                    {provider.type === 'elevenlabs' && ' (73% savings)'}
-                  </div>
-                </div>
-              </button>
-            ))}
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-primary rounded-lg">
+            <Mic className="h-6 w-6 text-white" />
           </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              ARIA Voice Assistant
+            </h1>
+            <p className="text-muted-foreground">
+              Your AI-powered CRM assistant - manage contacts, log activities, and more using voice
+            </p>
+          </div>
+        </div>
 
-          {currentProvider && (
-            <div className="mt-3 text-xs text-muted-foreground">
-              <p className="font-medium mb-1">{currentProvider.description}</p>
-              <ul className="space-y-0.5">
-                {currentProvider.features.map((feature, idx) => (
-                  <li key={idx}>• {feature}</li>
-                ))}
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-red-900">
+                <p className="font-medium">Error:</p>
+                <p className="text-red-800">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Usage Instructions */}
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-primary">
+              <p className="font-medium mb-2">Voice Commands You Can Use:</p>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-primary/90">
+                <li>&ldquo;Create a contact named John Smith&rdquo;</li>
+                <li>&ldquo;Log a door knock at 123 Main St&rdquo;</li>
+                <li>&ldquo;Send a text to 555-1234&rdquo;</li>
+                <li>&ldquo;Call Sarah Johnson&rdquo;</li>
+                <li>&ldquo;What&apos;s the weather tomorrow?&rdquo;</li>
+                <li>&ldquo;Search for recent storm damage&rdquo;</li>
+                <li>&ldquo;Add a note: Customer interested&rdquo;</li>
+                <li>&ldquo;What&apos;s GAF shingle warranty?&rdquo;</li>
               </ul>
             </div>
-          )}
-        </div>
-
-        <VoiceSession provider={selectedProvider} />
-
-        {/* Feature list */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-primary/10 rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Create Contacts</h3>
-            <p className="text-sm text-muted-foreground">
-              &quot;Create a new contact named John Smith at 123 Main Street&quot;
-            </p>
-          </div>
-
-          <div className="p-4 bg-green-50 rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Add Notes</h3>
-            <p className="text-sm text-muted-foreground">
-              &quot;Add a note: Customer interested in metal roofing&quot;
-            </p>
-          </div>
-
-          <div className="p-4 bg-secondary/10 rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Search Contacts</h3>
-            <p className="text-sm text-muted-foreground">
-              &quot;Find John Smith&quot; or &quot;Search for 123 Main Street&quot;
-            </p>
-          </div>
-
-          <div className="p-4 bg-orange-50 rounded-lg">
-            <h3 className="font-semibold text-foreground mb-2">Coming Soon</h3>
-            <p className="text-sm text-muted-foreground">
-              Log activities, check project status, and more...
-            </p>
           </div>
         </div>
 
-        {/* Technical notes */}
-        <div className="mt-8 p-4 bg-background rounded-lg">
-          <h3 className="font-semibold text-foreground mb-2">Technical Details</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Provider</p>
-              <p className="text-sm text-foreground">{currentProvider?.name}</p>
+        {/* Provider Selection */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Voice Provider</CardTitle>
+            <CardDescription>Choose your preferred AI voice provider</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              {providers.map((provider) => (
+                <button
+                  key={provider.type}
+                  onClick={() => setSelectedProvider(provider.type)}
+                  className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    selectedProvider === provider.type
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-card text-muted-foreground hover:bg-muted border border-border'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-semibold">{provider.name}</div>
+                    <div className={`text-xs mt-1 ${selectedProvider === provider.type ? 'text-white/80' : 'text-muted-foreground'}`}>
+                      ${provider.costPerMinute.toFixed(2)}/min
+                      {provider.type === 'elevenlabs' && ' (73% savings)'}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Cost</p>
-              <p className="text-sm text-foreground">${currentProvider?.costPerMinute.toFixed(2)}/min</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Status</p>
-              <p className="text-sm text-green-600 font-medium">{currentProvider?.status === 'ready' ? '✓ Ready' : 'Configuring'}</p>
-            </div>
-          </div>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• WebRTC audio streaming</li>
-            <li>• Ultra-low latency (&lt;2 second response time)</li>
-            <li>• Direct speech-to-speech processing</li>
-            <li>• Secure peer-to-peer connection</li>
-            <li>• Works on modern browsers (Chrome, Safari, Edge)</li>
-            <li>• 10 CRM functions + Intelligence tools</li>
-          </ul>
-        </div>
 
-        {/* Diagnostics Tool */}
+            {currentProvider && (
+              <div className="mt-3 text-xs text-muted-foreground">
+                <p className="font-medium mb-1">{currentProvider.description}</p>
+                <ul className="space-y-0.5">
+                  {currentProvider.features.map((feature, idx) => (
+                    <li key={idx}>• {feature}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Context Selection */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Context (Optional)</CardTitle>
+            <CardDescription>Select a contact or project to provide context to ARIA</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Contact
+                </label>
+                <select
+                  value={selectedContact}
+                  onChange={(e) => setSelectedContact(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
+                  disabled={isLoadingData}
+                >
+                  <option value="">No contact selected</option>
+                  {contacts.map((contact) => (
+                    <option key={contact.id} value={contact.id}>
+                      {contact.first_name} {contact.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
+                  Project
+                </label>
+                <select
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
+                  disabled={isLoadingData}
+                >
+                  <option value="">No project selected</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Voice Session */}
+        <VoiceSession
+          provider={selectedProvider}
+          contactId={selectedContact || undefined}
+          projectId={selectedProject || undefined}
+          onSessionEnd={handleSessionEnd}
+          onError={handleError}
+        />
+
+        {/* Technical Details */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Technical Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Provider</p>
+                <p className="text-sm text-foreground">{currentProvider?.name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Cost</p>
+                <p className="text-sm text-foreground">${currentProvider?.costPerMinute.toFixed(2)}/min</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Status</p>
+                <p className="text-sm text-green-600 font-medium">
+                  {currentProvider?.status === 'ready' ? '✓ Ready' : 'Configuring'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Target Latency</p>
+                <p className="text-sm text-foreground">&lt;2 seconds</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Connection</p>
+                <p className="text-sm text-foreground">WebRTC P2P</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Functions</p>
+                <p className="text-sm text-foreground">10 CRM + Intelligence</p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                <strong>Available ARIA Functions:</strong> create_contact, add_note, search_contact, log_knock, update_contact_stage, send_sms, make_call, get_weather, search_roofing_knowledge, search_web
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Diagnostics */}
         <VoiceDiagnostics />
       </div>
     </div>

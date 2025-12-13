@@ -19,7 +19,8 @@ import {
   Megaphone,
   FileText,
   MessageSquare,
-  PenTool
+  PenTool,
+  Mic
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -48,6 +49,7 @@ const navSections: NavSection[] = [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
+      { href: '/voice-assistant', label: 'Voice AI', icon: Mic },
       { href: '/signatures', label: 'Signatures', icon: PenTool },
       { href: '/claims', label: 'Claims', icon: FileText },
       { href: '/call-logs', label: 'Call Logs', icon: Phone },
