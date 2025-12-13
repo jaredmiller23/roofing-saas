@@ -27,8 +27,8 @@ export async function GET(request: Request) {
     }
 
     // Return points or default values for new users
-    return successResponse({
-      data: points || {
+    return successResponse(
+      points || {
         user_id: user.id,
         total_points: 0,
         current_level: 1,
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         all_time_best_weekly: 0,
         all_time_best_monthly: 0
       }
-    })
+    )
   } catch (error) {
     logger.error('Points API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

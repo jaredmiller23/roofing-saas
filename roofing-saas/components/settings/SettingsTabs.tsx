@@ -13,6 +13,7 @@ import { AdminSettings } from './AdminSettings'
 import { AutomationSettings } from './AutomationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
 import { GamificationSettings } from './GamificationSettings'
+import { CallComplianceSettings } from './CallComplianceSettings'
 import {
   Settings,
   Palette,
@@ -24,7 +25,8 @@ import {
   UserCog,
   Zap,
   Plug,
-  Trophy
+  Trophy,
+  PhoneIncoming
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -117,6 +119,13 @@ export function SettingsTabs() {
               <Trophy className="h-4 w-4" />
               Gamification
             </TabsTrigger>
+            <TabsTrigger
+              value="compliance"
+              className="flex items-center gap-2 text-foreground hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2"
+            >
+              <PhoneIncoming className="h-4 w-4" />
+              Compliance
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -161,6 +170,10 @@ export function SettingsTabs() {
 
           <TabsContent value="gamification">
             <GamificationSettings />
+          </TabsContent>
+
+          <TabsContent value="compliance">
+            <CallComplianceSettings />
           </TabsContent>
         </Tabs>
       </div>

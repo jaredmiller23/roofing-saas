@@ -182,12 +182,10 @@ export async function GET(request: Request) {
     }) || []
 
     return successResponse({
-      data: {
-        period,
-        type,
-        leaderboard: formattedLeaderboard,
-        currentUserRank: userRank
-      }
+      period,
+      type,
+      leaderboard: formattedLeaderboard,
+      currentUserRank: userRank
     })
   } catch (error) {
     logger.error('Leaderboard API error:', { error })
