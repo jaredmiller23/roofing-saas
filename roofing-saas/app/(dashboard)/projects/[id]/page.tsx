@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, PenLine } from 'lucide-react'
+import { SendSignatureDialog } from '@/components/signatures'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -293,6 +294,14 @@ export default function ProjectDetailPage() {
                   Claims
                 </Button>
               </Link>
+              <SendSignatureDialog
+                projectId={projectId}
+                projectName={project.name}
+                contactId={contact?.id}
+                contactName={contact ? `${contact.first_name} ${contact.last_name}` : undefined}
+                contactEmail={contact?.email || undefined}
+                onSuccess={fetchProjectData}
+              />
               <Link href={`/projects/${projectId}/edit`}>
                 <Button size="sm">Edit Project</Button>
               </Link>
