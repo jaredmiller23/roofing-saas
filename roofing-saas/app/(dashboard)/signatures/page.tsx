@@ -14,7 +14,8 @@ import {
   XCircle,
   Eye,
   Download,
-  Search
+  Search,
+  LayoutTemplate
 } from 'lucide-react'
 
 interface SignatureDocument {
@@ -125,13 +126,22 @@ export default function SignaturesPage() {
               </div>
               <h1 className="text-3xl font-bold text-foreground">E-Signatures</h1>
             </div>
-            <Button
-              onClick={() => router.push('/signatures/new')}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Document
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/signatures/templates')}
+              >
+                <LayoutTemplate className="h-4 w-4 mr-2" />
+                Templates
+              </Button>
+              <Button
+                onClick={() => router.push('/signatures/new')}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Document
+              </Button>
+            </div>
           </div>
           <p className="text-muted-foreground">
             Create, send, and manage signature documents
