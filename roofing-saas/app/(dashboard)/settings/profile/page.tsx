@@ -37,8 +37,17 @@ import {
   validatePasswordRequirements,
   getPasswordStrengthColor,
   getPasswordStrengthLabel,
-  PASSWORD_REQUIREMENTS
+  PASSWORD_REQUIREMENTS,
+  US_STATES,
+  US_TIMEZONES
 } from '@/lib/types/user-profile'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import Image from 'next/image'
 
 export default function ProfileSettingsPage() {
@@ -53,6 +62,13 @@ export default function ProfileSettingsPage() {
     phone: '',
     job_title: '',
     bio: '',
+    // Address fields
+    street_address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    // Timezone
+    timezone: '',
   })
 
   // Password form state
@@ -87,6 +103,13 @@ export default function ProfileSettingsPage() {
         phone: data.profile.phone || '',
         job_title: data.profile.job_title || '',
         bio: data.profile.bio || '',
+        // Address fields
+        street_address: data.profile.street_address || '',
+        city: data.profile.city || '',
+        state: data.profile.state || '',
+        zip_code: data.profile.zip_code || '',
+        // Timezone
+        timezone: data.profile.timezone || '',
       })
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -467,6 +490,135 @@ export default function ProfileSettingsPage() {
                     </>
                   ) : (
                     'Save Changes'
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Address */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Address</CardTitle>
+              <CardDescription>
+                Your mailing address for company correspondence
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street_address">Street Address</Label>
+                  <Input
+                    id="street_address"
+                    value={profileForm.street_address}
+                    onChange={(e) => setProfileForm({ ...profileForm, street_address: e.target.value })}
+                    placeholder="123 Main Street"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={profileForm.city}
+                      onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                      placeholder="Nashville"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State</Label>
+                    <Select
+                      value={profileForm.state}
+                      onValueChange={(value) => setProfileForm({ ...profileForm, state: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {US_STATES.map((state) => (
+                          <SelectItem key={state.value} value={state.value}>
+                            {state.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-w-[200px]">
+                  <Label htmlFor="zip_code">ZIP Code</Label>
+                  <Input
+                    id="zip_code"
+                    value={profileForm.zip_code}
+                    onChange={(e) => setProfileForm({ ...profileForm, zip_code: e.target.value })}
+                    placeholder="37201"
+                    maxLength={10}
+                  />
+                </div>
+
+                <Button type="submit" disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Address'
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Timezone */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Timezone</CardTitle>
+              <CardDescription>
+                Set your timezone for scheduling and notifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">Your Timezone</Label>
+                  <Select
+                    value={profileForm.timezone}
+                    onValueChange={(value) => setProfileForm({ ...profileForm, timezone: value })}
+                  >
+                    <SelectTrigger className="max-w-[350px]">
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {US_TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label} ({tz.offset})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {profileForm.timezone && (
+                    <p className="text-sm text-muted-foreground">
+                      Current time: {new Date().toLocaleTimeString('en-US', {
+                        timeZone: profileForm.timezone,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
+                  )}
+                </div>
+
+                <Button type="submit" disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Timezone'
                   )}
                 </Button>
               </form>
