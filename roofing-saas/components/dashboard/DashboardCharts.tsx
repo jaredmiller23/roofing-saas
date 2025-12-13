@@ -77,10 +77,21 @@ export function PipelineChart({ data }: PipelineChartProps) {
           contentStyle={tooltipStyle.contentStyle}
           itemStyle={tooltipStyle.itemStyle}
           labelStyle={tooltipStyle.labelStyle}
+          cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
         />
         <Legend wrapperStyle={{ color: '#ffffff' }} />
-        <Bar dataKey="count" fill={chartColors.secondary} name="Count" />
-        <Bar dataKey="value" fill={chartColors.primary} name="Value ($)" />
+        <Bar
+          dataKey="count"
+          fill={chartColors.secondary}
+          name="Count"
+          activeBar={{ fill: '#3d9e9e', stroke: chartColors.secondary, strokeWidth: 1 }}
+        />
+        <Bar
+          dataKey="value"
+          fill={chartColors.primary}
+          name="Value ($)"
+          activeBar={{ fill: '#ff9a66', stroke: chartColors.primary, strokeWidth: 1 }}
+        />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -107,11 +118,30 @@ export function ActivityChart({ data }: ActivityChartProps) {
           contentStyle={tooltipStyle.contentStyle}
           itemStyle={tooltipStyle.itemStyle}
           labelStyle={tooltipStyle.labelStyle}
+          cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
         />
         <Legend wrapperStyle={{ color: '#ffffff' }} />
-        <Bar dataKey="doorKnocks" fill="#10b981" name="Door Knocks" stackId="a" />
-        <Bar dataKey="calls" fill={chartColors.primary} name="Calls" stackId="a" />
-        <Bar dataKey="emails" fill={chartColors.tertiary} name="Emails" stackId="a" />
+        <Bar
+          dataKey="doorKnocks"
+          fill="#10b981"
+          name="Door Knocks"
+          stackId="a"
+          activeBar={{ fill: '#34d399', stroke: '#10b981', strokeWidth: 1 }}
+        />
+        <Bar
+          dataKey="calls"
+          fill={chartColors.primary}
+          name="Calls"
+          stackId="a"
+          activeBar={{ fill: '#ff9a66', stroke: chartColors.primary, strokeWidth: 1 }}
+        />
+        <Bar
+          dataKey="emails"
+          fill={chartColors.tertiary}
+          name="Emails"
+          stackId="a"
+          activeBar={{ fill: '#a78bfa', stroke: chartColors.tertiary, strokeWidth: 1 }}
+        />
       </BarChart>
     </ResponsiveContainer>
   )
