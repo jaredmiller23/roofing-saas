@@ -6,10 +6,19 @@ import Link from 'next/link'
 import { TerritoryList } from '@/components/territories/TerritoryList'
 import { TerritoryMap } from '@/components/territories/TerritoryMapWrapper'
 import { HousePinDropper } from '@/components/territories/HousePinDropper'
+import { UserLocationMarker } from '@/components/territories/UserLocationMarker'
+import { FieldActivityKPIs } from '@/components/territories/FieldActivityKPIs'
+import { useUserLocation } from '@/hooks/useUserLocation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, MapPin, List, Activity } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Plus, MapPin, Map, BarChart3, MapPinned } from 'lucide-react'
 
 interface Territory {
   id: string
@@ -63,8 +72,13 @@ export default function TerritoriesPage() {
   const [knocksLoading, setKnocksLoading] = useState(false)
   const [knocksError, setKnocksError] = useState<string | null>(null)
 
-  // Mobile tab state
-  const [mobileTab, setMobileTab] = useState<'territories' | 'map' | 'activity'>('territories')
+  // View state - map is default
+  const [activeView, setActiveView] = useState<'map' | 'kpis' | 'territories'>('map')
+
+  // User location tracking - only enabled when map view is active
+  const { location: userLocation, error: locationError, isTracking } = useUserLocation({
+    enabled: activeView === 'map'
+  })
 
   // Fetch knocks for selected territory (or all knocks if no territory selected)
   const fetchKnocks = useCallback(async (territoryId?: string) => {
@@ -103,10 +117,8 @@ export default function TerritoriesPage() {
   // Handle territory selection
   const handleTerritorySelect = (territory: Territory) => {
     setSelectedTerritory(territory)
-    // On mobile, automatically switch to map tab when territory is selected
-    if (window.innerWidth < 768) {
-      setMobileTab('map')
-    }
+    // Switch to map view when territory is selected
+    setActiveView('map')
   }
 
   // Memoize territories array for map
@@ -138,60 +150,6 @@ export default function TerritoriesPage() {
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
-  }
-
-  // Client-side only rendering for stats cards to avoid hydration mismatch
-  // This is a known issue with shadcn-ui Card components in Next.js 15/React 19
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const StatsCards = () => {
-    if (!mounted) {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <div className="h-6 bg-muted rounded animate-pulse mb-2" />
-                <div className="h-8 bg-muted rounded animate-pulse" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      )
-    }
-
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Knocks</CardDescription>
-            <CardTitle className="text-3xl">{knockStats.total}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Today</CardDescription>
-            <CardTitle className="text-3xl">{knockStats.today}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>This Week</CardDescription>
-            <CardTitle className="text-3xl">{knockStats.week}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>This Month</CardDescription>
-            <CardTitle className="text-3xl">{knockStats.month}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    )
   }
 
   // Memoize the rendered JSX to prevent recreating components on every render
@@ -298,13 +256,22 @@ export default function TerritoriesPage() {
         </Button>
       </div>
 
-      <div className="relative rounded-lg overflow-hidden border border">
+      <div className="relative rounded-lg overflow-hidden border border-border">
         <TerritoryMap
           territories={territoriesArray}
           selectedTerritory={selectedTerritory}
-          height="500px"
+          height="calc(100vh - 320px)"
           onMapReady={setMap}
           disableTerritoryInteractions={pinDropEnabled}
+        />
+
+        {/* User location marker */}
+        <UserLocationMarker
+          map={map}
+          latitude={userLocation?.latitude ?? null}
+          longitude={userLocation?.longitude ?? null}
+          accuracy={userLocation?.accuracy}
+          heading={userLocation?.heading}
         />
 
         <HousePinDropper
@@ -318,9 +285,29 @@ export default function TerritoriesPage() {
           }}
         />
 
+        {/* Location status indicator */}
+        <div className="absolute top-3 left-3 bg-card rounded-lg shadow-lg px-3 py-2 z-10 border border-border">
+          {isTracking ? (
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
+              Live Location
+            </div>
+          ) : locationError ? (
+            <div className="flex items-center gap-2 text-sm text-orange-600">
+              <div className="w-2 h-2 bg-orange-600 rounded-full" />
+              {locationError}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="w-2 h-2 bg-muted-foreground rounded-full" />
+              Location unavailable
+            </div>
+          )}
+        </div>
+
         {/* Orphaned pin indicator */}
         {pinDropEnabled && !selectedTerritory && (
-          <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+          <div className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -332,117 +319,127 @@ export default function TerritoriesPage() {
     // Note: 'map' is intentionally excluded from deps to avoid infinite loop
     // (map updates via onMapReady callback would trigger re-render infinitely)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks])
+  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks, userLocation, isTracking, locationError])
 
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Territories & Activity</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage territories and track door-knocking activities
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Field Activity</h1>
+              <p className="text-muted-foreground mt-1">
+                Track door-knocking activities and manage territories
+              </p>
+            </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
+            {/* View Switcher Dropdown */}
+            <Select value={activeView} onValueChange={(v) => setActiveView(v as 'map' | 'kpis' | 'territories')}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="map">
+                  <div className="flex items-center gap-2">
+                    <Map className="h-4 w-4" />
+                    Map
+                  </div>
+                </SelectItem>
+                <SelectItem value="kpis">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    KPIs
+                  </div>
+                </SelectItem>
+                <SelectItem value="territories">
+                  <div className="flex items-center gap-2">
+                    <MapPinned className="h-4 w-4" />
+                    Territories
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
             <Link href="/knocks/new">
               <Button variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Log Knock
+                <span className="hidden sm:inline">Log Knock</span>
               </Button>
             </Link>
             <Link href="/territories/new">
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Create Territory
+                <span className="hidden sm:inline">New Territory</span>
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <StatsCards />
+        {/* View Content */}
+        {activeView === 'map' && (
+          <div className="space-y-6">
+            {/* Map View */}
+            {mapViewJSX}
 
-        {/* Desktop: Map on top, Territory list below */}
-        <div className="hidden md:block space-y-6">
-          {/* Map View - Full Width (bigger) */}
-          {mapViewJSX}
-
-          {/* Territory Selector - Below Map */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Select Territory</CardTitle>
-                  <CardDescription>Choose a territory to view on the map and drop pins</CardDescription>
+            {/* Territory Selector - Compact below map */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Select Territory</CardTitle>
+                    <CardDescription>Choose a territory to view on the map</CardDescription>
+                  </div>
+                  {selectedTerritory && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedTerritory(null)}
+                    >
+                      Clear Selection
+                    </Button>
+                  )}
                 </div>
-                {selectedTerritory && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedTerritory(null)}
-                  >
-                    Clear Selection
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <TerritoryList
-                autoLoad={true}
-                onTerritorySelect={handleTerritorySelect}
-                onTerritoryEdit={(territoryId) => {
-                  router.push(`/territories/${territoryId}/edit`)
-                }}
-                compact={true}
-                selectedTerritoryId={selectedTerritory?.id}
-              />
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <TerritoryList
+                  autoLoad={true}
+                  onTerritorySelect={handleTerritorySelect}
+                  onTerritoryEdit={(territoryId) => {
+                    router.push(`/territories/${territoryId}/edit`)
+                  }}
+                  compact={true}
+                  selectedTerritoryId={selectedTerritory?.id}
+                />
+              </CardContent>
+            </Card>
 
-          {/* Activity Feed */}
-          {activityFeedJSX}
-        </div>
+            {/* Recent Activity */}
+            {activityFeedJSX}
+          </div>
+        )}
 
-        {/* Mobile: Tabs */}
-        <div className="md:hidden">
-          <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as 'territories' | 'map' | 'activity')}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="territories" className="gap-2">
-                <List className="h-4 w-4" />
-                <span className="hidden sm:inline">Territories</span>
-              </TabsTrigger>
-              <TabsTrigger value="map" className="gap-2">
-                <MapPin className="h-4 w-4" />
-                <span className="hidden sm:inline">Map</span>
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="gap-2">
-                <Activity className="h-4 w-4" />
-                <span className="hidden sm:inline">Activity</span>
-              </TabsTrigger>
-            </TabsList>
+        {activeView === 'kpis' && (
+          <FieldActivityKPIs knockStats={knockStats} />
+        )}
 
-            <TabsContent value="territories" className="mt-6">
-              <TerritoryList
-                autoLoad={true}
-                onTerritorySelect={handleTerritorySelect}
-                onTerritoryEdit={(territoryId) => {
-                  router.push(`/territories/${territoryId}/edit`)
-                }}
-              />
-            </TabsContent>
-
-            <TabsContent value="map" className="mt-6">
-              {mapViewJSX}
-            </TabsContent>
-
-            <TabsContent value="activity" className="mt-6">
-              {activityFeedJSX}
-            </TabsContent>
-          </Tabs>
-        </div>
+        {activeView === 'territories' && (
+          <TerritoryList
+            autoLoad={true}
+            onTerritorySelect={handleTerritorySelect}
+            onTerritoryEdit={(territoryId) => {
+              router.push(`/territories/${territoryId}/edit`)
+            }}
+            onTerritoryDelete={(territoryId) => {
+              // Refresh will happen automatically via TerritoryList
+              if (selectedTerritory?.id === territoryId) {
+                setSelectedTerritory(null)
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   )
