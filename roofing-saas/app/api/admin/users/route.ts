@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
 
 /**
@@ -13,21 +16,18 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Verify user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Admin access required')
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -59,11 +59,8 @@ export async function GET(request: NextRequest) {
     const { data: tenantUsers, error: usersError } = await query
 
     if (usersError) {
-      console.error('Error fetching users:', usersError)
-      return NextResponse.json(
-        { error: 'Failed to fetch users' },
-        { status: 500 }
-      )
+      logger.error('Error fetching users', { error: usersError })
+      throw InternalError('Failed to fetch users')
     }
 
     // Transform to UserForImpersonation format
@@ -84,15 +81,12 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    return NextResponse.json({
+    return successResponse({
       users,
       total: users.length,
     })
   } catch (error) {
-    console.error('Error in GET /api/admin/users:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/admin/users', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

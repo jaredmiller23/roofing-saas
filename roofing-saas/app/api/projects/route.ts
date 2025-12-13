@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 
 /**
  * Projects API
@@ -12,12 +15,12 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -112,8 +115,8 @@ export async function GET(request: NextRequest) {
     const { data: projects, error, count } = await query
 
     if (error) {
-      console.error('Projects fetch error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Projects fetch error', { error })
+      throw InternalError('Failed to fetch projects')
     }
 
     // Transform projects to include pipeline/stage from custom_fields
@@ -126,22 +129,16 @@ export async function GET(request: NextRequest) {
       lead_source: project.custom_fields?.lead_source || null,
     })) || []
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        projects: transformedProjects,
-        total: count || 0,
-        page,
-        limit,
-        totalPages: Math.ceil((count || 0) / limit),
-      },
+    return successResponse({
+      projects: transformedProjects,
+      total: count || 0,
+      page,
+      limit,
+      totalPages: Math.ceil((count || 0) / limit),
     })
   } catch (error) {
-    console.error('Projects API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/projects', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -149,12 +146,12 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const body = await request.json()
@@ -171,19 +168,13 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Project creation error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      logger.error('Project creation error', { error })
+      throw InternalError('Failed to create project')
     }
 
-    return NextResponse.json({
-      success: true,
-      data,
-    })
+    return createdResponse({ project: data })
   } catch (error) {
-    console.error('Projects POST error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in POST /api/projects', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

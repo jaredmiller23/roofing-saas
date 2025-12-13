@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import type {
   ImpersonationStatusResponse,
@@ -7,6 +7,9 @@ import type {
 import { IMPERSONATION_COOKIE_NAME } from '@/lib/impersonation/types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/admin/impersonate/status
@@ -16,7 +19,7 @@ export async function GET(_request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const cookieStore = await cookies()
@@ -24,7 +27,7 @@ export async function GET(_request: NextRequest) {
 
     // No active session
     if (!sessionCookie) {
-      return NextResponse.json({
+      return successResponse({
         is_impersonating: false,
       } as ImpersonationStatusResponse)
     }
@@ -46,17 +49,14 @@ export async function GET(_request: NextRequest) {
         .update({ status: 'expired', ended_at: now.toISOString() })
         .eq('id', sessionData.log_id)
 
-      return NextResponse.json({
+      return successResponse({
         is_impersonating: false,
       } as ImpersonationStatusResponse)
     }
 
     // Verify this is the admin who started the session
     if (sessionData.admin_user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Session mismatch' },
-        { status: 403 }
-      )
+      throw AuthorizationError('Session mismatch')
     }
 
     const supabase = await createClient()
@@ -107,12 +107,9 @@ export async function GET(_request: NextRequest) {
       reason: sessionData.reason,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
-    console.error('Error in GET /api/admin/impersonate/status:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/admin/impersonate/status', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

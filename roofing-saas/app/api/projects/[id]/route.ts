@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import {
@@ -7,6 +7,8 @@ import {
 } from '@/lib/pipeline/validation'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { PipelineStage } from '@/lib/types/api'
 
 export const dynamic = 'force-dynamic'
@@ -22,12 +24,12 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -35,19 +37,13 @@ export async function GET(
     const id = resolvedParams.id
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Project ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Project ID is required')
     }
 
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(id)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID format' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid project ID format')
     }
 
     // Fetch project with contact details
@@ -106,20 +102,14 @@ export async function GET(
       .single()
 
     if (fetchError || !project) {
-      logger.error('[API] Error fetching project:', { error: fetchError })
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      logger.error('Error fetching project', { error: fetchError })
+      throw NotFoundError('Project')
     }
 
-    return NextResponse.json({ project })
+    return successResponse({ project })
   } catch (error) {
-    logger.error('[API] Projects GET error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in GET /api/projects/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -135,12 +125,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -151,19 +141,13 @@ export async function PATCH(
     const id = resolvedParams.id
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Project ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Project ID is required')
     }
 
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(id)) {
-      return NextResponse.json(
-        { error: 'Invalid project ID format' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid project ID format')
     }
 
     // Fetch full project data for validation (need current stage and values)
@@ -176,10 +160,7 @@ export async function PATCH(
       .single()
 
     if (fetchError || !existingProject) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project')
     }
 
     // Prepare update data
@@ -199,15 +180,11 @@ export async function PATCH(
       // Validate the transition
       const validation = validateCompleteTransition(currentStage, newStage, projectForValidation)
       if (!validation.valid) {
-        return NextResponse.json(
-          {
-            error: validation.error,
-            code: 'INVALID_STAGE_TRANSITION',
-            current_stage: currentStage,
-            requested_stage: newStage,
-          },
-          { status: 400 }
-        )
+        throw ValidationError(validation.error || 'Invalid stage transition', {
+          code: 'INVALID_STAGE_TRANSITION',
+          current_stage: currentStage,
+          requested_stage: newStage,
+        })
       }
 
       // Auto-sync status based on pipeline stage
@@ -265,11 +242,8 @@ export async function PATCH(
       .single()
 
     if (updateError) {
-      logger.error('[API] Error updating project:', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to update project' },
-        { status: 500 }
-      )
+      logger.error('Error updating project', { error: updateError })
+      throw InternalError('Failed to update project')
     }
 
     // Trigger workflow automation if pipeline stage changed
@@ -302,15 +276,9 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: updatedProject,
-    })
+    return successResponse({ project: updatedProject })
   } catch (error) {
-    logger.error('[API] Projects PATCH error:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error in PATCH /api/projects/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
