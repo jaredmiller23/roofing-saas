@@ -10,6 +10,7 @@ import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
 import { FilterSettings } from './FilterSettings'
 import { AdminSettings } from './AdminSettings'
+import { TeamSettings } from './TeamSettings'
 import { AutomationSettings } from './AutomationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
 import { GamificationSettings } from './GamificationSettings'
@@ -26,7 +27,8 @@ import {
   Zap,
   Plug,
   Trophy,
-  PhoneIncoming
+  PhoneIncoming,
+  Users
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -76,6 +78,13 @@ export function SettingsTabs() {
             >
               <Shield className="h-4 w-4" />
               Roles
+            </TabsTrigger>
+            <TabsTrigger
+              value="team"
+              className="flex items-center gap-2 text-foreground hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2"
+            >
+              <Users className="h-4 w-4" />
+              Team
             </TabsTrigger>
             <TabsTrigger
               value="substatus"
@@ -146,6 +155,10 @@ export function SettingsTabs() {
 
           <TabsContent value="roles">
             <RoleSettings />
+          </TabsContent>
+
+          <TabsContent value="team">
+            <TeamSettings />
           </TabsContent>
 
           <TabsContent value="substatus">
