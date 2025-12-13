@@ -53,6 +53,7 @@ import Image from 'next/image'
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences'
 import { TwoFactorSetup } from '@/components/settings/TwoFactorSetup'
 import { ActiveSessions } from '@/components/settings/ActiveSessions'
+import { LoginActivity } from '@/components/settings/LoginActivity'
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -646,6 +647,9 @@ export default function ProfileSettingsPage() {
 
           {/* Active Sessions */}
           <ActiveSessions />
+
+          {/* Login Activity */}
+          <LoginActivity />
 
           {/* Change Password */}
           <Card>
