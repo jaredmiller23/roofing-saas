@@ -94,7 +94,7 @@ export function Achievements() {
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 selectedCategory === category
                   ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-100 text-muted-foreground hover:bg-muted'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -128,8 +128,8 @@ export function Achievements() {
               key={achievement.id}
               className={`p-4 rounded-lg border transition-all ${
                 achievement.unlocked
-                  ? 'bg-yellow-50 border-yellow-300'
-                  : 'bg-gray-50 border opacity-75'
+                  ? 'bg-yellow-500/10 border-yellow-500/50'
+                  : 'bg-muted/50 border-border opacity-75'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -175,7 +175,7 @@ export function Achievements() {
       {/* Empty State */}
       {!loading && filteredAchievements.length === 0 && (
         <div className="text-center py-8">
-          <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+          <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No achievements in this category</p>
         </div>
       )}

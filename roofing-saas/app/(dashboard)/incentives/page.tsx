@@ -50,14 +50,14 @@ export default async function IncentivesPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-yellow-50 rounded-lg">
+                <div className="flex items-center gap-3 p-2 bg-yellow-500/10 rounded-lg">
                   <Trophy className="h-5 w-5 text-yellow-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Top Performer</p>
                     <p className="text-xs text-muted-foreground">Ranked #1 this week</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-lg">
                   <Target className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="text-sm font-medium text-foreground">Goal Crusher</p>
@@ -109,10 +109,10 @@ export default async function IncentivesPage() {
                 <div className="text-xs text-primary font-medium">Most sales this week</div>
               </div>
 
-              <div className="p-4 border-2 border-green-200 rounded-lg bg-green-50">
+              <div className="p-4 border-2 border-green-500/30 rounded-lg bg-green-500/10">
                 <div className="flex items-center justify-between mb-2">
                   <TrendingUp className="h-8 w-8 text-green-600" />
-                  <span className="text-2xl font-bold text-green-900">3rd</span>
+                  <span className="text-2xl font-bold text-green-600">3rd</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">Consistency Award</h3>
                 <p className="text-sm text-muted-foreground mb-3">$150 bonus</p>

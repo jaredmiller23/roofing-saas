@@ -116,10 +116,12 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         // Load conversations list
         const response = await fetch('/api/ai/conversations')
         if (response.ok) {
-          const data: ListConversationsResponse = await response.json()
+          const result = await response.json()
+          // Handle wrapped response {success: true, data: {...}}
+          const data: ListConversationsResponse = result.data || result
           setState(prev => ({
             ...prev,
-            conversations: data.conversations,
+            conversations: data.conversations || [],
           }))
         }
 
@@ -128,10 +130,12 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         if (activeId) {
           const messagesResponse = await fetch(`/api/ai/conversations/${activeId}/messages`)
           if (messagesResponse.ok) {
-            const messagesData: ListMessagesResponse = await messagesResponse.json()
+            const messagesResult = await messagesResponse.json()
+            // Handle wrapped response {success: true, data: {...}}
+            const messagesData: ListMessagesResponse = messagesResult.data || messagesResult
             setState(prev => ({
               ...prev,
-              messages: messagesData.messages,
+              messages: messagesData.messages || [],
             }))
           }
         }
@@ -207,7 +211,9 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to send message: ${response.statusText}`)
       }
 
-      const data: SendMessageResponse = await response.json()
+      const result = await response.json()
+      // Handle wrapped response {success: true, data: {...}}
+      const data: SendMessageResponse = result.data || result
 
       // Replace temp message with real message and add assistant response
       setState(prev => ({
@@ -364,10 +370,12 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         try {
           const convResponse = await fetch('/api/ai/conversations')
           if (convResponse.ok) {
-            const convData = await convResponse.json()
+            const convResult = await convResponse.json()
+            // Handle wrapped response {success: true, data: {...}}
+            const convData = convResult.data || convResult
             setState(prev => ({
               ...prev,
-              conversations: convData.conversations,
+              conversations: convData.conversations || [],
             }))
           }
         } catch {
@@ -411,11 +419,13 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to load conversations: ${response.statusText}`)
       }
 
-      const data: ListConversationsResponse = await response.json()
+      const result = await response.json()
+      // Handle wrapped response {success: true, data: {...}}
+      const data: ListConversationsResponse = result.data || result
 
       setState(prev => ({
         ...prev,
-        conversations: data.conversations,
+        conversations: data.conversations || [],
         isLoadingConversations: false,
       }))
     } catch (error) {
@@ -438,11 +448,13 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to load messages: ${response.statusText}`)
       }
 
-      const data: ListMessagesResponse = await response.json()
+      const result = await response.json()
+      // Handle wrapped response {success: true, data: {...}}
+      const data: ListMessagesResponse = result.data || result
 
       setState(prev => ({
         ...prev,
-        messages: data.messages,
+        messages: data.messages || [],
         isLoadingMessages: false,
       }))
     } catch (error) {
@@ -467,7 +479,9 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to create conversation: ${response.statusText}`)
       }
 
-      const data: CreateConversationResponse = await response.json()
+      const result = await response.json()
+      // Handle wrapped response {success: true, data: {...}}
+      const data: CreateConversationResponse = result.data || result
 
       setState(prev => ({
         ...prev,
@@ -539,11 +553,13 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to search conversations: ${response.statusText}`)
       }
 
-      const data: ListConversationsResponse = await response.json()
+      const result = await response.json()
+      // Handle wrapped response {success: true, data: {...}}
+      const data: ListConversationsResponse = result.data || result
 
       setState(prev => ({
         ...prev,
-        conversations: data.conversations,
+        conversations: data.conversations || [],
         isLoadingConversations: false,
       }))
     } catch (error) {
