@@ -16,23 +16,41 @@ Execute SQL queries and manage database operations for the Tennessee Roofing Saa
 
 ## SQL Execution Methods
 
-### Method 1: Supabase CLI (Recommended for Local)
+### Method 1: REST API via curl (Recommended)
 
 ```bash
-# Execute a query
-npx supabase db execute "SELECT * FROM projects LIMIT 5"
+# Query via PostgREST (works for remote database)
+curl -s "https://wfifizczqvogbcqamnmw.supabase.co/rest/v1/TABLE?select=COLUMNS&limit=N" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"
 
-# Execute from file
-npx supabase db execute --file path/to/query.sql
+# Example: Get 5 contacts
+curl -s "https://wfifizczqvogbcqamnmw.supabase.co/rest/v1/contacts?select=id,first_name,last_name&limit=5" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"
 
-# Run migrations
-npx supabase db push
-
-# Reset database (caution!)
-npx supabase db reset
+# With filters
+curl -s "https://wfifizczqvogbcqamnmw.supabase.co/rest/v1/projects?select=*&is_deleted=eq.false&limit=10" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY"
 ```
 
-### Method 2: Direct psql (Most Powerful)
+### Method 2: Supabase CLI (Migrations Only)
+
+```bash
+# Run migrations (push local schema to remote)
+npx supabase db push
+
+# Pull remote schema to local
+npx supabase db pull
+
+# Create new migration file
+npx supabase migration new description_here
+
+# List migrations
+npx supabase migration list
+
+# Note: There is NO `npx supabase db execute` command for raw SQL
+```
+
+### Method 3: Direct psql (Most Powerful)
 
 ```bash
 # Using DATABASE_URL from .env.local
