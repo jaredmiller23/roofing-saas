@@ -86,9 +86,11 @@ export function CallComplianceSettings() {
 
   const loadRecentImports = async () => {
     try {
-      const response = await fetch('/api/compliance/dnc/import?limit=5')
+      const response = await fetch('/api/compliance/dnc/imports?limit=5')
       if (response.ok) {
-        const data = await response.json()
+        const result = await response.json()
+        // Handle wrapped response structure
+        const data = result.data || result
         setRecentImports(data.imports || [])
       }
     } catch (err) {
@@ -100,8 +102,29 @@ export function CallComplianceSettings() {
     try {
       const response = await fetch('/api/compliance/stats')
       if (response.ok) {
-        const data = await response.json()
-        setStats(data)
+        const result = await response.json()
+        // Handle wrapped response structure and map API fields to component format
+        const data = result.data || result
+
+        // Transform API response to component format
+        const stats: ComplianceStats = {
+          total_checks: data.complianceChecks?.totalChecks || 0,
+          allowed: data.complianceChecks?.allowed || 0,
+          blocked: data.complianceChecks?.blocked || 0,
+          block_rate: parseFloat(String(data.complianceChecks?.blockRate || '0').replace('%', '')) || 0,
+          by_reason: Object.fromEntries(
+            Object.entries(data.blockedByReason || {}).map(([key, value]) => [
+              key,
+              typeof value === 'object' && value !== null ? (value as { count: number }).count : 0
+            ])
+          ),
+          dnc_counts: {
+            federal: data.dncRegistry?.federal || 0,
+            state_tn: data.dncRegistry?.state || 0,
+            internal: data.dncRegistry?.internal || 0,
+          },
+        }
+        setStats(stats)
       }
     } catch (err) {
       console.error('Error loading stats:', err)
@@ -120,7 +143,9 @@ export function CallComplianceSettings() {
 
       const response = await fetch(`/api/compliance/audit?${params}`)
       if (response.ok) {
-        const data = await response.json()
+        const result = await response.json()
+        // Handle wrapped response structure
+        const data = result.data || result
         setAuditLogs(data.logs || [])
         setTotalAuditLogs(data.total || 0)
       }
@@ -228,10 +253,10 @@ export function CallComplianceSettings() {
       )}
 
       {uploadSuccess && (
-        <Alert className="border-green-500 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-900">Success</AlertTitle>
-          <AlertDescription className="text-green-800">{uploadSuccess}</AlertDescription>
+        <Alert className="border-green-500 bg-green-500/10">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-500">Success</AlertTitle>
+          <AlertDescription className="text-foreground">{uploadSuccess}</AlertDescription>
         </Alert>
       )}
 
