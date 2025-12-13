@@ -1,0 +1,147 @@
+apiVersion: aces/v1
+changes: []
+context:
+  background: null
+  goal: Verify that the ARIA module built by rogue session is functional and correct
+  success_criteria:
+  - npm run typecheck passes with 0 errors
+  - npm run lint passes with 0 errors
+  - npm run build completes successfully
+  - All 8 ARIA TypeScript files exist and export correctly
+  - ARIA function registry exports ariaFunctionRegistry
+  - ARIA orchestrator has executeFunction, enrichContext, getSystemPrompt methods
+  why: Work was produced without read_first, do_not_touch, or validation constraints
+    - trust is compromised until verified
+dependencies: null
+handoff:
+  format: null
+  progress_file: claude-progress.txt
+  update_on: []
+kind: TaskSpec
+metadata:
+  archon_task_id: null
+  created: '2025-12-13T21:00:00Z'
+  id: ARIA-VALIDATE-001
+  priority: 1
+  template: null
+  title: Validate existing ARIA implementation
+on_failure:
+  escalate: null
+  rollback: []
+read_first:
+- extract: []
+  path: lib/aria/index.ts
+  reason: Verify barrel exports exist
+  required: true
+- extract: []
+  path: lib/aria/orchestrator.ts
+  reason: Verify main controller implementation
+  required: true
+- extract: []
+  path: lib/aria/function-registry.ts
+  reason: Verify function catalog structure
+  required: true
+- extract: []
+  path: lib/aria/types.ts
+  reason: Verify TypeScript types are complete
+  required: true
+- extract: []
+  path: lib/aria/functions/actions.ts
+  reason: Verify SMS/email/task functions exist
+  required: true
+- extract: []
+  path: lib/aria/functions/quickbooks.ts
+  reason: Verify QuickBooks integration
+  required: true
+- extract: []
+  path: app/api/aria/execute/route.ts
+  reason: Verify API endpoint exists
+  required: true
+scope:
+  constraints: []
+  create: []
+  do_not_touch:
+  - lib/aria/**
+  - app/api/aria/**
+  - supabase/migrations/**
+  - lib/voice/**
+  - lib/quickbooks/**
+  modify:
+  - docs/validation/ARIA-VALIDATION-REPORT.md
+thinking: null
+validation:
+  assertions:
+  - contains:
+    - ariaFunctionRegistry
+    - register
+    - export
+    context: any
+    description: Function registry must export ariaFunctionRegistry with register
+      method
+    file: lib/aria/function-registry.ts
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - executeFunction
+    - enrichContext
+    - getSystemPrompt
+    context: any
+    description: Orchestrator must have core methods
+    file: lib/aria/orchestrator.ts
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - ARIAContext
+    - ARIAExecutionResult
+    - ARIAFunction
+    context: any
+    description: Types must define core interfaces
+    file: lib/aria/types.ts
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - send_sms
+    - send_email
+    - create_task
+    context: any
+    description: Action functions must be defined
+    file: lib/aria/functions/actions.ts
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - POST
+    - ariaOrchestrator
+    context: any
+    description: API endpoint must handle POST and use orchestrator
+    file: app/api/aria/execute/route.ts
+    not_contains: []
+    regex_match: []
+    required: true
+  post_commit: []
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run lint
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run build
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: test -f lib/aria/index.ts && test -f lib/aria/orchestrator.ts && test
+      -f lib/aria/function-registry.ts && echo 'Core files exist'
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: test -f lib/aria/functions/actions.ts && test -f lib/aria/functions/quickbooks.ts
+      && echo 'Function files exist'
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60

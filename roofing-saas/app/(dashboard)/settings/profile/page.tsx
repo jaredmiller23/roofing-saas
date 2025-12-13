@@ -25,7 +25,8 @@ import {
   CheckCircle,
   AlertCircle,
   Trash2,
-  Upload
+  Upload,
+  Bell
 } from 'lucide-react'
 import type {
   UserProfile,
@@ -49,6 +50,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Image from 'next/image'
+import { NotificationPreferences } from '@/components/settings/NotificationPreferences'
 
 export default function ProfileSettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -311,10 +313,14 @@ export default function ProfileSettingsPage() {
       )}
 
       <Tabs defaultValue="profile" className="max-w-3xl">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">
             <User className="h-4 w-4 mr-2" />
             Profile
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="h-4 w-4 mr-2" />
+            Notifications
           </TabsTrigger>
           <TabsTrigger value="security">
             <Lock className="h-4 w-4 mr-2" />
