@@ -66,8 +66,8 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
     try {
       const response = await fetch(`/api/dashboard/metrics?scope=${scope}`)
       const result = await response.json()
-      if (result.success) {
-        setData(result)
+      if (result.success && result.data) {
+        setData(result.data)
       }
     } catch (error) {
       console.error('Failed to fetch dashboard metrics:', error)
