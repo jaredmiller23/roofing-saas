@@ -7,73 +7,219 @@
 
 import { Copy, Check, Mic, AlertCircle, Users, FileText, Search, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { ChatMessage as ChatMessageType } from '@/lib/ai-assistant/types'
 
+interface ContactResult {
+  id?: string
+  first_name?: string
+  last_name?: string
+  name?: string
+  email?: string
+  phone?: string
+}
+
+interface ProjectResult {
+  id?: string
+  name?: string
+  title?: string
+  status?: string
+}
+
 /**
- * Format function call results into human-readable text
+ * Format function call results into human-readable content
+ * Returns either text or a React node for interactive results
  */
-function formatFunctionResult(functionName: string, result: unknown): { icon: React.ReactNode; text: string } | null {
+function formatFunctionResult(
+  functionName: string,
+  result: unknown,
+  onNavigate?: (path: string) => void
+): { icon: React.ReactNode; content: React.ReactNode } | null {
   if (!result || typeof result !== 'object') return null
 
   const data = result as Record<string, unknown>
 
   // Handle error responses
   if (data.error) {
-    return { icon: <AlertCircle className="h-4 w-4" />, text: `Error: ${data.error}` }
+    return { icon: <AlertCircle className="h-4 w-4" />, content: `Error: ${data.error}` }
   }
 
   switch (functionName) {
     case 'search_contacts': {
-      const contacts = data.contacts as Array<{ first_name?: string; last_name?: string; name?: string; email?: string; phone?: string }> | undefined
+      const contacts = data.contacts as ContactResult[] | undefined
       const count = data.count as number || contacts?.length || 0
 
       if (count === 0) {
-        return { icon: <Users className="h-4 w-4" />, text: 'No contacts found matching your search.' }
+        return { icon: <Users className="h-4 w-4" />, content: 'No contacts found matching your search.' }
       }
 
-      const names = contacts?.slice(0, 3).map(c =>
-        c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email || 'Unknown'
-      ).join(', ') || ''
+      // Create clickable contact links
+      const contactLinks = contacts?.slice(0, 5).map((c, index) => {
+        const name = c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email || 'Unknown'
+        const hasId = !!c.id
 
-      const more = count > 3 ? ` and ${count - 3} more` : ''
-      return { icon: <Users className="h-4 w-4" />, text: `Found ${count} contact${count === 1 ? '' : 's'}: ${names}${more}` }
+        if (hasId && onNavigate) {
+          return (
+            <button
+              key={c.id || index}
+              onClick={() => onNavigate(`/contacts/${c.id}`)}
+              className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+            >
+              {name}
+            </button>
+          )
+        }
+        return <span key={index}>{name}</span>
+      })
+
+      const more = count > 5 ? ` and ${count - 5} more` : ''
+
+      return {
+        icon: <Users className="h-4 w-4" />,
+        content: (
+          <span>
+            Found {count} contact{count === 1 ? '' : 's'}:{' '}
+            {contactLinks?.map((link, i) => (
+              <span key={i}>
+                {i > 0 && ', '}
+                {link}
+              </span>
+            ))}
+            {more}
+          </span>
+        )
+      }
     }
 
     case 'get_contact': {
-      const contact = data.contact as { first_name?: string; last_name?: string; name?: string; email?: string; phone?: string } | undefined
-      if (!contact) return { icon: <Users className="h-4 w-4" />, text: 'Contact not found.' }
+      const contact = data.contact as ContactResult | undefined
+      if (!contact) return { icon: <Users className="h-4 w-4" />, content: 'Contact not found.' }
 
       const name = contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
       const details = [contact.email, contact.phone].filter(Boolean).join(' • ')
-      return { icon: <Users className="h-4 w-4" />, text: `${name}${details ? ` (${details})` : ''}` }
+
+      if (contact.id && onNavigate) {
+        return {
+          icon: <Users className="h-4 w-4" />,
+          content: (
+            <span>
+              <button
+                onClick={() => onNavigate(`/contacts/${contact.id}`)}
+                className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+              >
+                {name}
+              </button>
+              {details ? ` (${details})` : ''}
+            </span>
+          )
+        }
+      }
+
+      return { icon: <Users className="h-4 w-4" />, content: `${name}${details ? ` (${details})` : ''}` }
     }
 
     case 'search_projects':
     case 'get_projects': {
-      const projects = data.projects as Array<{ name?: string; title?: string; status?: string }> | undefined
+      const projects = data.projects as ProjectResult[] | undefined
       const count = data.count as number || projects?.length || 0
 
       if (count === 0) {
-        return { icon: <FileText className="h-4 w-4" />, text: 'No projects found.' }
+        return { icon: <FileText className="h-4 w-4" />, content: 'No projects found.' }
       }
 
-      const names = projects?.slice(0, 3).map(p => p.name || p.title || 'Untitled').join(', ') || ''
-      const more = count > 3 ? ` and ${count - 3} more` : ''
-      return { icon: <FileText className="h-4 w-4" />, text: `Found ${count} project${count === 1 ? '' : 's'}: ${names}${more}` }
+      // Create clickable project links
+      const projectLinks = projects?.slice(0, 5).map((p, index) => {
+        const name = p.name || p.title || 'Untitled'
+        const hasId = !!p.id
+
+        if (hasId && onNavigate) {
+          return (
+            <button
+              key={p.id || index}
+              onClick={() => onNavigate(`/projects/${p.id}`)}
+              className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+            >
+              {name}
+            </button>
+          )
+        }
+        return <span key={index}>{name}</span>
+      })
+
+      const more = count > 5 ? ` and ${count - 5} more` : ''
+
+      return {
+        icon: <FileText className="h-4 w-4" />,
+        content: (
+          <span>
+            Found {count} project{count === 1 ? '' : 's'}:{' '}
+            {projectLinks?.map((link, i) => (
+              <span key={i}>
+                {i > 0 && ', '}
+                {link}
+              </span>
+            ))}
+            {more}
+          </span>
+        )
+      }
     }
 
-    case 'create_contact':
-    case 'create_project': {
-      const item = (data.contact || data.project) as { name?: string; first_name?: string; last_name?: string; title?: string } | undefined
-      if (!item) return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Created successfully!' }
+    case 'create_contact': {
+      const contact = data.contact as ContactResult | undefined
+      if (!contact) return { icon: <CheckCircle2 className="h-4 w-4" />, content: 'Created successfully!' }
 
-      const name = item.name || item.title || `${item.first_name || ''} ${item.last_name || ''}`.trim()
-      return { icon: <CheckCircle2 className="h-4 w-4" />, text: `Created: ${name}` }
+      const name = contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
+
+      if (contact.id && onNavigate) {
+        return {
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          content: (
+            <span>
+              Created:{' '}
+              <button
+                onClick={() => onNavigate(`/contacts/${contact.id}`)}
+                className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+              >
+                {name}
+              </button>
+            </span>
+          )
+        }
+      }
+
+      return { icon: <CheckCircle2 className="h-4 w-4" />, content: `Created: ${name}` }
+    }
+
+    case 'create_project': {
+      const project = data.project as ProjectResult | undefined
+      if (!project) return { icon: <CheckCircle2 className="h-4 w-4" />, content: 'Created successfully!' }
+
+      const name = project.name || project.title || 'Untitled'
+
+      if (project.id && onNavigate) {
+        return {
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          content: (
+            <span>
+              Created:{' '}
+              <button
+                onClick={() => onNavigate(`/projects/${project.id}`)}
+                className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+              >
+                {name}
+              </button>
+            </span>
+          )
+        }
+      }
+
+      return { icon: <CheckCircle2 className="h-4 w-4" />, content: `Created: ${name}` }
     }
 
     case 'update_contact':
     case 'update_project': {
-      return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Updated successfully!' }
+      return { icon: <CheckCircle2 className="h-4 w-4" />, content: 'Updated successfully!' }
     }
 
     default: {
@@ -81,9 +227,9 @@ function formatFunctionResult(functionName: string, result: unknown): { icon: Re
       if (data.success === true) {
         const count = data.count as number | undefined
         if (count !== undefined) {
-          return { icon: <Search className="h-4 w-4" />, text: `Found ${count} result${count === 1 ? '' : 's'}` }
+          return { icon: <Search className="h-4 w-4" />, content: `Found ${count} result${count === 1 ? '' : 's'}` }
         }
-        return { icon: <CheckCircle2 className="h-4 w-4" />, text: 'Completed successfully' }
+        return { icon: <CheckCircle2 className="h-4 w-4" />, content: 'Completed successfully' }
       }
       return null
     }
@@ -97,6 +243,12 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps) {
   const [copied, setCopied] = useState(false)
+  const router = useRouter()
+
+  // Navigation handler for clickable results
+  const handleNavigate = (path: string) => {
+    router.push(path)
+  }
 
   const handleCopy = async () => {
     try {
@@ -130,7 +282,7 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
   if (message.role === 'function' || message.function_call) {
     const functionName = message.function_call?.name || 'unknown'
     const formattedResult = message.function_call?.result
-      ? formatFunctionResult(functionName, message.function_call.result)
+      ? formatFunctionResult(functionName, message.function_call.result, handleNavigate)
       : null
 
     // If we have a nicely formatted result, show it cleanly
@@ -138,9 +290,9 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
       return (
         <div className="flex justify-center my-2">
           <div className="px-4 py-2.5 bg-secondary/10 border border-secondary/30 rounded-lg text-sm max-w-md">
-            <div className="flex items-center gap-2 text-secondary">
-              {formattedResult.icon}
-              <span className="text-foreground">{formattedResult.text}</span>
+            <div className="flex items-start gap-2 text-secondary">
+              <span className="mt-0.5">{formattedResult.icon}</span>
+              <span className="text-foreground">{formattedResult.content}</span>
             </div>
           </div>
         </div>
