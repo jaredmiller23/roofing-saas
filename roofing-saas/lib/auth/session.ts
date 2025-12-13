@@ -112,3 +112,53 @@ export async function getUserRole(userId: string): Promise<string | null> {
 
   return data.role
 }
+
+export type UserStatus = 'active' | 'deactivated' | 'suspended' | 'pending'
+
+/**
+ * Get user's status in their tenant
+ * Returns null if user is not associated with a tenant
+ */
+export async function getUserStatus(userId: string): Promise<UserStatus | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('tenant_users')
+    .select('status')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  return (data.status as UserStatus) || 'active'
+}
+
+/**
+ * Check if user is active (not deactivated, suspended, or pending)
+ */
+export async function isUserActive(userId: string): Promise<boolean> {
+  const status = await getUserStatus(userId)
+  return status === 'active' || status === null // null = legacy user without status, treat as active
+}
+
+/**
+ * Require active user - throws if user is deactivated
+ * Use in API routes to block deactivated users
+ */
+export async function requireActiveUser(userId: string): Promise<void> {
+  const status = await getUserStatus(userId)
+
+  if (status === 'deactivated') {
+    throw new Error('Your account has been deactivated. Please contact an administrator.')
+  }
+
+  if (status === 'suspended') {
+    throw new Error('Your account has been suspended. Please contact an administrator.')
+  }
+
+  if (status === 'pending') {
+    throw new Error('Your account is pending activation.')
+  }
+}

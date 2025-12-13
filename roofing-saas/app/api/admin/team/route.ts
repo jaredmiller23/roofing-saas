@@ -12,8 +12,11 @@ interface TeamMember {
   email: string
   name: string | null
   role: string
+  status: string
   joined_at: string
   last_sign_in_at: string | null
+  deactivated_at: string | null
+  deactivation_reason: string | null
 }
 
 /**
@@ -46,7 +49,10 @@ export async function GET() {
         id,
         user_id,
         role,
-        joined_at
+        status,
+        joined_at,
+        deactivated_at,
+        deactivation_reason
       `)
       .eq('tenant_id', tenantId)
       .order('joined_at', { ascending: true })
@@ -87,8 +93,11 @@ export async function GET() {
         email: authUser.email,
         name: authUser.name,
         role: tu.role,
+        status: tu.status || 'active',
         joined_at: tu.joined_at,
         last_sign_in_at: authUser.last_sign_in_at,
+        deactivated_at: tu.deactivated_at || null,
+        deactivation_reason: tu.deactivation_reason || null,
       }
     })
 
@@ -211,8 +220,11 @@ export async function POST(request: NextRequest) {
         email,
         name,
         role,
+        status: 'active',
         joined_at: membership.joined_at,
         last_sign_in_at: null,
+        deactivated_at: null,
+        deactivation_reason: null,
       },
       message: `Invited ${name} (${email}) to the team. They will receive an email to set their password.`,
     })

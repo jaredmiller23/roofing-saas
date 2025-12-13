@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, Mail, Shield, Trash2, Crown, Clock, MoreVertical } from 'lucide-react'
+import { Users, UserPlus, Mail, Shield, Trash2, Crown, Clock, MoreVertical, UserX, UserCheck, Filter } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,8 +48,11 @@ interface TeamMember {
   email: string
   name: string | null
   role: string
+  status: 'active' | 'deactivated' | 'suspended' | 'pending'
   joined_at: string
   last_sign_in_at: string | null
+  deactivated_at: string | null
+  deactivation_reason: string | null
 }
 
 interface InviteFormData {
@@ -83,6 +86,18 @@ export function TeamSettings() {
 
   // Role change state
   const [roleChangeInProgress, setRoleChangeInProgress] = useState<string | null>(null)
+
+  // Deactivation state
+  const [memberToDeactivate, setMemberToDeactivate] = useState<TeamMember | null>(null)
+  const [deactivationReason, setDeactivationReason] = useState('')
+  const [isDeactivating, setIsDeactivating] = useState(false)
+
+  // Reactivation state
+  const [memberToReactivate, setMemberToReactivate] = useState<TeamMember | null>(null)
+  const [isReactivating, setIsReactivating] = useState(false)
+
+  // Filter state
+  const [showDeactivated, setShowDeactivated] = useState(false)
 
   // Load team members
   const loadMembers = async () => {
@@ -217,6 +232,67 @@ export function TeamSettings() {
     }
   }
 
+  const handleDeactivate = async () => {
+    if (!memberToDeactivate) return
+
+    try {
+      setIsDeactivating(true)
+      setError(null)
+
+      const response = await fetch(`/api/admin/team/${memberToDeactivate.user_id}/deactivate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: deactivationReason || undefined }),
+      })
+
+      const result = await response.json()
+      const data = result.data || result
+
+      if (response.ok) {
+        setSuccessMessage(`Deactivated ${memberToDeactivate.name || memberToDeactivate.email}'s account`)
+        setMemberToDeactivate(null)
+        setDeactivationReason('')
+        loadMembers()
+      } else {
+        setError(data.error || 'Failed to deactivate team member')
+      }
+    } catch (err) {
+      console.error('Error deactivating team member:', err)
+      setError('Failed to deactivate team member')
+    } finally {
+      setIsDeactivating(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    if (!memberToReactivate) return
+
+    try {
+      setIsReactivating(true)
+      setError(null)
+
+      const response = await fetch(`/api/admin/team/${memberToReactivate.user_id}/reactivate`, {
+        method: 'POST',
+      })
+
+      const result = await response.json()
+      const data = result.data || result
+
+      if (response.ok) {
+        setSuccessMessage(`Reactivated ${memberToReactivate.name || memberToReactivate.email}'s account`)
+        setMemberToReactivate(null)
+        loadMembers()
+      } else {
+        setError(data.error || 'Failed to reactivate team member')
+      }
+    } catch (err) {
+      console.error('Error reactivating team member:', err)
+      setError('Failed to reactivate team member')
+    } finally {
+      setIsReactivating(false)
+    }
+  }
+
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Never'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -250,6 +326,37 @@ export function TeamSettings() {
         )
     }
   }
+
+  const getStatusBadge = (status: TeamMember['status']) => {
+    switch (status) {
+      case 'deactivated':
+        return (
+          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
+            <UserX className="h-3 w-3 mr-1" />
+            Deactivated
+          </Badge>
+        )
+      case 'suspended':
+        return (
+          <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
+            Suspended
+          </Badge>
+        )
+      case 'pending':
+        return (
+          <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30">
+            Pending
+          </Badge>
+        )
+      default:
+        return null // Active users don't need a badge
+    }
+  }
+
+  // Filter members based on status
+  const filteredMembers = showDeactivated
+    ? members
+    : members.filter(m => m.status === 'active' || !m.status)
 
   if (isLoading) {
     return (
@@ -291,7 +398,16 @@ export function TeamSettings() {
                 Manage your team members and their access levels
               </CardDescription>
             </div>
-            <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showDeactivated ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => setShowDeactivated(!showDeactivated)}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                {showDeactivated ? 'Show All' : 'Active Only'}
+              </Button>
+              <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <UserPlus className="h-4 w-4 mr-2" />
@@ -351,29 +467,44 @@ export function TeamSettings() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          {members.length === 0 ? (
+          {filteredMembers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No team members yet. Invite your first team member to get started.
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {members.map((member) => (
-                <div key={member.id} className="py-4 flex items-center justify-between">
+              {filteredMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className={`py-4 flex items-center justify-between ${
+                    member.status === 'deactivated' ? 'opacity-60' : ''
+                  }`}
+                >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-primary">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      member.status === 'deactivated'
+                        ? 'bg-muted'
+                        : 'bg-primary/20'
+                    }`}>
+                      <span className={`text-sm font-semibold ${
+                        member.status === 'deactivated'
+                          ? 'text-muted-foreground'
+                          : 'text-primary'
+                      }`}>
                         {(member.name || member.email).charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-foreground">
                           {member.name || 'No name'}
                         </span>
                         {getRoleBadge(member.role)}
+                        {getStatusBadge(member.status)}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
@@ -382,9 +513,16 @@ export function TeamSettings() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          Last active: {formatDate(member.last_sign_in_at)}
+                          {member.status === 'deactivated' && member.deactivated_at
+                            ? `Deactivated: ${formatDate(member.deactivated_at)}`
+                            : `Last active: ${formatDate(member.last_sign_in_at)}`}
                         </span>
                       </div>
+                      {member.status === 'deactivated' && member.deactivation_reason && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Reason: {member.deactivation_reason}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {member.role !== 'owner' && (
@@ -399,15 +537,35 @@ export function TeamSettings() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleRoleChange(member, member.role === 'admin' ? 'user' : 'admin')}
-                        >
-                          <Shield className="h-4 w-4 mr-2" />
-                          {member.role === 'admin' ? 'Remove Admin Access' : 'Make Admin'}
-                        </DropdownMenuItem>
+                        {member.status !== 'deactivated' && (
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(member, member.role === 'admin' ? 'user' : 'admin')}
+                          >
+                            <Shield className="h-4 w-4 mr-2" />
+                            {member.role === 'admin' ? 'Remove Admin Access' : 'Make Admin'}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        {member.status === 'deactivated' ? (
+                          <DropdownMenuItem
+                            className="text-green-500 focus:text-green-500"
+                            onClick={() => setMemberToReactivate(member)}
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Reactivate Account
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            className="text-orange-500 focus:text-orange-500"
+                            onClick={() => setMemberToDeactivate(member)}
+                          >
+                            <UserX className="h-4 w-4 mr-2" />
+                            Deactivate Account
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-red-500 focus:text-red-500"
+                          className="text-destructive focus:text-destructive"
                           onClick={() => setMemberToRemove(member)}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -481,6 +639,67 @@ export function TeamSettings() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isRemoving ? 'Removing...' : 'Remove'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Deactivate confirmation dialog */}
+      <AlertDialog open={!!memberToDeactivate} onOpenChange={(open: boolean) => {
+        if (!open) {
+          setMemberToDeactivate(null)
+          setDeactivationReason('')
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Team Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to deactivate <strong>{memberToDeactivate?.name || memberToDeactivate?.email}</strong>?
+              They will be logged out immediately and won&apos;t be able to access the system until reactivated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="reason">Reason (optional)</Label>
+            <Input
+              id="reason"
+              placeholder="e.g., Left the company, temporary leave, etc."
+              value={deactivationReason}
+              onChange={(e) => setDeactivationReason(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeactivate}
+              disabled={isDeactivating}
+              className="bg-orange-500 text-foreground hover:bg-orange-600"
+            >
+              {isDeactivating ? 'Deactivating...' : 'Deactivate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reactivate confirmation dialog */}
+      <AlertDialog open={!!memberToReactivate} onOpenChange={(open: boolean) => !open && setMemberToReactivate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reactivate Team Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reactivate <strong>{memberToReactivate?.name || memberToReactivate?.email}</strong>?
+              They will be able to log in and access the system again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReactivate}
+              disabled={isReactivating}
+              className="bg-green-500 text-foreground hover:bg-green-600"
+            >
+              {isReactivating ? 'Reactivating...' : 'Reactivate'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
