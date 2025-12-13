@@ -42,7 +42,7 @@ export function UserLocationMarker({
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 10,
-          fillColor: '#4285F4',       // Google Blue
+          fillColor: '#22C55E',       // Green (live location)
           fillOpacity: 1,
           strokeColor: '#FFFFFF',
           strokeWeight: 3,
@@ -59,7 +59,7 @@ export function UserLocationMarker({
       markerRef.current.setIcon({
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
         scale: 6,
-        fillColor: '#4285F4',
+        fillColor: '#22C55E',
         fillOpacity: 1,
         strokeColor: '#FFFFFF',
         strokeWeight: 2,
@@ -70,7 +70,7 @@ export function UserLocationMarker({
       markerRef.current.setIcon({
         path: google.maps.SymbolPath.CIRCLE,
         scale: 10,
-        fillColor: '#4285F4',
+        fillColor: '#22C55E',
         fillOpacity: 1,
         strokeColor: '#FFFFFF',
         strokeWeight: 3,
@@ -84,9 +84,9 @@ export function UserLocationMarker({
           map,
           center: position,
           radius: accuracy,
-          fillColor: '#4285F4',
+          fillColor: '#22C55E',
           fillOpacity: 0.15,
-          strokeColor: '#4285F4',
+          strokeColor: '#22C55E',
           strokeOpacity: 0.3,
           strokeWeight: 1,
           clickable: false,

@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, MapPin, Map, BarChart3, MapPinned } from 'lucide-react'
+import { Plus, MapPin, Map, BarChart3, MapPinned, Crosshair } from 'lucide-react'
 
 interface Territory {
   id: string
@@ -293,10 +293,25 @@ export default function TerritoriesPage() {
 
         {/* Location status indicator */}
         <div className="absolute top-3 left-3 bg-card rounded-lg shadow-lg px-3 py-2 z-10 border border-border">
-          {isTracking ? (
+          {isTracking && userLocation ? (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
+              <span className="text-green-600">Live Location</span>
+              <button
+                onClick={() => {
+                  map?.setCenter({ lat: userLocation.latitude, lng: userLocation.longitude })
+                  map?.setZoom(16)
+                }}
+                className="p-1 hover:bg-muted rounded"
+                title="Center on my location"
+              >
+                <Crosshair className="h-4 w-4 text-green-600" />
+              </button>
+            </div>
+          ) : isTracking ? (
             <div className="flex items-center gap-2 text-sm text-green-600">
               <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
-              Live Location
+              Locating...
             </div>
           ) : locationError ? (
             <div className="flex items-center gap-2 text-sm text-orange-600">
