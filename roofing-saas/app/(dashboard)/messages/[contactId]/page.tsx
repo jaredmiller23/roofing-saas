@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
  * For now, redirects to main messages page
  */
 export default async function MobileThreadPage({
-  params,
+  params: _params,
 }: {
   params: Promise<{ contactId: string }>
 }) {

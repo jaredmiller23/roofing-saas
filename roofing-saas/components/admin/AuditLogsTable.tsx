@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -19,7 +19,7 @@ export function AuditLogsTable() {
 
   const logsPerPage = 25
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -46,11 +46,11 @@ export function AuditLogsTable() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, page, logsPerPage])
 
   useEffect(() => {
     fetchLogs()
-  }, [statusFilter, page])
+  }, [fetchLogs])
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline', color: string }> = {

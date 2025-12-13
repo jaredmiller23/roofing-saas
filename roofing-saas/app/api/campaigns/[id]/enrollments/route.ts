@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
-import { successResponse, errorResponse, createdResponse, paginatedResponse } from '@/lib/api/response'
+import { errorResponse, createdResponse, paginatedResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type {
   CampaignEnrollment,

@@ -20,7 +20,7 @@ export interface Message {
   created_at: string
   from_address: string | null
   to_address: string | null
-  metadata: Record<string, any> | null
+  metadata: Record<string, unknown> | null
   read_at: string | null
 }
 

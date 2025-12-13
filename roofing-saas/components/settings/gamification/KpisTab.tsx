@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Plus,
   Trash2,
-  CheckCircle,
   DollarSign,
   Users,
   Target,

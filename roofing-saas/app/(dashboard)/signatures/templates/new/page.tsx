@@ -277,7 +277,7 @@ export default function NewTemplatePage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {signatureFields.map((field, index) => (
+                {signatureFields.map((field) => (
                   <div
                     key={field.id}
                     className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg border border-border"

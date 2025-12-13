@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Conversation } from './types'
 import { ConversationList } from './ConversationList'
@@ -13,10 +13,28 @@ export function MessagesSplitView() {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
+  const loadConversations = useCallback(async () => {
+    try {
+      const response = await fetch('/api/messages/conversations')
+      const data = await response.json()
+
+      if (!response.ok) {
+        logger.error('Failed to load conversations', { error: data.error })
+        return
+      }
+
+      setConversations(data.conversations || [])
+    } catch (error) {
+      logger.error('Failed to load conversations', { error })
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   // Load conversations on mount
   useEffect(() => {
     loadConversations()
-  }, [])
+  }, [loadConversations])
 
   // Real-time subscription for new SMS messages (updates conversation list)
   useEffect(() => {
@@ -56,25 +74,7 @@ export function MessagesSplitView() {
     return () => {
       channel.unsubscribe()
     }
-  }, [])
-
-  async function loadConversations() {
-    try {
-      const response = await fetch('/api/messages/conversations')
-      const data = await response.json()
-
-      if (!response.ok) {
-        logger.error('Failed to load conversations', { error: data.error })
-        return
-      }
-
-      setConversations(data.conversations || [])
-    } catch (error) {
-      logger.error('Failed to load conversations', { error })
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [supabase, loadConversations])
 
   // Get selected conversation details
   const selectedConversation = conversations.find(

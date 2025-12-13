@@ -4,7 +4,6 @@ import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
   AuthorizationError,
-  ValidationError,
   mapZodError,
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -39,7 +38,7 @@ const createTemplateSchema = z.object({
   expiration_days: z.number().int().min(1).max(365).default(30),
 })
 
-const updateTemplateSchema = createTemplateSchema.partial()
+const _updateTemplateSchema = createTemplateSchema.partial()
 
 export type SignatureField = z.infer<typeof signatureFieldSchema>
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>

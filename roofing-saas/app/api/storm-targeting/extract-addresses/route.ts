@@ -14,7 +14,7 @@ import { googlePlacesClient } from '@/lib/address-extraction/google-places-clien
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
-import { successResponse, errorResponse } from '@/lib/api/response';
+import { errorResponse } from '@/lib/api/response';
 import type {
   ExtractAddressesRequest,
   ExtractAddressesResponse,

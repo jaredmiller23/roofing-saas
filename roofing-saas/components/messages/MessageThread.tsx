@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Message } from './types'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { logger } from '@/lib/logger'
 
@@ -27,10 +26,37 @@ export function MessageThread({
   const scrollRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      }
+    }, 100)
+  }, [])
+
+  const loadMessages = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/messages/${contactId}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        logger.error('Failed to load messages', { error: data.error })
+        return
+      }
+
+      setMessages(data.messages || [])
+    } catch (error) {
+      logger.error('Failed to load messages', { error })
+    } finally {
+      setLoading(false)
+    }
+  }, [contactId])
+
   // Load messages when contactId changes
   useEffect(() => {
     loadMessages()
-  }, [contactId])
+  }, [loadMessages])
 
   // Real-time subscription for new messages in this thread
   useEffect(() => {
@@ -58,39 +84,12 @@ export function MessageThread({
     return () => {
       channel.unsubscribe()
     }
-  }, [contactId])
+  }, [contactId, supabase, scrollToBottom])
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
-
-  async function loadMessages() {
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/messages/${contactId}`)
-      const data = await response.json()
-
-      if (!response.ok) {
-        logger.error('Failed to load messages', { error: data.error })
-        return
-      }
-
-      setMessages(data.messages || [])
-    } catch (error) {
-      logger.error('Failed to load messages', { error })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function scrollToBottom() {
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-      }
-    }, 100)
-  }
+  }, [messages, scrollToBottom])
 
   function handleMessageSent() {
     // Reload messages to get the sent message
