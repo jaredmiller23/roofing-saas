@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings/roles
@@ -10,12 +12,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -27,16 +29,13 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ roles: roles || [] })
+    return successResponse({ roles: roles || [] })
   } catch (error) {
-    console.error('Error fetching roles:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error fetching roles:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -48,22 +47,19 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
     const { name, description, permissions, is_system } = body
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Name is required')
     }
 
     const supabase = await createClient()
@@ -82,15 +78,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ role }, { status: 201 })
+    return createdResponse({ role })
   } catch (error) {
-    console.error('Error creating role:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error creating role:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

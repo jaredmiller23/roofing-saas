@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * PATCH /api/settings/pipeline-stages/[id]
@@ -13,12 +15,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -45,20 +47,17 @@ export async function PATCH(
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!stage) {
-      return NextResponse.json({ error: 'Stage not found' }, { status: 404 })
+      throw NotFoundError('Stage not found')
     }
 
-    return NextResponse.json({ stage })
+    return successResponse({ stage })
   } catch (error) {
-    console.error('Error updating pipeline stage:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error updating pipeline stage:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -73,12 +72,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -91,15 +90,12 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error deleting pipeline stage:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error deleting pipeline stage:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

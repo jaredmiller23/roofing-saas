@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings
@@ -10,12 +12,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -28,12 +30,12 @@ export async function GET() {
       .single()
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     // If no settings exist, return defaults
     if (!settings) {
-      return NextResponse.json({
+      return successResponse({
         settings: {
           tenant_id: tenantId,
           company_name: null,
@@ -76,13 +78,10 @@ export async function GET() {
       })
     }
 
-    return NextResponse.json({ settings })
+    return successResponse({ settings })
   } catch (error) {
-    console.error('Error fetching settings:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error fetching settings:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -94,12 +93,12 @@ export async function PUT(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -148,7 +147,7 @@ export async function PUT(request: Request) {
         .single()
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        throw InternalError(error.message)
       }
 
       result = data
@@ -186,18 +185,15 @@ export async function PUT(request: Request) {
         .single()
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        throw InternalError(error.message)
       }
 
       result = data
     }
 
-    return NextResponse.json({ settings: result })
+    return successResponse({ settings: result })
   } catch (error) {
-    console.error('Error updating settings:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error updating settings:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

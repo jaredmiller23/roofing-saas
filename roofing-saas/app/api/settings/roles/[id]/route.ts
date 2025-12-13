@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * PATCH /api/settings/roles/[id]
@@ -13,12 +15,12 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -34,10 +36,7 @@ export async function PATCH(
       .single()
 
     if (existingRole?.is_system && body.name) {
-      return NextResponse.json(
-        { error: 'Cannot modify system role name' },
-        { status: 400 }
-      )
+      throw ValidationError('Cannot modify system role name')
     }
 
     const { data: role, error } = await supabase
@@ -53,20 +52,17 @@ export async function PATCH(
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!role) {
-      return NextResponse.json({ error: 'Role not found' }, { status: 404 })
+      throw NotFoundError('Role not found')
     }
 
-    return NextResponse.json({ role })
+    return successResponse({ role })
   } catch (error) {
-    console.error('Error updating role:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error updating role:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -81,12 +77,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -101,10 +97,7 @@ export async function DELETE(
       .single()
 
     if (role?.is_system) {
-      return NextResponse.json(
-        { error: 'Cannot delete system role' },
-        { status: 400 }
-      )
+      throw ValidationError('Cannot delete system role')
     }
 
     const { error } = await supabase
@@ -114,15 +107,12 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error deleting role:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error deleting role:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

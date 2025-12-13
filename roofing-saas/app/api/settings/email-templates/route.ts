@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings/email-templates
@@ -11,12 +12,12 @@ export async function GET(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { searchParams } = new URL(request.url)
@@ -36,16 +37,13 @@ export async function GET(request: Request) {
     const { data: templates, error } = await query.order('created_at', { ascending: false })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ templates: templates || [] })
+    return successResponse({ templates: templates || [] })
   } catch (error) {
     logger.error('Error fetching email templates:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -57,12 +55,12 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const body = await request.json()
@@ -78,10 +76,7 @@ export async function POST(request: Request) {
     } = body
 
     if (!name || !subject || !emailBody) {
-      return NextResponse.json(
-        { error: 'Name, subject, and body are required' },
-        { status: 400 }
-      )
+      throw ValidationError('Name, subject, and body are required')
     }
 
     const supabase = await createClient()
@@ -104,15 +99,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ template }, { status: 201 })
+    return createdResponse({ template })
   } catch (error) {
     logger.error('Error creating email template:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

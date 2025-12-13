@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Initiate Google Calendar OAuth connection
@@ -18,7 +20,7 @@ export async function POST() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     // Check if Google OAuth is configured
@@ -26,10 +28,10 @@ export async function POST() {
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/google/callback`
 
     if (!clientId) {
-      return NextResponse.json({
+      return successResponse({
         error: 'Google Calendar integration not configured',
         message: 'Please contact your administrator to set up Google Calendar integration. Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables.'
-      }, { status: 503 })
+      }, 503)
     }
 
     // Build Google OAuth URL
@@ -47,14 +49,11 @@ export async function POST() {
     authUrl.searchParams.append('prompt', 'consent')
     authUrl.searchParams.append('state', user.id) // Pass user ID for callback
 
-    return NextResponse.json({
+    return successResponse({
       authUrl: authUrl.toString()
     })
   } catch (error) {
-    console.error('Error initiating Google Calendar connection:', error)
-    return NextResponse.json(
-      { error: 'Failed to initiate connection' },
-      { status: 500 }
-    )
+    logger.error('Error initiating Google Calendar connection:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

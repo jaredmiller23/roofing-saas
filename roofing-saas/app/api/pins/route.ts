@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
-// Force recompile
 
 /**
  * GET /api/pins
@@ -11,6 +13,11 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
     const supabase = await createClient()
 
     // Get query parameters
@@ -18,15 +25,6 @@ export async function GET(request: NextRequest) {
     const territoryId = searchParams.get('territory_id')
     const orphaned = searchParams.get('orphaned') === 'true'
     const limit = searchParams.get('limit') || '100'
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
 
     // Build query - territory_id is now optional
     let query = supabase
@@ -63,10 +61,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       logger.error('[API] Error fetching pins:', { error })
-      return NextResponse.json(
-        { error: 'Failed to fetch pins' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch pins')
     }
 
     // Format pins with basic user info
@@ -77,16 +72,13 @@ export async function GET(request: NextRequest) {
       user_name: 'User' // Simplified for now
     })) || []
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
-      pins: pinsWithUsers  // Changed from 'data' to 'pins' to match frontend expectation
+      pins: pinsWithUsers
     })
   } catch (error) {
     logger.error('[API] Error in GET /api/pins:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -96,6 +88,16 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with a tenant')
+    }
+
     const supabase = await createClient()
     const body = await request.json()
     const {
@@ -124,37 +126,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields (territory_id is now optional for orphaned pins)
     if (!latitude || !longitude) {
-      return NextResponse.json(
-        { error: 'latitude and longitude are required' },
-        { status: 400 }
-      )
+      throw ValidationError('latitude and longitude are required')
     }
 
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Get user's tenant_id
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      logger.error('[API] Error fetching tenant:', { error: tenantError })
-      return NextResponse.json(
-        { error: 'User not associated with a tenant' },
-        { status: 403 }
-      )
-    }
-
-    logger.debug('[API] Creating pin for tenant:', { tenant_id: tenantUser.tenant_id })
+    logger.debug('[API] Creating pin for tenant:', { tenant_id: tenantId })
 
     // Create the pin (territory_id can be null for orphaned pins)
     const { data: newPin, error: insertError } = await supabase
@@ -172,7 +147,7 @@ export async function POST(request: NextRequest) {
         notes,
         pin_type: pin_type || 'knock',
         user_id: user.id,
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         is_deleted: false
       })
       .select()
@@ -180,10 +155,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       logger.error('[API] Error creating pin:', { error: insertError })
-      return NextResponse.json(
-        { error: 'Failed to create pin', details: insertError.message },
-        { status: 500 }
-      )
+      throw InternalError(`Failed to create pin: ${insertError.message}`)
     }
 
     logger.debug('[API] Pin created successfully:', { pin_id: newPin.id })
@@ -242,7 +214,7 @@ export async function POST(request: NextRequest) {
     const { error: activityError } = await supabase
       .from('activities')
       .insert({
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         created_by: user.id,
         type: 'door_knock',
         subject: activitySubject,
@@ -263,7 +235,7 @@ export async function POST(request: NextRequest) {
       // Continue even if activity creation fails
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: {
         ...newPin,
@@ -272,10 +244,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('[API] Error in POST /api/pins:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -285,24 +254,17 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
     const supabase = await createClient()
     const body = await request.json()
     const { id, disposition, notes, contact_data, create_contact } = body
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Pin ID is required' },
-        { status: 400 }
-      )
-    }
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw ValidationError('Pin ID is required')
     }
 
     // Check if the pin exists and user has permission to edit
@@ -313,10 +275,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (fetchError || !existingPin) {
-      return NextResponse.json(
-        { error: 'Pin not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Pin not found')
     }
 
     // Update the pin
@@ -333,10 +292,7 @@ export async function PUT(request: NextRequest) {
 
     if (updateError) {
       logger.error('[API] Error updating pin:', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to update pin' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update pin')
     }
 
     // If creating/updating contact
@@ -357,16 +313,13 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: updatedPin
     })
   } catch (error) {
     logger.error('[API] Error in PUT /api/pins:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -376,24 +329,17 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
     const supabase = await createClient()
     const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Pin ID is required' },
-        { status: 400 }
-      )
-    }
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw ValidationError('Pin ID is required')
     }
 
     // Check if the pin exists
@@ -404,10 +350,7 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (fetchError || !existingPin) {
-      return NextResponse.json(
-        { error: 'Pin not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Pin not found')
     }
 
     // Soft delete the pin
@@ -421,21 +364,15 @@ export async function DELETE(request: NextRequest) {
 
     if (deleteError) {
       logger.error('[API] Error deleting pin:', { error: deleteError })
-      return NextResponse.json(
-        { error: 'Failed to delete pin' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to delete pin')
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       message: 'Pin deleted successfully'
     })
   } catch (error) {
     logger.error('[API] Error in DELETE /api/pins:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

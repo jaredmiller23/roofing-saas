@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Check Google Calendar connection status
@@ -14,7 +16,7 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const supabase = await createClient()
@@ -27,16 +29,13 @@ export async function GET() {
       .eq('user_id', user.id)
       .single()
 
-    return NextResponse.json({
+    return successResponse({
       connected: settings?.google_calendar_connected || false,
       calendarUrl: settings?.google_calendar_url || null
     })
   } catch (error) {
-    console.error('Error checking Google Calendar status:', error)
+    logger.error('Error checking Google Calendar status:', { error })
     // Return not connected by default if table doesn't exist yet
-    return NextResponse.json({
-      connected: false,
-      calendarUrl: null
-    })
+    return errorResponse(error instanceof Error ? error : new Error('Failed to check status'))
   }
 }

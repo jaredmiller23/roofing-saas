@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +16,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
     const supabase = await createClient()
     const body = await request.json()
     const { disposition, notes, contact_data, create_contact } = body
@@ -24,29 +32,14 @@ export async function PUT(
     logger.debug('[API] PUT /api/pins/[id] - ID:', { id, type: typeof id })
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Pin ID is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Pin ID is required')
     }
 
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     if (!uuidRegex.test(id)) {
       logger.error('[API] Invalid UUID format:', { id })
-      return NextResponse.json(
-        { error: 'Invalid pin ID format' },
-        { status: 400 }
-      )
-    }
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw ValidationError('Invalid pin ID format')
     }
 
     // Check if the pin exists and user has permission to edit
@@ -57,10 +50,7 @@ export async function PUT(
       .single()
 
     if (fetchError || !existingPin) {
-      return NextResponse.json(
-        { error: 'Pin not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Pin not found')
     }
 
     // Update the pin
@@ -76,10 +66,7 @@ export async function PUT(
 
     if (updateError) {
       logger.error('[API] Error updating pin:', { error: updateError })
-      return NextResponse.json(
-        { error: 'Failed to update pin' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to update pin')
     }
 
     // If creating/updating contact
@@ -100,15 +87,12 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       data: updatedPin
     })
   } catch (error) {
     logger.error('[API] Error in PUT /api/pins/[id]:', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

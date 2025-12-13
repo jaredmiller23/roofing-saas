@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * PATCH /api/settings/sms-templates/[id]
@@ -13,22 +15,19 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
     const body = await request.json()
 
     if (body.message && body.message.length > 1600) {
-      return NextResponse.json(
-        { error: 'Message must be 1600 characters or less' },
-        { status: 400 }
-      )
+      throw ValidationError('Message must be 1600 characters or less')
     }
 
     const supabase = await createClient()
@@ -50,20 +49,17 @@ export async function PATCH(
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
     if (!template) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 })
+      throw NotFoundError('Template not found')
     }
 
-    return NextResponse.json({ template })
+    return successResponse({ template })
   } catch (error) {
-    console.error('Error updating SMS template:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error updating SMS template:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -78,12 +74,12 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -96,15 +92,12 @@ export async function DELETE(
       .eq('tenant_id', tenantId)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      throw InternalError(error.message)
     }
 
-    return NextResponse.json({ success: true })
+    return successResponse({ success: true })
   } catch (error) {
-    console.error('Error deleting SMS template:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    logger.error('Error deleting SMS template:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

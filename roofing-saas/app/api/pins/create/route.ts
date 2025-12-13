@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/pins/create
@@ -30,24 +33,17 @@ import { logger } from '@/lib/logger'
  */
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with a tenant')
+    }
+
     const supabase = await createClient()
-
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get user's tenant_id
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser) {
-      return NextResponse.json({ error: 'User not associated with a tenant' }, { status: 403 })
-    }
 
     const body = await request.json()
     const {
@@ -68,17 +64,11 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-      return NextResponse.json(
-        { error: 'Invalid coordinates' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid coordinates')
     }
 
     if (!disposition) {
-      return NextResponse.json(
-        { error: 'Disposition is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Disposition is required')
     }
 
     // Check for duplicate pins within 25 meters
@@ -87,31 +77,19 @@ export async function POST(request: NextRequest) {
         p_latitude: latitude,
         p_longitude: longitude,
         p_radius_meters: 25,
-        p_tenant_id: tenantUser.tenant_id,
+        p_tenant_id: tenantId,
       })
 
     if (duplicateCheck && duplicateCheck.length > 0 && duplicateCheck[0].exists) {
       const duplicate = duplicateCheck[0]
-      return NextResponse.json(
-        {
-          error: 'Duplicate pin detected',
-          duplicate: {
-            id: duplicate.existing_knock_id,
-            disposition: duplicate.existing_disposition,
-            user_name: duplicate.existing_user_name,
-            distance_meters: duplicate.distance_meters,
-            created_at: duplicate.created_at,
-          },
-        },
-        { status: 409 }
-      )
+      throw ConflictError(`Duplicate pin detected at ${duplicate.distance_meters}m`)
     }
 
     // Create the pin
     const { data: pin, error: pinError } = await supabase
       .from('knocks')
       .insert({
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         user_id: user.id,
         latitude,
         longitude,
@@ -132,10 +110,7 @@ export async function POST(request: NextRequest) {
 
     if (pinError) {
       logger.error('Pin creation error', { error: pinError })
-      return NextResponse.json(
-        { error: 'Failed to create pin' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to create pin')
     }
 
     // If create_contact is true, create a contact from the pin
@@ -164,7 +139,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    return successResponse({
       success: true,
       pin: {
         id: pin.id,
@@ -179,9 +154,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('Pin creation error', { error })
-    return NextResponse.json(
-      { error: 'Failed to create pin' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
