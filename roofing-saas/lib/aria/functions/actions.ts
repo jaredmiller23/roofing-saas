@@ -69,33 +69,27 @@ ariaFunctionRegistry.register({
       }
     }
 
-    try {
-      const result = await sendSMS({
-        to: targetPhone,
-        body: message,
-      })
+    // HITL: Return draft for approval instead of sending immediately
+    // The UI will show the draft and allow user to approve/edit/reject
+    const contactName = context.contact
+      ? `${context.contact.first_name} ${context.contact.last_name}`.trim()
+      : targetPhone
 
-      // Log activity
-      await context.supabase.from('activities').insert({
-        tenant_id: context.tenantId,
-        contact_id: targetContactId,
+    return {
+      success: true,
+      awaitingApproval: true,
+      confirmationPrompt: `Ready to send SMS to ${contactName}. Review and approve the message below.`,
+      draft: {
         type: 'sms',
-        description: `SMS sent: ${message.substring(0, 50)}...`,
-        created_by: context.userId,
-        metadata: { sms_sid: result.sid, via: 'aria' },
-      })
-
-      return {
-        success: true,
-        message: `SMS sent to ${targetPhone}`,
-        data: { sid: result.sid },
-      }
-    } catch (error) {
-      logger.error('ARIA send_sms error:', { error })
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to send SMS',
-      }
+        recipient: targetPhone,
+        body: message,
+        metadata: {
+          contact_id: targetContactId,
+          contact_name: contactName,
+          via: 'aria',
+        },
+      },
+      message: `SMS draft created for ${contactName}. Awaiting approval.`,
     }
   },
 })
@@ -164,35 +158,29 @@ ariaFunctionRegistry.register({
       }
     }
 
-    try {
-      const result = await sendEmail({
-        to: targetEmail,
-        subject,
-        text: body,
-        html: `<p>${body.replace(/\n/g, '<br>')}</p>`,
-      })
+    // HITL: Return draft for approval instead of sending immediately
+    // The UI will show the draft and allow user to approve/edit/reject
+    const contactName = context.contact
+      ? `${context.contact.first_name} ${context.contact.last_name}`.trim()
+      : targetEmail
 
-      // Log activity
-      await context.supabase.from('activities').insert({
-        tenant_id: context.tenantId,
-        contact_id: targetContactId,
+    return {
+      success: true,
+      awaitingApproval: true,
+      confirmationPrompt: `Ready to send email to ${contactName}. Review and approve the message below.`,
+      draft: {
         type: 'email',
-        description: `Email sent: ${subject}`,
-        created_by: context.userId,
-        metadata: { email_id: result.id, via: 'aria' },
-      })
-
-      return {
-        success: true,
-        message: `Email sent to ${targetEmail}`,
-        data: { id: result.id },
-      }
-    } catch (error) {
-      logger.error('ARIA send_email error:', { error })
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to send email',
-      }
+        recipient: targetEmail,
+        subject: subject,
+        body: body,
+        metadata: {
+          contact_id: targetContactId,
+          contact_name: contactName,
+          html_body: `<p>${body.replace(/\n/g, '<br>')}</p>`,
+          via: 'aria',
+        },
+      },
+      message: `Email draft created for ${contactName}. Awaiting approval.`,
     }
   },
 })

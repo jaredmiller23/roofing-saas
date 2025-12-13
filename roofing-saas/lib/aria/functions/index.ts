@@ -11,5 +11,8 @@ import './actions'
 // QuickBooks functions
 import './quickbooks'
 
+// Knowledge functions (search_knowledge, ask_roofing_question)
+import './knowledge'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'

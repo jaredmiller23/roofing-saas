@@ -123,6 +123,16 @@ export interface ARIAExecutionResult {
   // For confirmations
   awaitingConfirmation?: boolean
   confirmationPrompt?: string
+
+  // Human-in-the-Loop (HITL) - Draft content awaiting approval
+  awaitingApproval?: boolean
+  draft?: {
+    type: 'sms' | 'email' | 'other'
+    recipient?: string
+    subject?: string
+    body: string
+    metadata?: Record<string, unknown>
+  }
 }
 
 export interface ARIAOrchestrator {
