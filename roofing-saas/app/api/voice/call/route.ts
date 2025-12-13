@@ -10,6 +10,7 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { makeCall, formatPhoneNumber, isValidPhoneNumber } from '@/lib/twilio/voice'
+import { canMakeCall } from '@/lib/compliance'
 import { z } from 'zod'
 
 const makeCallSchema = z.object({
@@ -53,6 +54,23 @@ export async function POST(request: NextRequest) {
     const formattedPhone = formatPhoneNumber(to)
     if (!isValidPhoneNumber(formattedPhone)) {
       throw ValidationError('Invalid phone number format', { to })
+    }
+
+    // Compliance check BEFORE initiating call
+    const complianceCheck = await canMakeCall({
+      phoneNumber: formattedPhone,
+      contactId,
+      tenantId,
+      userId: user.id,
+    })
+
+    if (!complianceCheck.canCall) {
+      throw ValidationError(
+        complianceCheck.reason || 'Call blocked by compliance check',
+        {
+          complianceCheck,
+        }
+      )
     }
 
     const supabase = await createClient()
