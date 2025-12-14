@@ -417,11 +417,9 @@ export function PipelineBoard() {
                       {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
                     </span>
                   </div>
-                  {stageValue > 0 && (
-                    <div className="text-xs font-semibold text-green-700">
-                      {formatCurrency(stageValue)}
-                    </div>
-                  )}
+                  <div className="text-xs font-semibold text-green-700 h-4">
+                    {stageValue > 0 ? formatCurrency(stageValue) : '\u00A0'}
+                  </div>
                 </div>
 
                 <PipelineColumn
