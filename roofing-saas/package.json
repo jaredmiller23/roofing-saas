@@ -21,7 +21,9 @@
     "cleanup-duplicate-dns": "tsx scripts/cleanup-duplicate-dns.ts",
     "diagnose-netlify-ssl": "tsx scripts/diagnose-netlify-ssl.ts",
     "fix-netlify-dns": "tsx scripts/fix-netlify-dns.ts",
-    "migrate-proline": "tsx scripts/migrate-proline-data.ts"
+    "migrate-proline": "tsx scripts/migrate-proline-data.ts",
+    "smoke-test": "npx ts-node scripts/smoke-test.ts",
+    "smoke-test:local": "npx ts-node scripts/smoke-test.ts --local"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -52,6 +54,8 @@
     "@supabase/supabase-js": "^2.58.0",
     "@tanstack/react-table": "^8.21.3",
     "@types/react-pdf": "^5.0.7",
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.35.8",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
