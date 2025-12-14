@@ -1,22 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FileText, Image as ImageIcon, ExternalLink } from 'lucide-react'
+import {
+  FileText,
+  Image as ImageIcon,
+  ExternalLink,
+  Search,
+  Filter,
+  Clock,
+  Download,
+  Eye
+} from 'lucide-react'
+import { ProjectFile, RoofingFileCategory, FileType, FileSearchFilters } from '@/lib/types/file'
+import { FileCategories, CategoryFilterChips } from './FileCategories'
+import { BulkFileActions, FileSelectionCheckbox } from './BulkFileActions'
+import { CategoryBadge } from './FileCategories'
+import { FolderBreadcrumb } from './FileFolderTree'
 
-interface ProjectFile {
-  id: string
-  file_name: string
-  file_type: string | null
-  file_category: string | null
-  file_url: string
-  thumbnail_url: string | null
-  file_size: number | null
-  project_id: string
-  description: string | null
-  created_at: string
-}
+// Using ProjectFile interface from types instead of local definition
 
 interface ProjectFilesTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -30,6 +33,27 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(parseInt((params.page as string) || '1'))
 
+  // Enhanced state for new features
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState<RoofingFileCategory[]>([])
+  const [selectedFileTypes, setSelectedFileTypes] = useState<FileType[]>([])
+  const [currentFolderPath, setCurrentFolderPath] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [_viewMode, _setViewMode] = useState<'table' | 'grid'>('table')
+  const [sortBy, setSortBy] = useState<string>('created_at')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  // Build search filters
+  const _searchFilters = useMemo((): FileSearchFilters => {
+    return {
+      ...(searchTerm && { search_term: searchTerm }),
+      ...(selectedCategories.length > 0 && { file_category: selectedCategories }),
+      ...(selectedFileTypes.length > 0 && { file_type: selectedFileTypes }),
+      ...(currentFolderPath !== null && { folder_path: currentFolderPath || undefined }),
+    }
+  }, [searchTerm, selectedCategories, selectedFileTypes, currentFolderPath])
+
   useEffect(() => {
     async function fetchFiles() {
       setLoading(true)
@@ -37,13 +61,28 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
       try {
         const queryParams = new URLSearchParams()
+
+        // Add original params
         Object.entries(params).forEach(([key, value]) => {
           if (value && typeof value === 'string') {
             queryParams.set(key, value)
           }
         })
 
-        const response = await fetch(`/api/project-files?${queryParams.toString()}`)
+        // Add search and filter params
+        if (searchTerm) queryParams.set('search_term', searchTerm)
+        selectedCategories.forEach(cat => queryParams.append('file_category', cat))
+        selectedFileTypes.forEach(type => queryParams.append('file_type', type))
+        if (currentFolderPath !== null) queryParams.set('folder_path', currentFolderPath)
+        queryParams.set('sort_by', sortBy)
+        queryParams.set('sort_order', sortOrder)
+        queryParams.set('page', page.toString())
+
+        // Use search endpoint if we have filters, otherwise use regular endpoint
+        const hasFilters = searchTerm || selectedCategories.length > 0 || selectedFileTypes.length > 0 || currentFolderPath !== null
+        const endpoint = hasFilters ? '/api/project-files/search' : '/api/project-files'
+
+        const response = await fetch(`${endpoint}?${queryParams.toString()}`)
 
         if (!response.ok) {
           throw new Error('Failed to fetch files')
@@ -62,7 +101,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
     }
 
     fetchFiles()
-  }, [params])
+  }, [params, searchTerm, selectedCategories, selectedFileTypes, currentFolderPath, sortBy, sortOrder, page])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this file?')) {
@@ -82,6 +121,45 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete file')
     }
+  }
+
+  const handleBulkAction = async (operation: string, data: Record<string, unknown>) => {
+    try {
+      const response = await fetch('/api/project-files/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operation, ...data })
+      })
+
+      if (!response.ok) {
+        throw new Error('Bulk operation failed')
+      }
+
+      // Refresh the file list
+      router.refresh()
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Bulk operation failed')
+    }
+  }
+
+  const handleCategoryFilter = (category: RoofingFileCategory) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term)
+    setPage(1) // Reset to first page on search
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedCategories([])
+    setSelectedFileTypes([])
+    setCurrentFolderPath(null)
   }
 
   const getFileTypeLabel = (type: string | null) => {
@@ -131,146 +209,342 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
     )
   }
 
-  if (files.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-2 text-sm font-medium text-foreground">No files</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Get started by uploading a file.
-        </p>
-        <div className="mt-6">
-          <Link
-            href="/project-files/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-          >
-            + Upload File
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="bg-card shadow-sm rounded-lg border border-border">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-border">
-          <thead className="bg-muted/30">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                File
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Size
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-card divide-y divide-border">
-            {files.map((file) => (
-              <tr key={file.id} className="hover:bg-accent">
-                <td className="px-6 py-4">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded flex items-center justify-center">
-                      {file.file_type === 'photo' ? (
-                        <ImageIcon className="h-5 w-5 text-primary" />
-                      ) : (
-                        <FileText className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-foreground">{file.file_name}</div>
-                      {file.description && (
-                        <div className="text-sm text-muted-foreground truncate max-w-md">{file.description}</div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getFileTypeColor(file.file_type)}`}>
-                    {getFileTypeLabel(file.file_type)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {file.file_category || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {formatFileSize(file.file_size)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/project-files/${file.id}`}
-                    className="text-primary hover:text-primary/80 mr-4"
-                  >
-                    <ExternalLink className="h-4 w-4 inline" />
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(file.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {total > 10 && (
-        <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-border sm:px-6">
-          <div className="flex-1 flex justify-between sm:hidden">
+    <div className="space-y-6">
+      {/* Search and Filter Header */}
+      <div className="bg-card border border-border rounded-lg p-4">
+        <div className="space-y-4">
+          {/* Search Bar */}
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search files by name or description..."
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
             <button
-              onClick={() => router.push(`/project-files?page=${page - 1}`)}
-              disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center space-x-2 px-3 py-2 border border-border rounded-md hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              Previous
-            </button>
-            <button
-              onClick={() => router.push(`/project-files?page=${page + 1}`)}
-              disabled={page * 10 >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
-            >
-              Next
+              <Filter className="h-4 w-4" />
+              <span>Filters</span>
             </button>
           </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
-                <span className="font-medium">{Math.min(page * 10, total)}</span> of{' '}
-                <span className="font-medium">{total}</span> results
-              </p>
+
+          {/* Breadcrumb */}
+          <FolderBreadcrumb
+            currentPath={currentFolderPath}
+            onPathNavigate={setCurrentFolderPath}
+          />
+
+          {/* Active Filters */}
+          <CategoryFilterChips
+            selectedCategories={selectedCategories}
+            onCategoryToggle={handleCategoryFilter}
+            onClearAll={clearAllFilters}
+          />
+
+          {/* Extended Filters */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Category
+                </label>
+                <FileCategories
+                  selectedCategory={selectedCategories[0] || null}
+                  onCategoryChange={(category) => {
+                    if (category) {
+                      handleCategoryFilter(category)
+                    }
+                  }}
+                  showAllOption={true}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  File Type
+                </label>
+                <select
+                  multiple
+                  value={selectedFileTypes}
+                  onChange={(e) => setSelectedFileTypes(Array.from(e.target.selectedOptions, option => option.value as FileType))}
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="photo">Photo</option>
+                  <option value="document">Document</option>
+                  <option value="contract">Contract</option>
+                  <option value="estimate">Estimate</option>
+                  <option value="invoice">Invoice</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Sort By
+                </label>
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [field, order] = e.target.value.split('-')
+                    setSortBy(field)
+                    setSortOrder(order as 'asc' | 'desc')
+                  }}
+                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="created_at-desc">Newest First</option>
+                  <option value="created_at-asc">Oldest First</option>
+                  <option value="file_name-asc">Name A-Z</option>
+                  <option value="file_name-desc">Name Z-A</option>
+                  <option value="file_size-desc">Largest First</option>
+                  <option value="file_size-asc">Smallest First</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+          )}
+        </div>
+      </div>
+
+      {/* Bulk Actions */}
+      {selectedFileIds.length > 0 && (
+        <BulkFileActions
+          files={files}
+          selectedFileIds={selectedFileIds}
+          onSelectionChange={setSelectedFileIds}
+          onBulkAction={handleBulkAction}
+        />
+      )}
+
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {total === 0 ? 'No files found' : `${total} file${total !== 1 ? 's' : ''} found`}
+        </div>
+        {files.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Showing {((page - 1) * 10) + 1}-{Math.min(page * 10, total)} of {total}
+          </div>
+        )}
+      </div>
+
+      {/* Empty State */}
+      {files.length === 0 && !loading && (
+        <div className="text-center py-12 bg-card border border-border rounded-lg">
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-foreground">
+            {searchTerm || selectedCategories.length > 0 ? 'No matching files' : 'No files'}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {searchTerm || selectedCategories.length > 0
+              ? 'Try adjusting your search or filters'
+              : 'Get started by uploading a file.'
+            }
+          </p>
+          {(!searchTerm && selectedCategories.length === 0) && (
+            <div className="mt-6">
+              <Link
+                href="/project-files/new"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
+              >
+                + Upload File
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Files Table */}
+      {files.length > 0 && (
+        <div className="bg-card shadow-sm rounded-lg border border-border">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted/30">
+                <tr>
+                  <th className="px-2 py-3">
+                    <FileSelectionCheckbox
+                      file={files[0]}
+                      isSelected={selectedFileIds.length === files.length}
+                      onToggle={() => {
+                        if (selectedFileIds.length === files.length) {
+                          setSelectedFileIds([])
+                        } else {
+                          setSelectedFileIds(files.map(f => f.id))
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    File
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Size
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Modified
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-card divide-y divide-border">
+                {files.map((file) => (
+                  <tr key={file.id} className="hover:bg-accent">
+                    <td className="px-2 py-4">
+                      <FileSelectionCheckbox
+                        file={file}
+                        isSelected={selectedFileIds.includes(file.id)}
+                        onToggle={(fileId) => {
+                          setSelectedFileIds(prev =>
+                            prev.includes(fileId)
+                              ? prev.filter(id => id !== fileId)
+                              : [...prev, fileId]
+                          )
+                        }}
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded flex items-center justify-center">
+                          {file.file_type === 'photo' ? (
+                            <ImageIcon className="h-5 w-5 text-primary" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-foreground">{file.file_name}</div>
+                          {file.description && (
+                            <div className="text-sm text-muted-foreground truncate max-w-md">{file.description}</div>
+                          )}
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-2 py-1 text-xs leading-4 font-semibold rounded ${getFileTypeColor(file.file_type)}`}>
+                              {getFileTypeLabel(file.file_type)}
+                            </span>
+                            {file.version && file.version > 1 && (
+                              <span className="flex items-center text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3 mr-1" />
+                                v{file.version}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {file.file_category ? (
+                        <CategoryBadge
+                          category={file.file_category as RoofingFileCategory}
+                          size="sm"
+                        />
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                      {formatFileSize(file.file_size)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <a
+                          href={file.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 text-muted-foreground hover:text-foreground"
+                          title="View file"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </a>
+                        <a
+                          href={file.file_url}
+                          download={file.file_name}
+                          className="p-1 text-muted-foreground hover:text-foreground"
+                          title="Download file"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                        <Link
+                          href={`/project-files/${file.id}`}
+                          className="p-1 text-primary hover:text-primary/80"
+                          title="View details"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(file.id)}
+                          className="p-1 text-red-600 hover:text-red-700"
+                          title="Delete file"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {total > 10 && (
+            <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-border sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
                 <button
-                  onClick={() => router.push(`/project-files?page=${page - 1}`)}
+                  onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => router.push(`/project-files?page=${page + 1}`)}
+                  onClick={() => setPage(page + 1)}
                   disabled={page * 10 >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-card hover:bg-accent disabled:opacity-50"
                 >
                   Next
                 </button>
-              </nav>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(page * 10, total)}</span> of{' '}
+                    <span className="font-medium">{total}</span> results
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={page * 10 >= total}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>

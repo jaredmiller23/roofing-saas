@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
     const fileType = searchParams.get('file_type') || undefined
     const fileCategory = searchParams.get('file_category') || undefined
     const projectId = searchParams.get('project_id') || undefined
+    const folderPath = searchParams.get('folder_path') || undefined
+    const searchTerm = searchParams.get('search_term') || undefined
     const sortBy = searchParams.get('sort_by') || 'created_at'
     const sortOrder = (searchParams.get('sort_order') || 'desc') as 'asc' | 'desc'
 
@@ -57,6 +59,20 @@ export async function GET(request: NextRequest) {
     }
     if (projectId) {
       query = query.eq('project_id', projectId)
+    }
+    if (folderPath !== undefined) {
+      if (folderPath === '') {
+        // Root folder - files with null or empty folder_path
+        query = query.or('folder_path.is.null,folder_path.eq.')
+      } else {
+        // Specific folder or subfolder
+        query = query.or(`folder_path.eq.${folderPath},folder_path.like.${folderPath}/%`)
+      }
+    }
+    // Basic text search in file name and description
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`
+      query = query.or(`file_name.ilike.${searchPattern},description.ilike.${searchPattern}`)
     }
 
     // Pagination
@@ -116,14 +132,31 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Create file record
+    // Create file record with enhanced fields
+    const fileData = {
+      file_name: body.file_name,
+      file_type: body.file_type,
+      file_category: body.file_category,
+      file_url: body.file_url,
+      file_size: body.file_size,
+      file_extension: body.file_extension,
+      mime_type: body.mime_type,
+      thumbnail_url: body.thumbnail_url,
+      project_id: body.project_id,
+      folder_path: body.folder_path || null,
+      description: body.description,
+      tenant_id: tenantId,
+      uploaded_by: user.id,
+      status: 'active',
+      version: 1,
+      parent_file_id: null,
+      is_deleted: false,
+      metadata: body.metadata || {}
+    }
+
     const { data: file, error } = await supabase
       .from('project_files')
-      .insert({
-        ...body,
-        tenant_id: tenantId,
-        uploaded_by: user.id,
-      })
+      .insert(fileData)
       .select()
       .single()
 
