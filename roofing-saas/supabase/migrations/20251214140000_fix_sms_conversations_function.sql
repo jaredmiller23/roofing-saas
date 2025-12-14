@@ -1,32 +1,8 @@
--- Migration: Add SMS read tracking for Messages tab
--- Rollback:
---   DROP FUNCTION IF EXISTS get_sms_conversations(UUID);
---   DROP INDEX IF EXISTS idx_activities_sms_by_contact;
---   DROP INDEX IF EXISTS idx_activities_sms_unread;
---   ALTER TABLE activities DROP COLUMN IF EXISTS read_by;
---   ALTER TABLE activities DROP COLUMN IF EXISTS read_at;
+-- Migration: Fix get_sms_conversations function to not require is_deleted column on activities
+-- The activities table may not have is_deleted column, so we remove that filter
+-- Rollback: Re-run the original function with is_deleted checks
 
--- Add read tracking columns to activities table
-ALTER TABLE activities
-  ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS read_by UUID REFERENCES auth.users(id);
-
-COMMENT ON COLUMN activities.read_at IS 'Timestamp when SMS message was read (for Messages tab thread view)';
-COMMENT ON COLUMN activities.read_by IS 'User who read the SMS message (for Messages tab unread tracking)';
-
--- Index for unread message queries (WHERE read_at IS NULL)
-CREATE INDEX IF NOT EXISTS idx_activities_sms_unread
-  ON activities(tenant_id, contact_id, read_at)
-  WHERE type = 'sms' AND read_at IS NULL;
-
--- Index for conversation list queries (latest message per contact)
-CREATE INDEX IF NOT EXISTS idx_activities_sms_by_contact
-  ON activities(tenant_id, contact_id, created_at DESC)
-  WHERE type = 'sms';
-
--- Database function to get SMS conversations with unread counts
--- This replaces N+1 queries with a single efficient query
--- Note: Removed is_deleted check on activities since that column may not exist
+-- Drop and recreate the function without is_deleted checks on activities
 CREATE OR REPLACE FUNCTION get_sms_conversations(p_tenant_id UUID)
 RETURNS TABLE (
   contact_id UUID,
@@ -41,6 +17,7 @@ BEGIN
   RETURN QUERY
   WITH latest_messages AS (
     -- Get the most recent SMS message per contact
+    -- Note: Removed is_deleted filter since activities table may not have this column
     SELECT DISTINCT ON (a.contact_id)
       a.contact_id,
       a.content,
@@ -81,4 +58,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-COMMENT ON FUNCTION get_sms_conversations(UUID) IS 'Get all SMS conversations for a tenant with unread counts. Used by Messages tab conversation list.';
+COMMENT ON FUNCTION get_sms_conversations(UUID) IS 'Get all SMS conversations for a tenant with unread counts. Used by Messages tab conversation list. Fixed Dec 14 2025 to not require is_deleted on activities.';

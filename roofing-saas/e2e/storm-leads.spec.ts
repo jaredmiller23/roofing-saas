@@ -75,9 +75,10 @@ test.describe('Storm Leads API Endpoints', () => {
     if (response.ok()) {
       const data = await response.json()
       expect(data.success).toBe(true)
-      expect(data.areas).toBeDefined()
-      expect(Array.isArray(data.areas)).toBe(true)
-      console.log(`Found ${data.areas.length} targeting areas`)
+      // API returns data wrapped in 'data' property
+      expect(data.data?.areas).toBeDefined()
+      expect(Array.isArray(data.data.areas)).toBe(true)
+      console.log(`Found ${data.data.areas.length} targeting areas`)
     }
   })
 
@@ -90,7 +91,8 @@ test.describe('Storm Leads API Endpoints', () => {
 
     const data = await response.json()
     expect(data.success).toBe(false)
-    expect(data.error).toContain('areaId')
+    // API returns error as object with message property
+    expect(data.error?.message).toContain('areaId')
   })
 
   test('GET /api/storm-targeting/addresses returns addresses for valid area', async ({
@@ -105,7 +107,8 @@ test.describe('Storm Leads API Endpoints', () => {
     }
 
     const areasData = await areasResponse.json()
-    const areas = areasData.areas || []
+    // API returns data wrapped in 'data' property
+    const areas = areasData.data?.areas || []
 
     if (areas.length === 0) {
       console.log('No targeting areas found, skipping addresses test')
@@ -123,13 +126,14 @@ test.describe('Storm Leads API Endpoints', () => {
     if (response.ok()) {
       const data = await response.json()
       expect(data.success).toBe(true)
-      expect(data.addresses).toBeDefined()
-      expect(Array.isArray(data.addresses)).toBe(true)
-      console.log(`Found ${data.addresses.length} addresses`)
+      // API returns data wrapped in 'data' property
+      expect(data.data?.addresses).toBeDefined()
+      expect(Array.isArray(data.data.addresses)).toBe(true)
+      console.log(`Found ${data.data.addresses.length} addresses`)
 
       // Verify address structure if any exist
-      if (data.addresses.length > 0) {
-        const firstAddr = data.addresses[0]
+      if (data.data.addresses.length > 0) {
+        const firstAddr = data.data.addresses[0]
         expect(firstAddr).toHaveProperty('id')
         expect(firstAddr).toHaveProperty('targeting_area_id')
         expect(firstAddr).toHaveProperty('is_enriched')
@@ -165,7 +169,8 @@ test.describe('Storm Leads API Endpoints', () => {
 
     const data = await response.json()
     expect(data.success).toBe(false)
-    expect(data.error).toContain('targetingAreaId')
+    // API returns error as object with message property
+    expect(data.error?.message).toContain('targetingAreaId')
   })
 })
 
