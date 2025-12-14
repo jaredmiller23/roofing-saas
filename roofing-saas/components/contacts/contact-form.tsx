@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
-import { validateField, validateContactForm, clearFieldError } from '@/lib/validations/client'
+import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
 
 interface ContactFormProps {
   contact?: Contact
@@ -12,75 +13,55 @@ interface ContactFormProps {
 
 export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  const [formData, setFormData] = useState({
-    first_name: contact?.first_name || '',
-    last_name: contact?.last_name || '',
-    email: contact?.email || '',
-    phone: contact?.phone || '',
-    mobile_phone: contact?.mobile_phone || '',
-    is_organization: contact?.is_organization || false,
-    company: contact?.company || '',
-    website: contact?.website || '',
-    contact_category: contact?.contact_category || 'homeowner',
-    address_street: contact?.address_street || '',
-    address_city: contact?.address_city || '',
-    address_state: contact?.address_state || '',
-    address_zip: contact?.address_zip || '',
-    type: contact?.type || 'lead',
-    stage: contact?.stage || 'new',
-    source: contact?.source || '',
-    property_type: contact?.property_type || '',
-    roof_type: contact?.roof_type || '',
-    roof_age: contact?.roof_age?.toString() || '',
-    square_footage: contact?.square_footage?.toString() || '',
-    stories: contact?.stories?.toString() || '',
-    insurance_carrier: contact?.insurance_carrier || '',
-    policy_number: contact?.policy_number || '',
-    priority: contact?.priority || 'normal',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+    watch,
+  } = useForm<CreateContactInput>({
+    resolver: zodResolver(createContactSchema),
+    defaultValues: {
+      first_name: contact?.first_name || '',
+      last_name: contact?.last_name || '',
+      email: contact?.email || '',
+      phone: contact?.phone || '',
+      mobile_phone: contact?.mobile_phone || '',
+      is_organization: contact?.is_organization || false,
+      company: contact?.company || '',
+      website: contact?.website || '',
+      contact_category: contact?.contact_category || 'homeowner',
+      address_street: contact?.address_street || '',
+      address_city: contact?.address_city || '',
+      address_state: contact?.address_state || '',
+      address_zip: contact?.address_zip || '',
+      type: contact?.type || 'lead',
+      stage: contact?.stage || 'new',
+      source: contact?.source || '',
+      property_type: contact?.property_type || '',
+      roof_type: contact?.roof_type || '',
+      roof_age: contact?.roof_age || undefined,
+      square_footage: contact?.square_footage || undefined,
+      stories: contact?.stories || undefined,
+      insurance_carrier: contact?.insurance_carrier || '',
+      policy_number: contact?.policy_number || '',
+      priority: contact?.priority || 'normal',
+    },
   })
 
-  const handleBlur = (fieldName: string) => {
-    const result = validateField(fieldName, formData[fieldName as keyof typeof formData])
-    if (!result.valid && result.error) {
-      setFieldErrors(prev => ({ ...prev, [fieldName]: result.error! }))
-    }
-  }
+  const isOrganization = watch('is_organization')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    // Client-side validation
-    const validation = validateContactForm(formData)
-    if (!validation.valid) {
-      setFieldErrors(validation.errors)
-      // Scroll to first error
-      const firstErrorField = Object.keys(validation.errors)[0]
-      const element = document.getElementById(firstErrorField)
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
-    }
-
-    setLoading(true)
-
+  const onSubmit = async (data: CreateContactInput) => {
     try {
-      // Prepare data
-      const data = {
-        ...formData,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        mobile_phone: formData.mobile_phone || undefined,
-        company: formData.company || undefined,
-        website: formData.website || undefined,
-        roof_age: formData.roof_age ? parseInt(formData.roof_age) : undefined,
-        square_footage: formData.square_footage
-          ? parseInt(formData.square_footage)
-          : undefined,
-        stories: formData.stories ? parseInt(formData.stories) : undefined,
+      // Prepare data - convert empty strings to undefined for optional fields
+      const submitData = {
+        ...data,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        mobile_phone: data.mobile_phone || undefined,
+        company: data.company || undefined,
+        website: data.website || undefined,
       }
 
       const url = mode === 'edit' && contact ? `/api/contacts/${contact.id}` : '/api/contacts'
@@ -91,7 +72,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submitData),
       })
 
       if (!response.ok) {
@@ -105,39 +86,26 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       router.push(`/contacts/${result.contact.id}`)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-      setLoading(false)
-    }
-  }
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const target = e.target as HTMLInputElement
-    const value = target.type === 'checkbox' ? target.checked : target.value
-    setFormData({
-      ...formData,
-      [target.name]: value,
-    })
-    // Clear error when user starts typing
-    if (fieldErrors[target.name]) {
-      setFieldErrors(clearFieldError(target.name, fieldErrors))
+      setError('root', {
+        type: 'manual',
+        message: err instanceof Error ? err.message : 'An error occurred',
+      })
     }
   }
 
   // Helper to get input class with error styling
-  const getInputClass = (fieldName: string) => {
+  const getInputClass = (fieldName: keyof CreateContactInput) => {
     const baseClass = 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2'
-    return fieldErrors[fieldName]
+    return errors[fieldName]
       ? `${baseClass} border-red-500 focus:ring-red-500`
       : `${baseClass} border-input focus:ring-primary`
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {errors.root && (
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
-          {error}
+          {errors.root.message}
         </div>
       )}
 
@@ -152,14 +120,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="first_name"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              onBlur={() => handleBlur('first_name')}
+              {...register('first_name')}
               className={getInputClass('first_name')}
             />
-            {fieldErrors.first_name && (
-              <p className="mt-1 text-sm text-red-500">{fieldErrors.first_name}</p>
+            {errors.first_name && (
+              <p className="mt-1 text-sm text-red-500">{errors.first_name.message}</p>
             )}
           </div>
 
@@ -170,14 +135,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="last_name"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              onBlur={() => handleBlur('last_name')}
+              {...register('last_name')}
               className={getInputClass('last_name')}
             />
-            {fieldErrors.last_name && (
-              <p className="mt-1 text-sm text-red-500">{fieldErrors.last_name}</p>
+            {errors.last_name && (
+              <p className="mt-1 text-sm text-red-500">{errors.last_name.message}</p>
             )}
           </div>
 
@@ -188,14 +150,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="email"
               id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              onBlur={() => handleBlur('email')}
+              {...register('email')}
               className={getInputClass('email')}
             />
-            {fieldErrors.email && (
-              <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
 
@@ -206,9 +165,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="tel"
               id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
+              {...register('phone')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -220,9 +177,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="tel"
               id="mobile_phone"
-              name="mobile_phone"
-              value={formData.mobile_phone}
-              onChange={handleChange}
+              {...register('mobile_phone')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -232,9 +187,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               <input
                 type="checkbox"
                 id="is_organization"
-                name="is_organization"
-                checked={formData.is_organization}
-                onChange={handleChange}
+                {...register('is_organization')}
                 className="h-4 w-4 text-primary focus:ring-primary border-input rounded"
               />
               <label htmlFor="is_organization" className="ml-2 block text-sm font-medium text-muted-foreground">
@@ -250,14 +203,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="company"
-              name="company"
-              placeholder={formData.is_organization ? "Company name" : "Employer (optional)"}
-              value={formData.company}
-              onChange={handleChange}
+              {...register('company')}
+              placeholder={isOrganization ? "Company name" : "Employer (optional)"}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              {formData.is_organization
+              {isOrganization
                 ? "The name of the organization"
                 : "Optional: The company this person works for"}
             </p>
@@ -270,15 +221,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="url"
               id="website"
-              name="website"
+              {...register('website')}
               placeholder="https://example.com"
-              value={formData.website}
-              onChange={handleChange}
-              onBlur={() => handleBlur('website')}
               className={getInputClass('website')}
             />
-            {fieldErrors.website && (
-              <p className="mt-1 text-sm text-red-500">{fieldErrors.website}</p>
+            {errors.website && (
+              <p className="mt-1 text-sm text-red-500">{errors.website.message}</p>
             )}
           </div>
 
@@ -288,10 +236,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             </label>
             <select
               id="contact_category"
-              name="contact_category"
-              required
-              value={formData.contact_category}
-              onChange={handleChange}
+              {...register('contact_category')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {getContactCategoryOptions().map((option) => (
@@ -308,9 +253,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             </label>
             <select
               id="type"
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
+              {...register('type')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="lead">Lead</option>
@@ -325,9 +268,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             </label>
             <select
               id="stage"
-              name="stage"
-              value={formData.stage}
-              onChange={handleChange}
+              {...register('stage')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="new">New</option>
@@ -346,9 +287,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             </label>
             <select
               id="priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
+              {...register('priority')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="low">Low</option>
@@ -365,10 +304,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="source"
-              name="source"
+              {...register('source')}
               placeholder="e.g., Door knocking, Referral, Website"
-              value={formData.source}
-              onChange={handleChange}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -386,9 +323,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="address_street"
-              name="address_street"
-              value={formData.address_street}
-              onChange={handleChange}
+              {...register('address_street')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -400,9 +335,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="address_city"
-              name="address_city"
-              value={formData.address_city}
-              onChange={handleChange}
+              {...register('address_city')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -414,11 +347,9 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="address_state"
-              name="address_state"
+              {...register('address_state')}
               maxLength={2}
               placeholder="TN"
-              value={formData.address_state}
-              onChange={handleChange}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -430,9 +361,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="address_zip"
-              name="address_zip"
-              value={formData.address_zip}
-              onChange={handleChange}
+              {...register('address_zip')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -450,10 +379,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="property_type"
-              name="property_type"
+              {...register('property_type')}
               placeholder="e.g., Single Family, Condo"
-              value={formData.property_type}
-              onChange={handleChange}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -465,10 +392,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="roof_type"
-              name="roof_type"
+              {...register('roof_type')}
               placeholder="e.g., Asphalt Shingle, Metal"
-              value={formData.roof_type}
-              onChange={handleChange}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -480,9 +405,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="number"
               id="roof_age"
-              name="roof_age"
-              value={formData.roof_age}
-              onChange={handleChange}
+              {...register('roof_age', { valueAsNumber: true })}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -494,9 +417,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="number"
               id="square_footage"
-              name="square_footage"
-              value={formData.square_footage}
-              onChange={handleChange}
+              {...register('square_footage', { valueAsNumber: true })}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -508,9 +429,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="number"
               id="stories"
-              name="stories"
-              value={formData.stories}
-              onChange={handleChange}
+              {...register('stories', { valueAsNumber: true })}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -528,9 +447,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="insurance_carrier"
-              name="insurance_carrier"
-              value={formData.insurance_carrier}
-              onChange={handleChange}
+              {...register('insurance_carrier')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -542,9 +459,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <input
               type="text"
               id="policy_number"
-              name="policy_number"
-              value={formData.policy_number}
-              onChange={handleChange}
+              {...register('policy_number')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -555,15 +470,15 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       <div className="flex gap-4 pt-4 border-t">
         <button
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Saving...' : mode === 'edit' ? 'Update Contact' : 'Create Contact'}
+          {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Update Contact' : 'Create Contact'}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          disabled={loading}
+          disabled={isSubmitting}
           className="px-6 py-2 border border-input text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
         >
           Cancel
