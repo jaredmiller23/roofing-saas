@@ -123,7 +123,7 @@ export function FilterSettings() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to save filter configuration')
+        throw new Error(errorData.error?.message || 'Failed to save filter configuration')
       }
 
       setSuccess(true)
@@ -166,7 +166,7 @@ export function FilterSettings() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to delete filter configuration')
+        throw new Error(errorData.error?.message || 'Failed to delete filter configuration')
       }
 
       setSuccess(true)
@@ -187,7 +187,7 @@ export function FilterSettings() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to update filter')
+        throw new Error(errorData.error?.message || 'Failed to update filter')
       }
 
       loadConfigs()

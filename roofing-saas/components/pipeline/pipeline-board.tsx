@@ -167,13 +167,13 @@ export function PipelineBoard() {
         const errorData = await response.json()
         // Show server validation error
         setValidationError({
-          message: errorData.error || 'Failed to update project',
+          message: errorData.error?.message || 'Failed to update project',
           projectName: project.name || 'Unnamed Project',
           fromStage: STAGE_DISPLAY_NAMES[currentStage],
           toStage: STAGE_DISPLAY_NAMES[newStage],
         })
         setTimeout(() => setValidationError(null), 5000)
-        throw new Error(errorData.error || 'Failed to update project')
+        throw new Error(errorData.error?.message || 'Failed to update project')
       }
     } catch (error) {
       console.error('Failed to update project stage:', error)

@@ -91,7 +91,7 @@ export function EnrichmentProgress({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch enrichment status');
+        throw new Error(errorData.error?.message || 'Failed to fetch enrichment status');
       }
 
       const data: JobStatus = await response.json();

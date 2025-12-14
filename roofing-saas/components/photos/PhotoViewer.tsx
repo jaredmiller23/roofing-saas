@@ -129,7 +129,7 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete photo')
+        throw new Error(errorData.error?.message || 'Failed to delete photo')
       }
 
       // Notify parent

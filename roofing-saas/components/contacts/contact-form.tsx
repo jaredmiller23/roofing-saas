@@ -75,7 +75,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save contact')
+        throw new Error(errorData.error?.message || 'Failed to save contact')
       }
 
       const result = await response.json()

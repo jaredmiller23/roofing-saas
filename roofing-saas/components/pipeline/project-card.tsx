@@ -50,7 +50,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         }
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Failed to start production')
+        alert(errorData.error?.message || 'Failed to start production')
       }
     } catch (error) {
       console.error('Error starting production:', error)
@@ -84,7 +84,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         router.refresh()
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Failed to mark as lost')
+        alert(errorData.error?.message || 'Failed to mark as lost')
       }
     } catch (error) {
       console.error('Error marking as lost:', error)
@@ -113,7 +113,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
         router.refresh()
       } else {
         const errorData = await response.json()
-        alert(errorData.error || 'Failed to reactivate opportunity')
+        alert(errorData.error?.message || 'Failed to reactivate opportunity')
       }
     } catch (error) {
       console.error('Error reactivating:', error)

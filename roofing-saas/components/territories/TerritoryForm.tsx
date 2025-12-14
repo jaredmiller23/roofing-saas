@@ -84,7 +84,7 @@ export function TerritoryForm({
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to save territory')
+        throw new Error(errorData.error?.message || 'Failed to save territory')
       }
 
       const result = await response.json()

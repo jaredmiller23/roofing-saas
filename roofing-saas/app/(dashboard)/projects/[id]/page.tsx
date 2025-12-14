@@ -172,7 +172,7 @@ export default function ProjectDetailPage() {
       } else {
         const errorData = await response.json()
         console.error('Failed to start production:', errorData.error)
-        alert(errorData.error || 'Failed to start production')
+        alert(errorData.error?.message || 'Failed to start production')
       }
     } catch (error) {
       console.error('Error starting production:', error)

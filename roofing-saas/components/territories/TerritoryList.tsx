@@ -57,7 +57,7 @@ export function TerritoryList({
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to load territories')
+        throw new Error(errorData.error?.message || 'Failed to load territories')
       }
 
       const result = await response.json()
@@ -89,7 +89,7 @@ export function TerritoryList({
 
         if (!response.ok) {
           const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to delete territory')
+          throw new Error(errorData.error?.message || 'Failed to delete territory')
         }
 
         // Remove from local state

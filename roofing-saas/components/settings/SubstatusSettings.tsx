@@ -87,7 +87,7 @@ export function SubstatusSettings() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to save substatus')
+        throw new Error(errorData.error?.message || 'Failed to save substatus')
       }
 
       setSuccess(true)
@@ -134,7 +134,7 @@ export function SubstatusSettings() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to delete substatus')
+        throw new Error(errorData.error?.message || 'Failed to delete substatus')
       }
 
       setSuccess(true)
