@@ -9,11 +9,7 @@
       "Read(./**)",
       "Glob(./**)",
       "Grep(./**)",
-      "Bash(*)",
-      "Write(app/(dashboard)/signatures/templates/page.tsx)",
-      "Edit(app/(dashboard)/signatures/templates/page.tsx)",
-      "Write(app/(dashboard)/signatures/new/page.tsx)",
-      "Edit(app/(dashboard)/signatures/new/page.tsx)"
+      "Bash(*)"
     ]
   }
 }

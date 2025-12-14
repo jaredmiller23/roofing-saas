@@ -2,81 +2,55 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: Preview templates before using them to create documents
+  goal: 'Validate GPS/Mapping, Property Enrichment, PWA Architecture, Door Knock
+
+    Logging, Photo Capture, and Digital Business Cards. These enable field work.
+
+    '
   success_criteria:
-  - Template list shows preview button for each template
-  - Preview modal displays template PDF
-  - Field positions shown as overlays on preview
-  - Field types indicated such as signature initials date
-  - Use This Template button in preview
-  - Template selection in new document flow shows inline previews
-  - Preview loads quickly via lazy load PDF
-  why: Users create documents blind - no way to see template PDF or field positions
-    before selecting
+  - PWA migration to @serwist/next validated
+  - Offline capabilities assessed
+  - Field workflow completeness verified
+  why: Mobile/field features critical for door-to-door sales teams
 dependencies: null
 handoff:
   format: null
-  progress_file: .vest/phase-2.3-progress.md
+  progress_file: .vest/deepdive-progress.md
   update_on:
   - task_start
-  - validation_passed
   - task_complete
   - failure
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: null
-  id: ESIG-PREVIEW-23
+  created: '2025-12-14T00:00:00'
+  id: DEEPDIVE-005
   priority: 3
-  template: null
-  title: Template Preview Before Using
+  template: research-analysis
+  title: 'Modernization Deep Dive: Mobile & Field Features (Modules 18-23)'
 on_failure:
-  escalate: null
-  rollback:
-  - git checkout -- app/(dashboard)/signatures/templates/page.tsx
-  - git checkout -- app/(dashboard)/signatures/new/page.tsx
+  escalate:
+    include:
+    - partial_findings
+    - error_logs
+    to: human
+  rollback: []
 read_first:
 - extract: []
-  path: app/(dashboard)/signatures/templates/page.tsx
-  reason: Understand current template list page structure
+  path: docs/modernization-analysis/VALIDATION-REPORT-DEC14.md
+  reason: Context from initial validation
   required: true
 - extract: []
-  path: app/(dashboard)/signatures/new/page.tsx
-  reason: See current document creation flow with template selection
+  path: docs/modernization-analysis/18-MODERNIZATION-GPS-AND-MAPPING.md
+  reason: First module in this batch
   required: true
-- extract: []
-  path: components/signatures/DocumentEditor.tsx
-  reason: Reference for rendering PDF with field overlays
-  required: true
-- extract: []
-  path: components/ui/dialog.tsx
-  reason: Use Dialog component for preview modal
-  required: false
 scope:
   constraints: []
   create: []
-  do_not_touch:
-  - app/sign/**/*
-  - components/signatures/DocumentEditor.tsx
-  - app/api/signature-templates/**/*
-  - lib/auth/**/*
-  modify:
-  - app/(dashboard)/signatures/templates/page.tsx
-  - app/(dashboard)/signatures/new/page.tsx
+  do_not_touch: []
+  modify: []
 thinking: null
 validation:
   assertions: []
-  post_commit:
-  - command: npm run build
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  pre_commit:
-  - command: npm run typecheck
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: npm run lint
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
+  post_commit: []
+  pre_commit: []

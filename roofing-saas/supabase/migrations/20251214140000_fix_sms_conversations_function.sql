@@ -44,7 +44,7 @@ BEGIN
   SELECT
     c.id as contact_id,
     COALESCE(c.first_name || ' ' || c.last_name, c.company, 'Unknown') as contact_name,
-    COALESCE(c.mobile_phone, c.phone) as contact_phone,
+    COALESCE(c.mobile_phone, c.phone)::TEXT as contact_phone,
     lm.content as last_message,
     lm.created_at as last_message_at,
     lm.direction as last_message_direction,
