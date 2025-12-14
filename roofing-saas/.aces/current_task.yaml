@@ -1,70 +1,140 @@
 apiVersion: aces/v1
-changes: []
+changes:
+- action: create
+  anchor: null
+  description: "Create comprehensive migration with:\n\n1. ALTER contacts table -\
+    \ add fields:\n   - call_opt_out, call_opt_out_date, call_opt_out_reason\n   -\
+    \ call_consent, call_consent_date, call_consent_method, call_consent_ip\n   -\
+    \ dnc_status (CHECK constraint: clear/federal/state/both/internal)\n   - dnc_last_checked,\
+    \ dnc_federal_listed, dnc_state_listed, dnc_internal_listed\n\n2. CREATE dnc_registry\
+    \ table:\n   - id, tenant_id, phone_number, phone_hash (SHA256)\n   - source (CHECK:\
+    \ federal/state_tn/internal)\n   - area_code, listed_date, imported_at, expires_at,\
+    \ metadata\n   - UNIQUE(tenant_id, phone_hash, source)\n   - Indexes on phone_hash,\
+    \ tenant_source, area_code\n\n3. CREATE dnc_imports table:\n   - id, tenant_id,\
+    \ source, import_type, file_name\n   - records_total, records_new, records_updated,\
+    \ records_removed\n   - status, error_message, started_at, completed_at, imported_by\n\
+    \n4. CREATE call_compliance_log table:\n   - id, tenant_id, contact_id, call_log_id,\
+    \ user_id, phone_number\n   - check_type, result, reason\n   - dnc_source, contact_timezone,\
+    \ contact_local_time\n   - metadata (JSONB), created_at\n   - Indexes for tenant,\
+    \ contact, created_at, result, check_type\n\n5. ALTER call_logs table - add fields:\n\
+    \   - recording_announced BOOLEAN DEFAULT FALSE\n   - compliance_check_id UUID\
+    \ REFERENCES call_compliance_log(id)\n\n6. RLS policies for all new tables\n\n\
+    7. Verification block with RAISE NOTICE\n"
+  file: supabase/migrations/*_call_compliance_system.sql
+  position: null
+  template: null
 context:
   background: null
-  goal: 'Refactor the contact form from vanilla useState (25+ state declarations)
-
-    to React Hook Form with Zod validation. This improves performance,
-
-    maintainability, and enables field-level validation.
-
-    '
+  goal: Create database migration for call compliance system including DNC registry,
+    compliance audit log, and contact fields
   success_criteria:
-  - Contact form uses useForm() hook
-  - Zod schema for validation
-  - All 35+ fields properly managed
-  - No functional regressions
-  why: Technical debt - contact form uses inefficient vanilla React state pattern
-dependencies: null
+  - Migration file created at supabase/migrations/YYYYMMDDHHMMSS_call_compliance_system.sql
+  - contacts table has new call compliance fields (call_opt_out, call_consent, dnc_status,
+    etc.)
+  - dnc_registry table created with phone_hash, source, area_code fields
+  - dnc_imports table created for tracking import history
+  - call_compliance_log table created for audit trail
+  - call_logs table updated with recording_announced and compliance_check_id fields
+  - All tables have proper RLS policies
+  - Migration runs without errors
+  why: The roofing company needs TCPA/TSR compliance for outbound calling. This migration
+    creates the foundation for DNC scrubbing, time restrictions, and audit logging.
+dependencies:
+  blocks:
+  - CALL-COMPLIANCE-002
+  - CALL-COMPLIANCE-003
+  requires: []
 handoff:
   format: null
-  progress_file: .vest/quickwin-004-progress.md
+  progress_file: claude-progress.txt
   update_on:
   - task_start
   - task_complete
-  - failure
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T00:00:00'
-  id: QUICKWIN-004
-  priority: 2
-  template: refactor
-  title: Migrate Contact Form to React Hook Form
+  created: '2025-12-13T23:00:00Z'
+  id: CALL-COMPLIANCE-001
+  priority: 1
+  template: null
+  title: Create call compliance database migration
 on_failure:
   escalate:
     include:
     - error_output
+    - migration_file
     to: human
   rollback:
-  - git checkout -- components/contacts/contact-form.tsx
+  - rm -f supabase/migrations/*call_compliance*.sql
 read_first:
 - extract: []
-  path: components/contacts/contact-form.tsx
-  reason: Current form implementation with useState
+  path: supabase/migrations/20251003_call_logs_table.sql
+  reason: Understand existing call_logs schema and migration patterns
   required: true
 - extract: []
-  path: lib/validations/contact.ts
-  reason: Existing Zod schema to reuse
+  path: supabase/migrations/archive/phase2/20251001_sms_compliance.sql
+  reason: Follow SMS compliance field pattern for call compliance fields
   required: true
 scope:
-  constraints: []
-  create: []
+  constraints:
+  - Follow existing migration patterns from 20251003_call_logs_table.sql
+  - Follow SMS compliance pattern from archive/phase2/20251001_sms_compliance.sql
+  - Use tenant_id for multi-tenant isolation
+  - Include RLS policies for all new tables
+  - Use gen_random_uuid() for primary keys
+  - Include helpful comments and verification block
+  create:
+  - supabase/migrations/*_call_compliance_system.sql
   do_not_touch:
+  - supabase/migrations/archive/**
   - lib/**
-  - app/api/**
-  modify:
-  - components/contacts/contact-form.tsx
-thinking: null
+  - app/**
+  - components/**
+  - .git/**
+  modify: []
+thinking:
+  level: think
+  triggers:
+  - Before writing any SQL
+  - When designing table relationships
+  - When writing RLS policies
 validation:
-  assertions: []
+  assertions:
+  - contains:
+    - < 9
+    - '>= 20'
+    context: any
+    description: Calling hours MUST be 9am-8pm (not 8am-9pm from SMS pattern)
+    file: supabase/migrations/*call_compliance*.sql
+    not_contains:
+    - < 8
+    - '>= 21'
+    regex_match: []
+    required: true
+  - contains:
+    - federal
+    - state
+    - internal
+    - clear
+    - both
+    context: any
+    description: Must include all required DNC status values
+    file: supabase/migrations/*call_compliance*.sql
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains: []
+    context: any
+    description: Must have RLS policies for tenant isolation
+    file: supabase/migrations/*call_compliance*.sql
+    not_contains: []
+    regex_match:
+    - CREATE POLICY.*DNC registry
+    - CREATE POLICY.*compliance log
+    required: true
   post_commit: []
   pre_commit:
-  - command: npm run typecheck
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: npm run lint
+  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && ls supabase/migrations/*call_compliance*.sql
     expect: 'exit_code: 0'
     required: true
     timeout: 60

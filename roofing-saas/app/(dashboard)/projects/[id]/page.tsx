@@ -182,7 +182,15 @@ export default function ProjectDetailPage() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null | undefined) => {
+    if (!status) {
+      return (
+        <span className="px-3 py-1 rounded-full text-sm font-medium bg-muted text-foreground">
+          Unknown
+        </span>
+      )
+    }
+
     const colors = {
       lead: 'bg-primary/10 text-primary',
       won: 'bg-green-100 text-green-800',

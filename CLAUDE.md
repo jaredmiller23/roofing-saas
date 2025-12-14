@@ -590,10 +590,36 @@ activities (all interactions)
 - [ ] Verify RLS policies (checkpoint security)
 - [ ] ⚡ Run tests in background while continuing dev
 
+### 🚨 SHIP READINESS CHECKLIST (MANDATORY)
+
+**CRITICAL**: Before ANY claim that the app is "ship ready", "production ready", or similar, ALL of these must pass:
+
+```bash
+# 1. Code Quality (automated)
+npm run build          # ✅ Zero errors
+npm run typecheck      # ✅ Zero errors
+npm run lint           # ✅ Zero errors
+
+# 2. E2E Tests (automated)
+npm run test:e2e       # ✅ Zero failures (skips OK)
+
+# 3. SMOKE TEST (MANDATORY - catches real user issues)
+npm run smoke-test     # ✅ Zero failures
+```
+
+**Why Smoke Test is Critical**:
+- Build/typecheck/lint only verify code compiles
+- E2E tests only verify scripted flows
+- **Smoke test actually clicks through the app like a real user**
+- Catches bugs like "project detail page crashes" that E2E tests miss
+
+**If smoke test fails, the app is NOT ship ready. Period.**
+
 ### Before Phase Completion
 - [ ] 📍 **Major Checkpoint**: Validate entire phase
 - [ ] Performance benchmarks met
 - [ ] Security audit passed
+- [ ] **Smoke test passes** (npm run smoke-test)
 - [ ] Client demo prepared
 
 ## 🚫 DO NOT

@@ -10,8 +10,8 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(components/contacts/contact-form.tsx)",
-      "Edit(components/contacts/contact-form.tsx)"
+      "Write(supabase/migrations/*_call_compliance_system.sql)",
+      "Edit(supabase/migrations/*_call_compliance_system.sql)"
     ]
   }
 }
