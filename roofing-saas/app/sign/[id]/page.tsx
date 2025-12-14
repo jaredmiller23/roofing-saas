@@ -118,12 +118,12 @@ interface FieldOverlayProps {
 function FieldOverlay({ field, isActive, isCompleted, onClick, fieldRef, tabIndex, scale }: FieldOverlayProps) {
   const Icon = fieldIcons[field.type]
 
-  // Ensure minimum touch target size of 44px
+  // Ensure minimum touch target size of 44px at current scale
   const minTouchSize = 44
   const scaledWidth = field.width * scale
   const scaledHeight = field.height * scale
-  const touchWidth = Math.max(scaledWidth, minTouchSize)
-  const touchHeight = Math.max(scaledHeight, minTouchSize)
+  const touchWidth = Math.max(scaledWidth, minTouchSize / scale)
+  const touchHeight = Math.max(scaledHeight, minTouchSize / scale)
 
   return (
     <div
@@ -148,10 +148,10 @@ function FieldOverlay({ field, isActive, isCompleted, onClick, fieldRef, tabInde
       style={{
         left: `${field.x}%`,
         top: `${field.y}%`,
-        width: touchWidth,
-        height: touchHeight,
-        minWidth: minTouchSize,
-        minHeight: minTouchSize,
+        width: `${touchWidth}px`,
+        height: `${touchHeight}px`,
+        minWidth: `${minTouchSize / scale}px`,
+        minHeight: `${minTouchSize / scale}px`,
       }}
       role="button"
       aria-label={`${field.label} field${field.required ? ' (required)' : ''}${isCompleted ? ' - completed' : ''}`}
@@ -809,10 +809,11 @@ export default function SignDocumentPage() {
             {/* PDF Container - Full width on mobile with touch-action for pinch-zoom */}
             <div
               ref={pdfContainerRef}
-              className="relative border border-border rounded-lg overflow-auto bg-muted touch-pan-x touch-pan-y"
-              style={{ 
+              className="relative border border-border rounded-lg overflow-auto bg-muted"
+              style={{
                 maxHeight: isMobile ? '60vh' : '600px',
-                WebkitOverflowScrolling: 'touch'
+                WebkitOverflowScrolling: 'touch',
+                touchAction: isMobile ? 'pinch-zoom pan-x pan-y' : 'auto'
               }}
             >
               {pdfLoading && (
@@ -821,7 +822,14 @@ export default function SignDocumentPage() {
                 </div>
               )}
 
-              <div className="relative inline-block" style={{ transform: `scale(${pdfScale})`, transformOrigin: 'top left' }}>
+              <div
+                className="relative inline-block"
+                style={{
+                  transform: `scale(${pdfScale})`,
+                  transformOrigin: 'top left',
+                  minWidth: isMobile ? '100%' : 'auto'
+                }}
+              >
                 <Document
                   file={document.file_url}
                   onLoadSuccess={onDocumentLoadSuccess}
@@ -835,7 +843,7 @@ export default function SignDocumentPage() {
                     pageNumber={currentPage}
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
-                    width={isMobile ? window.innerWidth - 40 : undefined}
+                    width={isMobile ? Math.max(window.innerWidth - 40, 320) : undefined}
                   />
                 </Document>
 

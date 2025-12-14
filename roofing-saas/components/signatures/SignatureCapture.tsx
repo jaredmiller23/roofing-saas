@@ -23,17 +23,18 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
   const typeCanvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Responsive canvas sizing
+  // Responsive canvas sizing - optimized for mobile
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth - 32 // Account for padding
-        const width = Math.min(containerWidth, 600)
-        const height = Math.min(200, width * 0.33)
+        const isMobile = window.innerWidth < 768
+        const width = Math.min(containerWidth, isMobile ? containerWidth : 600)
+        const height = Math.min(isMobile ? 160 : 200, width * (isMobile ? 0.4 : 0.33))
         setCanvasSize({ width, height })
       }
     }
-    
+
     updateCanvasSize()
     window.addEventListener('resize', updateCanvasSize)
     return () => window.removeEventListener('resize', updateCanvasSize)
@@ -51,11 +52,13 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
     canvas.width = canvasSize.width
     canvas.height = canvasSize.height
 
-    // Set drawing styles
+    // Set drawing styles - optimized for mobile touch
+    const isMobile = window.innerWidth < 768
     ctx.strokeStyle = '#000000'
-    ctx.lineWidth = 3 // Slightly thicker for touch
+    ctx.lineWidth = isMobile ? 4 : 3 // Thicker on mobile for better touch visibility
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
+    ctx.imageSmoothingEnabled = true
   }, [canvasSize])
 
   // Generate typed signature on canvas
@@ -213,7 +216,10 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             <canvas
               ref={canvasRef}
               className="border-2 border-border rounded-lg w-full cursor-crosshair bg-card touch-none"
-              style={{ height: canvasSize.height }}
+              style={{
+                height: canvasSize.height,
+                touchAction: 'none' // Prevent all touch gestures except drawing
+              }}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -221,6 +227,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
               onTouchStart={startDrawing}
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
+              onTouchCancel={stopDrawing}
             />
             <div className="absolute bottom-2 right-2">
               <Button
