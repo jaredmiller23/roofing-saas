@@ -21,7 +21,10 @@ import {
   Calendar,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  RefreshCw,
+  Copy,
+  MessageSquare
 } from 'lucide-react'
 
 interface SignatureDocument {
@@ -38,6 +41,10 @@ interface SignatureDocument {
   viewed_at: string | null
   signed_at: string | null
   expires_at: string | null
+  declined_at: string | null
+  decline_reason: string | null
+  reminder_count?: number
+  reminder_sent_at?: string | null
   project?: {
     id: string
     name: string
@@ -68,13 +75,15 @@ export default function ViewSignatureDocumentPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isResending, setIsResending] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null)
 
   const loadDocument = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const res = await fetch(`/api/signature-documents/${documentId}`)
+      const res = await fetch('/api/signature-documents/' + documentId)
       const result = await res.json()
 
       if (!res.ok) {
@@ -102,7 +111,7 @@ export default function ViewSignatureDocumentPage() {
 
     try {
       setIsDeleting(true)
-      const res = await fetch(`/api/signature-documents/${documentId}`, {
+      const res = await fetch('/api/signature-documents/' + documentId, {
         method: 'DELETE',
       })
 
@@ -115,6 +124,39 @@ export default function ViewSignatureDocumentPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete document')
       setIsDeleting(false)
+    }
+  }
+
+  const handleResend = async () => {
+    if (!document?.contact?.email) {
+      setError('Contact does not have an email address')
+      return
+    }
+
+    try {
+      setIsResending(true)
+      setError(null)
+      setResendSuccess(null)
+
+      const res = await fetch('/api/signature-documents/' + documentId + '/resend', {
+        method: 'POST',
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error || result.data?.error || 'Failed to send reminder')
+      }
+
+      const data = result.data || result
+      setResendSuccess('Reminder sent to ' + data.recipient.email)
+      
+      // Reload document to update reminder count
+      loadDocument()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send reminder')
+    } finally {
+      setIsResending(false)
     }
   }
 
@@ -148,11 +190,16 @@ export default function ViewSignatureDocumentPage() {
     }
 
     return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status] || colors.draft}`}>
+      <span className={'px-3 py-1 rounded-full text-sm font-medium ' + (colors[status] || colors.draft)}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
   }
+
+  // Check if resend button should be shown
+  const canResend = document && 
+    (document.status === 'sent' || document.status === 'viewed') &&
+    document.contact?.email
 
   if (isLoading) {
     return (
@@ -167,7 +214,7 @@ export default function ViewSignatureDocumentPage() {
     )
   }
 
-  if (error || !document) {
+  if (error && !document) {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-4xl mx-auto">
@@ -189,9 +236,31 @@ export default function ViewSignatureDocumentPage() {
     )
   }
 
+  if (!document) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
+        {/* Success/Error Messages */}
+        {resendSuccess && (
+          <Alert className="mb-4 bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <AlertDescription className="text-green-900 ml-2">
+              {resendSuccess}
+            </AlertDescription>
+          </Alert>
+        )}
+        {error && (
+          <Alert className="mb-4 bg-red-50 border-red-200">
+            <XCircle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-900 ml-2">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -215,6 +284,11 @@ export default function ViewSignatureDocumentPage() {
                   <span className="text-sm text-muted-foreground capitalize">
                     {document.document_type.replace('_', ' ')}
                   </span>
+                  {document.reminder_count !== undefined && document.reminder_count > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      ({document.reminder_count} reminder{document.reminder_count !== 1 ? 's' : ''} sent)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -222,20 +296,44 @@ export default function ViewSignatureDocumentPage() {
             <div className="flex gap-2">
               {document.status === 'draft' && (
                 <Button
-                  onClick={() => router.push(`/signatures/${document.id}/send`)}
+                  onClick={() => router.push('/signatures/' + document.id + '/send')}
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   Send
                 </Button>
               )}
+              {canResend && (
+                <Button
+                  variant="outline"
+                  onClick={handleResend}
+                  disabled={isResending}
+                  className="text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  {isResending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
+                  {isResending ? 'Sending...' : 'Resend Reminder'}
+                </Button>
+              )}
               {document.status === 'signed' && (
                 <Button
                   variant="outline"
-                  onClick={() => window.open(`/api/signature-documents/${document.id}/download`, '_blank')}
+                  onClick={() => window.open('/api/signature-documents/' + document.id + '/download', '_blank')}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download
+                </Button>
+              )}
+              {document.status === 'declined' && (
+                <Button
+                  onClick={() => router.push('/signatures/new?clone=' + document.id)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Create New Version
                 </Button>
               )}
               <Button
@@ -307,6 +405,17 @@ export default function ViewSignatureDocumentPage() {
                   </div>
                 </div>
               )}
+              {document.declined_at && (
+                <div className="flex items-center gap-3">
+                  <XCircle className="h-5 w-5 text-red-500" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Declined</div>
+                    <div className="font-medium text-foreground">
+                      {new Date(document.declined_at).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )}
               {document.expires_at && (
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-yellow-500" />
@@ -318,8 +427,30 @@ export default function ViewSignatureDocumentPage() {
                   </div>
                 </div>
               )}
+              {document.reminder_sent_at && (
+                <div className="flex items-center gap-3">
+                  <RefreshCw className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Last Reminder</div>
+                    <div className="font-medium text-foreground">
+                      {new Date(document.reminder_sent_at).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Decline Reason */}
+          {document.status === 'declined' && document.decline_reason && (
+            <div className="bg-red-50 border border-red-200 rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-red-600" />
+                Decline Reason
+              </h2>
+              <p className="text-red-800 whitespace-pre-wrap">{document.decline_reason}</p>
+            </div>
+          )}
 
           {/* Contact & Project */}
           <div className="grid md:grid-cols-2 gap-6">
@@ -337,7 +468,7 @@ export default function ViewSignatureDocumentPage() {
                   {document.contact.email && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="h-4 w-4" />
-                      <a href={`mailto:${document.contact.email}`} className="hover:text-primary">
+                      <a href={'mailto:' + document.contact.email} className="hover:text-primary">
                         {document.contact.email}
                       </a>
                     </div>
@@ -345,7 +476,7 @@ export default function ViewSignatureDocumentPage() {
                   {document.contact.phone && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Phone className="h-4 w-4" />
-                      <a href={`tel:${document.contact.phone}`} className="hover:text-primary">
+                      <a href={'tel:' + document.contact.phone} className="hover:text-primary">
                         {document.contact.phone}
                       </a>
                     </div>
@@ -374,7 +505,7 @@ export default function ViewSignatureDocumentPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/projects/${document.project!.id}`)}
+                    onClick={() => router.push('/projects/' + document.project!.id)}
                   >
                     View Project
                   </Button>

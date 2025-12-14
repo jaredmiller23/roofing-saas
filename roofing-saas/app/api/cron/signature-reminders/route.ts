@@ -1,0 +1,286 @@
+/**
+ * Cron Job: Signature Document Reminders
+ * 
+ * Runs daily to send reminder emails for documents approaching expiration.
+ * 
+ * Reminder schedule (industry standard 3-reminder cadence):
+ * - Friendly reminder: 7 days before expiration
+ * - Urgent reminder: 3 days before expiration
+ * - Final reminder: 1 day before expiration
+ * 
+ * Configure in vercel.json:
+ * {
+ *   "crons": [{
+ *     "path": "/api/cron/signature-reminders",
+ *     "schedule": "0 9 * * *"
+ *   }]
+ * }
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
+import { sendEmail } from '@/lib/resend/email'
+import { isResendConfigured } from '@/lib/resend/client'
+import {
+  createSignatureReminderEmail,
+  getReminderSubject,
+  shouldSendReminder,
+  type SignatureReminderData
+} from '@/lib/email/signature-reminder-templates'
+
+// Verify cron secret for security
+function verifyCronSecret(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+
+  // If no secret is configured, only allow in development
+  if (!cronSecret) {
+    return process.env.NODE_ENV === 'development'
+  }
+
+  return authHeader === 'Bearer ' + cronSecret
+}
+
+interface SignatureDocument {
+  id: string
+  title: string
+  status: string
+  expires_at: string
+  reminder_sent_at: string | null
+  reminder_count: number
+  contact: {
+    id: string
+    first_name: string
+    last_name: string
+    email: string | null
+  } | null
+  project: {
+    id: string
+    name: string
+  } | null
+  tenant_id: string
+}
+
+export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+
+  // Verify authorization
+  if (!verifyCronSecret(request)) {
+    logger.warn('Unauthorized cron request attempt')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  logger.info('Starting signature reminder cron job')
+
+  // Check if email is configured
+  if (!isResendConfigured()) {
+    logger.warn('Resend not configured, skipping signature reminders')
+    return NextResponse.json({
+      success: true,
+      message: 'Email not configured, no reminders sent',
+      stats: { processed: 0, sent: 0, skipped: 0, errors: 0 }
+    })
+  }
+
+  // Use service role client for cross-tenant access
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    logger.error('Supabase service role not configured')
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Calculate date thresholds
+  const now = new Date()
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+  try {
+    // Find documents that:
+    // 1. Are in 'sent' status (awaiting signature)
+    // 2. Expire within 7 days
+    // 3. Have not reached max reminders (3)
+    const { data: rawDocuments, error: fetchError } = await supabase
+      .from('signature_documents')
+      .select(`
+        id,
+        title,
+        status,
+        expires_at,
+        reminder_sent_at,
+        reminder_count,
+        tenant_id,
+        contact:contacts(id, first_name, last_name, email),
+        project:projects(id, name)
+      `)
+      .eq('status', 'sent')
+      .lte('expires_at', sevenDaysFromNow.toISOString())
+      .gt('expires_at', now.toISOString())
+      .lt('reminder_count', 3)
+      .order('expires_at', { ascending: true })
+
+    if (fetchError) {
+      logger.error('Error fetching documents for reminders', { error: fetchError })
+      return NextResponse.json({ error: 'Database error' }, { status: 500 })
+    }
+
+    const documents = (rawDocuments || []) as unknown as SignatureDocument[]
+
+    const stats = {
+      processed: 0,
+      sent: 0,
+      skipped: 0,
+      errors: 0
+    }
+
+    const results: Array<{ documentId: string; status: string; error?: string }> = []
+
+    // Process each document
+    for (const doc of documents) {
+      stats.processed++
+
+      // Skip if no contact or no email
+      if (!doc.contact || !doc.contact.email) {
+        stats.skipped++
+        results.push({
+          documentId: doc.id,
+          status: 'skipped',
+          error: 'No contact email'
+        })
+        continue
+      }
+
+      // Check if we should send a reminder
+      const expiresAt = new Date(doc.expires_at)
+      const lastReminderAt = doc.reminder_sent_at ? new Date(doc.reminder_sent_at) : null
+      const { shouldSend, daysRemaining, reminderType } = shouldSendReminder(
+        expiresAt,
+        doc.reminder_count,
+        lastReminderAt
+      )
+
+      if (!shouldSend) {
+        stats.skipped++
+        results.push({
+          documentId: doc.id,
+          status: 'skipped',
+          error: 'Not time for reminder'
+        })
+        continue
+      }
+
+      // Build reminder data
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const signingUrl = baseUrl + '/sign/' + doc.id
+
+      const reminderData: SignatureReminderData = {
+        recipientName: doc.contact.first_name + ' ' + doc.contact.last_name,
+        documentTitle: doc.title,
+        projectName: doc.project?.name,
+        signingUrl,
+        expirationDate: expiresAt.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        daysRemaining,
+        reminderType
+      }
+
+      try {
+        // Generate and send email
+        const emailHtml = createSignatureReminderEmail(reminderData)
+        const subject = getReminderSubject(reminderData)
+
+        await sendEmail({
+          to: doc.contact.email,
+          subject,
+          html: emailHtml,
+          tags: [
+            { name: 'type', value: 'signature-reminder' },
+            { name: 'document_id', value: doc.id },
+            { name: 'reminder_type', value: reminderType },
+            { name: 'tenant_id', value: doc.tenant_id }
+          ]
+        })
+
+        // Update document reminder tracking
+        const { error: updateError } = await supabase
+          .from('signature_documents')
+          .update({
+            reminder_sent_at: new Date().toISOString(),
+            reminder_count: doc.reminder_count + 1
+          })
+          .eq('id', doc.id)
+
+        if (updateError) {
+          logger.error('Error updating reminder tracking', {
+            documentId: doc.id,
+            error: updateError
+          })
+        }
+
+        stats.sent++
+        results.push({
+          documentId: doc.id,
+          status: 'sent'
+        })
+
+        logger.info('Signature reminder sent', {
+          documentId: doc.id,
+          recipientEmail: doc.contact.email,
+          reminderType,
+          daysRemaining,
+          reminderCount: doc.reminder_count + 1
+        })
+
+      } catch (emailError) {
+        stats.errors++
+        const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error'
+        results.push({
+          documentId: doc.id,
+          status: 'error',
+          error: errorMessage
+        })
+
+        logger.error('Error sending signature reminder', {
+          documentId: doc.id,
+          error: emailError
+        })
+      }
+    }
+
+    const duration = Date.now() - startTime
+
+    logger.info('Signature reminder cron job completed', {
+      duration,
+      stats
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Signature reminder cron completed',
+      stats,
+      results,
+      duration
+    })
+
+  } catch (error) {
+    const duration = Date.now() - startTime
+    logger.error('Signature reminder cron job failed', { error, duration })
+
+    return NextResponse.json(
+      { error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
+// Also support POST for manual triggers
+export async function POST(request: NextRequest) {
+  return GET(request)
+}

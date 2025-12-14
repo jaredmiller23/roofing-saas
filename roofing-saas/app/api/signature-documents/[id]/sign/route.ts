@@ -7,21 +7,29 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
+import { sendEmail } from '@/lib/resend/email'
+import { createDeclineNotificationEmail, getDeclineNotificationSubject } from '@/lib/email/signature-reminder-templates'
 
 /**
  * POST /api/signature-documents/[id]/sign
- * Submit a signature for a document
+ * Submit a signature for a document OR decline the document
  *
- * This endpoint is used by customers (external users) to sign documents.
+ * This endpoint is used by customers (external users) to sign or decline documents.
  * It does NOT require authentication - uses document ID for access.
  *
- * Body:
+ * For signing:
  * - signer_name: string (required)
  * - signer_email: string (required)
  * - signer_type: 'customer' | 'company' | 'witness' (required)
  * - signature_data: string (base64 encoded signature image, required)
  * - signature_method: 'draw' | 'type' | 'upload' (default: 'draw')
  * - verification_code: string (optional, for additional security)
+ *
+ * For declining:
+ * - action: 'decline' (required to trigger decline flow)
+ * - decline_reason: string (required)
+ * - signer_name: string (optional)
+ * - signer_email: string (optional)
  */
 export async function POST(
   request: NextRequest,
@@ -33,15 +41,121 @@ export async function POST(
     const { id } = await params
     const body = await request.json().catch(() => ({}))
     const {
+      action,
       signer_name,
       signer_email,
       signer_type,
       signature_data,
       signature_method = 'draw',
-      verification_code
+      verification_code,
+      decline_reason
     } = body
 
-    // Validation
+    // Handle decline action
+    if (action === 'decline') {
+      if (!decline_reason || decline_reason.trim() === '') {
+        throw ValidationError('Decline reason is required')
+      }
+
+      const supabase = await createClient()
+
+      // Get document
+      const { data: document, error: fetchError } = await supabase
+        .from('signature_documents')
+        .select('*, contact:contacts(email, first_name, last_name), created_by')
+        .eq('id', id)
+        .single()
+
+      if (fetchError || !document) {
+        throw NotFoundError('Signature document not found')
+      }
+
+      // Check document status
+      if (document.status === 'signed') {
+        throw ValidationError('Document has already been signed')
+      }
+
+      if (document.status === 'declined') {
+        throw ValidationError('Document has already been declined')
+      }
+
+      // Update document status to declined
+      const { data: declinedDoc, error: updateError } = await supabase
+        .from('signature_documents')
+        .update({
+          status: 'declined',
+          decline_reason: decline_reason.trim(),
+          declined_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (updateError) {
+        logger.error('Error declining document', { error: updateError })
+        throw InternalError('Failed to decline document')
+      }
+
+      logger.info('Document declined', { 
+        documentId: id, 
+        reason: decline_reason.trim(),
+        declinedBy: signer_name || 'Anonymous'
+      })
+
+      // Send decline notification email to document owner
+      try {
+        // Get the document owner's email
+        const { data: owner } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', document.created_by)
+          .single()
+
+        if (owner?.email) {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+          const emailData = {
+            ownerName: owner.full_name || 'there',
+            documentTitle: document.title,
+            projectName: document.project?.name,
+            declinedBy: signer_name || 'Anonymous',
+            declinedByEmail: signer_email,
+            declineReason: decline_reason.trim(),
+            documentUrl: `${baseUrl}/signatures/${id}`,
+            declinedAt: new Date().toLocaleString()
+          }
+
+          const emailHtml = createDeclineNotificationEmail(emailData)
+          const subject = getDeclineNotificationSubject(emailData)
+
+          await sendEmail({
+            to: owner.email,
+            subject,
+            html: emailHtml
+          })
+
+          logger.info('Decline notification email sent', { 
+            documentId: id, 
+            to: owner.email 
+          })
+        }
+      } catch (emailError) {
+        // Log but don't fail the decline if email fails
+        logger.error('Failed to send decline notification email', { 
+          error: emailError, 
+          documentId: id 
+        })
+      }
+
+      const duration = Date.now() - startTime
+      logger.apiResponse('POST', `/api/signature-documents/${id}/sign`, 200, duration)
+
+      return successResponse({
+        document: declinedDoc,
+        message: 'Document has been declined. The document owner will be notified.'
+      })
+    }
+
+    // Validation for signing
     if (!signer_name) {
       throw ValidationError('Signer name is required')
     }
@@ -229,6 +343,7 @@ export async function GET(
         expires_at,
         requires_customer_signature,
         requires_company_signature,
+        signature_fields,
         project:projects(name),
         signatures(signer_type)
       `)
