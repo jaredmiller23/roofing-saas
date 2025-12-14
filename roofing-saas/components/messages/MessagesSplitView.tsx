@@ -11,6 +11,7 @@ export function MessagesSplitView() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mobileView, setMobileView] = useState<'conversations' | 'thread'>('conversations')
   const supabase = createClient()
 
   const loadConversations = useCallback(async () => {
@@ -81,34 +82,73 @@ export function MessagesSplitView() {
     (conv) => conv.contact_id === selectedContactId
   )
 
+  // Handle contact selection on mobile
+  const handleSelectContact = (contactId: string) => {
+    setSelectedContactId(contactId)
+    // On mobile, switch to thread view when a contact is selected
+    setMobileView('thread')
+  }
+
+  // Handle back to conversations on mobile
+  const handleBackToConversations = () => {
+    setMobileView('conversations')
+    // Optionally clear selection: setSelectedContactId(null)
+  }
+
   return (
     <div className="flex h-full bg-background">
-      {/* Left: Conversation List (30%) */}
-      <div className="w-1/3 border-r border-border flex flex-col overflow-hidden">
-        <ConversationList
-          conversations={conversations}
-          selectedContactId={selectedContactId}
-          onSelectContact={setSelectedContactId}
-          loading={loading}
-        />
+      {/* Desktop: Split-pane view */}
+      <div className="hidden md:flex w-full">
+        {/* Left: Conversation List (30%) */}
+        <div className="w-1/3 border-r border-border flex flex-col overflow-hidden">
+          <ConversationList
+            conversations={conversations}
+            selectedContactId={selectedContactId}
+            onSelectContact={setSelectedContactId}
+            loading={loading}
+          />
+        </div>
+
+        {/* Right: Message Thread (70%) */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {selectedContactId && selectedConversation ? (
+            <MessageThread
+              contactId={selectedContactId}
+              contactName={selectedConversation.contact_name}
+              contactPhone={selectedConversation.contact_phone || ''}
+              onMessageSent={loadConversations}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <p className="text-lg mb-2">Select a conversation</p>
+                <p className="text-sm">Choose a conversation from the list to view messages</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Right: Message Thread (70%) */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {selectedContactId && selectedConversation ? (
-          <MessageThread
-            contactId={selectedContactId}
-            contactName={selectedConversation.contact_name}
-            contactPhone={selectedConversation.contact_phone || ''}
-            onMessageSent={loadConversations}
+      {/* Mobile: Single-pane view with navigation */}
+      <div className="md:hidden w-full flex flex-col overflow-hidden">
+        {mobileView === 'conversations' ? (
+          <ConversationList
+            conversations={conversations}
+            selectedContactId={selectedContactId}
+            onSelectContact={handleSelectContact}
+            loading={loading}
           />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <p className="text-lg mb-2">Select a conversation</p>
-              <p className="text-sm">Choose a conversation from the list to view messages</p>
-            </div>
-          </div>
+          selectedContactId && selectedConversation && (
+            <MessageThread
+              contactId={selectedContactId}
+              contactName={selectedConversation.contact_name}
+              contactPhone={selectedConversation.contact_phone || ''}
+              onMessageSent={loadConversations}
+              onBack={handleBackToConversations}
+              showBackButton={true}
+            />
+          )
         )}
       </div>
     </div>

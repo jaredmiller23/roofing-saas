@@ -63,15 +63,15 @@ export function MessageInput({ contactId, contactPhone, onSent }: MessageInputPr
   const remainingChars = maxLength - message.length
 
   return (
-    <div className="border-t border-border p-4 bg-background">
+    <div className="border-t border-border p-4 md:p-4 sm:p-3 bg-background">
       <div className="flex items-end gap-2">
         <div className="flex-1">
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
-            className="min-h-[60px] resize-none"
+            placeholder="Type a message..."
+            className="min-h-[60px] resize-none md:min-h-[60px] sm:min-h-[50px]"
             maxLength={maxLength}
             disabled={isSending}
           />
@@ -87,7 +87,7 @@ export function MessageInput({ contactId, contactPhone, onSent }: MessageInputPr
           onClick={handleSend}
           disabled={!message.trim() || isSending}
           size="icon"
-          className="h-10 w-10"
+          className="h-10 w-10 shrink-0"
         >
           <Send className="h-4 w-4" />
         </Button>

@@ -4,8 +4,9 @@ import { useState, useMemo } from 'react'
 import { Conversation } from './types'
 import { ConversationItem } from './ConversationItem'
 import { Input } from '@/components/ui/input'
-import { Search, MessageSquare } from 'lucide-react'
+import { Search, MessageSquare, Plus } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 
 interface ConversationListProps {
   conversations: Conversation[]
@@ -54,10 +55,20 @@ export function ConversationList({
     <div className="flex flex-col h-full">
       {/* Search Header */}
       <div className="p-4 border-b border-border bg-background sticky top-0 z-10">
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
-          Messages
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            Messages
+          </h2>
+          {/* New conversation button - mobile only */}
+          <Link
+            href="/contacts"
+            className="md:hidden flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium text-sm"
+          >
+            <Plus className="h-4 w-4" />
+            New
+          </Link>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

@@ -3,16 +3,30 @@
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useCallback } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
+import { DuplicateWarningDialog } from './DuplicateWarningDialog'
 
 interface ContactFormProps {
   contact?: Contact
   mode?: 'create' | 'edit'
 }
 
+interface DuplicateMatch {
+  contact: Contact
+  match_reason: string[]
+  confidence: 'high' | 'medium' | 'low'
+}
+
 export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const router = useRouter()
+
+  // Duplicate checking state
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([])
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
+  const [_isCheckingDuplicates, setIsCheckingDuplicates] = useState(false)
+  const [duplicateCheckPending, setDuplicateCheckPending] = useState<string | null>(null)
 
   const {
     register,
@@ -51,6 +65,88 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   })
 
   const isOrganization = watch('is_organization')
+
+  // Function to check for duplicates
+  const checkDuplicates = useCallback(async (fieldType: 'email' | 'phone') => {
+    const currentValues = watch()
+
+    // Skip duplicate checking in edit mode
+    if (mode === 'edit') return
+
+    // Build the check data based on field type
+    const checkData: any = {}
+
+    if (fieldType === 'email' && currentValues.email?.trim()) {
+      checkData.email = currentValues.email.trim()
+    }
+
+    if (fieldType === 'phone' && currentValues.phone?.trim()) {
+      checkData.phone = currentValues.phone.trim()
+    }
+
+    // Include name and address for more comprehensive checking
+    if (currentValues.first_name?.trim()) {
+      checkData.first_name = currentValues.first_name.trim()
+    }
+    if (currentValues.last_name?.trim()) {
+      checkData.last_name = currentValues.last_name.trim()
+    }
+    if (currentValues.address_street?.trim()) {
+      checkData.address_street = currentValues.address_street.trim()
+    }
+    if (currentValues.address_city?.trim()) {
+      checkData.address_city = currentValues.address_city.trim()
+    }
+    if (currentValues.address_state?.trim()) {
+      checkData.address_state = currentValues.address_state.trim()
+    }
+    if (currentValues.address_zip?.trim()) {
+      checkData.address_zip = currentValues.address_zip.trim()
+    }
+
+    // Don't check if we don't have meaningful data
+    if (!checkData.email && !checkData.phone) {
+      return
+    }
+
+    setIsCheckingDuplicates(true)
+    setDuplicateCheckPending(fieldType)
+
+    try {
+      const response = await fetch('/api/contacts/check-duplicate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(checkData),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.data.has_duplicates) {
+          setDuplicateMatches(result.data.matches)
+          setShowDuplicateDialog(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking duplicates:', error)
+      // Fail silently - don't block form submission
+    } finally {
+      setIsCheckingDuplicates(false)
+      setDuplicateCheckPending(null)
+    }
+  }, [mode, watch])
+
+  // Handle duplicate dialog actions
+  const handleDuplicateDialogClose = () => {
+    setShowDuplicateDialog(false)
+    setDuplicateMatches([])
+  }
+
+  const handleContinueCreating = () => {
+    // User chose to continue creating despite duplicates
+    // Just close the dialog - they can submit the form normally
+  }
 
   const onSubmit = async (data: CreateContactInput) => {
     try {
@@ -147,11 +243,19 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-1">
               Email
+              {duplicateCheckPending === 'email' && (
+                <span className="ml-2 text-xs text-primary">Checking for duplicates...</span>
+              )}
             </label>
             <input
               type="email"
               id="email"
               {...register('email')}
+              onBlur={(e) => {
+                if (e.target.value.trim()) {
+                  checkDuplicates('email')
+                }
+              }}
               className={getInputClass('email')}
             />
             {errors.email && (
@@ -162,11 +266,19 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground mb-1">
               Phone
+              {duplicateCheckPending === 'phone' && (
+                <span className="ml-2 text-xs text-primary">Checking for duplicates...</span>
+              )}
             </label>
             <input
               type="tel"
               id="phone"
               {...register('phone')}
+              onBlur={(e) => {
+                if (e.target.value.trim()) {
+                  checkDuplicates('phone')
+                }
+              }}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -485,6 +597,14 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
           Cancel
         </button>
       </div>
+
+      {/* Duplicate Warning Dialog */}
+      <DuplicateWarningDialog
+        isOpen={showDuplicateDialog}
+        matches={duplicateMatches}
+        onClose={handleDuplicateDialogClose}
+        onContinue={handleContinueCreating}
+      />
     </form>
   )
 }

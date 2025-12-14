@@ -119,8 +119,10 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors"
-        aria-label="Toggle menu"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isMobileOpen}
+        aria-controls="sidebar-navigation"
       >
         {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
@@ -135,9 +137,12 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
+        id="sidebar-navigation"
         className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground w-64 flex flex-col z-40 transition-transform duration-300 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
+        role="navigation"
+        aria-label="Main navigation"
       >
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
@@ -149,7 +154,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        <nav className="flex-1 overflow-y-auto py-4 px-3" role="list">
           {navSections.map((section, sectionIndex) => (
             <div key={sectionIndex}>
               {/* Section Header */}
@@ -162,7 +167,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
               )}
 
               {/* Section Items */}
-              <div className="space-y-1 mb-4">
+              <div className="space-y-1 mb-4" role="list">
                 {section.items.map((link) => {
                   const Icon = link.icon
                   const active = isActive(link.href)
@@ -172,13 +177,15 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsMobileOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         active
                           ? 'bg-primary text-white shadow-lg shadow-primary/50'
                           : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white'
                       }`}
+                      aria-current={active ? 'page' : undefined}
+                      role="listitem"
                     >
-                      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-muted-foreground'}`} />
+                      <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-muted-foreground'}`} aria-hidden="true" />
                       <span className="text-sm font-medium">{link.label}</span>
                     </Link>
                   )
@@ -215,9 +222,10 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
           <form action={signOut} className="w-full">
             <button
               type="submit"
-              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label="Sign out of your account"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">Sign Out</span>
             </button>
           </form>

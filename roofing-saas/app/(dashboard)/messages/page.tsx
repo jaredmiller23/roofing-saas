@@ -23,46 +23,26 @@ export default async function MessagesPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Desktop: Split-pane view */}
-      <div className="hidden md:flex md:flex-col flex-1">
-        {/* Header */}
-        <div className="p-4 border-b border-border bg-background">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold">Messages</h1>
-            </div>
-            <Link
-              href="/contacts"
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium text-sm"
-            >
-              <Plus className="h-4 w-4" />
-              New Conversation
-            </Link>
+      {/* Header - shown on desktop, hidden on mobile (mobile header is in MessageThread/ConversationList) */}
+      <div className="hidden md:block p-4 border-b border-border bg-background">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold">Messages</h1>
           </div>
-        </div>
-
-        {/* Split-pane content */}
-        <div className="flex-1 overflow-hidden">
-          <MessagesSplitView />
+          <Link
+            href="/contacts"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium text-sm"
+          >
+            <Plus className="h-4 w-4" />
+            New Conversation
+          </Link>
         </div>
       </div>
 
-      {/* Mobile: Redirect to mobile-specific implementation */}
-      <div className="md:hidden flex-1 flex items-center justify-center p-8 text-center">
-        <div>
-          <MessageSquare className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-bold mb-2">Messages</h2>
-          <p className="text-muted-foreground mb-4">
-            Mobile view coming soon. Please use desktop for now.
-          </p>
-          <Link
-            href="/contacts"
-            className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-          >
-            View Contacts
-          </Link>
-        </div>
+      {/* Responsive messaging interface */}
+      <div className="flex-1 overflow-hidden">
+        <MessagesSplitView />
       </div>
     </div>
   )

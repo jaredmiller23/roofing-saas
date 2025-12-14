@@ -1,140 +1,115 @@
 apiVersion: aces/v1
-changes:
-- action: create
-  anchor: null
-  description: "Create comprehensive migration with:\n\n1. ALTER contacts table -\
-    \ add fields:\n   - call_opt_out, call_opt_out_date, call_opt_out_reason\n   -\
-    \ call_consent, call_consent_date, call_consent_method, call_consent_ip\n   -\
-    \ dnc_status (CHECK constraint: clear/federal/state/both/internal)\n   - dnc_last_checked,\
-    \ dnc_federal_listed, dnc_state_listed, dnc_internal_listed\n\n2. CREATE dnc_registry\
-    \ table:\n   - id, tenant_id, phone_number, phone_hash (SHA256)\n   - source (CHECK:\
-    \ federal/state_tn/internal)\n   - area_code, listed_date, imported_at, expires_at,\
-    \ metadata\n   - UNIQUE(tenant_id, phone_hash, source)\n   - Indexes on phone_hash,\
-    \ tenant_source, area_code\n\n3. CREATE dnc_imports table:\n   - id, tenant_id,\
-    \ source, import_type, file_name\n   - records_total, records_new, records_updated,\
-    \ records_removed\n   - status, error_message, started_at, completed_at, imported_by\n\
-    \n4. CREATE call_compliance_log table:\n   - id, tenant_id, contact_id, call_log_id,\
-    \ user_id, phone_number\n   - check_type, result, reason\n   - dnc_source, contact_timezone,\
-    \ contact_local_time\n   - metadata (JSONB), created_at\n   - Indexes for tenant,\
-    \ contact, created_at, result, check_type\n\n5. ALTER call_logs table - add fields:\n\
-    \   - recording_announced BOOLEAN DEFAULT FALSE\n   - compliance_check_id UUID\
-    \ REFERENCES call_compliance_log(id)\n\n6. RLS policies for all new tables\n\n\
-    7. Verification block with RAISE NOTICE\n"
-  file: supabase/migrations/*_call_compliance_system.sql
-  position: null
-  template: null
+changes: []
 context:
   background: null
-  goal: Create database migration for call compliance system including DNC registry,
-    compliance audit log, and contact fields
+  goal: 'Implement contact duplicate detection to prevent data quality issues.
+
+
+    Features to implement:
+
+    1. Real-time duplicate check during contact creation
+
+    2. Warning dialog when potential duplicate found
+
+    3. Option to view existing contact or continue creating
+
+    4. Match on: email (exact), phone (normalized), name + address combo
+
+
+    User Flow:
+
+    1. User fills in contact form
+
+    2. On blur of email/phone fields, check for duplicates
+
+    3. If match found, show warning with link to existing contact
+
+    4. User can choose to view existing or continue creating
+
+    '
   success_criteria:
-  - Migration file created at supabase/migrations/YYYYMMDDHHMMSS_call_compliance_system.sql
-  - contacts table has new call compliance fields (call_opt_out, call_consent, dnc_status,
-    etc.)
-  - dnc_registry table created with phone_hash, source, area_code fields
-  - dnc_imports table created for tracking import history
-  - call_compliance_log table created for audit trail
-  - call_logs table updated with recording_announced and compliance_check_id fields
-  - All tables have proper RLS policies
-  - Migration runs without errors
-  why: The roofing company needs TCPA/TSR compliance for outbound calling. This migration
-    creates the foundation for DNC scrubbing, time restrictions, and audit logging.
-dependencies:
-  blocks:
-  - CALL-COMPLIANCE-002
-  - CALL-COMPLIANCE-003
-  requires: []
+  - Duplicate check fires on email field blur
+  - Duplicate check fires on phone field blur
+  - Warning dialog shows when duplicate found
+  - Dialog links to existing contact
+  - User can dismiss warning and continue
+  - Backend API endpoint for duplicate checking exists
+  why: 'Research Finding: Users are creating duplicate contacts causing data chaos.
+
+    Competitor AccuLynx has intelligent duplicate detection - table stakes feature.
+
+
+    Business Impact:
+
+    - Sales reps contacting same person multiple times
+
+    - Incorrect reporting due to duplicate data
+
+    - Customer frustration from repeated outreach
+
+    '
+dependencies: null
 handoff:
   format: null
-  progress_file: claude-progress.txt
+  progress_file: .vest/last_run_summary.md
   update_on:
   - task_start
   - task_complete
+  - failure
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-13T23:00:00Z'
-  id: CALL-COMPLIANCE-001
-  priority: 1
-  template: null
-  title: Create call compliance database migration
+  created: '2025-12-14T16:00:00'
+  id: SPRINT1-003
+  priority: 3
+  template: code-modification
+  title: Contact Duplicate Detection System
 on_failure:
   escalate:
     include:
     - error_output
-    - migration_file
+    - files_modified
     to: human
   rollback:
-  - rm -f supabase/migrations/*call_compliance*.sql
+  - git stash
 read_first:
 - extract: []
-  path: supabase/migrations/20251003_call_logs_table.sql
-  reason: Understand existing call_logs schema and migration patterns
+  path: components/contacts/contact-form.tsx
+  reason: Form to add duplicate checking to
   required: true
 - extract: []
-  path: supabase/migrations/archive/phase2/20251001_sms_compliance.sql
-  reason: Follow SMS compliance field pattern for call compliance fields
+  path: app/api/contacts/route.ts
+  reason: Understand contact API patterns
   required: true
+- extract: []
+  path: lib/types/contact.ts
+  reason: Contact type definitions
+  required: false
 scope:
-  constraints:
-  - Follow existing migration patterns from 20251003_call_logs_table.sql
-  - Follow SMS compliance pattern from archive/phase2/20251001_sms_compliance.sql
-  - Use tenant_id for multi-tenant isolation
-  - Include RLS policies for all new tables
-  - Use gen_random_uuid() for primary keys
-  - Include helpful comments and verification block
+  constraints: []
   create:
-  - supabase/migrations/*_call_compliance_system.sql
+  - app/api/contacts/check-duplicate/route.ts
+  - components/contacts/DuplicateWarningDialog.tsx
   do_not_touch:
-  - supabase/migrations/archive/**
-  - lib/**
-  - app/**
-  - components/**
-  - .git/**
-  modify: []
+  - app/api/contacts/route.ts
+  - lib/validations/contact.ts
+  modify:
+  - components/contacts/contact-form.tsx
+  - app/(dashboard)/contacts/new/page.tsx
 thinking:
-  level: think
+  level: think_hard
   triggers:
-  - Before writing any SQL
-  - When designing table relationships
-  - When writing RLS policies
+  - Before designing duplicate matching algorithm
+  - When deciding API response format
 validation:
-  assertions:
-  - contains:
-    - < 9
-    - '>= 20'
-    context: any
-    description: Calling hours MUST be 9am-8pm (not 8am-9pm from SMS pattern)
-    file: supabase/migrations/*call_compliance*.sql
-    not_contains:
-    - < 8
-    - '>= 21'
-    regex_match: []
-    required: true
-  - contains:
-    - federal
-    - state
-    - internal
-    - clear
-    - both
-    context: any
-    description: Must include all required DNC status values
-    file: supabase/migrations/*call_compliance*.sql
-    not_contains: []
-    regex_match: []
-    required: true
-  - contains: []
-    context: any
-    description: Must have RLS policies for tenant isolation
-    file: supabase/migrations/*call_compliance*.sql
-    not_contains: []
-    regex_match:
-    - CREATE POLICY.*DNC registry
-    - CREATE POLICY.*compliance log
-    required: true
+  assertions: []
   post_commit: []
   pre_commit:
-  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && ls supabase/migrations/*call_compliance*.sql
+  - command: test -f app/api/contacts/check-duplicate/route.ts
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: grep -q "DuplicateWarning" components/contacts/contact-form.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60

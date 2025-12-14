@@ -10,8 +10,14 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(supabase/migrations/*_call_compliance_system.sql)",
-      "Edit(supabase/migrations/*_call_compliance_system.sql)"
+      "Write(app/api/contacts/check-duplicate/route.ts)",
+      "Edit(app/api/contacts/check-duplicate/route.ts)",
+      "Write(components/contacts/DuplicateWarningDialog.tsx)",
+      "Edit(components/contacts/DuplicateWarningDialog.tsx)",
+      "Write(components/contacts/contact-form.tsx)",
+      "Edit(components/contacts/contact-form.tsx)",
+      "Write(app/(dashboard)/contacts/new/page.tsx)",
+      "Edit(app/(dashboard)/contacts/new/page.tsx)"
     ]
   }
 }

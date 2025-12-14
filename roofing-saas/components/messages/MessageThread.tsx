@@ -6,6 +6,8 @@ import { Message } from './types'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
 interface MessageThreadProps {
@@ -13,6 +15,8 @@ interface MessageThreadProps {
   contactName: string
   contactPhone: string
   onMessageSent?: () => void
+  onBack?: () => void
+  showBackButton?: boolean
 }
 
 export function MessageThread({
@@ -20,6 +24,8 @@ export function MessageThread({
   contactName,
   contactPhone,
   onMessageSent,
+  onBack,
+  showBackButton = false,
 }: MessageThreadProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -119,8 +125,23 @@ export function MessageThread({
     <div className="flex flex-col h-full">
       {/* Thread Header */}
       <div className="border-b border-border p-4 bg-background">
-        <h2 className="font-semibold text-lg">{contactName}</h2>
-        {contactPhone && <p className="text-sm text-muted-foreground">{contactPhone}</p>}
+        <div className="flex items-center gap-3">
+          {/* Back button - mobile only */}
+          {showBackButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="md:hidden h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div className="flex-1">
+            <h2 className="font-semibold text-lg">{contactName}</h2>
+            {contactPhone && <p className="text-sm text-muted-foreground">{contactPhone}</p>}
+          </div>
+        </div>
       </div>
 
       {/* Messages */}
