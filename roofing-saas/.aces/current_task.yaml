@@ -1,21 +1,30 @@
 apiVersion: aces/v1
-changes: []
+changes:
+- action: edit
+  anchor: null
+  description: Replace placeholder reverse geocoding with actual Google API implementation
+  file: lib/geocoding/index.ts
+  position: null
+  template: null
 context:
   background: null
-  goal: 'Validate Database Schema, Data Models/Types, Environment Configuration,
+  goal: 'Implement actual reverse geocoding functionality to replace the placeholder
 
-    and Testing Strategy. Infrastructure foundation review.
+    that has been in place since September. This enables address lookup from
+
+    GPS coordinates for door knock logging and field operations.
 
     '
   success_criteria:
-  - Schema matches type definitions
-  - Environment variables documented
-  - Test coverage assessed
-  why: Solid infrastructure foundation enables reliable feature development
+  - Reverse geocoding returns actual addresses from coordinates
+  - Uses Google Geocoding API
+  - Error handling for failed lookups
+  - TypeScript compiles without errors
+  why: Placeholder code in production - field teams need actual address resolution
 dependencies: null
 handoff:
   format: null
-  progress_file: .vest/deepdive-progress.md
+  progress_file: .vest/quickwin-002-progress.md
   update_on:
   - task_start
   - task_complete
@@ -24,33 +33,39 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T00:00:00'
-  id: DEEPDIVE-007
-  priority: 3
-  template: research-analysis
-  title: 'Modernization Deep Dive: Data & Infrastructure (Modules 28-31)'
+  id: QUICKWIN-002
+  priority: 1
+  template: bug-fix
+  title: Implement Reverse Geocoding Placeholder
 on_failure:
   escalate:
     include:
-    - partial_findings
-    - error_logs
+    - error_output
     to: human
   rollback: []
 read_first:
 - extract: []
-  path: docs/modernization-analysis/VALIDATION-REPORT-DEC14.md
-  reason: Context from initial validation
+  path: lib/geocoding/index.ts
+  reason: Understand current geocoding setup and find placeholder
   required: true
 - extract: []
-  path: docs/modernization-analysis/28-MODERNIZATION-DATABASE-SCHEMA.md
-  reason: First module in this batch
+  path: package.json
+  reason: Check for existing geocoding packages
   required: true
 scope:
   constraints: []
   create: []
-  do_not_touch: []
-  modify: []
+  do_not_touch:
+  - supabase/**
+  - app/api/auth/**
+  modify:
+  - lib/geocoding/**
 thinking: null
 validation:
   assertions: []
   post_commit: []
-  pre_commit: []
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60

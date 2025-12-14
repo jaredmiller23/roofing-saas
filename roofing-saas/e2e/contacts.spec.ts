@@ -23,17 +23,21 @@ const generateUniqueEmail = () => `test-${Date.now()}-${Math.random().toString(3
 const generateUniquePhone = () => `555-${Math.floor(1000 + Math.random() * 9000)}`
 
 test.describe('Contact CRUD Operations', () => {
+  // Use authenticated session
+  test.use({ storageState: 'playwright/.auth/user.json' })
+
   test.describe('Contact Creation', () => {
     test('should create contact with required fields only', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000) // Allow initial render
 
       const uniqueEmail = generateUniqueEmail()
 
-      // Click "New Contact" button/link (try multiple possible selectors)
+      // Click "Add Contact" button/link (try multiple possible selectors)
       const newContactButton = page.locator('[href="/contacts/new"]').or(
-        page.locator('button:has-text("New Contact")').or(
-          page.locator('button:has-text("Add Contact")')
+        page.locator('button:has-text("Add Contact")').or(
+          page.locator('a:has-text("Add Contact")')
         ).or(
           page.getByTestId('new-contact-button')
         )
@@ -41,7 +45,8 @@ test.describe('Contact CRUD Operations', () => {
 
       if (await newContactButton.isVisible({ timeout: 2000 })) {
         await newContactButton.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Fill in required fields
         await page.locator('input[name="first_name"]').or(page.locator('input[placeholder*="First"]')).first().fill('John')
@@ -56,7 +61,8 @@ test.describe('Contact CRUD Operations', () => {
         ).first()
 
         await submitButton.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Verify contact appears in list (either table or card view)
         const contactElement = page.locator(`text=${uniqueEmail}`).or(
@@ -72,20 +78,22 @@ test.describe('Contact CRUD Operations', () => {
 
     test('should create contact with all fields (optional included)', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const uniqueEmail = generateUniqueEmail()
       const uniquePhone = generateUniquePhone()
 
       const newContactButton = page.locator('[href="/contacts/new"]').or(
-        page.locator('button:has-text("New Contact")').or(
+        page.locator('button:has-text("Add Contact")').or(
           page.getByTestId('new-contact-button')
         )
       ).first()
 
       if (await newContactButton.isVisible({ timeout: 2000 })) {
         await newContactButton.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Fill in all fields
         await page.locator('input[name="first_name"]').or(page.locator('input[placeholder*="First"]')).first().fill('Jane')
@@ -116,7 +124,8 @@ test.describe('Contact CRUD Operations', () => {
         ).first()
 
         await submitButton.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Verify contact created
         await expect(page.locator(`text=${uniqueEmail}`).first()).toBeVisible({ timeout: 5000 })
@@ -127,34 +136,39 @@ test.describe('Contact CRUD Operations', () => {
 
     test('should prevent duplicate email addresses', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const duplicateEmail = generateUniqueEmail()
 
       // Create first contact
       const newContactButton = page.locator('[href="/contacts/new"]').or(
-        page.locator('button:has-text("New Contact")')
+        page.locator('button:has-text("Add Contact")')
       ).first()
       if (await newContactButton.isVisible({ timeout: 2000 })) {
         await newContactButton.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         await page.locator('input[name="first_name"]').first().fill('First')
         await page.locator('input[name="last_name"]').first().fill('Contact')
         await page.locator('input[name="email"]').first().fill(duplicateEmail)
 
         await page.locator('button[type="submit"]').first().click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Try to create duplicate
         await page.goto('/contacts')
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         const newContactButton2 = page.locator('[href="/contacts/new"]').or(
-          page.locator('button:has-text("New Contact")')
+          page.locator('button:has-text("Add Contact")')
         ).first()
         await newContactButton2.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         await page.locator('input[name="first_name"]').first().fill('Second')
         await page.locator('input[name="last_name"]').first().fill('Contact')
@@ -180,7 +194,8 @@ test.describe('Contact CRUD Operations', () => {
   test.describe('Contact Updates', () => {
     test('should update contact name', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       // Find any existing contact and click on it
       const contactRows = page.locator('tr').or(page.locator('[data-testid*="contact"]'))
@@ -188,7 +203,8 @@ test.describe('Contact CRUD Operations', () => {
 
       if (await firstContact.isVisible({ timeout: 2000 })) {
         await firstContact.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Look for edit button
         const editButton = page.locator('button:has-text("Edit")').or(
@@ -197,7 +213,8 @@ test.describe('Contact CRUD Operations', () => {
 
         if (await editButton.isVisible({ timeout: 2000 })) {
           await editButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Update first name
           const firstNameInput = page.locator('input[name="first_name"]').first()
@@ -210,7 +227,8 @@ test.describe('Contact CRUD Operations', () => {
           ).first()
 
           await saveButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Verify update
           await expect(page.locator('text=Updated').first()).toBeVisible({ timeout: 5000 })
@@ -224,7 +242,8 @@ test.describe('Contact CRUD Operations', () => {
 
     test('should update contact email and phone', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const uniqueEmail = generateUniqueEmail()
       const uniquePhone = generateUniquePhone()
@@ -234,13 +253,15 @@ test.describe('Contact CRUD Operations', () => {
 
       if (await firstContact.isVisible({ timeout: 2000 })) {
         await firstContact.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         const editButton = page.locator('button:has-text("Edit")').first()
 
         if (await editButton.isVisible({ timeout: 2000 })) {
           await editButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Update email
           const emailInput = page.locator('input[name="email"]').first()
@@ -257,7 +278,8 @@ test.describe('Contact CRUD Operations', () => {
           // Save
           const saveButton = page.locator('button:has-text("Save")').first()
           await saveButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Verify
           await expect(page.locator(`text=${uniqueEmail}`).first()).toBeVisible({ timeout: 5000 })
@@ -273,7 +295,8 @@ test.describe('Contact CRUD Operations', () => {
   test.describe('Contact Deletion (Soft Delete)', () => {
     test('should soft delete contact (is_deleted flag)', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const contactRows = page.locator('tr').or(page.locator('[data-testid*="contact"]'))
       const rowCount = await contactRows.count()
@@ -284,7 +307,8 @@ test.describe('Contact CRUD Operations', () => {
         const contactText = await firstContact.textContent()
 
         await firstContact.click()
-        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
         // Look for delete button (might be in menu or direct button)
         const deleteButton = page.locator('button:has-text("Delete")').or(
@@ -306,11 +330,13 @@ test.describe('Contact CRUD Operations', () => {
             await confirmButton.click()
           }
 
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Navigate back to contacts list
           await page.goto('/contacts')
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Verify contact is NOT visible (soft deleted)
           const contactStillVisible = await page.locator(`text="${contactText}"`).isVisible({ timeout: 1000 }).catch(() => false)
@@ -328,7 +354,8 @@ test.describe('Contact CRUD Operations', () => {
   test.describe('Contact Search and Filtering', () => {
     test('should search contacts by name', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       // Look for search input
       const searchInput = page.locator('input[placeholder*="Search"]').or(
@@ -358,7 +385,8 @@ test.describe('Contact CRUD Operations', () => {
 
     test('should search contacts by email', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const searchInput = page.locator('input[placeholder*="Search"]').first()
 
@@ -381,7 +409,8 @@ test.describe('Contact CRUD Operations', () => {
 
     test('should clear search and show all contacts', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       const searchInput = page.locator('input[placeholder*="Search"]').first()
 
@@ -409,7 +438,8 @@ test.describe('Contact CRUD Operations', () => {
   test.describe('Contact Pagination', () => {
     test('should navigate through pages if pagination exists', async ({ page }) => {
       await page.goto('/contacts')
-      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
       // Look for pagination controls
       const nextButton = page.locator('button:has-text("Next")').or(
@@ -425,7 +455,8 @@ test.describe('Contact CRUD Operations', () => {
         if (isEnabled) {
           // Click next
           await nextButton.click()
-          await page.waitForLoadState('networkidle')
+          await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
           // Should see different contacts or page 2 indicator
           const page2Indicator = page.locator('text=/Page 2|2 of/i')
@@ -438,7 +469,8 @@ test.describe('Contact CRUD Operations', () => {
 
           if (await prevButton.isVisible()) {
             await prevButton.click()
-            await page.waitForLoadState('networkidle')
+            await page.waitForSelector('body', { state: 'attached' })
+      await page.waitForTimeout(1000)
 
             // Should be back on page 1
             const page1Indicator = page.locator('text=/Page 1|1 of/i')

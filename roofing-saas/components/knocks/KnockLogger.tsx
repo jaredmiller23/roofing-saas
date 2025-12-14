@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { reverseGeocode } from '@/lib/geocoding'
 
 type Disposition = 'not_home' | 'interested' | 'not_interested' | 'appointment_set' | 'callback_later'
 
@@ -34,10 +35,9 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
   const [appointmentTime, setAppointmentTime] = useState('')
   const [callbackDate, setCallbackDate] = useState('')
 
-  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
-    // Placeholder - will need Google Maps API or similar
-    // For now, just show coordinates
-    setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`)
+  const handleReverseGeocode = useCallback(async (lat: number, lng: number) => {
+    const address = await reverseGeocode(lat, lng)
+    setAddress(address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`)
   }, [])
 
   const getLocation = useCallback(() => {
@@ -56,8 +56,8 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
         setAccuracy(position.coords.accuracy)
         setGettingLocation(false)
 
-        // Reverse geocode to get address (simplified version)
-        reverseGeocode(position.coords.latitude, position.coords.longitude)
+        // Reverse geocode to get address
+        handleReverseGeocode(position.coords.latitude, position.coords.longitude)
       },
       (error) => {
         console.error('Error getting location:', error)
@@ -70,7 +70,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
         maximumAge: 0
       }
     )
-  }, [reverseGeocode])
+  }, [handleReverseGeocode])
 
   // Auto-get location on mount
   useEffect(() => {

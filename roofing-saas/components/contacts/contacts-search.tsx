@@ -130,21 +130,21 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
             High Priority
           </button>
           <button
-            onClick={() => handleQuickFilter('stage', 'lead')}
+            onClick={() => handleQuickFilter('stage', 'new')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-full text-sm font-medium transition-colors"
           >
             <Clock className="h-3.5 w-3.5" />
             New Leads
           </button>
           <button
-            onClick={() => handleQuickFilter('stage', 'active')}
+            onClick={() => handleQuickFilter('stage', 'negotiation')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-sm font-medium transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Active Deals
           </button>
           <button
-            onClick={() => handleQuickFilter('stage', 'customer')}
+            onClick={() => handleQuickFilter('stage', 'won')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-800 rounded-full text-sm font-medium transition-colors"
           >
             <DollarSign className="h-3.5 w-3.5" />
@@ -239,9 +239,12 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Stages</option>
-              <option value="lead">Lead</option>
-              <option value="active">Active</option>
-              <option value="customer">Customer</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="qualified">Qualified</option>
+              <option value="proposal">Proposal</option>
+              <option value="negotiation">Negotiation</option>
+              <option value="won">Won</option>
               <option value="lost">Lost</option>
             </select>
           </div>
@@ -289,7 +292,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           <button
             onClick={handleSearch}
             disabled={isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 font-medium"
           >
             <Search className="h-4 w-4" />
             {isPending ? 'Searching...' : 'Apply Filters'}
