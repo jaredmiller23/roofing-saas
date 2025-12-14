@@ -120,9 +120,9 @@ export default function NewSignatureDocumentPage() {
     }
   }
 
-  const updateFormData = <K extends keyof FormData>(key: K, value: FormData[K]) => {
+  const updateFormData = useCallback(<K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData(prev => ({ ...prev, [key]: value }))
-  }
+  }, [])
 
   // Step validation
   const validateStep = (stepNumber: number): boolean => {
@@ -161,7 +161,7 @@ export default function NewSignatureDocumentPage() {
   }
 
   // Handle PDF file selection
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = useCallback(async (file: File) => {
     if (!userId) {
       setError('User not authenticated')
       return
@@ -184,7 +184,7 @@ export default function NewSignatureDocumentPage() {
     } finally {
       setIsUploading(false)
     }
-  }
+  }, [userId, updateFormData])
 
   // Handle file drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -195,7 +195,7 @@ export default function NewSignatureDocumentPage() {
     } else {
       setError('Please upload a PDF file')
     }
-  }, [userId])
+  }, [handleFileSelect])
 
   // Handle DocumentEditor save
   const handleEditorSave = (fields: SignatureFieldPlacement[], pdfUrl?: string) => {
