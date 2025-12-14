@@ -62,7 +62,7 @@ export default function SendSignatureDocumentPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to load document')
+        throw new Error(result.error?.message || 'Failed to load document')
       }
 
       // Handle response format
@@ -115,7 +115,7 @@ export default function SendSignatureDocumentPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to send document')
+        throw new Error(result.error?.message || 'Failed to send document')
       }
 
       setSuccess(true)

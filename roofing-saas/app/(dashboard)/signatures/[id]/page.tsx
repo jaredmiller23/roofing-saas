@@ -87,7 +87,7 @@ export default function ViewSignatureDocumentPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to load document')
+        throw new Error(result.error?.message || 'Failed to load document')
       }
 
       // Handle response format: { success, data: { document } } or { document }
@@ -117,7 +117,7 @@ export default function ViewSignatureDocumentPage() {
 
       if (!res.ok) {
         const result = await res.json()
-        throw new Error(result.error || result.data?.error || 'Failed to delete document')
+        throw new Error(result.error?.message || 'Failed to delete document')
       }
 
       router.push('/signatures')
@@ -145,7 +145,7 @@ export default function ViewSignatureDocumentPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to send reminder')
+        throw new Error(result.error?.message || 'Failed to send reminder')
       }
 
       const data = result.data || result

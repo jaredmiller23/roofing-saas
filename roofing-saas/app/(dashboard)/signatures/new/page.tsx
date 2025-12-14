@@ -24,6 +24,7 @@ import {
   PenTool,
   Eye
 } from 'lucide-react'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface Contact {
   id: string
@@ -102,8 +103,8 @@ export default function NewSignatureDocumentPage() {
   const loadData = async () => {
     try {
       const [contactsRes, projectsRes] = await Promise.all([
-        fetch('/api/contacts?limit=100'),
-        fetch('/api/projects?limit=100'),
+        fetch('/api/contacts?limit=1000'),
+        fetch('/api/projects?limit=1000'),
       ])
 
       const contactsResult = await contactsRes.json()
@@ -240,7 +241,7 @@ export default function NewSignatureDocumentPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create document')
+        throw new Error(data.error?.message || 'Failed to create document')
       }
 
       setSuccess(true)
@@ -383,36 +384,36 @@ export default function NewSignatureDocumentPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="project">Project (Optional)</Label>
-                  <select
-                    id="project"
-                    value={formData.projectId}
-                    onChange={(e) => updateFormData('projectId', e.target.value)}
-                    className="w-full mt-2 px-3 py-2 border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="">No project</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="mt-2">
+                    <SearchableSelect
+                      options={projects.map((project) => ({
+                        value: project.id,
+                        label: project.name,
+                      }))}
+                      value={formData.projectId}
+                      onValueChange={(value) => updateFormData('projectId', value)}
+                      placeholder="No project"
+                      searchPlaceholder="Search projects..."
+                      emptyMessage="No projects found."
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <Label htmlFor="contact">Contact (Optional)</Label>
-                  <select
-                    id="contact"
-                    value={formData.contactId}
-                    onChange={(e) => updateFormData('contactId', e.target.value)}
-                    className="w-full mt-2 px-3 py-2 border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="">No contact</option>
-                    {contacts.map((contact) => (
-                      <option key={contact.id} value={contact.id}>
-                        {contact.first_name} {contact.last_name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="mt-2">
+                    <SearchableSelect
+                      options={contacts.map((contact) => ({
+                        value: contact.id,
+                        label: `${contact.first_name} ${contact.last_name}`,
+                      }))}
+                      value={formData.contactId}
+                      onValueChange={(value) => updateFormData('contactId', value)}
+                      placeholder="No contact"
+                      searchPlaceholder="Search contacts..."
+                      emptyMessage="No contacts found."
+                    />
+                  </div>
                 </div>
               </div>
 

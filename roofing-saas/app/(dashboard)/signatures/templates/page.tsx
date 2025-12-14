@@ -104,7 +104,7 @@ export default function SignatureTemplatesPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to load templates')
+        throw new Error(result.error?.message || 'Failed to load templates')
       }
 
       // Handle response format: { success, data: { templates, ... } } or { templates, ... }

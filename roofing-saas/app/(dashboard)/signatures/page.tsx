@@ -53,7 +53,7 @@ export default function SignaturesPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || result.data?.error || 'Failed to load documents')
+        throw new Error(result.error?.message || 'Failed to load documents')
       }
 
       // Handle response format: { success, data: { documents, ... } } or { documents, ... }
