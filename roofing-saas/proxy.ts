@@ -1,19 +1,53 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import {
+  signatureDocumentRateLimit,
+  projectUpdateRateLimit,
+  authRateLimit,
+  applyRateLimit,
+} from './lib/rate-limit'
 
 /**
- * Proxy middleware for authentication and tenant context
+ * Proxy middleware for authentication, tenant context, and rate limiting
  *
  * This proxy:
- * 1. Refreshes the Supabase auth session
- * 2. Validates tenant access (future: subdomain routing)
- * 3. Protects authenticated routes
- * 4. Handles cookie management for auth state
+ * 1. Applies rate limiting to sensitive endpoints
+ * 2. Refreshes the Supabase auth session
+ * 3. Validates tenant access (future: subdomain routing)
+ * 4. Protects authenticated routes
+ * 5. Handles cookie management for auth state
  *
  * Note: For Phase 1, we're starting with a single tenant.
  * Multi-tenant subdomain routing will be added in a future phase.
  */
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const method = request.method
+
+  // Apply rate limiting to signature documents endpoints
+  if (pathname.startsWith('/api/signature-documents/')) {
+    const rateLimitResult = await applyRateLimit(request, signatureDocumentRateLimit)
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
+    }
+  }
+
+  // Apply rate limiting to project PATCH endpoints
+  if (pathname.match(/^\/api\/projects\/[^/]+$/) && method === 'PATCH') {
+    const rateLimitResult = await applyRateLimit(request, projectUpdateRateLimit)
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
+    }
+  }
+
+  // Apply rate limiting to auth endpoints
+  if (pathname.startsWith('/api/auth/')) {
+    const rateLimitResult = await applyRateLimit(request, authRateLimit)
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -57,6 +91,7 @@ export async function proxy(request: NextRequest) {
     '/reset-password',
     '/auth/callback',
     '/auth/update-password',
+    '/sign', // E-signature signing pages (public access with token)
     // Test endpoints (development only)
     '/api/sms/test',
     // Webhooks (called by external services)
