@@ -83,7 +83,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       const result = await response.json()
 
       // Redirect to contact detail page
-      router.push(`/contacts/${result.contact.id}`)
+      // API returns { success, data: { contact } } structure
+      router.push(`/contacts/${result.data.contact.id}`)
       router.refresh()
     } catch (err) {
       setError('root', {
