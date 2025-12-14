@@ -2,11 +2,13 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import OpenAI from 'openai'
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import { logger } from '@/lib/logger'
 // ARIA - AI Roofing Intelligent Assistant
 import { buildARIAContext, getARIASystemPrompt } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
+import { ariaFunctionRegistry } from '@/lib/aria/function-registry'
+import type { FunctionCallParameters } from '@/lib/voice/providers/types'
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -15,7 +17,7 @@ const openai = new OpenAI({
 
 /**
  * POST /api/ai/chat/stream
- * Streaming chat endpoint using Server-Sent Events
+ * Streaming chat endpoint using Server-Sent Events with function calling
  */
 export async function POST(request: NextRequest) {
   try {
@@ -122,18 +124,11 @@ export async function POST(request: NextRequest) {
       })),
     ]
 
-    // Create streaming response
-    const stream = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages,
-      temperature: 0.7,
-      max_tokens: 1000,
-      stream: true,
-    })
+    // Get ARIA tools in OpenAI format
+    const tools = ariaFunctionRegistry.getChatCompletionTools() as ChatCompletionTool[]
 
     // Create a TransformStream for SSE
     const encoder = new TextEncoder()
-    let fullContent = ''
 
     const readable = new ReadableStream({
       async start(controller) {
@@ -143,13 +138,164 @@ export async function POST(request: NextRequest) {
             encoder.encode(`data: ${JSON.stringify({ type: 'conversation_id', conversation_id: conversationId, user_message: userMessage })}\n\n`)
           )
 
-          for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || ''
-            if (content) {
-              fullContent += content
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ type: 'content', content })}\n\n`)
-              )
+          let fullContent = ''
+          const currentMessages = [...messages]
+          let continueLoop = true
+
+          // Loop to handle multiple rounds of tool calls
+          while (continueLoop) {
+            const stream = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: currentMessages,
+              tools: tools.length > 0 ? tools : undefined,
+              tool_choice: tools.length > 0 ? 'auto' : undefined,
+              temperature: 0.7,
+              max_tokens: 1000,
+              stream: true,
+            })
+
+            // Accumulate tool calls during streaming
+            const toolCalls: Map<number, { id: string; name: string; arguments: string }> = new Map()
+            let hasToolCalls = false
+
+            for await (const chunk of stream) {
+              const choice = chunk.choices[0]
+              const delta = choice?.delta
+
+              // Handle streamed content
+              if (delta?.content) {
+                fullContent += delta.content
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({ type: 'content', content: delta.content })}\n\n`)
+                )
+              }
+
+              // Handle tool calls
+              if (delta?.tool_calls) {
+                hasToolCalls = true
+                for (const toolCall of delta.tool_calls) {
+                  const index = toolCall.index
+                  if (!toolCalls.has(index)) {
+                    toolCalls.set(index, {
+                      id: toolCall.id || '',
+                      name: toolCall.function?.name || '',
+                      arguments: '',
+                    })
+                  }
+                  const existing = toolCalls.get(index)!
+                  if (toolCall.id) existing.id = toolCall.id
+                  if (toolCall.function?.name) existing.name = toolCall.function.name
+                  if (toolCall.function?.arguments) existing.arguments += toolCall.function.arguments
+                }
+              }
+
+              // Check if we're done with this completion
+              if (choice?.finish_reason === 'stop') {
+                continueLoop = false
+              } else if (choice?.finish_reason === 'tool_calls') {
+                // Need to execute tools and continue
+                continueLoop = true
+              }
+            }
+
+            // Execute tool calls if any
+            if (hasToolCalls && toolCalls.size > 0) {
+              // Add assistant message with tool calls to history
+              const assistantToolMessage: ChatCompletionMessageParam = {
+                role: 'assistant',
+                content: fullContent || null,
+                tool_calls: Array.from(toolCalls.values()).map(tc => ({
+                  id: tc.id,
+                  type: 'function' as const,
+                  function: {
+                    name: tc.name,
+                    arguments: tc.arguments,
+                  },
+                })),
+              }
+              currentMessages.push(assistantToolMessage)
+
+              // Execute each tool call
+              for (const [, toolCall] of toolCalls) {
+                const startTime = Date.now()
+                let args: FunctionCallParameters = {}
+
+                try {
+                  args = JSON.parse(toolCall.arguments || '{}') as FunctionCallParameters
+                } catch {
+                  args = {}
+                }
+
+                // Log tool call
+                logger.ariaToolCall(toolCall.name, args, {
+                  userId: user.id,
+                  tenantId,
+                  conversationId,
+                })
+
+                // Notify client that a tool is being executed
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({
+                    type: 'tool_call',
+                    tool: toolCall.name,
+                    args,
+                  })}\n\n`)
+                )
+
+                // Execute the tool
+                const ariaFunction = ariaFunctionRegistry.get(toolCall.name)
+                let toolResult: { success: boolean; data?: unknown; error?: string; message?: string }
+
+                if (ariaFunction) {
+                  try {
+                    toolResult = await ariaFunction.execute(args, ariaContext)
+                  } catch (error) {
+                    toolResult = {
+                      success: false,
+                      error: error instanceof Error ? error.message : 'Tool execution failed',
+                    }
+                  }
+                } else {
+                  toolResult = {
+                    success: false,
+                    error: `Unknown function: ${toolCall.name}`,
+                  }
+                }
+
+                // Log tool result
+                const duration = Date.now() - startTime
+                logger.ariaToolResult(
+                  toolCall.name,
+                  toolResult.success,
+                  duration,
+                  toolResult.data,
+                  toolResult.error
+                )
+
+                // Notify client of tool result
+                controller.enqueue(
+                  encoder.encode(`data: ${JSON.stringify({
+                    type: 'tool_result',
+                    tool: toolCall.name,
+                    success: toolResult.success,
+                    message: toolResult.message,
+                  })}\n\n`)
+                )
+
+                // Add tool result to messages for next iteration
+                const toolResultMessage: ChatCompletionMessageParam = {
+                  role: 'tool',
+                  tool_call_id: toolCall.id,
+                  content: JSON.stringify(toolResult),
+                }
+                currentMessages.push(toolResultMessage)
+              }
+
+              // Reset fullContent for next assistant response
+              fullContent = ''
+            } else {
+              // No tool calls, we're done
+              continueLoop = false
             }
           }
 
@@ -160,7 +306,7 @@ export async function POST(request: NextRequest) {
               conversation_id: conversationId,
               role: 'assistant',
               content: fullContent,
-              metadata: { context, model: 'gpt-4o', streamed: true },
+              metadata: { context, model: 'gpt-4o', streamed: true, usedTools: true },
             })
             .select()
             .single()
@@ -193,6 +339,3 @@ export async function POST(request: NextRequest) {
     return new Response('Internal server error', { status: 500 })
   }
 }
-
-// NOTE: System prompt is now provided by ARIA
-// See lib/aria/ for the unified orchestrator implementation

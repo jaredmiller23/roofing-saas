@@ -109,6 +109,78 @@ class Logger {
   dbQuery(table: string, operation: string, context?: LogContext): void {
     this.debug(`DB ${operation} ${table}`, context)
   }
+
+  // ARIA AI Assistant logging
+  ariaToolCall(
+    functionName: string,
+    args: unknown,
+    context: { userId?: string; tenantId?: string; conversationId?: string }
+  ): void {
+    this.info(`ARIA tool called: ${functionName}`, {
+      tool: functionName,
+      args,
+      ...context,
+    })
+  }
+
+  ariaToolResult(
+    functionName: string,
+    success: boolean,
+    duration: number,
+    result?: unknown,
+    error?: string
+  ): void {
+    if (success) {
+      this.info(`ARIA tool succeeded: ${functionName}`, {
+        tool: functionName,
+        success: true,
+        duration: `${duration}ms`,
+        resultPreview: typeof result === 'object' ? Object.keys(result || {}) : typeof result,
+      })
+    } else {
+      this.error(`ARIA tool failed: ${functionName}`, {
+        tool: functionName,
+        success: false,
+        duration: `${duration}ms`,
+        error,
+      })
+    }
+  }
+
+  // Form validation logging
+  validationError(
+    formName: string,
+    errors: Record<string, string>,
+    context?: { userId?: string; fieldCount?: number }
+  ): void {
+    this.warn(`Validation failed: ${formName}`, {
+      formName,
+      errors,
+      errorCount: Object.keys(errors).length,
+      ...context,
+    })
+  }
+
+  // Enhanced API error logging with full context
+  apiError(
+    method: string,
+    path: string,
+    status: number,
+    error: unknown,
+    context?: { userId?: string; tenantId?: string; requestBody?: unknown }
+  ): void {
+    const errorDetails = error instanceof Error
+      ? { message: error.message, name: error.name, stack: error.stack }
+      : { message: String(error) }
+
+    this.error(`API error: ${method} ${path} ${status}`, {
+      method,
+      path,
+      status,
+      error: errorDetails,
+      ...context,
+    })
+  }
 }
 
 // Export singleton instance

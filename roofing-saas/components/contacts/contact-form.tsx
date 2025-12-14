@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
+import { validateField, validateContactForm, clearFieldError } from '@/lib/validations/client'
 
 interface ContactFormProps {
   contact?: Contact
@@ -13,6 +14,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState({
     first_name: contact?.first_name || '',
@@ -41,10 +43,29 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     priority: contact?.priority || 'normal',
   })
 
+  const handleBlur = (fieldName: string) => {
+    const result = validateField(fieldName, formData[fieldName as keyof typeof formData])
+    if (!result.valid && result.error) {
+      setFieldErrors(prev => ({ ...prev, [fieldName]: result.error! }))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    // Client-side validation
+    const validation = validateContactForm(formData)
+    if (!validation.valid) {
+      setFieldErrors(validation.errors)
+      // Scroll to first error
+      const firstErrorField = Object.keys(validation.errors)[0]
+      const element = document.getElementById(firstErrorField)
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+
+    setLoading(true)
 
     try {
       // Prepare data
@@ -98,6 +119,18 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       ...formData,
       [target.name]: value,
     })
+    // Clear error when user starts typing
+    if (fieldErrors[target.name]) {
+      setFieldErrors(clearFieldError(target.name, fieldErrors))
+    }
+  }
+
+  // Helper to get input class with error styling
+  const getInputClass = (fieldName: string) => {
+    const baseClass = 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2'
+    return fieldErrors[fieldName]
+      ? `${baseClass} border-red-500 focus:ring-red-500`
+      : `${baseClass} border-input focus:ring-primary`
   }
 
   return (
@@ -120,11 +153,14 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               type="text"
               id="first_name"
               name="first_name"
-              required
               value={formData.first_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              onBlur={() => handleBlur('first_name')}
+              className={getInputClass('first_name')}
             />
+            {fieldErrors.first_name && (
+              <p className="mt-1 text-sm text-red-500">{fieldErrors.first_name}</p>
+            )}
           </div>
 
           <div>
@@ -135,11 +171,14 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               type="text"
               id="last_name"
               name="last_name"
-              required
               value={formData.last_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              onBlur={() => handleBlur('last_name')}
+              className={getInputClass('last_name')}
             />
+            {fieldErrors.last_name && (
+              <p className="mt-1 text-sm text-red-500">{fieldErrors.last_name}</p>
+            )}
           </div>
 
           <div>
@@ -152,8 +191,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              onBlur={() => handleBlur('email')}
+              className={getInputClass('email')}
             />
+            {fieldErrors.email && (
+              <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -231,8 +274,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               placeholder="https://example.com"
               value={formData.website}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              onBlur={() => handleBlur('website')}
+              className={getInputClass('website')}
             />
+            {fieldErrors.website && (
+              <p className="mt-1 text-sm text-red-500">{fieldErrors.website}</p>
+            )}
           </div>
 
           <div>
@@ -509,7 +556,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : mode === 'edit' ? 'Update Contact' : 'Create Contact'}
         </button>

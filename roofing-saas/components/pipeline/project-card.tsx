@@ -231,13 +231,17 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
       {/* Contact Name */}
       <div className="flex items-center gap-1.5 mb-3 text-sm text-muted-foreground">
         <User className="h-3.5 w-3.5" />
-        <Link
-          href={`/contacts/${project.contact_id}`}
-          className="hover:text-primary"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {contactName}
-        </Link>
+        {project.contact_id ? (
+          <Link
+            href={`/contacts/${project.contact_id}`}
+            className="hover:text-primary"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {contactName}
+          </Link>
+        ) : (
+          <span>{contactName}</span>
+        )}
       </div>
 
       {/* Estimated Value */}
@@ -328,7 +332,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           <button
             onClick={handleStartProduction}
             disabled={startingProduction}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-primary-foreground rounded-md text-sm font-medium transition-colors"
           >
             {startingProduction ? (
               <>
@@ -374,7 +378,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           <button
             onClick={handleReactivate}
             disabled={reactivating}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground rounded-md text-sm font-medium transition-colors"
           >
             {reactivating ? (
               <>
