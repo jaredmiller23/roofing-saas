@@ -163,10 +163,10 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
   // Get color for days-in-stage badge based on urgency
   const getDaysInStageColor = (days: number) => {
-    if (days <= 3) return 'bg-green-100 text-green-700' // Fresh
-    if (days <= 7) return 'bg-yellow-100 text-yellow-700' // Needs attention
-    if (days <= 14) return 'bg-orange-100 text-orange-700' // Getting stale
-    return 'bg-red-100 text-red-700' // Urgent
+    if (days <= 3) return 'bg-green-500/20 text-green-600 dark:text-green-400' // Fresh
+    if (days <= 7) return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' // Needs attention
+    if (days <= 14) return 'bg-orange-500/20 text-orange-600 dark:text-orange-400' // Getting stale
+    return 'bg-red-500/20 text-red-600 dark:text-red-400' // Urgent
   }
 
   const daysInStage = getDaysInStage(project.stage_changed_at)
@@ -182,9 +182,9 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   const getPriorityBadge = (priority?: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-500/20 text-red-600 dark:text-red-400'
       case 'high':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
       case 'low':
         return 'bg-muted text-muted-foreground'
       default:
