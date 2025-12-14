@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, Save, X } from 'lucide-react'
+import { Plus, Save, X, RefreshCw } from 'lucide-react'
 import type {
   FilterConfig,
   SavedFilter,
@@ -17,9 +17,10 @@ import { SaveFilterDialog } from './SaveFilterDialog'
 interface FilterBarProps {
   entity_type: EntityType
   onFiltersChange: (filters: ActiveFilter[]) => void
+  onError?: (error: string | null) => void
 }
 
-export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
+export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarProps) {
   const [configs, setConfigs] = useState<FilterConfig[]>([])
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
@@ -27,18 +28,29 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false)
   const [selectedConfig, setSelectedConfig] = useState<FilterConfig | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchConfigs = useCallback(async () => {
+    setError(null)
     try {
       const response = await fetch(`/api/filters/configs?entity_type=${entity_type}`)
+
+      if (!response.ok) {
+        throw new Error('Failed to load filter configuration')
+      }
+
       const data = await response.json()
       setConfigs(data.configs || [])
-    } catch (error) {
-      console.error('Error fetching filter configs:', error)
+      onError?.(null) // Clear any previous errors
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load filter configuration'
+      console.error('Error fetching filter configs:', err)
+      setError(errorMessage)
+      onError?.(errorMessage)
     } finally {
       setLoading(false)
     }
-  }, [entity_type])
+  }, [entity_type, onError])
 
   const fetchSavedFilters = useCallback(async () => {
     try {
@@ -173,6 +185,25 @@ export function FilterBar({ entity_type, onFiltersChange }: FilterBarProps) {
       <div className="flex items-center gap-2 p-4 bg-muted/30 rounded-lg">
         <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
         <span className="text-sm text-muted-foreground">Loading filters...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="flex items-center gap-2">
+          <div className="text-red-600 text-sm">{error}</div>
+        </div>
+        <Button
+          onClick={fetchConfigs}
+          variant="outline"
+          size="sm"
+          className="gap-2 text-red-600 border-red-200 hover:bg-red-50"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Retry
+        </Button>
       </div>
     )
   }

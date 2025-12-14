@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import {
   TrendingUp,
   UserPlus,
@@ -33,21 +34,49 @@ interface ActivityItem {
 export function ActivityFeed() {
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchActivities()
   }, [])
 
   const fetchActivities = async () => {
+    setLoading(true)
+    setError(null)
+
+    // Create abort controller for timeout
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
+
     try {
-      const response = await fetch('/api/dashboard/activity')
+      const response = await fetch('/api/dashboard/activity', {
+        signal: abortController.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
+      }
+
       const result = await response.json()
 
       if (result.success) {
-        setActivities(result.data.activities)
+        setActivities(result.data.activities || [])
+      } else {
+        setError('Failed to load activity data')
       }
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Error fetching activities:', error)
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timeout - please try again')
+      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+        setError('Server error - please try again')
+      } else {
+        setError('Failed to connect to server')
+      }
     } finally {
       setLoading(false)
     }
@@ -131,6 +160,29 @@ export function ActivityFeed() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+          <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="text-muted-foreground mb-4">{error}</div>
+            <Button
+              onClick={() => fetchActivities()}
+              variant="outline"
+              size="sm"
+            >
+              Try again
+            </Button>
+          </div>
         </div>
       </div>
     )

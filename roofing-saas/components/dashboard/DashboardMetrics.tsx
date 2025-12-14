@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from 'lucide-react'
 
 // Lazy load chart components to reduce initial bundle size
@@ -65,8 +66,22 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
   const fetchMetrics = useCallback(async () => {
     setIsLoading(true)
     setError(null)
+
+    // Create abort controller for timeout
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
+
     try {
-      const response = await fetch(`/api/dashboard/metrics?scope=${scope}`)
+      const response = await fetch(`/api/dashboard/metrics?scope=${scope}`, {
+        signal: abortController.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
+      }
+
       const result = await response.json()
       if (result.success && result.data && result.data.metrics) {
         setData(result.data)
@@ -74,8 +89,16 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
         setError('Failed to load metrics data')
       }
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Failed to fetch dashboard metrics:', error)
-      setError('Failed to connect to server')
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timeout - please try again')
+      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+        setError('Server error - please try again')
+      } else {
+        setError('Failed to connect to server')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -132,13 +155,14 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-muted-foreground mb-2">{error}</div>
-          <button
+          <div className="text-muted-foreground mb-4">{error}</div>
+          <Button
             onClick={() => fetchMetrics()}
-            className="text-primary hover:underline text-sm"
+            variant="outline"
+            size="sm"
           >
             Try again
-          </button>
+          </Button>
         </div>
       </div>
     )

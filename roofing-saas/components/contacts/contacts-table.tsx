@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Contact, getCombinedTypeLabel } from '@/lib/types/contact'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Phone, MessageSquare, Mail, Building2 } from 'lucide-react'
+import { Phone, MessageSquare, Mail, Building2, RefreshCw } from 'lucide-react'
 import { DNCBadge } from './DNCBadge'
+import { Button } from '@/components/ui/button'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -26,41 +27,53 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
   const [bulkActionLoading, setBulkActionLoading] = useState(false)
 
-  useEffect(() => {
-    async function fetchContacts() {
-      setLoading(true)
-      setError(null)
+  const fetchContacts = useCallback(async () => {
+    setLoading(true)
+    setError(null)
 
-      try {
-        // Build query params
-        const queryParams = new URLSearchParams()
-        Object.entries(params).forEach(([key, value]) => {
-          if (value && typeof value === 'string') {
-            queryParams.set(key, value)
-          }
-        })
-
-        const response = await fetch(`/api/contacts?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch contacts')
+    try {
+      // Build query params
+      const queryParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value && typeof value === 'string') {
+          queryParams.set(key, value)
         }
+      })
 
-        const result = await response.json()
-        // Handle new response format: { success, data: { contacts, total, page, ... } }
-        const data = result.data || result
-        setContacts(data.contacts || [])
-        setTotal(data.total || 0)
-        setPage(data.page || 1)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
+      // Create abort controller for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+      const response = await fetch(`/api/contacts?${queryParams.toString()}`, {
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contacts')
       }
-    }
 
-    fetchContacts()
+      const result = await response.json()
+      // Handle new response format: { success, data: { contacts, total, page, ... } }
+      const data = result.data || result
+      setContacts(data.contacts || [])
+      setTotal(data.total || 0)
+      setPage(data.page || 1)
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. Please check your connection and try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
+    } finally {
+      setLoading(false)
+    }
   }, [params])
+
+  useEffect(() => {
+    fetchContacts()
+  }, [fetchContacts])
 
   const handleSort = (field: SortField) => {
     const newDirection =
@@ -175,8 +188,16 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
   if (error) {
     return (
-      <div className="bg-card rounded-lg shadow p-8">
-        <div className="text-red-600">Error: {error}</div>
+      <div className="bg-card rounded-lg shadow p-8 text-center">
+        <div className="text-red-600 mb-4">Error: {error}</div>
+        <Button
+          onClick={fetchContacts}
+          variant="outline"
+          className="gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Retry
+        </Button>
       </div>
     )
   }

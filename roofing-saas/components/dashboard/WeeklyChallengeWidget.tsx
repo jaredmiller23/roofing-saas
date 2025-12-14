@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { Trophy, TrendingUp, Target, Crown } from 'lucide-react'
 
 interface WeeklyLeader {
@@ -15,34 +16,58 @@ interface WeeklyLeader {
 export function WeeklyChallengeWidget() {
   const [leaders, setLeaders] = useState<WeeklyLeader[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchWeeklyLeaders()
   }, [])
 
   async function fetchWeeklyLeaders() {
+    setLoading(true)
+    setError(null)
+
+    // Create abort controller for timeout
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
+
     try {
       // For now, use the existing leaderboard endpoint
       // In the future, create a dedicated weekly challenge endpoint
-      const response = await fetch('/api/gamification/leaderboard?limit=3')
-      if (response.ok) {
-        const result = await response.json()
-        const data = result.data || result
+      const response = await fetch('/api/gamification/leaderboard?limit=3', {
+        signal: abortController.signal
+      })
 
-        // Transform data for weekly view
-        const weeklyData = (data.leaderboard || []).map((entry: { user_id: string; user_name: string; user_email: string; points: number; level: number }) => ({
-          id: entry.user_id,
-          user_name: entry.user_name,
-          user_email: entry.user_email,
-          points_this_week: entry.points,
-          deals_closed_this_week: Math.floor(entry.points / 100), // Estimate from points
-          level: entry.level
-        }))
+      clearTimeout(timeoutId)
 
-        setLeaders(weeklyData)
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
       }
+
+      const result = await response.json()
+      const data = result.data || result
+
+      // Transform data for weekly view
+      const weeklyData = (data.leaderboard || []).map((entry: { user_id: string; user_name: string; user_email: string; points: number; level: number }) => ({
+        id: entry.user_id,
+        user_name: entry.user_name,
+        user_email: entry.user_email,
+        points_this_week: entry.points,
+        deals_closed_this_week: Math.floor(entry.points / 100), // Estimate from points
+        level: entry.level
+      }))
+
+      setLeaders(weeklyData)
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Failed to fetch weekly leaders:', error)
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timeout - please try again')
+      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+        setError('Server error - please try again')
+      } else {
+        setError('Failed to connect to server')
+      }
     } finally {
       setLoading(false)
     }
@@ -109,6 +134,44 @@ export function WeeklyChallengeWidget() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-foreground">This Week&apos;s Challenge</h3>
+            <p className="text-sm text-secondary font-medium mt-0.5">{getChallengeTitle()}</p>
+          </div>
+          <div className="bg-primary text-primary-foreground rounded-full p-3">
+            <Trophy className="h-6 w-6" />
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="text-muted-foreground mb-4">{error}</div>
+            <Button
+              onClick={() => fetchWeeklyLeaders()}
+              variant="outline"
+              size="sm"
+            >
+              Try again
+            </Button>
+          </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">
+              Resets every Monday
+            </span>
+            <span className="text-secondary font-medium">
+              {7 - new Date().getDay()} days left
+            </span>
+          </div>
         </div>
       </div>
     )
