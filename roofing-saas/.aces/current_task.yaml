@@ -2,23 +2,23 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Migrate from pdf-lib (unmaintained for 4 years) to @pdfme/generator
+  goal: 'Refactor the contact form from vanilla useState (25+ state declarations)
 
-    for PDF generation in the e-signature system. This addresses a critical
+    to React Hook Form with Zod validation. This improves performance,
 
-    technical debt item identified in the modernization analysis.
+    maintainability, and enables field-level validation.
 
     '
   success_criteria:
-  - PDF generation works with @pdfme/generator
-  - All signature document templates render correctly
-  - No visual regressions in generated PDFs
-  - pdf-lib removed from dependencies
-  why: pdf-lib v1.17.1 hasn't been updated in 4 years - security and maintenance risk
+  - Contact form uses useForm() hook
+  - Zod schema for validation
+  - All 35+ fields properly managed
+  - No functional regressions
+  why: Technical debt - contact form uses inefficient vanilla React state pattern
 dependencies: null
 handoff:
   format: null
-  progress_file: .vest/quickwin-003-progress.md
+  progress_file: .vest/quickwin-004-progress.md
   update_on:
   - task_start
   - task_complete
@@ -27,36 +27,34 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T00:00:00'
-  id: QUICKWIN-003
-  priority: 1
+  id: QUICKWIN-004
+  priority: 2
   template: refactor
-  title: Migrate pdf-lib to pdfme (Stale Dependency)
+  title: Migrate Contact Form to React Hook Form
 on_failure:
   escalate:
     include:
     - error_output
-    - migration_notes
     to: human
   rollback:
-  - git checkout -- lib/signatures/ package.json package-lock.json
+  - git checkout -- components/contacts/contact-form.tsx
 read_first:
 - extract: []
-  path: lib/signatures/pdf-generator.ts
-  reason: Current PDF generation implementation
+  path: components/contacts/contact-form.tsx
+  reason: Current form implementation with useState
   required: true
 - extract: []
-  path: package.json
-  reason: Current pdf-lib version
+  path: lib/validations/contact.ts
+  reason: Existing Zod schema to reuse
   required: true
 scope:
   constraints: []
   create: []
   do_not_touch:
-  - supabase/**
-  - app/api/** (except signature routes)
+  - lib/**
+  - app/api/**
   modify:
-  - lib/signatures/**
-  - package.json
+  - components/contacts/contact-form.tsx
 thinking: null
 validation:
   assertions: []
@@ -66,7 +64,7 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run build
+  - command: npm run lint
     expect: 'exit_code: 0'
     required: true
     timeout: 60

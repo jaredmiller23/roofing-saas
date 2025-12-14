@@ -10,10 +10,8 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(lib/signatures/**)",
-      "Edit(lib/signatures/**)",
-      "Write(package.json)",
-      "Edit(package.json)"
+      "Write(components/contacts/contact-form.tsx)",
+      "Edit(components/contacts/contact-form.tsx)"
     ]
   }
 }
