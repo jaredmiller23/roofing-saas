@@ -55,7 +55,7 @@ export function DamageTypeSelector({
               'p-2 text-xs rounded-lg border transition-all text-center',
               value === type.value
                 ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
-                : 'border-gray-200 hover:border-gray-300 text-muted-foreground'
+                : 'border-border hover:border-muted-foreground/20 text-muted-foreground'
             )}
           >
             {type.label}
@@ -94,7 +94,7 @@ export function SeveritySelector({
                   : level.color === 'orange'
                     ? 'border-orange-500 bg-orange-50 text-orange-700 font-medium'
                     : 'border-red-500 bg-red-50 text-red-700 font-medium'
-                : 'border-gray-200 hover:border-gray-300 text-muted-foreground'
+                : 'border-border hover:border-muted-foreground/20 text-muted-foreground'
             )}
           >
             {level.label}

@@ -479,8 +479,8 @@ export function CardFormDialog({
                             type="button"
                             className={`w-10 h-10 rounded-full border-2 ${
                               field.value === color
-                                ? 'border-gray-900 ring-2 ring-offset-2 ring-gray-900'
-                                : 'border-gray-300'
+                                ? 'border-foreground ring-2 ring-offset-2 ring-foreground'
+                                : 'border-border'
                             }`}
                             style={{ backgroundColor: color }}
                             onClick={() => field.onChange(color)}

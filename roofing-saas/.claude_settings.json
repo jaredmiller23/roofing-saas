@@ -10,14 +10,18 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(app/api/contacts/check-duplicate/route.ts)",
-      "Edit(app/api/contacts/check-duplicate/route.ts)",
-      "Write(components/contacts/DuplicateWarningDialog.tsx)",
-      "Edit(components/contacts/DuplicateWarningDialog.tsx)",
-      "Write(components/contacts/contact-form.tsx)",
-      "Edit(components/contacts/contact-form.tsx)",
-      "Write(app/(dashboard)/contacts/new/page.tsx)",
-      "Edit(app/(dashboard)/contacts/new/page.tsx)"
+      "Write(components/ui/skeleton-patterns.tsx)",
+      "Edit(components/ui/skeleton-patterns.tsx)",
+      "Write(components/ui/empty-state.tsx)",
+      "Edit(components/ui/empty-state.tsx)",
+      "Write(components/dashboard/**/*.tsx)",
+      "Edit(components/dashboard/**/*.tsx)",
+      "Write(components/settings/**/*.tsx)",
+      "Edit(components/settings/**/*.tsx)",
+      "Write(components/pipeline/**/*.tsx)",
+      "Edit(components/pipeline/**/*.tsx)",
+      "Write(app/(dashboard)/**/page.tsx)",
+      "Edit(app/(dashboard)/**/page.tsx)"
     ]
   }
 }

@@ -34,8 +34,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_config: { metric: 'contacts_created' },
     points_reward: 10,
     tier: 'bronze' as const,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-50 dark:bg-orange-950/30',
     iconComponent: Target
   },
   {
@@ -48,8 +48,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_config: { metric: 'projects_won' },
     points_reward: 50,
     tier: 'silver' as const,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
     iconComponent: Trophy
   },
   {
@@ -62,8 +62,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_config: { metric: 'projects_won' },
     points_reward: 200,
     tier: 'gold' as const,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50',
+    color: 'text-yellow-600 dark:text-yellow-400',
+    bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
     iconComponent: Star
   },
   {
@@ -76,8 +76,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_config: { metric: 'projects_won' },
     points_reward: 500,
     tier: 'platinum' as const,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-50 dark:bg-purple-950/30',
     iconComponent: Crown
   },
   {
@@ -89,8 +89,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_value: 1000,
     points_reward: 50,
     tier: 'bronze' as const,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-50',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgColor: 'bg-cyan-50 dark:bg-cyan-950/30',
     iconComponent: Zap
   },
   {
@@ -102,8 +102,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_value: 10000,
     points_reward: 250,
     tier: 'gold' as const,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-50 dark:bg-indigo-950/30',
     iconComponent: Medal
   },
   {
@@ -116,8 +116,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_config: { metric: 'early_activities' },
     points_reward: 15,
     tier: 'bronze' as const,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-50 dark:bg-orange-950/30',
     iconComponent: TrendingUp
   },
   {
@@ -129,8 +129,8 @@ const ACHIEVEMENT_TEMPLATES = [
     requirement_value: 7,
     points_reward: 100,
     tier: 'silver' as const,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-50 dark:bg-red-950/30',
     iconComponent: Flame
   }
 ]
@@ -241,10 +241,10 @@ export function AchievementsTab() {
 
   const getTierColor = (tier?: string) => {
     switch (tier) {
-      case 'platinum': return 'text-purple-600'
-      case 'gold': return 'text-yellow-600'
-      case 'silver': return 'text-gray-600'
-      default: return 'text-orange-600'
+      case 'platinum': return 'text-purple-600 dark:text-purple-400'
+      case 'gold': return 'text-yellow-600 dark:text-yellow-400'
+      case 'silver': return 'text-muted-foreground'
+      default: return 'text-orange-600 dark:text-orange-400'
     }
   }
 
@@ -355,7 +355,7 @@ export function AchievementsTab() {
               {achievements.map(achievement => (
                 <div
                   key={achievement.id}
-                  className="p-4 bg-gray-50 rounded-lg border"
+                  className="p-4 bg-muted rounded-lg border"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="text-3xl">{achievement.icon || '🏆'}</div>
@@ -367,7 +367,7 @@ export function AchievementsTab() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:bg-red-950/30 h-8 w-8 p-0"
                         onClick={() => deleteAchievement(achievement.id)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -384,7 +384,7 @@ export function AchievementsTab() {
                       +{achievement.points_reward} pts
                     </Badge>
                     {achievement.is_active ? (
-                      <span className="text-xs text-green-600">Active</span>
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400">Active</span>
                     ) : (
                       <span className="text-xs text-muted-foreground">Inactive</span>
                     )}

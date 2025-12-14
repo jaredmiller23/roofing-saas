@@ -247,7 +247,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
                   className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all min-h-[88px] ${
                     isActive
                       ? `${disp.activeColor} border-transparent shadow-lg`
-                      : `${disp.color} border-gray-200`
+                      : `${disp.color} border-border`
                   }`}
                 >
                   <Icon className="h-6 w-6 mb-2" />

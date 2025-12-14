@@ -87,11 +87,11 @@ export function WeeklyChallengeWidget() {
   const getMedalColor = (index: number) => {
     switch (index) {
       case 0:
-        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white'
+        return 'bg-gradient-to-r from-yellow-500 to-yellow-600 dark:from-yellow-400 dark:to-yellow-500 text-white dark:text-yellow-900'
       case 1:
-        return 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800'
+        return 'bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 text-slate-800 dark:text-slate-100'
       case 2:
-        return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white'
+        return 'bg-gradient-to-r from-orange-500 to-orange-600 dark:from-orange-400 dark:to-orange-500 text-white dark:text-orange-900'
       default:
         return 'bg-muted text-muted-foreground'
     }

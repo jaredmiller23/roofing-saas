@@ -2,50 +2,67 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement contact duplicate detection to prevent data quality issues.
+  goal: 'Standardize UI patterns across the application for consistency and maintainability.
 
 
-    Features to implement:
+    Phase 1 Focus Areas:
 
-    1. Real-time duplicate check during contact creation
+    1. Replace all hardcoded colors with theme variables
 
-    2. Warning dialog when potential duplicate found
+    2. Standardize loading states with skeleton components
 
-    3. Option to view existing contact or continue creating
+    3. Create consistent empty state patterns
 
-    4. Match on: email (exact), phone (normalized), name + address combo
+    4. Standardize form layouts (spacing, labels, errors)
+
+    5. Ensure all buttons use the shadcn/ui Button component
 
 
-    User Flow:
+    Patterns to Enforce:
 
-    1. User fills in contact form
+    - NO hardcoded colors (bg-white, text-gray-500, etc.)
 
-    2. On blur of email/phone fields, check for duplicates
+    - Use bg-background, bg-card, text-foreground, text-muted-foreground
 
-    3. If match found, show warning with link to existing contact
+    - Use border-border instead of border-gray-*
 
-    4. User can choose to view existing or continue creating
+    - All interactive elements use shadcn components
+
+
+    Key Files to Audit:
+
+    - Dashboard components
+
+    - Settings pages
+
+    - Pipeline views
+
+    - Any pages with inline styles
+
+
+    DO NOT BREAK EXISTING FUNCTIONALITY. Only change styling, not behavior.
 
     '
   success_criteria:
-  - Duplicate check fires on email field blur
-  - Duplicate check fires on phone field blur
-  - Warning dialog shows when duplicate found
-  - Dialog links to existing contact
-  - User can dismiss warning and continue
-  - Backend API endpoint for duplicate checking exists
-  why: 'Research Finding: Users are creating duplicate contacts causing data chaos.
+  - No hardcoded color classes in components
+  - Skeleton loading states in list views
+  - Empty states for all list components
+  - Form layouts follow consistent pattern
+  - All buttons use Button component
+  why: 'Research Finding: Mixed component patterns create maintenance nightmare.
 
-    Competitor AccuLynx has intelligent duplicate detection - table stakes feature.
+    Technical debt accumulating with multiple implementation patterns.
 
 
-    Business Impact:
+    Problems:
 
-    - Sales reps contacting same person multiple times
+    - Inconsistent visual appearance across modules
 
-    - Incorrect reporting due to duplicate data
+    - Dark mode support impossible with hardcoded colors
 
-    - Customer frustration from repeated outreach
+    - Difficult to maintain and update styles
+
+    - Poor developer experience
 
     '
 dependencies: null
@@ -59,11 +76,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T16:00:00'
-  id: SPRINT1-003
+  created: '2025-12-14T18:00:00'
+  id: SPRINT2-003
   priority: 3
   template: code-modification
-  title: Contact Duplicate Detection System
+  title: UI Consistency Standardization Phase 1
 on_failure:
   escalate:
     include:
@@ -74,42 +91,52 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/contacts/contact-form.tsx
-  reason: Form to add duplicate checking to
+  path: components/ui/button.tsx
+  reason: Standard button component to use
   required: true
 - extract: []
-  path: app/api/contacts/route.ts
-  reason: Understand contact API patterns
-  required: true
-- extract: []
-  path: lib/types/contact.ts
-  reason: Contact type definitions
+  path: components/ui/skeleton.tsx
+  reason: Skeleton component for loading states
   required: false
+- extract: []
+  path: components/dashboard/DashboardStats.tsx
+  reason: Example of dashboard component to audit
+  required: true
 scope:
   constraints: []
   create:
-  - app/api/contacts/check-duplicate/route.ts
-  - components/contacts/DuplicateWarningDialog.tsx
+  - components/ui/skeleton-patterns.tsx
+  - components/ui/empty-state.tsx
   do_not_touch:
-  - app/api/contacts/route.ts
-  - lib/validations/contact.ts
+  - components/ui/button.tsx
+  - components/ui/input.tsx
+  - components/ui/select.tsx
+  - lib/validations/**
+  - app/api/**
   modify:
-  - components/contacts/contact-form.tsx
-  - app/(dashboard)/contacts/new/page.tsx
+  - components/dashboard/**/*.tsx
+  - components/settings/**/*.tsx
+  - components/pipeline/**/*.tsx
+  - app/(dashboard)/**/page.tsx
 thinking:
   level: think_hard
   triggers:
-  - Before designing duplicate matching algorithm
-  - When deciding API response format
+  - Before establishing pattern for skeleton states
+  - When deciding empty state design
 validation:
   assertions: []
   post_commit: []
   pre_commit:
-  - command: test -f app/api/contacts/check-duplicate/route.ts
+  - command: '! grep -r ''bg-white'' components/ --include=''*.tsx'' | grep -v node_modules
+      | head -1'
+    expect: 'exit_code: 0'
+    required: false
+    timeout: 60
+  - command: test -f components/ui/empty-state.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: grep -q "DuplicateWarning" components/contacts/contact-form.tsx
+  - command: test -f components/ui/skeleton-patterns.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60

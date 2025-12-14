@@ -19,7 +19,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           ${
             isOutbound
               ? 'bg-blue-600 text-white rounded-br-sm'
-              : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+              : 'bg-muted text-foreground rounded-bl-sm'
           }
         `}
       >
@@ -27,7 +27,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <p
           className={`
             text-xs mt-1
-            ${isOutbound ? 'text-blue-100' : 'text-gray-500'}
+            ${isOutbound ? 'text-blue-100' : 'text-muted-foreground'}
           `}
         >
           {formatDistanceToNow(timestamp, { addSuffix: true })}
