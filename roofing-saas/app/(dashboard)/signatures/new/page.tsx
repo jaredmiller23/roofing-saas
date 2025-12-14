@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,7 @@ import { DocumentEditor } from '@/components/signatures/DocumentEditor'
 import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { createClient } from '@/lib/supabase/client'
 import type { SignatureFieldPlacement } from '@/components/signatures/PlacedField'
+import type { FieldType } from '@/components/signatures/FieldPalette'
 import {
   FileText,
   ArrowLeft,
@@ -22,9 +23,26 @@ import {
   FileCheck,
   Loader2,
   PenTool,
-  Eye
+  Eye,
+  LayoutTemplate,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 interface Contact {
   id: string
@@ -37,6 +55,45 @@ interface Project {
   name: string
 }
 
+interface SignatureField {
+  id: string
+  type: string
+  label?: string
+  assignedTo: string
+  page: number
+  x: number
+  y: number
+  width: number
+  height: number
+  required?: boolean
+}
+
+interface SignatureTemplate {
+  id: string
+  name: string
+  description: string | null
+  category: string | null
+  is_active: boolean
+  requires_customer_signature: boolean
+  requires_company_signature: boolean
+  expiration_days: number
+  pdf_template_url: string | null
+  signature_fields: SignatureField[]
+  created_at: string
+  updated_at: string
+}
+
+// Field type colors for visual differentiation
+const FIELD_TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  signature: { bg: 'bg-blue-500/20', border: 'border-blue-500', text: 'text-blue-700' },
+  initials: { bg: 'bg-purple-500/20', border: 'border-purple-500', text: 'text-purple-700' },
+  date: { bg: 'bg-green-500/20', border: 'border-green-500', text: 'text-green-700' },
+  text: { bg: 'bg-gray-500/20', border: 'border-gray-500', text: 'text-gray-700' },
+  checkbox: { bg: 'bg-orange-500/20', border: 'border-orange-500', text: 'text-orange-700' },
+  name: { bg: 'bg-cyan-500/20', border: 'border-cyan-500', text: 'text-cyan-700' },
+  email: { bg: 'bg-pink-500/20', border: 'border-pink-500', text: 'text-pink-700' },
+}
+
 interface FormData {
   // Step 1 - Basic Info
   title: string
@@ -47,6 +104,7 @@ interface FormData {
   expirationDays: number
   requiresCustomerSignature: boolean
   requiresCompanySignature: boolean
+  selectedTemplateId: string
   // Step 2 - PDF Upload
   pdfFile: File | null
   pdfUrl: string
@@ -55,19 +113,29 @@ interface FormData {
 }
 
 const STEPS = [
-  { number: 1, title: 'Document Info', icon: FileText },
-  { number: 2, title: 'Upload PDF', icon: Upload },
-  { number: 3, title: 'Place Fields', icon: PenTool },
-  { number: 4, title: 'Review & Create', icon: Eye },
+  { number: 1, title: 'Template Selection', icon: LayoutTemplate },
+  { number: 2, title: 'Document Info', icon: FileText },
+  { number: 3, title: 'Upload PDF', icon: Upload },
+  { number: 4, title: 'Place Fields', icon: PenTool },
+  { number: 5, title: 'Review & Create', icon: Eye },
 ]
 
 export default function NewSignatureDocumentPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Template-related state
+  const [templates, setTemplates] = useState<SignatureTemplate[]>([])
+  const [previewTemplate, setPreviewTemplate] = useState<SignatureTemplate | null>(null)
+  const [previewNumPages, setPreviewNumPages] = useState(0)
+  const [previewCurrentPage, setPreviewCurrentPage] = useState(1)
+  const [previewScale, setPreviewScale] = useState(0.8)
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -79,6 +147,7 @@ export default function NewSignatureDocumentPage() {
     expirationDays: 30,
     requiresCustomerSignature: true,
     requiresCompanySignature: true,
+    selectedTemplateId: '',
     pdfFile: null,
     pdfUrl: '',
     signatureFields: [],
@@ -92,7 +161,18 @@ export default function NewSignatureDocumentPage() {
   useEffect(() => {
     loadData()
     getUserId()
+    loadTemplates()
   }, [])
+
+  // Handle templateId URL parameter
+  useEffect(() => {
+    const templateId = searchParams.get('templateId')
+    if (templateId) {
+      setFormData(prev => ({ ...prev, selectedTemplateId: templateId }))
+      // Skip template selection step if template is pre-selected
+      setStep(2)
+    }
+  }, [searchParams])
 
   const getUserId = async () => {
     const supabase = createClient()
@@ -120,6 +200,20 @@ export default function NewSignatureDocumentPage() {
     }
   }
 
+  const loadTemplates = async () => {
+    try {
+      const res = await fetch('/api/signature-templates?active_only=true')
+      const result = await res.json()
+
+      if (res.ok) {
+        const data = result.data || result
+        setTemplates(data.templates || [])
+      }
+    } catch (err) {
+      console.error('Error loading templates:', err)
+    }
+  }
+
   const updateFormData = useCallback(<K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData(prev => ({ ...prev, [key]: value }))
   }, [])
@@ -128,17 +222,19 @@ export default function NewSignatureDocumentPage() {
   const validateStep = (stepNumber: number): boolean => {
     switch (stepNumber) {
       case 1:
-        return !!formData.title.trim()
+        return true // Template selection is optional
       case 2:
-        return true // PDF is optional
+        return !!formData.title.trim()
       case 3:
+        return true // PDF is optional
+      case 4:
         // Require at least one signature or initials field
         const hasSignatureField = formData.signatureFields.some(
           f => f.type === 'signature' || f.type === 'initials'
         )
         return hasSignatureField
-      case 4:
-        return validateStep(1) && validateStep(3)
+      case 5:
+        return validateStep(2) && validateStep(4)
       default:
         return true
     }
@@ -147,7 +243,7 @@ export default function NewSignatureDocumentPage() {
   const canProceed = validateStep(step)
 
   const handleNext = () => {
-    if (step < 4 && canProceed) {
+    if (step < 5 && canProceed) {
       setStep(step + 1)
       setError(null)
     }
@@ -197,18 +293,69 @@ export default function NewSignatureDocumentPage() {
     }
   }, [handleFileSelect])
 
+  // Template-related functions
+  const handleTemplateSelect = (template: SignatureTemplate) => {
+    updateFormData('selectedTemplateId', template.id)
+    updateFormData('title', template.name)
+    updateFormData('description', template.description || '')
+    updateFormData('expirationDays', template.expiration_days)
+    updateFormData('requiresCustomerSignature', template.requires_customer_signature)
+    updateFormData('requiresCompanySignature', template.requires_company_signature)
+    updateFormData('documentType', template.category || 'contract')
+
+    if (template.pdf_template_url) {
+      updateFormData('pdfUrl', template.pdf_template_url)
+    }
+
+    if (template.signature_fields?.length) {
+      updateFormData('signatureFields', template.signature_fields.map(f => ({
+        id: f.id,
+        type: f.type as FieldType,
+        label: f.label || f.type,
+        page: f.page,
+        x: f.x,
+        y: f.y,
+        width: f.width,
+        height: f.height,
+        required: f.required || false,
+        assignedTo: f.assignedTo as 'customer' | 'company' | 'any',
+      })))
+    }
+
+    setStep(2)
+  }
+
+  const handlePreview = (template: SignatureTemplate) => {
+    setPreviewTemplate(template)
+    setPreviewCurrentPage(1)
+    setPreviewNumPages(0)
+    setPreviewLoading(true)
+  }
+
+  const closePreview = () => {
+    setPreviewTemplate(null)
+    setPreviewNumPages(0)
+    setPreviewCurrentPage(1)
+  }
+
+  // Get fields for current preview page
+  const getPreviewPageFields = () => {
+    if (!previewTemplate) return []
+    return previewTemplate.signature_fields.filter(f => f.page === previewCurrentPage)
+  }
+
   // Handle DocumentEditor save
   const handleEditorSave = (fields: SignatureFieldPlacement[], pdfUrl?: string) => {
     updateFormData('signatureFields', fields)
     if (pdfUrl && pdfUrl !== formData.pdfUrl) {
       updateFormData('pdfUrl', pdfUrl)
     }
-    setStep(4)
+    setStep(5)
   }
 
   // Submit the document
   const handleSubmit = async () => {
-    if (!validateStep(4)) {
+    if (!validateStep(5)) {
       setError('Please complete all required fields')
       return
     }
@@ -323,7 +470,7 @@ export default function NewSignatureDocumentPage() {
               </div>
             ))}
           </div>
-          <Progress value={(step / 4) * 100} className="h-1" />
+          <Progress value={(step / 5) * 100} className="h-1" />
         </div>
       </div>
 
@@ -338,8 +485,104 @@ export default function NewSignatureDocumentPage() {
 
       {/* Step Content */}
       <div className="max-w-6xl mx-auto px-6 py-6">
-        {/* Step 1: Basic Info */}
+        {/* Step 1: Template Selection */}
         {step === 1 && (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-2">Choose a Template</h2>
+              <p className="text-muted-foreground">
+                Select a pre-built template to get started quickly, or skip to create from scratch.
+              </p>
+            </div>
+
+            {templates.length === 0 ? (
+              <div className="bg-card rounded-lg border border-border p-12 text-center">
+                <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">No templates available</h3>
+                <p className="text-muted-foreground mb-6">
+                  You can create a document from scratch or create templates first.
+                </p>
+                <Button
+                  onClick={() => setStep(2)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  Create from Scratch
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Start from scratch option */}
+                <div className="bg-card rounded-lg border border-border p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <h3 className="font-semibold text-foreground">Start from Scratch</h3>
+                        <p className="text-sm text-muted-foreground">Create a new document without a template</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setStep(2)}
+                      variant="outline"
+                    >
+                      Start Fresh
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Template options */}
+                <div className="grid gap-4">
+                  {templates.map((template) => (
+                    <div
+                      key={template.id}
+                      className={`bg-card rounded-lg border border-border p-4 hover:shadow-md transition-shadow
+                                 ${formData.selectedTemplateId === template.id ? 'ring-2 ring-primary' : ''}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <LayoutTemplate className="h-8 w-8 text-primary mt-1" />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground">{template.name}</h3>
+                            {template.description && (
+                              <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
+                            )}
+                            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                              <span>{template.signature_fields?.length || 0} fields</span>
+                              <span>Expires in {template.expiration_days} days</span>
+                              {template.pdf_template_url && <span>Has PDF</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          {template.pdf_template_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handlePreview(template)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Preview
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => handleTemplateSelect(template)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Use Template
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 2: Basic Info */}
+        {step === 2 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6 space-y-6">
               <div>
@@ -465,8 +708,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 2: Upload PDF */}
-        {step === 2 && (
+        {/* Step 3: Upload PDF */}
+        {step === 3 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Upload Document (Optional)</h2>
@@ -547,10 +790,10 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 3: Place Fields */}
-        {step === 3 && (
+        {/* Step 4: Place Fields */}
+        {step === 4 && (
           <div>
-            {!validateStep(3) && (
+            {!validateStep(4) && (
               <Alert className="mb-4 border-orange-200 bg-orange-50">
                 <AlertDescription className="text-orange-900">
                   Please add at least one signature or initials field before proceeding.
@@ -566,8 +809,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 4: Review & Create */}
-        {step === 4 && (
+        {/* Step 5: Review & Create */}
+        {step === 5 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6 space-y-6">
               <h2 className="text-lg font-semibold text-foreground">Review Your Document</h2>
@@ -695,13 +938,13 @@ export default function NewSignatureDocumentPage() {
               Cancel
             </Button>
 
-            {step < 4 ? (
+            {step < 5 ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed}
                 className="bg-primary hover:bg-primary/90"
               >
-                {step === 3 ? 'Review' : 'Next'}
+                {step === 4 ? 'Review' : 'Next'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
@@ -729,6 +972,192 @@ export default function NewSignatureDocumentPage() {
 
       {/* Bottom padding for fixed footer */}
       <div className="h-20" />
+
+      {/* Template Preview Modal */}
+      <Dialog open={!!previewTemplate} onOpenChange={(open) => !open && closePreview()}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-xl">
+                  {previewTemplate?.name}
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {previewTemplate?.description || 'No description'}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {/* Preview Toolbar */}
+          <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-b border-border shrink-0">
+            <div className="flex items-center gap-2">
+              {previewNumPages > 1 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPreviewCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={previewCurrentPage <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground px-2">
+                    Page {previewCurrentPage} of {previewNumPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPreviewCurrentPage(p => Math.min(previewNumPages, p + 1))}
+                    disabled={previewCurrentPage >= previewNumPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewScale(s => Math.max(0.5, s - 0.1))}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground w-14 text-center">
+                {Math.round(previewScale * 100)}%
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewScale(s => Math.min(2, s + 0.1))}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {previewTemplate?.signature_fields?.length || 0} fields
+              </span>
+            </div>
+          </div>
+
+          {/* PDF Preview Area */}
+          <div className="flex-1 overflow-auto p-4 bg-muted/20 flex items-start justify-center">
+            {previewTemplate?.pdf_template_url ? (
+              <div className="relative bg-card shadow-lg rounded">
+                {previewLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-card/80 z-30 rounded">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+                <Document
+                  file={previewTemplate.pdf_template_url}
+                  onLoadSuccess={({ numPages }) => {
+                    setPreviewNumPages(numPages)
+                    setPreviewLoading(false)
+                  }}
+                  onLoadError={() => setPreviewLoading(false)}
+                  loading={
+                    <div className="flex items-center justify-center p-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  <Page
+                    pageNumber={previewCurrentPage}
+                    scale={previewScale}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                </Document>
+
+                {/* Field Overlays */}
+                {getPreviewPageFields().map((field) => {
+                  const colors = FIELD_TYPE_COLORS[field.type] || FIELD_TYPE_COLORS.text
+                  return (
+                    <div
+                      key={field.id}
+                      className={`absolute border-2 rounded ${colors.bg} ${colors.border} pointer-events-none`}
+                      style={{
+                        left: `${field.x}%`,
+                        top: `${field.y}%`,
+                        width: `${field.width}%`,
+                        height: `${field.height}%`,
+                      }}
+                    >
+                      <span className={`absolute -top-5 left-0 text-xs font-medium px-1 rounded ${colors.text} bg-card/90`}>
+                        {field.label || field.type}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-12 text-center">
+                <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium text-foreground mb-2">No PDF Template</p>
+                <p className="text-muted-foreground">
+                  This template doesn&apos;t have a PDF attached.
+                  {previewTemplate?.signature_fields?.length ? (
+                    <span> It has {previewTemplate.signature_fields.length} field(s) defined.</span>
+                  ) : null}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Field Legend */}
+          {previewTemplate?.signature_fields?.length ? (
+            <div className="px-4 py-3 bg-card border-t border-border shrink-0">
+              <div className="flex flex-wrap gap-3 items-center">
+                <span className="text-xs font-medium text-muted-foreground">Field Types:</span>
+                {Object.entries(
+                  previewTemplate.signature_fields.reduce((acc, f) => {
+                    acc[f.type] = (acc[f.type] || 0) + 1
+                    return acc
+                  }, {} as Record<string, number>)
+                ).map(([type, count]) => {
+                  const colors = FIELD_TYPE_COLORS[type] || FIELD_TYPE_COLORS.text
+                  return (
+                    <span
+                      key={type}
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${colors.bg} ${colors.text}`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${colors.border} border-2`} />
+                      {type.charAt(0).toUpperCase() + type.slice(1)} ({count})
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Footer with Actions */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-card shrink-0">
+            <div className="text-sm text-muted-foreground">
+              Expires in {previewTemplate?.expiration_days} days •{' '}
+              {[
+                previewTemplate?.requires_customer_signature && 'Customer',
+                previewTemplate?.requires_company_signature && 'Company',
+              ].filter(Boolean).join(' + ')} signature required
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={closePreview}>
+                Close
+              </Button>
+              <Button
+                onClick={() => previewTemplate && handleTemplateSelect(previewTemplate)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Use This Template
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
