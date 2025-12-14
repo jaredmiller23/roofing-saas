@@ -4,25 +4,26 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
 import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboard/DashboardScopeFilter'
+import { PointsDisplay } from '@/components/gamification/PointsDisplay'
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
+import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 
-// Lazy load gamification components to reduce initial bundle
-const PointsDisplay = dynamic(() => import('@/components/gamification/PointsDisplay').then(mod => ({ default: mod.PointsDisplay })), {
-  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
-  ssr: false
-})
-
+// Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
-  loading: () => <div className="h-96 bg-muted rounded-lg animate-pulse" />,
-  ssr: false
-})
-
-const ActivityFeed = dynamic(() => import('@/components/dashboard/ActivityFeed').then(mod => ({ default: mod.ActivityFeed })), {
-  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
-  ssr: false
-})
-
-const WeeklyChallengeWidget = dynamic(() => import('@/components/dashboard/WeeklyChallengeWidget').then(mod => ({ default: mod.WeeklyChallengeWidget })), {
-  loading: () => <div className="h-32 bg-muted rounded-lg animate-pulse" />,
+  loading: () => (
+    <div className="bg-card rounded-lg shadow-sm border border-border p-6 h-[400px] animate-pulse">
+      <div className="h-6 bg-muted rounded w-1/3 mb-4" />
+      <div className="space-y-3">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-muted rounded-full" />
+            <div className="flex-1 h-4 bg-muted rounded" />
+            <div className="w-16 h-4 bg-muted rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
   ssr: false
 })
 

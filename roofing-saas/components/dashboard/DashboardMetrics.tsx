@@ -87,8 +87,43 @@ export function DashboardMetrics({ initialData, scope = 'company' }: DashboardMe
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading metrics...</div>
+      <div className="space-y-6 animate-pulse">
+        {/* KPI Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card rounded-lg border border-border p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-4 bg-muted rounded w-24" />
+                <div className="h-5 w-5 bg-muted rounded" />
+              </div>
+              <div className="h-8 bg-muted rounded w-32 mb-1" />
+              <div className="h-3 bg-muted rounded w-20" />
+            </div>
+          ))}
+        </div>
+        {/* Secondary KPI Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card rounded-lg border border-border p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-4 bg-muted rounded w-24" />
+                <div className="h-5 w-5 bg-muted rounded" />
+              </div>
+              <div className="h-8 bg-muted rounded w-32 mb-1" />
+              <div className="h-3 bg-muted rounded w-20" />
+            </div>
+          ))}
+        </div>
+        {/* Charts Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="bg-card rounded-lg border border-border p-6">
+              <div className="h-6 bg-muted rounded w-32 mb-2" />
+              <div className="h-4 bg-muted rounded w-48 mb-4" />
+              <div className="h-[250px] bg-muted rounded" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

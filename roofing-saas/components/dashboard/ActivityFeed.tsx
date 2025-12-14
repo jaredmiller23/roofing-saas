@@ -114,19 +114,16 @@ export function ActivityFeed() {
     }).format(value)
   }
 
-  return (
-    <div className="bg-card rounded-lg shadow-sm p-6">
-      {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-        <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
+  if (loading) {
+    return (
+      <div className="bg-card rounded-lg shadow-sm border border-border p-6 animate-pulse">
+        <div className="mb-4">
+          <div className="h-6 bg-muted rounded w-32 mb-1" />
+          <div className="h-4 bg-muted rounded w-48" />
+        </div>
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 animate-pulse">
+            <div key={i} className="flex items-start gap-3 p-3">
               <div className="w-10 h-10 bg-muted rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-muted rounded w-3/4" />
@@ -135,10 +132,20 @@ export function ActivityFeed() {
             </div>
           ))}
         </div>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-card rounded-lg shadow-sm border border-border p-6">
+      {/* Header */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+        <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
+      </div>
 
       {/* Activity List */}
-      {!loading && activities.length > 0 && (
+      {activities.length > 0 && (
         <div className="space-y-3">
           {activities.map((activity) => {
             const hasLink = activity.metadata?.project_id || activity.metadata?.contact_id
@@ -212,7 +219,7 @@ export function ActivityFeed() {
       )}
 
       {/* Empty State */}
-      {!loading && activities.length === 0 && (
+      {activities.length === 0 && (
         <div className="text-center py-8">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No recent activity</p>
