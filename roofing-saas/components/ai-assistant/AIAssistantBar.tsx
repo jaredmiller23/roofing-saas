@@ -90,10 +90,10 @@ export function AIAssistantBar() {
               }}
               className={`flex-shrink-0 p-2.5 rounded-full transition-all ${
                 voiceSessionActive
-                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                  ? 'bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 animate-pulse'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
-              title={voiceSessionActive ? 'Stop voice session' : 'Start voice session'}
+              title={voiceSessionActive ? 'Stop listening (click to cancel)' : 'Start voice input'}
             >
               {voiceSessionActive ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
@@ -148,9 +148,9 @@ export function AIAssistantBar() {
 
                 {/* Voice session indicator */}
                 {voiceSessionActive && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                    <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
-                    Voice active
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-red-500/20 text-red-600 dark:text-red-400 rounded-full text-xs font-medium">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    Listening...
                   </div>
                 )}
               </div>
@@ -261,10 +261,10 @@ export function AIAssistantBar() {
                     }}
                     className={`p-3 rounded-full transition-all ${
                       voiceSessionActive
-                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                        ? 'bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30 animate-pulse'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
-                    title={voiceSessionActive ? 'Stop voice' : 'Start voice'}
+                    title={voiceSessionActive ? 'Stop listening' : 'Start voice input'}
                   >
                     {voiceSessionActive ? (
                       <MicOff className="h-5 w-5" />

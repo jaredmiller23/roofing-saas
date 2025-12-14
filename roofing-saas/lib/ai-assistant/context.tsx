@@ -5,7 +5,7 @@
  * Global state management for persistent AI chat interface
  */
 
-import { createContext, useContext, useCallback, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useCallback, useState, useEffect, useRef, ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import type {
   AIAssistantContextType,
@@ -395,12 +395,95 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
     }
   }, [state.activeConversationId, state.currentContext])
 
-  // Voice Actions
+  // Speech recognition ref (using any for cross-browser compatibility)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
+
+  // Voice Actions - with actual Web Speech API integration
   const startVoiceSession = useCallback(async () => {
-    setState(prev => ({ ...prev, voiceSessionActive: true, inputMode: 'voice', isListening: true }))
-  }, [])
+    // Check for browser support
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const windowWithSpeech = window as any
+    const SpeechRecognitionAPI = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition
+
+    if (!SpeechRecognitionAPI) {
+      console.error('Speech recognition not supported in this browser')
+      setState(prev => ({ ...prev, error: 'Speech recognition not supported in this browser. Try Chrome or Edge.' }))
+      return
+    }
+
+    try {
+      const recognition = new SpeechRecognitionAPI()
+      recognition.continuous = false
+      recognition.interimResults = true
+      recognition.lang = 'en-US'
+
+      recognition.onstart = () => {
+        console.log('Voice recognition started')
+        setState(prev => ({ ...prev, voiceSessionActive: true, inputMode: 'voice', isListening: true }))
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recognition.onresult = (event: any) => {
+        const results = event.results
+        let transcript = ''
+        let isFinal = false
+
+        for (let i = 0; i < results.length; i++) {
+          transcript += results[i][0].transcript
+          if (results[i].isFinal) {
+            isFinal = true
+          }
+        }
+
+        if (isFinal && transcript.trim()) {
+          console.log('Voice input (final):', transcript)
+          // Send the message
+          streamMessage(transcript.trim())
+          // Stop recognition after sending
+          recognition.stop()
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error)
+        let errorMessage = 'Voice recognition error'
+        if (event.error === 'not-allowed') {
+          errorMessage = 'Microphone access denied. Please allow microphone access and try again.'
+        } else if (event.error === 'no-speech') {
+          errorMessage = 'No speech detected. Please try again.'
+        } else if (event.error === 'network') {
+          errorMessage = 'Network error. Please check your connection.'
+        }
+        setState(prev => ({
+          ...prev,
+          voiceSessionActive: false,
+          inputMode: 'text',
+          isListening: false,
+          error: errorMessage
+        }))
+      }
+
+      recognition.onend = () => {
+        console.log('Voice recognition ended')
+        setState(prev => ({ ...prev, voiceSessionActive: false, inputMode: 'text', isListening: false }))
+        recognitionRef.current = null
+      }
+
+      recognitionRef.current = recognition
+      recognition.start()
+    } catch (error) {
+      console.error('Failed to start voice recognition:', error)
+      setState(prev => ({ ...prev, error: 'Failed to start voice recognition. Please try again.' }))
+    }
+  }, [streamMessage])
 
   const endVoiceSession = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+    }
     setState(prev => ({ ...prev, voiceSessionActive: false, inputMode: 'text', isListening: false }))
   }, [])
 
