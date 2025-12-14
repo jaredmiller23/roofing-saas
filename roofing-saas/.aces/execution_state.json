@@ -1,15 +1,17 @@
 {
-  "task_id": "QUICKWIN-002",
+  "task_id": "QUICKWIN-003",
   "files_read": [
-    "lib/geocoding/index.ts",
-    "lib/maps/geocoding.ts",
-    ".env.local",
+    "lib/pdf/signature-pdf-generator.ts",
+    "app/api/signature-documents/[id]/download/route.ts",
+    "app/api/claims/export/pdf/route.ts",
+    "lib/signatures/pdf-generator.ts",
     "package.json",
-    "components/knocks/KnockLogger.tsx"
+    "lib/storage/signature-pdfs.ts"
   ],
   "files_modified": [
-    "test-geocoding.js",
-    "debug-geocoding.ts"
+    "lib/pdf/signature-pdf-generator.ts",
+    "lib/signatures/pdf-generator.ts",
+    "app/api/claims/export/pdf/route.ts"
   ],
   "validation_passed": false,
   "progress_updated": false,

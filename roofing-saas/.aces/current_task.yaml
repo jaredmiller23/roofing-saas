@@ -1,30 +1,24 @@
 apiVersion: aces/v1
-changes:
-- action: edit
-  anchor: null
-  description: Replace placeholder reverse geocoding with actual Google API implementation
-  file: lib/geocoding/index.ts
-  position: null
-  template: null
+changes: []
 context:
   background: null
-  goal: 'Implement actual reverse geocoding functionality to replace the placeholder
+  goal: 'Migrate from pdf-lib (unmaintained for 4 years) to @pdfme/generator
 
-    that has been in place since September. This enables address lookup from
+    for PDF generation in the e-signature system. This addresses a critical
 
-    GPS coordinates for door knock logging and field operations.
+    technical debt item identified in the modernization analysis.
 
     '
   success_criteria:
-  - Reverse geocoding returns actual addresses from coordinates
-  - Uses Google Geocoding API
-  - Error handling for failed lookups
-  - TypeScript compiles without errors
-  why: Placeholder code in production - field teams need actual address resolution
+  - PDF generation works with @pdfme/generator
+  - All signature document templates render correctly
+  - No visual regressions in generated PDFs
+  - pdf-lib removed from dependencies
+  why: pdf-lib v1.17.1 hasn't been updated in 4 years - security and maintenance risk
 dependencies: null
 handoff:
   format: null
-  progress_file: .vest/quickwin-002-progress.md
+  progress_file: .vest/quickwin-003-progress.md
   update_on:
   - task_start
   - task_complete
@@ -33,39 +27,46 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T00:00:00'
-  id: QUICKWIN-002
+  id: QUICKWIN-003
   priority: 1
-  template: bug-fix
-  title: Implement Reverse Geocoding Placeholder
+  template: refactor
+  title: Migrate pdf-lib to pdfme (Stale Dependency)
 on_failure:
   escalate:
     include:
     - error_output
+    - migration_notes
     to: human
-  rollback: []
+  rollback:
+  - git checkout -- lib/signatures/ package.json package-lock.json
 read_first:
 - extract: []
-  path: lib/geocoding/index.ts
-  reason: Understand current geocoding setup and find placeholder
+  path: lib/signatures/pdf-generator.ts
+  reason: Current PDF generation implementation
   required: true
 - extract: []
   path: package.json
-  reason: Check for existing geocoding packages
+  reason: Current pdf-lib version
   required: true
 scope:
   constraints: []
   create: []
   do_not_touch:
   - supabase/**
-  - app/api/auth/**
+  - app/api/** (except signature routes)
   modify:
-  - lib/geocoding/**
+  - lib/signatures/**
+  - package.json
 thinking: null
 validation:
   assertions: []
   post_commit: []
   pre_commit:
   - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run build
     expect: 'exit_code: 0'
     required: true
     timeout: 60

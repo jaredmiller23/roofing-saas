@@ -10,8 +10,10 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(lib/geocoding/**)",
-      "Edit(lib/geocoding/**)"
+      "Write(lib/signatures/**)",
+      "Edit(lib/signatures/**)",
+      "Write(package.json)",
+      "Edit(package.json)"
     ]
   }
 }

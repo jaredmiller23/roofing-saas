@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb, StandardFonts } from '@pdfme/pdf-lib'
 import { getCurrentUser } from '@/lib/auth/session'
 import type { ClaimData } from '@/lib/claims/types'
 import { logger } from '@/lib/logger'

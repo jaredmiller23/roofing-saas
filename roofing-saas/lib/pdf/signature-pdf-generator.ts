@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb, StandardFonts } from '@pdfme/pdf-lib'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface SignatureData {
