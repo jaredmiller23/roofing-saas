@@ -8,6 +8,9 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
 
+  /* Include smoke tests in addition to spec/test files */
+  testMatch: ['**/*.smoke.ts', '**/*.spec.ts', '**/*.test.ts'],
+
   /* Run tests in files in parallel */
   fullyParallel: true,
 
@@ -53,6 +56,12 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup project - runs first to authenticate against production
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+
     // Chromium tests with authentication
     {
       name: 'chromium',
@@ -61,6 +70,7 @@ export default defineConfig({
         // Use authenticated state from setup
         storageState: 'playwright/.auth/user.json',
       },
+      dependencies: ['setup'],
     },
 
     // WebKit (Safari) tests with authentication
@@ -71,6 +81,7 @@ export default defineConfig({
         // Use authenticated state from setup
         storageState: 'playwright/.auth/user.json',
       },
+      dependencies: ['setup'],
     },
 
     // Firefox tests with authentication
@@ -81,6 +92,7 @@ export default defineConfig({
         // Use authenticated state from setup
         storageState: 'playwright/.auth/user.json',
       },
+      dependencies: ['setup'],
     },
   ],
 

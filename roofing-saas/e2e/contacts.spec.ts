@@ -77,7 +77,7 @@ test.describe('Contact CRUD Operations', () => {
         await page.locator('input[name="email"]').or(page.locator('input[type="email"]')).first().fill(uniqueEmail)
 
         // Submit form
-        const submitButton = page.locator('button[type="submit"]').or(
+        const submitButton = page.getByRole('button', { name: 'Create Contact' }).or(
           page.locator('button:has-text("Create")').or(
             page.locator('button:has-text("Save")')
           )
@@ -142,7 +142,7 @@ test.describe('Contact CRUD Operations', () => {
         }
 
         // Submit
-        const submitButton = page.locator('button[type="submit"]').or(
+        const submitButton = page.getByRole('button', { name: 'Create Contact' }).or(
           page.locator('button:has-text("Create")')
         ).first()
 
@@ -562,7 +562,7 @@ test.describe('Contact CRUD Operations', () => {
       await page.locator('input[name="email"]').fill(uniqueEmail)
 
       // Submit and wait for navigation
-      const submitButton = page.locator('button[type="submit"]')
+      const submitButton = page.getByRole('button', { name: 'Create Contact' })
       await submitButton.click()
 
       // Wait for redirect to contact detail page
