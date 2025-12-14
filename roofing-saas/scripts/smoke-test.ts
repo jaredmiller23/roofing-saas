@@ -128,6 +128,87 @@ class SmokeTest {
         await this.login()
       })
 
+      // API Operation tests - These catch trigger/constraint errors!
+      console.log('\n🔌 API Operations (catches trigger bugs)')
+      await this.runTest('Create contact via API', async () => {
+        // Get cookies for auth
+        const cookies = await this.context!.cookies()
+        const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ')
+
+        // Create a test contact - this exercises the set_default_substatus trigger
+        const timestamp = Date.now()
+        const response = await fetch(`${this.baseUrl}/api/contacts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookieHeader,
+          },
+          body: JSON.stringify({
+            first_name: 'SmokeTest',
+            last_name: `User${timestamp}`,
+            email: `smoketest-${timestamp}@test.invalid`,
+            stage: 'new',  // This triggers set_default_substatus
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`Contact creation failed: ${response.status} - ${errorText}`)
+        }
+
+        const result = await response.json()
+        if (!result.contact?.id) {
+          throw new Error('Contact creation returned no ID')
+        }
+
+        // Clean up - delete the test contact
+        const deleteResponse = await fetch(`${this.baseUrl}/api/contacts/${result.contact.id}`, {
+          method: 'DELETE',
+          headers: { 'Cookie': cookieHeader },
+        })
+        if (!deleteResponse.ok) {
+          console.log(`    (Cleanup: Failed to delete test contact ${result.contact.id})`)
+        }
+      })
+
+      await this.runTest('Create project via API', async () => {
+        const cookies = await this.context!.cookies()
+        const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ')
+
+        // Create a test project - also exercises triggers
+        const timestamp = Date.now()
+        const response = await fetch(`${this.baseUrl}/api/projects`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': cookieHeader,
+          },
+          body: JSON.stringify({
+            name: `SmokeTest Project ${timestamp}`,
+            status: 'estimate',  // This triggers set_default_substatus
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`Project creation failed: ${response.status} - ${errorText}`)
+        }
+
+        const result = await response.json()
+        if (!result.project?.id) {
+          throw new Error('Project creation returned no ID')
+        }
+
+        // Clean up
+        const deleteResponse = await fetch(`${this.baseUrl}/api/projects/${result.project.id}`, {
+          method: 'DELETE',
+          headers: { 'Cookie': cookieHeader },
+        })
+        if (!deleteResponse.ok) {
+          console.log(`    (Cleanup: Failed to delete test project ${result.project.id})`)
+        }
+      })
+
       // Dashboard test
       console.log('\n📊 Dashboard')
       await this.runTest('Dashboard loads without error', async () => {

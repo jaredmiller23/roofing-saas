@@ -106,6 +106,54 @@ EOF
   fi
 fi
 
+# Validation 5: Check for ambiguous column/variable references in PL/pgSQL
+# This catches the pattern: WHERE column = column (likely should be column = variable)
+if echo "$CONTENT" | grep -qiE "LANGUAGE\s+plpgsql"; then
+  # Check for pattern where same identifier appears on both sides of = in WHERE clause
+  # Common bug: DECLARE status_value TEXT; then WHERE status_value = status_value
+  if echo "$CONTENT" | grep -qE "WHERE[^;]*[a-z_]+\s*=\s*\1\b"; then
+    cat >&2 << 'EOF'
+
+⚠️  POTENTIAL SQL BUG DETECTED
+
+This migration contains a PL/pgSQL function with a potentially ambiguous reference.
+
+Common bug pattern: Variable declared with same name as a column
+  DECLARE status_value TEXT;
+  ...
+  WHERE status_value = status_value  -- Compares column to itself!
+
+Fix: Rename variable with prefix (e.g., current_status_value, p_status_value)
+  DECLARE current_status_value TEXT;
+  ...
+  WHERE status_value = current_status_value  -- Now unambiguous
+
+Please verify all WHERE clauses distinguish columns from variables.
+EOF
+    # Don't block, just warn (pattern matching isn't perfect)
+  fi
+
+  # More specific check: common problematic variable names
+  for varname in "status_value" "stage" "status" "type" "name" "value"; do
+    if echo "$CONTENT" | grep -qiE "DECLARE[^;]*\b${varname}\s+TEXT" && \
+       echo "$CONTENT" | grep -qiE "WHERE[^;]*\b${varname}\s*=\s*${varname}\b"; then
+      cat >&2 << EOF
+
+❌ LIKELY BUG: Ambiguous column reference detected
+
+Variable '${varname}' is declared and then used as '${varname} = ${varname}' in a WHERE clause.
+This compares a column to itself, not column to variable.
+
+Fix: Rename the variable to avoid ambiguity:
+  DECLARE current_${varname} TEXT;  -- or v_${varname}, p_${varname}
+  ...
+  WHERE ${varname} = current_${varname}
+EOF
+      exit 2  # Block - this is almost certainly a bug
+    fi
+  done
+fi
+
 # All validations passed
 echo "✓ Migration validation passed: $FILENAME" >&2
 exit 0
