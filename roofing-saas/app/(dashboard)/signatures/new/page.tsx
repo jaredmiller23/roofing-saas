@@ -676,7 +676,7 @@ export default function NewSignatureDocumentPage() {
       </div>
 
       {/* Footer Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+      <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-card border-t border-border z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between">
           <Button
             variant="outline"
