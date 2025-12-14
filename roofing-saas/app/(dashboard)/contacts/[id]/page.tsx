@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
+import { DNCBadge } from '@/components/contacts/DNCBadge'
+import { CallComplianceCheck } from '@/components/contacts/CallComplianceCheck'
 
 /**
  * Contact detail page
@@ -51,16 +53,21 @@ export default async function ContactDetailPage({
     )
   }
 
+  const primaryPhone = contact.phone || contact.mobile_phone
+
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {contact.first_name} {contact.last_name}
-            </h1>
-            <div className="flex gap-2 mt-2 items-center">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-foreground">
+                {contact.first_name} {contact.last_name}
+              </h1>
+              <DNCBadge status={contact.dnc_status} />
+            </div>
+            <div className="flex gap-2 items-center">
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full capitalize">
                 {contact.type}
               </span>
@@ -113,6 +120,68 @@ export default async function ContactDetailPage({
             </div>
           </div>
         </div>
+
+        {/* DNC & Compliance Information */}
+        {(contact.dnc_status || primaryPhone) && (
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Do Not Call & Compliance</h2>
+            
+            {/* DNC Status Display */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">DNC Status</label>
+              {contact.dnc_status && contact.dnc_status !== 'clear' ? (
+                <div className="flex items-center gap-2">
+                  <DNCBadge status={contact.dnc_status} showLabel={true} />
+                </div>
+              ) : (
+                <p className="text-sm text-foreground">Not on any DNC lists</p>
+              )}
+            </div>
+
+            {/* Compliance Check */}
+            {primaryPhone && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">Call Compliance Check</label>
+                <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                  <CallComplianceCheck
+                    phoneNumber={primaryPhone}
+                    contactId={contact.id}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Call Preferences */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Call Opt-Out</label>
+                <p className="mt-1 text-foreground">
+                  {contact.call_opt_out ? (
+                    <span className="text-red-600">Yes - Contact has opted out</span>
+                  ) : (
+                    <span className="text-green-600">No - Calls allowed</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Call Consent</label>
+                <p className="mt-1 text-foreground">
+                  {contact.call_consent ? (
+                    <span className="text-green-600">Yes - Consent obtained</span>
+                  ) : (
+                    <span className="text-orange-600">No - No explicit consent</span>
+                  )}
+                </p>
+              </div>
+              {contact.timezone && (
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground">Timezone</label>
+                  <p className="mt-1 text-foreground">{contact.timezone}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Address */}
         {(contact.address_street || contact.address_city) && (
