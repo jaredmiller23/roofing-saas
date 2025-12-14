@@ -10,8 +10,10 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(docs/validation/ARIA-VALIDATION-REPORT.md)",
-      "Edit(docs/validation/ARIA-VALIDATION-REPORT.md)"
+      "Write(app/(dashboard)/signatures/templates/page.tsx)",
+      "Edit(app/(dashboard)/signatures/templates/page.tsx)",
+      "Write(app/(dashboard)/signatures/new/page.tsx)",
+      "Edit(app/(dashboard)/signatures/new/page.tsx)"
     ]
   }
 }
