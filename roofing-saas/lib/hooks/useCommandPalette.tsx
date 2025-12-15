@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect, useState, createContext, useContext, ReactNode } from 'react'
+import React, { useCallback, useEffect, useState, useMemo, createContext, useContext, ReactNode } from 'react'
 
 export interface SearchResult {
   id: string
@@ -58,15 +58,17 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     isLoading: false,
   })
 
-  const actions: CommandPaletteActions = {
+  // Memoize actions to prevent infinite re-render loops
+  // These functions use setState with callback form, so they don't need state as dependencies
+  const actions: CommandPaletteActions = useMemo(() => ({
     open: () => setState(prev => ({ ...prev, isOpen: true })),
     close: () => setState(prev => ({ ...prev, isOpen: false, query: '', selectedIndex: 0 })),
-    setQuery: (query) => setState(prev => ({ ...prev, query, selectedIndex: 0 })),
-    setResults: (results) => setState(prev => ({ ...prev, results })),
-    setActions: (actions) => setState(prev => ({ ...prev, actions })),
-    setSelectedIndex: (selectedIndex) => setState(prev => ({ ...prev, selectedIndex })),
-    setLoading: (isLoading) => setState(prev => ({ ...prev, isLoading })),
-    addRecentItem: (item) => setState(prev => {
+    setQuery: (query: string) => setState(prev => ({ ...prev, query, selectedIndex: 0 })),
+    setResults: (results: SearchResult[]) => setState(prev => ({ ...prev, results })),
+    setActions: (actions: QuickAction[]) => setState(prev => ({ ...prev, actions })),
+    setSelectedIndex: (selectedIndex: number) => setState(prev => ({ ...prev, selectedIndex })),
+    setLoading: (isLoading: boolean) => setState(prev => ({ ...prev, isLoading })),
+    addRecentItem: (item: SearchResult) => setState(prev => {
       const filtered = prev.recentItems.filter(i => i.id !== item.id)
       return { ...prev, recentItems: [item, ...filtered].slice(0, 5) }
     }),
@@ -77,10 +79,16 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       selectedIndex: 0,
       isLoading: false
     }))
-  }
+  }), [])
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    ...state,
+    ...actions
+  }), [state, actions])
 
   return (
-    <CommandPaletteContext.Provider value={{ ...state, ...actions }}>
+    <CommandPaletteContext.Provider value={contextValue}>
       {children}
     </CommandPaletteContext.Provider>
   )

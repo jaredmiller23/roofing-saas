@@ -2,8 +2,7 @@ import { getCurrentUser, getUserRole } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
-// TEMPORARILY DISABLED - causing app freeze, needs investigation
-// import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
+import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
 
 /**
  * Dashboard layout - main application layout with sidebar navigation
@@ -13,6 +12,7 @@ import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient
  * - Responsive mobile menu
  * - User profile and sign out
  * - Admin impersonation UI (for admins only)
+ * - Command palette (Cmd+K) for quick navigation
  */
 export default async function DashboardLayout({
   children,
@@ -28,18 +28,19 @@ export default async function DashboardLayout({
   // Get user role for admin-only features
   const userRole = await getUserRole(user.id)
 
-  // CommandPaletteProvider temporarily disabled - causing infinite re-renders
   return (
-    <div className="min-h-screen bg-background">
-      {/* Sidebar */}
-      <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
+    <CommandPaletteProvider>
+      <div className="min-h-screen bg-background">
+        {/* Sidebar */}
+        <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
 
-      {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
-      <main className="lg:ml-64 min-h-screen pb-20">
-        <DashboardLayoutClient>
-          {children}
-        </DashboardLayoutClient>
-      </main>
-    </div>
+        {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
+        <main className="lg:ml-64 min-h-screen pb-20">
+          <DashboardLayoutClient>
+            {children}
+          </DashboardLayoutClient>
+        </main>
+      </div>
+    </CommandPaletteProvider>
   )
 }
