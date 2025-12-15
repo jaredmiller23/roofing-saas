@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:prod": "TEST_ENV=production playwright test",
+    "test:e2e:prod:ui": "TEST_ENV=production playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "prepare": "husky",
     "setup-email-domain": "tsx scripts/setup-email-domain.ts",

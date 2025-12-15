@@ -6,6 +6,22 @@ import * as path from 'path'
 dotenv.config({ path: path.resolve(__dirname, '.env.test') })
 
 /**
+ * Determine the base URL for tests
+ * - PLAYWRIGHT_BASE_URL env var takes precedence (allows testing any environment)
+ * - TEST_ENV=production uses the Vercel production URL
+ * - Default: localhost:3000 for local development
+ */
+const PRODUCTION_URL = 'https://roofing-saas-jaredmiller23.vercel.app'
+const isProduction = process.env.TEST_ENV === 'production'
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || (isProduction ? PRODUCTION_URL : 'http://localhost:3000')
+
+// Log which environment we're testing
+console.log(`\n🎯 Playwright testing against: ${baseURL}`)
+if (isProduction) {
+  console.log('   (Production mode - webServer disabled)')
+}
+
+/**
  * Playwright configuration for E2E testing
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -33,7 +49,7 @@ export default defineConfig({
   /* Shared settings for all the projects below */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: 'http://localhost:3000',
+    baseURL,
 
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
@@ -88,8 +104,8 @@ export default defineConfig({
     },
   ],
 
-  /* Automatically start dev server before running tests */
-  webServer: {
+  /* Automatically start dev server before running tests (only for local testing) */
+  webServer: isProduction ? undefined : {
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
