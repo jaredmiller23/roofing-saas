@@ -1,6 +1,5 @@
 /**
  * Organization/Company type definitions
- * Supports B2B accounts and hierarchical company management
  */
 
 export type OrganizationType = 'company' | 'agency' | 'contractor'
@@ -18,6 +17,7 @@ export interface Organization {
   type: OrganizationType
   website: string | null
   phone: string | null
+  email: string | null
 
   // Address
   address_street: string | null
@@ -27,10 +27,15 @@ export interface Organization {
   latitude: number | null
   longitude: number | null
 
+  // Additional Details
+  industry: string | null
+  description: string | null
+  employee_count: number | null
+
   // Metadata
-  notes: string | null
   custom_fields: Record<string, unknown>
   tags: string[] | null
+  search_vector: unknown | null
 }
 
 export interface CreateOrganizationInput {
@@ -38,11 +43,14 @@ export interface CreateOrganizationInput {
   type: OrganizationType
   website?: string
   phone?: string
+  email?: string
   address_street?: string
   address_city?: string
   address_state?: string
   address_zip?: string
-  notes?: string
+  industry?: string
+  description?: string
+  employee_count?: number
   tags?: string[]
   custom_fields?: Record<string, unknown>
 }
@@ -54,6 +62,7 @@ export interface UpdateOrganizationInput extends Partial<CreateOrganizationInput
 export interface OrganizationFilters {
   search?: string
   type?: OrganizationType
+  industry?: string
   tags?: string[]
   page?: number
   limit?: number
@@ -70,15 +79,7 @@ export interface OrganizationListResponse {
 }
 
 /**
- * Organization with related contact count
- */
-export interface OrganizationWithStats extends Organization {
-  contact_count: number
-  project_count?: number
-}
-
-/**
- * Helper Functions for Organization Types
+ * Helper Functions
  */
 
 /**

@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
+import { OrganizationSelector } from '@/components/organizations/OrganizationSelector'
 
 interface ContactFormProps {
   contact?: Contact
@@ -34,6 +35,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     formState: { errors, isSubmitting },
     setError,
     watch,
+    setValue,
   } = useForm<CreateContactInput>({
     resolver: zodResolver(createContactSchema),
     defaultValues: {
@@ -42,6 +44,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       email: contact?.email || '',
       phone: contact?.phone || '',
       mobile_phone: contact?.mobile_phone || '',
+      organization_id: contact?.organization_id || undefined,
       is_organization: contact?.is_organization || false,
       company: contact?.company || '',
       website: contact?.website || '',
@@ -156,6 +159,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         email: data.email || undefined,
         phone: data.phone || undefined,
         mobile_phone: data.mobile_phone || undefined,
+        organization_id: data.organization_id || undefined,
         company: data.company || undefined,
         website: data.website || undefined,
       }
@@ -293,6 +297,20 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               {...register('mobile_phone')}
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Organization
+            </label>
+            <OrganizationSelector
+              value={watch('organization_id')}
+              onChange={(value) => setValue('organization_id', value)}
+              error={errors.organization_id?.message}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Link this contact to an existing organization
+            </p>
           </div>
 
           <div className="md:col-span-2">

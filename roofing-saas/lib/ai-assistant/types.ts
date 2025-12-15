@@ -110,6 +110,7 @@ export interface AIAssistantActions {
   // Conversation Actions
   loadConversations: () => Promise<void>
   loadConversation: (id: string) => Promise<void>
+  searchConversations: (query: string) => Promise<void>
   startNewConversation: (title?: string) => Promise<string>
   deleteConversation: (id: string) => Promise<void>
   archiveConversation: (id: string) => Promise<void>

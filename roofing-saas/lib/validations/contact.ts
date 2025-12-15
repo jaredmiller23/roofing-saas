@@ -40,7 +40,7 @@ export const createContactSchema = z.object({
     'won',
     'lost',
   ]).optional(),
-  substatus: z.string().max(100).optional(),
+  substatus: z.string().optional(),
   source: z.string().optional(),
   assigned_to: z.string().uuid().optional(),
   // Property details

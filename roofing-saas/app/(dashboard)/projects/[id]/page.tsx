@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send } from 'lucide-react'
 import { SendSignatureDialog } from '@/components/signatures'
+import { QuoteComparison } from '@/components/estimates/QuoteComparison'
+import { QuoteProposalView } from '@/components/estimates/QuoteProposalView'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
+import type { QuoteOption } from '@/lib/types/quote-option'
 
 interface Project {
   id: string
@@ -79,9 +82,11 @@ export default function ProjectDetailPage() {
   const [contact, setContact] = useState<Contact | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
+  const [quoteOptions, setQuoteOptions] = useState<QuoteOption[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [startingProduction, setStartingProduction] = useState(false)
+  const [loadingQuoteOptions, setLoadingQuoteOptions] = useState(false)
 
   useEffect(() => {
     fetchProjectData()
@@ -122,11 +127,37 @@ export default function ProjectDetailPage() {
         const activitiesData = await activitiesRes.json()
         setActivities(activitiesData.activities || activitiesData.data?.activities || [])
       }
+
+      // Fetch quote options if this is an estimate/quote project
+      if (isEstimateProject(projectData.project || projectData)) {
+        await fetchQuoteOptions()
+      }
     } catch (error) {
       console.error('Failed to fetch project data:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  async function fetchQuoteOptions() {
+    try {
+      setLoadingQuoteOptions(true)
+      const quoteRes = await fetch(`/api/estimates/${projectId}/options`)
+      if (quoteRes.ok) {
+        const quoteData = await quoteRes.json()
+        setQuoteOptions(quoteData.data?.options || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch quote options:', error)
+    } finally {
+      setLoadingQuoteOptions(false)
+    }
+  }
+
+  // Check if this project is an estimate/quote
+  function isEstimateProject(proj: Project): boolean {
+    return ['estimate', 'proposal'].includes(proj.status) ||
+           ['prospect', 'qualified', 'quote_sent', 'negotiation'].includes(proj.pipeline_stage)
   }
 
   const formatCurrency = (value: number | null | undefined) => {
@@ -319,11 +350,22 @@ export default function ProjectDetailPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className={`grid w-full ${isEstimateProject(project) ? 'grid-cols-5' : 'grid-cols-4'} lg:w-auto lg:inline-grid`}>
             <TabsTrigger value="overview" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
+            {isEstimateProject(project) && (
+              <TabsTrigger value="quote-options" className="gap-2">
+                <Calculator className="h-4 w-4" />
+                <span className="hidden sm:inline">Quote Options</span>
+                {quoteOptions.length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                    {quoteOptions.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="jobs" className="gap-2">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Jobs</span>
@@ -538,6 +580,70 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           </TabsContent>
+
+          {/* Quote Options Tab */}
+          {isEstimateProject(project) && (
+            <TabsContent value="quote-options" className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Quote Options</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Manage pricing options for this estimate
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Link href={`/estimates/new?project_id=${projectId}`}>
+                    <Button size="sm" variant="outline">
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Edit Options
+                    </Button>
+                  </Link>
+                  {quoteOptions.length > 0 && (
+                    <Button size="sm">
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Proposal
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {loadingQuoteOptions ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : quoteOptions.length > 0 ? (
+                <QuoteComparison
+                  options={quoteOptions}
+                  projectName={project?.name || 'Project'}
+                  mode="comparison"
+                  onSendProposal={(optionIds) => {
+                    console.log('Sending proposal for options:', optionIds)
+                    // TODO: Implement proposal sending
+                  }}
+                  onDownloadPdf={(optionIds) => {
+                    console.log('Downloading PDF for options:', optionIds)
+                    // TODO: Implement PDF download
+                  }}
+                />
+              ) : (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Calculator className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Quote Options Yet</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create pricing options to provide your customer with choices
+                    </p>
+                    <Link href={`/estimates/new?project_id=${projectId}`}>
+                      <Button>
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Create Quote Options
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          )}
 
           {/* Jobs Tab */}
           <TabsContent value="jobs" className="space-y-6">

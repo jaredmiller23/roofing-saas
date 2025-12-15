@@ -2,84 +2,64 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Enhance the file management system with centralized document organization.
+  goal: 'Implement a professional multi-option quoting system with Good/Better/Best
+
+    proposal options for roofing estimates.
 
 
     Features to implement:
 
-    1. File categorization system (contracts, photos, permits, invoices, etc.)
+    1. Quote templates with multiple pricing tiers
 
-    2. Folder hierarchy for organizing files within projects
+    2. Good/Better/Best option presentation
 
-    3. File search and filtering capabilities
+    3. Professional proposal PDF generation
 
-    4. File versioning support (track file history)
+    4. E-signature integration (using existing DocuSign/similar)
 
-    5. Bulk file operations (select multiple, move, delete)
-
-    6. Mobile-optimized file upload with photo capture
+    5. Quote tracking and analytics
 
 
-    File Categories for Roofing:
+    User Experience:
 
-    - Contracts & Agreements
+    - Create estimate with multiple material/scope options
 
-    - Photos (before/during/after)
+    - Professional proposal view for customers
 
-    - Permits & Inspections
+    - Easy comparison between options
 
-    - Invoices & Estimates
-
-    - Insurance Documents
-
-    - Warranty Documents
-
-    - Material Specs
-
-    - Other
+    - One-click to send for signature
 
 
-    NOTE: Build on existing project-files infrastructure.
+    Quote Structure:
 
+    - Option name (Good/Better/Best or custom)
 
-    IMPORTANT CODE QUALITY REQUIREMENTS:
+    - Itemized line items per option
 
-    - Run `npm run typecheck` and fix ALL errors before completing
+    - Option-specific totals
 
-    - Run `npm run lint` and fix errors, keep warnings under 10
-
-    - Do NOT create duplicate type definitions
-
-    - Import all types you use (FileType, RoofingFileCategory, etc.)
-
-    - Do NOT use `any` type - use proper types or `unknown`
-
-    - Prefix unused parameters with underscore: `_param`
-
-    - Use theme variables, not hardcoded colors
+    - Recommended option highlighting
 
     '
   success_criteria:
-  - Files can be categorized
-  - Folder structure supported
-  - Search/filter works on files
-  - Version history accessible
-  - Mobile upload functional
-  - Bulk operations work
-  why: 'Research Finding: No centralized document organization causes project chaos.
+  - Can create estimate with 2-3 pricing options
+  - Options display in professional comparison view
+  - PDF export shows all options professionally
+  - Customer can select preferred option
+  - Quote status tracking works
+  why: 'Research Finding: Single estimate only, not professional.
 
-    Competitor Buildertrend provides complete document management.
+    Competitor AccuLynx offers Good/Better/Best proposal options.
 
 
     Business Impact:
 
-    - Projects lose critical documents
+    - 25% increase in average deal size
 
-    - No version control on contracts
+    - Professional presentation increases close rate
 
-    - Field teams can''t access files on mobile
-
-    - Compliance risk from missing documentation
+    - Upselling opportunities with tiered options
 
     '
 dependencies: null
@@ -93,11 +73,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T18:00:00'
-  id: SPRINT2-002
-  priority: 3
+  created: '2025-12-14T19:00:00'
+  id: SPRINT3-002
+  priority: 2
   template: code-modification
-  title: File Management System Core Features
+  title: Multi-Option Quoting System
 on_failure:
   escalate:
     include:
@@ -108,41 +88,38 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/project-files/project-files-table.tsx
-  reason: Existing file table to enhance
+  path: components/estimates/estimate-form.tsx
+  reason: Existing estimate form to enhance
   required: true
 - extract: []
-  path: components/project-files/project-file-form.tsx
-  reason: Existing upload form to enhance
+  path: lib/types/estimate.ts
+  reason: Estimate type definitions
   required: true
 - extract: []
-  path: app/api/project-files/route.ts
-  reason: Existing file API patterns
+  path: app/(dashboard)/estimates/[id]/page.tsx
+  reason: Estimate detail page to add options view
   required: true
 scope:
   constraints: []
   create:
-  - lib/types/file.ts
-  - components/project-files/FileCategories.tsx
-  - components/project-files/FileFolderTree.tsx
-  - components/project-files/FileVersionHistory.tsx
-  - components/project-files/BulkFileActions.tsx
-  - components/project-files/MobileFileUpload.tsx
-  - app/api/project-files/versions/route.ts
-  - app/api/project-files/search/route.ts
+  - lib/types/quote-option.ts
+  - components/estimates/QuoteOptions.tsx
+  - components/estimates/QuoteOptionCard.tsx
+  - components/estimates/QuoteComparison.tsx
+  - components/estimates/QuoteProposalView.tsx
+  - app/api/estimates/[id]/options/route.ts
   do_not_touch:
-  - storage bucket configurations
-  - Supabase storage policies
+  - app/api/estimates/route.ts
+  - lib/validations/estimate.ts
   modify:
-  - components/project-files/project-files-table.tsx
-  - components/project-files/project-file-form.tsx
-  - app/api/project-files/route.ts
-  - app/api/project-files/[id]/route.ts
+  - components/estimates/estimate-form.tsx
+  - app/(dashboard)/estimates/[id]/page.tsx
 thinking:
   level: think_hard
   triggers:
-  - Before designing folder hierarchy structure
-  - When implementing file versioning
+  - Before designing quote option data model
+  - When planning PDF generation approach
+  - When designing comparison UI
 validation:
   assertions: []
   post_commit: []
@@ -151,19 +128,15 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 120
-  - command: npm run lint -- --max-warnings 10
+  - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/types/file.ts
+  - command: test -f lib/types/quote-option.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: grep -q "FileCategories" components/project-files/project-files-table.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f components/project-files/MobileFileUpload.tsx
+  - command: test -f components/estimates/QuoteOptions.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60

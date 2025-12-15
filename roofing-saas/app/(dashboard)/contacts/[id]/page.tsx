@@ -4,8 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
-import { DNCBadge } from '@/components/contacts/DNCBadge'
-import { CallComplianceCheck } from '@/components/contacts/CallComplianceCheck'
 
 /**
  * Contact detail page
@@ -53,30 +51,25 @@ export default async function ContactDetailPage({
     )
   }
 
-  const primaryPhone = contact.phone || contact.mobile_phone
-
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-foreground">
-                {contact.first_name} {contact.last_name}
-              </h1>
-              <DNCBadge status={contact.dnc_status} />
-            </div>
-            <div className="flex gap-2 items-center">
-              <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full capitalize">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {contact.first_name} {contact.last_name}
+            </h1>
+            <div className="flex gap-2 mt-2 items-center">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full capitalize">
                 {contact.type}
               </span>
-              <span className="px-3 py-1 bg-secondary/10 text-secondary text-sm font-semibold rounded-full capitalize">
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full capitalize">
                 {contact.stage}
               </span>
               <ContactSubstatusManager
                 contactId={contact.id}
-                stage={contact.stage || 'new'}
+                stage={contact.stage}
                 currentSubstatus={contact.substatus}
               />
             </div>
@@ -85,13 +78,13 @@ export default async function ContactDetailPage({
           <div className="flex gap-2">
             <Link
               href={`/contacts/${contact.id}/edit`}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Edit
             </Link>
             <Link
               href="/contacts"
-              className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-background"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
               Back
             </Link>
@@ -99,95 +92,33 @@ export default async function ContactDetailPage({
         </div>
 
         {/* Contact Information */}
-        <div className="bg-card rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Contact Information</h2>
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-muted-foreground">Email</label>
-              <p className="mt-1 text-foreground">{contact.email || '-'}</p>
+              <label className="block text-sm font-medium text-gray-500">Email</label>
+              <p className="mt-1 text-gray-900">{contact.email || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground">Phone</label>
-              <p className="mt-1 text-foreground">{contact.phone || '-'}</p>
+              <label className="block text-sm font-medium text-gray-500">Phone</label>
+              <p className="mt-1 text-gray-900">{contact.phone || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground">Mobile Phone</label>
-              <p className="mt-1 text-foreground">{contact.mobile_phone || '-'}</p>
+              <label className="block text-sm font-medium text-gray-500">Mobile Phone</label>
+              <p className="mt-1 text-gray-900">{contact.mobile_phone || '-'}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground">Source</label>
-              <p className="mt-1 text-foreground">{contact.source || '-'}</p>
+              <label className="block text-sm font-medium text-gray-500">Source</label>
+              <p className="mt-1 text-gray-900">{contact.source || '-'}</p>
             </div>
           </div>
         </div>
 
-        {/* DNC & Compliance Information */}
-        {(contact.dnc_status || primaryPhone) && (
-          <div className="bg-card rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Do Not Call & Compliance</h2>
-            
-            {/* DNC Status Display */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-muted-foreground mb-2">DNC Status</label>
-              {contact.dnc_status && contact.dnc_status !== 'clear' ? (
-                <div className="flex items-center gap-2">
-                  <DNCBadge status={contact.dnc_status} showLabel={true} />
-                </div>
-              ) : (
-                <p className="text-sm text-foreground">Not on any DNC lists</p>
-              )}
-            </div>
-
-            {/* Compliance Check */}
-            {primaryPhone && (
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Call Compliance Check</label>
-                <div className="bg-muted/30 rounded-lg p-4 border border-border">
-                  <CallComplianceCheck
-                    phoneNumber={primaryPhone}
-                    contactId={contact.id}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Call Preferences */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Call Opt-Out</label>
-                <p className="mt-1 text-foreground">
-                  {contact.call_opt_out ? (
-                    <span className="text-red-600">Yes - Contact has opted out</span>
-                  ) : (
-                    <span className="text-green-600">No - Calls allowed</span>
-                  )}
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Call Consent</label>
-                <p className="mt-1 text-foreground">
-                  {contact.call_consent ? (
-                    <span className="text-green-600">Yes - Consent obtained</span>
-                  ) : (
-                    <span className="text-orange-600">No - No explicit consent</span>
-                  )}
-                </p>
-              </div>
-              {contact.timezone && (
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Timezone</label>
-                  <p className="mt-1 text-foreground">{contact.timezone}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Address */}
         {(contact.address_street || contact.address_city) && (
-          <div className="bg-card rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Address</h2>
-            <div className="text-foreground">
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Address</h2>
+            <div className="text-gray-900">
               {contact.address_street && <p>{contact.address_street}</p>}
               {(contact.address_city || contact.address_state || contact.address_zip) && (
                 <p>
@@ -202,37 +133,37 @@ export default async function ContactDetailPage({
 
         {/* Property Details */}
         {(contact.property_type || contact.roof_type || contact.roof_age) && (
-          <div className="bg-card rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Property Details</h2>
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.property_type && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Property Type</label>
-                  <p className="mt-1 text-foreground">{contact.property_type}</p>
+                  <label className="block text-sm font-medium text-gray-500">Property Type</label>
+                  <p className="mt-1 text-gray-900">{contact.property_type}</p>
                 </div>
               )}
               {contact.roof_type && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Roof Type</label>
-                  <p className="mt-1 text-foreground">{contact.roof_type}</p>
+                  <label className="block text-sm font-medium text-gray-500">Roof Type</label>
+                  <p className="mt-1 text-gray-900">{contact.roof_type}</p>
                 </div>
               )}
               {contact.roof_age !== null && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Roof Age</label>
-                  <p className="mt-1 text-foreground">{contact.roof_age} years</p>
+                  <label className="block text-sm font-medium text-gray-500">Roof Age</label>
+                  <p className="mt-1 text-gray-900">{contact.roof_age} years</p>
                 </div>
               )}
               {contact.square_footage && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Square Footage</label>
-                  <p className="mt-1 text-foreground">{contact.square_footage.toLocaleString()} sq ft</p>
+                  <label className="block text-sm font-medium text-gray-500">Square Footage</label>
+                  <p className="mt-1 text-gray-900">{contact.square_footage.toLocaleString()} sq ft</p>
                 </div>
               )}
               {contact.stories && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Stories</label>
-                  <p className="mt-1 text-foreground">{contact.stories}</p>
+                  <label className="block text-sm font-medium text-gray-500">Stories</label>
+                  <p className="mt-1 text-gray-900">{contact.stories}</p>
                 </div>
               )}
             </div>
@@ -241,19 +172,19 @@ export default async function ContactDetailPage({
 
         {/* Insurance */}
         {(contact.insurance_carrier || contact.policy_number) && (
-          <div className="bg-card rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Insurance Information</h2>
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Insurance Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {contact.insurance_carrier && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Insurance Carrier</label>
-                  <p className="mt-1 text-foreground">{contact.insurance_carrier}</p>
+                  <label className="block text-sm font-medium text-gray-500">Insurance Carrier</label>
+                  <p className="mt-1 text-gray-900">{contact.insurance_carrier}</p>
                 </div>
               )}
               {contact.policy_number && (
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Policy Number</label>
-                  <p className="mt-1 text-foreground">{contact.policy_number}</p>
+                  <label className="block text-sm font-medium text-gray-500">Policy Number</label>
+                  <p className="mt-1 text-gray-900">{contact.policy_number}</p>
                 </div>
               )}
             </div>
@@ -261,8 +192,8 @@ export default async function ContactDetailPage({
         )}
 
         {/* Photos */}
-        <div className="bg-card rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Property Photos</h2>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Photos</h2>
           <PhotoManager
             contactId={contact.id}
             tenantId={tenantId}

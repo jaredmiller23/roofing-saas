@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const includeInactive = searchParams.get('include_inactive') === 'true'
     const limit = parseInt(searchParams.get('limit') || '50', 10)
+    const search = searchParams.get('search')
 
     // Fetch conversations
     let query = supabase
@@ -40,6 +41,11 @@ export async function GET(request: NextRequest) {
 
     if (!includeInactive) {
       query = query.eq('is_active', true)
+    }
+
+    // Add search filter if provided
+    if (search && search.trim()) {
+      query = query.ilike('title', `%${search.trim()}%`)
     }
 
     const { data: conversations, error } = await query

@@ -58,6 +58,11 @@ function Button({
     console.warn('Button: Icon-only buttons should have an aria-label for accessibility')
   }
 
+  // Additional accessibility warning for buttons without sufficient labeling
+  if (process.env.NODE_ENV === 'development' && !ariaLabel && !props['aria-labelledby'] && !children) {
+    console.warn('Button: Empty buttons should have an aria-label for accessibility')
+  }
+
   return (
     <Comp
       data-slot="button"

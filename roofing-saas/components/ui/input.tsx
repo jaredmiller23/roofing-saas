@@ -11,6 +11,11 @@ const Input = React.forwardRef<
     console.warn('Input: Input should have an associated label, aria-label, or aria-labelledby for accessibility')
   }
 
+  // Additional accessibility warning for required fields without indication
+  if (process.env.NODE_ENV === 'development' && props.required && !props['aria-required']) {
+    console.warn('Input: Required inputs should have aria-required="true" for accessibility')
+  }
+
   return (
     <input
       ref={ref}
@@ -24,6 +29,7 @@ const Input = React.forwardRef<
         className
       )}
       aria-describedby={ariaDescribedby}
+      aria-required={props.required ? 'true' : undefined}
       {...props}
     />
   )

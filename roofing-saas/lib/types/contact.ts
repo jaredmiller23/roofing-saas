@@ -46,6 +46,9 @@ export interface Contact {
   phone: string | null
   mobile_phone: string | null
 
+  // Organization Link
+  organization_id: string | null
+
   // Organization Info (merged from organizations table)
   is_organization: boolean
   company: string | null
@@ -105,6 +108,7 @@ export interface CreateContactInput {
   email?: string
   phone?: string
   mobile_phone?: string
+  organization_id?: string
   is_organization?: boolean
   company?: string
   website?: string

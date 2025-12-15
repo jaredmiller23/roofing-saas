@@ -1,17 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { createOrganizationSchema, organizationFiltersSchema } from '@/lib/validations/organization'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
   AuthorizationError,
   mapSupabaseError,
+  mapZodError,
+  ConflictError
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import type { OrganizationListResponse } from '@/lib/types/organization'
+import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 
 /**
  * GET /api/organizations
- * List organizations with filtering and pagination
+ * List organizations with filtering, search, and pagination
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
@@ -31,14 +36,23 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const search = searchParams.get('search') || undefined
-    const orgType = searchParams.get('org_type') || undefined
-    const stage = searchParams.get('stage') || undefined
-    const sortBy = searchParams.get('sort_by') || 'created_at'
-    const sortOrder = (searchParams.get('sort_order') || 'desc') as 'asc' | 'desc'
+    const rawFilters = {
+      search: searchParams.get('search') || undefined,
+      type: searchParams.get('type') || undefined,
+      industry: searchParams.get('industry') || undefined,
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || '20'),
+      sort_by: searchParams.get('sort_by') || 'created_at',
+      sort_order: (searchParams.get('sort_order') || 'desc') as 'asc' | 'desc',
+    }
 
+    // Validate filters
+    const validatedFilters = organizationFiltersSchema.safeParse(rawFilters)
+    if (!validatedFilters.success) {
+      throw mapZodError(validatedFilters.error)
+    }
+
+    const filters = validatedFilters.data
     const supabase = await createClient()
 
     // Build query
@@ -49,23 +63,33 @@ export async function GET(request: NextRequest) {
       .eq('is_deleted', false)
 
     // Apply filters
-    if (orgType) {
-      query = query.eq('org_type', orgType)
+    if (filters.type) {
+      query = query.eq('type', filters.type)
     }
-    if (stage) {
-      query = query.eq('stage', stage)
+    if (filters.industry) {
+      query = query.eq('industry', filters.industry)
     }
-    if (search) {
-      query = query.ilike('name', `%${search}%`)
+
+    // Full-text search
+    if (filters.search) {
+      query = query.textSearch('search_vector', filters.search, {
+        type: 'websearch',
+        config: 'english',
+      })
     }
 
     // Pagination
+    const page = filters.page || 1
+    const limit = filters.limit || 20
     const from = (page - 1) * limit
     const to = from + limit - 1
+
     query = query.range(from, to)
 
     // Sorting
-    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+    query = query.order(filters.sort_by || 'created_at', {
+      ascending: filters.sort_order === 'asc',
+    })
 
     const { data: organizations, error, count } = await query
 
@@ -76,7 +100,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/organizations', 200, duration)
 
-    const response = {
+    const response: OrganizationListResponse = {
       organizations: organizations || [],
       total: count || 0,
       page,
@@ -114,13 +138,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // Validate input
+    const validatedData = createOrganizationSchema.safeParse(body)
+    if (!validatedData.success) {
+      throw mapZodError(validatedData.error)
+    }
+
     const supabase = await createClient()
 
     // Create organization
     const { data: organization, error } = await supabase
       .from('organizations')
       .insert({
-        ...body,
+        ...validatedData.data,
         tenant_id: tenantId,
         created_by: user.id,
       })
@@ -128,8 +158,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
+      // Handle duplicate name
+      if (error.code === '23505') {
+        throw ConflictError('An organization with this name already exists', { name: validatedData.data.name })
+      }
       throw mapSupabaseError(error)
     }
+
+    // Award points for creating an organization (non-blocking)
+    awardPointsSafe(
+      user.id,
+      POINT_VALUES.CONTACT_CREATED, // Reuse contact points value, could add specific org points
+      'Created new organization',
+      organization.id
+    )
 
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/organizations', 201, duration)
