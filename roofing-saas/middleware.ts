@@ -34,13 +34,16 @@ export async function middleware(request: NextRequest) {
   const method = request.method
 
   // Handle i18n routing first (locale detection, redirects)
-  // Skip for API routes, static assets, and auth routes (which are not under [locale])
+  // Skip for API routes, static assets, auth routes, and root landing page
+  // These routes exist outside the [locale] directory structure
   const authRoutes = ['/login', '/register', '/reset-password', '/auth']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+  const isRootPath = pathname === '/'
 
   if (!pathname.startsWith('/api/') &&
       !pathname.startsWith('/_next/') &&
-      !isAuthRoute) {
+      !isAuthRoute &&
+      !isRootPath) {
     const intlResponse = intlMiddleware(request)
     // If intl middleware wants to redirect, return that response
     if (intlResponse.headers.get('x-middleware-rewrite') ||
