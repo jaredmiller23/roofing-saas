@@ -9,7 +9,7 @@ import {
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import type { AuditLogResponse, AuditLogFilters, AuditEntry } from '@/lib/audit/audit-types'
+import type { AuditLogResponse, AuditLogFilters, AuditEntry, AuditEntityType, AuditActionType } from '@/lib/audit/audit-types'
 
 /**
  * GET /api/admin/audit-log
@@ -44,15 +44,15 @@ export async function GET(request: NextRequest) {
     const filters: AuditLogFilters = {
       search: searchParams.get('search') || undefined,
       user_id: searchParams.get('user_id') || undefined,
-      entity_type: searchParams.get('entity_type') as any || undefined,
-      action_type: searchParams.get('action_type') as any || undefined,
+      entity_type: searchParams.get('entity_type') as AuditEntityType || undefined,
+      action_type: searchParams.get('action_type') as AuditActionType || undefined,
       entity_id: searchParams.get('entity_id') || undefined,
       start_date: searchParams.get('start_date') || undefined,
       end_date: searchParams.get('end_date') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '50'),
-      sort_by: (searchParams.get('sort_by') as any) || 'timestamp',
-      sort_order: (searchParams.get('sort_order') as any) || 'desc',
+      sort_by: (searchParams.get('sort_by') as 'timestamp' | 'user_name' | 'action_type' | 'entity_type') || 'timestamp',
+      sort_order: (searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
     }
 
     // Validate pagination parameters

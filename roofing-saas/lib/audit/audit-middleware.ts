@@ -51,7 +51,7 @@ export async function auditedCreate<T>(
   entity_type: AuditEntityType,
   createFn: () => Promise<T & { id: string }>,
   context: AuditContext,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<T & { id: string }> {
   const result = await createFn()
 
@@ -63,7 +63,7 @@ export async function auditedCreate<T>(
     context.tenant_id,
     entity_type,
     result.id,
-    result as Record<string, any>,
+    result as Record<string, unknown>,
     {
       ...metadata,
       ip_address: context.ip_address,
@@ -82,9 +82,9 @@ export async function auditedCreate<T>(
 export async function auditedUpdate<T>(
   entity_type: AuditEntityType,
   entity_id: string,
-  updateFn: (beforeValues: Record<string, any>) => Promise<T>,
+  updateFn: (beforeValues: Record<string, unknown>) => Promise<T>,
   context: AuditContext,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<T> {
   // Get current state before update
   const beforeValues = await fetchEntityState(entity_type, entity_id, context.tenant_id)
@@ -123,9 +123,9 @@ export async function auditedUpdate<T>(
 export async function auditedDelete<T>(
   entity_type: AuditEntityType,
   entity_id: string,
-  deleteFn: (beforeValues: Record<string, any>) => Promise<T>,
+  deleteFn: (beforeValues: Record<string, unknown>) => Promise<T>,
   context: AuditContext,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<T> {
   // Get current state before deletion
   const beforeValues = await fetchEntityState(entity_type, entity_id, context.tenant_id)
@@ -161,7 +161,7 @@ async function fetchEntityState(
   entity_type: AuditEntityType,
   entity_id: string,
   tenant_id: string
-): Promise<Record<string, any>> {
+): Promise<Record<string, unknown>> {
   const supabase = await createClient()
 
   let table: string
@@ -207,7 +207,7 @@ async function fetchEntityState(
 /**
  * Higher-order function to wrap API route handlers with audit logging
  */
-export function withAuditLogging<T extends any[]>(
+export function withAuditLogging<T extends unknown[]>(
   handler: (request: NextRequest, ...args: T) => Promise<Response>
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {
@@ -250,9 +250,9 @@ export async function logAuditEntry(
   entity_type: AuditEntityType,
   entity_id: string,
   context: AuditContext,
-  before_values?: Record<string, any> | null,
-  after_values?: Record<string, any> | null,
-  metadata?: Record<string, any>
+  before_values?: Record<string, unknown> | null,
+  after_values?: Record<string, unknown> | null,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   return auditLogger.logEntry({
     user_id: context.user_id,
@@ -278,9 +278,9 @@ export async function logBulkAuditEntries(
   entity_type: AuditEntityType,
   entries: Array<{
     entity_id: string
-    before_values?: Record<string, any> | null
-    after_values?: Record<string, any> | null
-    metadata?: Record<string, any>
+    before_values?: Record<string, unknown> | null
+    after_values?: Record<string, unknown> | null
+    metadata?: Record<string, unknown>
   }>,
   context: AuditContext
 ): Promise<void> {

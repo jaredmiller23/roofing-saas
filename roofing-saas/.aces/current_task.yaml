@@ -2,73 +2,150 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Fix all theme compliance violations across the codebase. The ESLint rule\n\
-    theme-compliance/no-hardcoded-colors is detecting hardcoded Tailwind colors\n\
-    that should use semantic theme tokens instead.\n\nThis is a CRITICAL compliance\
-    \ issue - no bypassing allowed.\n\nPattern to fix:\n- text-blue-600 \u2192 text-primary\n\
-    - text-green-600 \u2192 text-primary (for success states, consider text-emerald-600\
-    \ if semantic)\n- text-red-600 \u2192 text-destructive\n- text-purple-600 \u2192\
-    \ text-primary or text-accent\n- bg-blue-500 \u2192 bg-primary\n- bg-green-500\
-    \ \u2192 bg-primary (or semantic success color)\n- bg-red-500 \u2192 bg-destructive\n\
-    - Similar patterns for all hardcoded colors\n\nFor status indicators (success/error/warning),\
-    \ use the semantic alternatives:\n- Success: text-emerald-600 / bg-emerald-* (if\
-    \ allowed by lint)\n- Error: text-destructive / bg-destructive\n- Warning: text-amber-600\
-    \ / bg-amber-*\n- Info: text-primary / bg-primary\n\nIf the lint rule blocks ALL\
-    \ color usage, check the rule config and use\nonly the allowed semantic tokens.\n"
+  goal: "Fix all remaining ESLint warnings and errors across the codebase to achieve\n\
+    zero-warning compliance. This is transitional cleanup of harness-generated\nSprint\
+    \ 5 code that was created before the strict validation policy.\n\nCurrent State\
+    \ (98 files, 536 issues):\n- 187 @typescript-eslint/no-explicit-any warnings\n\
+    - 149 @typescript-eslint/no-unused-vars warnings\n- 8 react-hooks/exhaustive-deps\
+    \ warnings\n- Various other issues\n\nIssue Categories and Fixes:\n\n1. NO-EXPLICIT-ANY\
+    \ (187 issues)\n   Pattern: Replace `any` with proper types\n\n   Common patterns\
+    \ to fix:\n   - Function parameters: `(data: any)` -> `(data: Record<string, unknown>)`\n\
+    \   - API responses: `response.json() as any` -> proper interface\n   - Event\
+    \ handlers: `(e: any)` -> `(e: React.ChangeEvent<HTMLInputElement>)`\n   - Supabase\
+    \ data: Add proper table row types\n\n   Strategy:\n   - Create interfaces for\
+    \ repeated patterns\n   - Use `unknown` with type guards for truly dynamic data\n\
+    \   - Use generics where appropriate\n\n2. NO-UNUSED-VARS (149 issues)\n   Pattern:\
+    \ Remove unused imports and variables\n\n   Fixes:\n   - Remove unused imports\n\
+    \   - Prefix intentionally unused params with underscore: `_param`\n   - Remove\
+    \ dead code\n\n3. REACT-HOOKS/EXHAUSTIVE-DEPS (8 issues)\n   Pattern: Fix useEffect/useCallback\
+    \ dependencies\n\n   Fixes:\n   - Add missing dependencies\n   - Wrap callbacks\
+    \ in useCallback\n   - Use refs for values that shouldn't trigger re-renders\n\
+    \nFile Categories (prioritized):\n\nHIGH PRIORITY (Core functionality):\n- lib/offline/*.ts\
+    \ (5 files) - PWA/offline infrastructure\n- lib/dashboard/*.tsx (2 files) - Dashboard\
+    \ components\n- app/api/**/*.ts (12 files) - API routes\n- components/ar/*.tsx\
+    \ (4 files) - AR assessment\n\nMEDIUM PRIORITY (Feature pages):\n- app/(dashboard)/**/*.tsx\
+    \ - Dashboard pages\n- app/[locale]/**/*.tsx - Internationalized pages\n\nApproach:\n\
+    - Fix by module/feature area, not file-by-file\n- Create shared type definitions\
+    \ in lib/types/\n- Run lint after each module to verify progress\n- Commit incrementally\
+    \ if needed\n"
   success_criteria:
-  - npm run lint passes with 0 errors for theme-compliance rule
-  - All hardcoded colors replaced with semantic tokens
-  - TypeScript compiles without errors
-  - Visual appearance preserved (colors should look similar)
-  why: 'Theme compliance is non-negotiable. Hardcoded colors break:
+  - npm run lint -- --max-warnings 0 passes
+  - npm run typecheck passes
+  - No eslint-disable comments added (fix underlying issues)
+  - All 98 files with issues are clean
+  why: 'This is the final cleanup of transitional code from Sprint 5 harness output.
 
-    - Dark mode support
 
-    - Brand customization
+    The Sprint 5 tasks (AR, PWA, Dashboard, i18n, Marketplace) were executed
 
-    - Accessibility
+    before IMPROVEMENT-002 enforced --max-warnings 0. As a result, they
 
-    - Design system consistency
+    produced code with `any` types and other lint issues.
+
+
+    After this task:
+
+    - Codebase will have zero lint warnings
+
+    - All future harness output will be held to the same standard
+
+    - Pre-commit hooks will pass without --no-verify
+
+    - Clean baseline for ongoing development
 
     '
 dependencies: null
-handoff: null
+handoff:
+  format: null
+  progress_file: .vest/last_run_summary.md
+  update_on:
+  - task_start
+  - task_complete
+  - failure
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T00:00:00'
-  id: COMPLIANCE-001
-  priority: 1
-  template: bug-fix
-  title: 'Fix: Theme compliance - replace hardcoded colors with semantic tokens'
-on_failure: null
+  created: '2025-12-15T10:00:00'
+  id: CLEANUP-003
+  priority: 2
+  template: code-modification
+  title: Fix All Remaining Lint Issues - Sprint 5 Transitional Cleanup
+on_failure:
+  escalate:
+    include:
+    - error_output
+    - files_modified
+    - remaining_lint_issues
+    to: human
+  rollback:
+  - git stash
 read_first:
 - extract: []
-  path: .eslintrc.json
-  reason: Check theme-compliance rule configuration
+  path: lib/offline/offline-types.ts
+  reason: Understand existing offline type definitions
   required: true
 - extract: []
-  path: app/globals.css
-  reason: Check available CSS variables/tokens
+  path: lib/types/supabase-presence.ts
+  reason: Pattern for creating proper type definitions
   required: true
 - extract: []
-  path: tailwind.config.ts
-  reason: Check theme configuration
+  path: tsconfig.json
+  reason: TypeScript configuration
   required: false
 scope:
   constraints: []
-  create: []
+  create:
+  - lib/types/api-responses.ts
+  - lib/types/offline-types.ts
+  - lib/types/ar-types.ts
   do_not_touch:
-  - lib/supabase/server.ts
-  - node_modules/**
+  - node_modules/
+  - .next/
+  - Test files unless they have issues
   modify:
-  - app/**/*.tsx
-  - components/**/*.tsx
+  - lib/offline/indexed-db.ts
+  - lib/offline/sync-manager.ts
+  - lib/offline/cache-strategy.ts
+  - lib/offline/offline-types.ts
+  - lib/offline/conflict-resolution.ts
+  - lib/dashboard/DashboardEditor.tsx
+  - lib/dashboard/examples/dashboard-usage-example.tsx
+  - components/ar/ARViewport.tsx
+  - components/ar/ARToolbar.tsx
+  - components/ar/MeasurementOverlay.tsx
+  - components/ar/DamageMarker.tsx
+  - app/api/admin/audit-log/route.ts
+  - app/api/admin/audit-log/export/route.ts
+  - app/api/analytics/forecast/route.ts
+  - app/api/analytics/pipeline/route.ts
+  - app/api/ar/measurements/route.ts
+  - app/api/automations/route.ts
+  - app/api/contacts/[id]/route.ts
+  - app/api/contacts/[id]/score/route.ts
+  - app/api/estimates/[id]/options/route.ts
+  - app/api/insights/query/route.ts
+  - app/api/storm/notifications/route.ts
+  - app/api/storm/predictions/route.ts
+  - app/api/sync/route.ts
+  - app/(dashboard)/automations/[id]/page.tsx
+  - app/(dashboard)/automations/new/page.tsx
+  - app/(dashboard)/automations/page.tsx
+  - app/[locale]/(dashboard)/automations/[id]/page.tsx
+  - app/[locale]/(dashboard)/automations/new/page.tsx
+  - app/[locale]/(dashboard)/automations/page.tsx
+  - app/(dashboard)/contacts/[id]/ContactDetailClient.tsx
+  - app/(dashboard)/dashboard/edit/page.tsx
+  - app/(dashboard)/pipeline/analytics/page.tsx
+  - app/(dashboard)/projects/[id]/ar-assessment/page.tsx
+  - app/(dashboard)/projects/[id]/page.tsx
+  - app/(dashboard)/settings/scoring/ScoringSettingsClient.tsx
+  - app/(dashboard)/storm-tracking/page.tsx
 thinking:
   level: think_hard
   triggers:
-  - When determining correct semantic replacement
-  - When handling status-specific colors
+  - When designing shared type definitions
+  - When fixing complex generic patterns
+  - When deciding between unknown and specific types
 validation:
   assertions: []
   post_commit: []

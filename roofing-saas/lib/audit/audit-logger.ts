@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import {
-  AuditEntry,
   CreateAuditEntryParams,
   AuditDiff,
   AuditError,
@@ -61,8 +60,8 @@ export class AuditLogger {
     tenant_id: string,
     entity_type: AuditEntityType,
     entity_id: string,
-    after_values: Record<string, any>,
-    metadata?: Record<string, any>
+    after_values: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     return this.logEntry({
       user_id,
@@ -88,9 +87,9 @@ export class AuditLogger {
     tenant_id: string,
     entity_type: AuditEntityType,
     entity_id: string,
-    before_values: Record<string, any>,
-    after_values: Record<string, any>,
-    metadata?: Record<string, any>
+    before_values: Record<string, unknown>,
+    after_values: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     return this.logEntry({
       user_id,
@@ -116,8 +115,8 @@ export class AuditLogger {
     tenant_id: string,
     entity_type: AuditEntityType,
     entity_id: string,
-    before_values: Record<string, any>,
-    metadata?: Record<string, any>
+    before_values: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     return this.logEntry({
       user_id,
@@ -197,8 +196,8 @@ export class AuditLogger {
    * Calculate diff between before and after values
    */
   static calculateDiff(
-    before: Record<string, any> | null,
-    after: Record<string, any> | null
+    before: Record<string, unknown> | null,
+    after: Record<string, unknown> | null
   ): AuditDiff[] {
     const diff: AuditDiff[] = []
 
@@ -271,20 +270,27 @@ export class AuditLogger {
   /**
    * Deep equality check for values
    */
-  private static isEqual(a: any, b: any): boolean {
+  private static isEqual(a: unknown, b: unknown): boolean {
     if (a === b) return true
     if (a == null || b == null) return a === b
     if (typeof a !== typeof b) return false
-    if (typeof a === 'object') {
-      if (Array.isArray(a) !== Array.isArray(b)) return false
-      if (Array.isArray(a)) {
+    if (typeof a === 'object' && typeof b === 'object') {
+      // Type guards for arrays
+      if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length !== b.length) return false
         return a.every((item, index) => this.isEqual(item, b[index]))
       }
-      const keysA = Object.keys(a)
-      const keysB = Object.keys(b)
-      if (keysA.length !== keysB.length) return false
-      return keysA.every(key => this.isEqual(a[key], b[key]))
+      if (Array.isArray(a) !== Array.isArray(b)) return false
+
+      // Both are objects (but not arrays)
+      if (!Array.isArray(a) && !Array.isArray(b)) {
+        const objA = a as Record<string, unknown>
+        const objB = b as Record<string, unknown>
+        const keysA = Object.keys(objA)
+        const keysB = Object.keys(objB)
+        if (keysA.length !== keysB.length) return false
+        return keysA.every(key => this.isEqual(objA[key], objB[key]))
+      }
     }
     return false
   }
@@ -293,9 +299,9 @@ export class AuditLogger {
    * Sanitize sensitive data before logging
    */
   static sanitizeValues(
-    values: Record<string, any> | null,
+    values: Record<string, unknown> | null,
     entity_type: AuditEntityType
-  ): Record<string, any> | null {
+  ): Record<string, unknown> | null {
     if (!values) return null
 
     const sensitiveFields = DEFAULT_AUDIT_CONFIG.sensitive_fields[entity_type] || []
@@ -352,9 +358,9 @@ export async function auditContact(
   user_email: string,
   tenant_id: string,
   contact_id: string,
-  before_values?: Record<string, any> | null,
-  after_values?: Record<string, any> | null,
-  metadata?: Record<string, any>
+  before_values?: Record<string, unknown> | null,
+  after_values?: Record<string, unknown> | null,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const sanitizedBefore = AuditLogger.sanitizeValues(before_values ?? null, 'contact')
   const sanitizedAfter = AuditLogger.sanitizeValues(after_values ?? null, 'contact')
@@ -383,9 +389,9 @@ export async function auditProject(
   user_email: string,
   tenant_id: string,
   project_id: string,
-  before_values?: Record<string, any> | null,
-  after_values?: Record<string, any> | null,
-  metadata?: Record<string, any>
+  before_values?: Record<string, unknown> | null,
+  after_values?: Record<string, unknown> | null,
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const sanitizedBefore = AuditLogger.sanitizeValues(before_values ?? null, 'project')
   const sanitizedAfter = AuditLogger.sanitizeValues(after_values ?? null, 'project')

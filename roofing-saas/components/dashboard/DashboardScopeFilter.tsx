@@ -1,6 +1,9 @@
 'use client'
 
-export type DashboardScope = 'user' | 'company'
+import { Button } from '@/components/ui/button'
+import { Building2, Users, User } from 'lucide-react'
+
+export type DashboardScope = 'company' | 'team' | 'personal'
 
 interface DashboardScopeFilterProps {
   currentScope: DashboardScope
@@ -8,28 +11,41 @@ interface DashboardScopeFilterProps {
 }
 
 export function DashboardScopeFilter({ currentScope, onScopeChange }: DashboardScopeFilterProps) {
+  const scopes: { value: DashboardScope; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { value: 'company', label: 'Company', icon: Building2 },
+    { value: 'team', label: 'Team', icon: Users },
+    { value: 'personal', label: 'Personal', icon: User },
+  ]
+
   return (
-    <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
-      <button
-        onClick={() => onScopeChange('user')}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-          currentScope === 'user'
-            ? 'bg-card text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        My Metrics
-      </button>
-      <button
-        onClick={() => onScopeChange('company')}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-          currentScope === 'company'
-            ? 'bg-card text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-      >
-        Company Metrics
-      </button>
+    <div className="flex items-center space-x-2">
+      <span className="text-sm font-medium text-muted-foreground">View:</span>
+      <div className="flex rounded-lg border border-border">
+        {scopes.map((scope, index) => {
+          const Icon = scope.icon
+          const isActive = currentScope === scope.value
+          const isFirst = index === 0
+          const isLast = index === scopes.length - 1
+
+          return (
+            <Button
+              key={scope.value}
+              variant={isActive ? 'default' : 'ghost'}
+              size="sm"
+              className={`
+                ${isFirst ? 'rounded-r-none' : ''}
+                ${isLast ? 'rounded-l-none' : ''}
+                ${!isFirst && !isLast ? 'rounded-none border-x-0' : ''}
+                ${isActive ? 'shadow-sm' : ''}
+              `}
+              onClick={() => onScopeChange(scope.value)}
+            >
+              <Icon className="h-4 w-4 mr-2" />
+              {scope.label}
+            </Button>
+          )
+        })}
+      </div>
     </div>
   )
 }

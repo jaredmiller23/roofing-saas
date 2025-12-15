@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
@@ -391,6 +391,12 @@ export default function ProjectDetailPage() {
                 <Button variant="outline" size="sm" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Claims
+                </Button>
+              </Link>
+              <Link href={`/projects/${projectId}/ar-assessment`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Camera className="h-4 w-4" />
+                  AR Assessment
                 </Button>
               </Link>
               <SendSignatureDialog

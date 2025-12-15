@@ -195,7 +195,7 @@ function getPropertyDetailsScore(contact: Contact): number {
 /**
  * Update lead score for a contact (used by API)
  */
-export async function updateContactLeadScore(contactId: string): Promise<LeadScore> {
+export async function updateContactLeadScore(_contactId: string): Promise<LeadScore> {
   // This would typically fetch the contact from the database
   // For now, we'll return a placeholder implementation
   throw new Error('updateContactLeadScore not implemented - requires database integration')
@@ -204,7 +204,7 @@ export async function updateContactLeadScore(contactId: string): Promise<LeadSco
 /**
  * Batch update lead scores for multiple contacts
  */
-export async function batchUpdateLeadScores(contactIds: string[]): Promise<Map<string, LeadScore>> {
+export async function batchUpdateLeadScores(_contactIds: string[]): Promise<Map<string, LeadScore>> {
   const results = new Map<string, LeadScore>()
   
   // This would typically process contacts in batches

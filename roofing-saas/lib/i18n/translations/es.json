@@ -1,0 +1,123 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "print": "Imprimir",
+    "download": "Descargar",
+    "upload": "Subir",
+    "close": "Cerrar",
+    "open": "Abrir",
+    "view": "Ver",
+    "add": "Agregar",
+    "remove": "Remover",
+    "update": "Actualizar",
+    "create": "Crear",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "customers": "Clientes",
+    "contacts": "Contactos",
+    "projects": "Proyectos",
+    "pipeline": "Pipeline",
+    "calendar": "Calendario",
+    "tasks": "Tareas",
+    "estimates": "Presupuestos",
+    "invoices": "Facturas",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "logout": "Cerrar Sesión"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "signUp": "Registrarse",
+    "forgotPassword": "Olvidé mi Contraseña",
+    "resetPassword": "Restablecer Contraseña",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "rememberMe": "Recordarme"
+  },
+  "dashboard": {
+    "welcome": "¡Bienvenido de vuelta!",
+    "todaysTasks": "Tareas de Hoy",
+    "recentActivity": "Actividad Reciente",
+    "upcomingEvents": "Próximos Eventos",
+    "quickActions": "Acciones Rápidas"
+  },
+  "customers": {
+    "title": "Clientes",
+    "addCustomer": "Agregar Cliente",
+    "editCustomer": "Editar Cliente",
+    "deleteCustomer": "Eliminar Cliente",
+    "customerDetails": "Detalles del Cliente",
+    "contactInfo": "Información de Contacto",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "email": "Correo Electrónico",
+    "notes": "Notas"
+  },
+  "projects": {
+    "title": "Proyectos",
+    "addProject": "Agregar Proyecto",
+    "editProject": "Editar Proyecto",
+    "deleteProject": "Eliminar Proyecto",
+    "projectDetails": "Detalles del Proyecto",
+    "status": "Estado",
+    "progress": "Progreso",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "budget": "Presupuesto",
+    "description": "Descripción"
+  },
+  "settings": {
+    "title": "Configuración",
+    "general": "General",
+    "profile": "Perfil",
+    "notifications": "Notificaciones",
+    "language": "Idioma",
+    "preferences": "Preferencias",
+    "account": "Cuenta",
+    "security": "Seguridad"
+  },
+  "language": {
+    "title": "Configuración de Idioma",
+    "description": "Elige tu idioma preferido para la aplicación",
+    "selectLanguage": "Seleccionar Idioma",
+    "currentLanguage": "Idioma Actual",
+    "availableLanguages": "Idiomas Disponibles",
+    "changeLanguage": "Cambiar Idioma"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "email": "Por favor ingresa una dirección de correo válida",
+    "minLength": "La longitud mínima es {min} caracteres",
+    "maxLength": "La longitud máxima es {max} caracteres",
+    "phoneNumber": "Por favor ingresa un número de teléfono válido",
+    "invalidFormat": "Formato inválido"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor inténtalo de nuevo.",
+    "network": "Error de red. Por favor verifica tu conexión.",
+    "notFound": "El recurso solicitado no fue encontrado.",
+    "unauthorized": "No tienes autorización para realizar esta acción.",
+    "forbidden": "Acceso prohibido.",
+    "serverError": "Error interno del servidor. Por favor inténtalo más tarde.",
+    "timeout": "Tiempo de espera agotado. Por favor inténtalo de nuevo."
+  }
+}

@@ -21,7 +21,8 @@ import {
 import type {
   WorkflowTrigger,
   WorkflowAction,
-  WorkflowCondition
+  WorkflowCondition,
+  ActionConfig
 } from '@/lib/automation/workflow-types'
 
 interface WorkflowCanvasProps {
@@ -103,21 +104,26 @@ export function WorkflowCanvas({
   }
 
   const getActionSummary = (action: WorkflowAction) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const config = action.config as any
+    const config = action.config
     switch (action.type) {
       case 'send_email':
-        return config.subject || 'No subject'
+        return (config as Extract<ActionConfig, { type: 'send_email' }>).subject || 'No subject'
       case 'send_sms':
-        return config.message?.substring(0, 30) + '...' || 'No message'
+        return (config as Extract<ActionConfig, { type: 'send_sms' }>).message?.substring(0, 30) + '...' || 'No message'
       case 'create_task':
-        return config.title || 'No title'
-      case 'update_field':
-        return `${config.field} = ${config.value}`
-      case 'change_stage':
-        return `Stage → ${config.stage}`
-      case 'wait':
-        return `Wait ${config.duration} hours`
+        return (config as Extract<ActionConfig, { type: 'create_task' }>).title || 'No title'
+      case 'update_field': {
+        const updateConfig = config as Extract<ActionConfig, { type: 'update_field' }>
+        return `${updateConfig.field} = ${updateConfig.value}`
+      }
+      case 'change_stage': {
+        const stageConfig = config as Extract<ActionConfig, { type: 'change_stage' }>
+        return `Stage → ${stageConfig.stage}`
+      }
+      case 'wait': {
+        const waitConfig = config as Extract<ActionConfig, { type: 'wait' }>
+        return `Wait ${waitConfig.duration} hours`
+      }
       default:
         return ''
     }

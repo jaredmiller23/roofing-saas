@@ -12,7 +12,6 @@ import {
   type QueryFilter,
   type TimeFrame,
   type VisualizationType,
-  COMMON_QUERY_PATTERNS,
   SCHEMA_MAPPING
 } from './query-types'
 
@@ -51,16 +50,14 @@ export class QueryInterpreter {
       .replace(/\s+/g, ' ') // Normalize whitespace
   }
 
-  private interpretWithPatterns(query: string, context: any): QueryInterpretation {
+  private interpretWithPatterns(query: string, context: { tenantId: string; userRole?: string }): QueryInterpretation {
     const entities: QueryEntity[] = []
     const filters: QueryFilter[] = []
-    let intent: QueryIntent
-    let timeframe: TimeFrame | undefined
     let visualization: VisualizationType = 'table'
     let confidence = 0.5
 
     // Intent detection
-    intent = this.detectIntent(query)
+    const intent = this.detectIntent(query)
     confidence += intent.confidence * 0.3
 
     // Entity extraction
@@ -69,7 +66,7 @@ export class QueryInterpreter {
     confidence += extractedEntities.length > 0 ? 0.2 : 0
 
     // Time frame detection
-    timeframe = this.extractTimeFrame(query)
+    const timeframe = this.extractTimeFrame(query)
     if (timeframe) confidence += 0.2
 
     // Filter detection
@@ -151,7 +148,7 @@ export class QueryInterpreter {
     return 'unknown'
   }
 
-  private extractEntities(query: string, context: any): QueryEntity[] {
+  private extractEntities(query: string, _context: { tenantId: string; userRole?: string }): QueryEntity[] {
     const entities: QueryEntity[] = []
 
     // Extract table entities
@@ -216,7 +213,7 @@ export class QueryInterpreter {
     if (relativeMatch) {
       const [, amount, unit] = relativeMatch
       return {
-        type: unit.replace(/s$/, '') as any,
+        type: unit.replace(/s$/, '') as TimeFrame['type'],
         relative: `past ${amount} ${unit}`
       }
     }
@@ -346,7 +343,7 @@ export class QueryInterpreter {
     return 'table'
   }
 
-  private async interpretWithAI(query: string, context: any): Promise<QueryInterpretation> {
+  private async interpretWithAI(query: string, context: { tenantId: string; userRole?: string }): Promise<QueryInterpretation> {
     // This would integrate with OpenAI or Anthropic API
     // For now, return a lower confidence pattern-based result
     // In production, this would send a structured prompt to the AI service
@@ -354,7 +351,7 @@ export class QueryInterpreter {
     const prompt = this.buildAIPrompt(query, context)
 
     // Simulated AI response - in production, this would be an actual API call
-    const aiResponse = await this.simulateAIResponse(prompt)
+    const _aiResponse = await this.simulateAIResponse(prompt)
 
     return {
       intent: {
@@ -373,7 +370,7 @@ export class QueryInterpreter {
     }
   }
 
-  private buildAIPrompt(query: string, context: any): string {
+  private buildAIPrompt(query: string, context: { tenantId: string; userRole?: string }): string {
     const schemaDescription = Object.entries(SCHEMA_MAPPING)
       .map(([table, config]) => `${table}: ${config.description}`)
       .join('\n')
@@ -402,7 +399,7 @@ Focus on safety - only SELECT operations, proper parameterization.
 `
   }
 
-  private async simulateAIResponse(prompt: string): Promise<any> {
+  private async simulateAIResponse(_prompt: string): Promise<{ intent: QueryIntent; entities: QueryEntity[]; metrics: string[]; filters: QueryFilter[]; groupBy: string[]; visualization: VisualizationType; confidence: number }> {
     // In production, this would make an actual API call to OpenAI/Anthropic
     // For now, return a placeholder response
     return {

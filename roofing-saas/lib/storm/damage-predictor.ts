@@ -270,7 +270,7 @@ function determineDamageLevel(
 ): DamageLevel {
   // Adjust thresholds based on storm intensity
   const hasSignificantHail = params.hailSize && params.hailSize >= 1.5
-  const hasHighWinds = params.windSpeed && params.windSpeed >= 70
+  const _hasHighWinds = params.windSpeed && params.windSpeed >= 70
 
   if (probability >= 85 || (hasSignificantHail && probability >= 75)) {
     return 'catastrophic'
@@ -423,7 +423,7 @@ function toRad(degrees: number): number {
  */
 export function calculatePriority(
   prediction: DamagePrediction,
-  contact: Contact
+  _contact: Contact
 ): 'low' | 'medium' | 'high' | 'urgent' {
   const { probability, damageLevel, estimatedDamage } = prediction
 

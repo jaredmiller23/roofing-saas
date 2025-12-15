@@ -5,7 +5,7 @@
  * Integrates with existing weather/causation infrastructure.
  */
 
-import type { StormEventData, WeatherSummary } from '@/lib/weather/causation-generator'
+import type { StormEventData } from '@/lib/weather/causation-generator'
 import type { Contact } from '@/lib/types/contact'
 
 // =====================================================

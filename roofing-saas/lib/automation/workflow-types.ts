@@ -86,8 +86,8 @@ export interface StageChangedConfig {
 export interface FieldChangedConfig {
   type: 'field_changed'
   field: string
-  from_value?: any
-  to_value?: any
+  from_value?: unknown
+  to_value?: unknown
   operator?: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than'
 }
 
@@ -197,7 +197,7 @@ export interface CreateTaskConfig {
 export interface UpdateFieldConfig {
   type: 'update_field'
   field: string
-  value: any
+  value: unknown
   operator?: 'set' | 'add' | 'subtract' | 'append'
 }
 
@@ -227,7 +227,7 @@ export interface WebhookConfig {
   url: string
   method: 'GET' | 'POST' | 'PUT' | 'DELETE'
   headers?: Record<string, string>
-  payload?: Record<string, any>
+  payload?: Record<string, unknown>
   auth?: {
     type: 'bearer' | 'basic' | 'api_key'
     token?: string
@@ -257,7 +257,7 @@ export interface WorkflowCondition {
   id: string
   field: string
   operator: ConditionOperator
-  value: any
+  value: unknown
   logic_gate: 'AND' | 'OR'
 }
 
@@ -279,7 +279,7 @@ export type ConditionOperator =
 export interface WorkflowExecution {
   id: string
   workflow_id: string
-  trigger_data: Record<string, any>
+  trigger_data: Record<string, unknown>
   status: ExecutionStatus
   started_at: string
   completed_at?: string
@@ -301,7 +301,7 @@ export interface ActionExecution {
   started_at: string
   completed_at?: string
   error_message?: string
-  output?: any
+  output?: unknown
 }
 
 // Template Types
@@ -359,18 +359,18 @@ export interface WorkflowListResponse {
 
 // Variable Context for templates
 export interface VariableContext {
-  contact?: Record<string, any>
-  project?: Record<string, any>
-  user?: Record<string, any>
-  organization?: Record<string, any>
-  custom?: Record<string, any>
+  contact?: Record<string, unknown>
+  project?: Record<string, unknown>
+  user?: Record<string, unknown>
+  organization?: Record<string, unknown>
+  custom?: Record<string, unknown>
   // Additional context fields
-  previous_contact?: Record<string, any>
-  stage_change?: Record<string, any>
-  field_change?: Record<string, any>
-  form?: Record<string, any>
-  schedule?: Record<string, any>
-  time_elapsed?: Record<string, any>
+  previous_contact?: Record<string, unknown>
+  stage_change?: Record<string, unknown>
+  field_change?: Record<string, unknown>
+  form?: Record<string, unknown>
+  schedule?: Record<string, unknown>
+  time_elapsed?: Record<string, unknown>
 }
 
 // Helper Types
@@ -380,7 +380,7 @@ export interface TriggerDefinition {
   description: string
   icon: string
   category: 'contact' | 'project' | 'time' | 'form' | 'manual'
-  config_schema: any // JSON Schema for configuration
+  config_schema: unknown // JSON Schema for configuration
 }
 
 export interface ActionDefinition {
@@ -389,5 +389,5 @@ export interface ActionDefinition {
   description: string
   icon: string
   category: 'communication' | 'task' | 'data' | 'integration' | 'flow'
-  config_schema: any // JSON Schema for configuration
+  config_schema: unknown // JSON Schema for configuration
 }

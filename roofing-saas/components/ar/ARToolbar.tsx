@@ -1,0 +1,308 @@
+'use client'
+
+import React, { useState } from 'react'
+import { ARTool, ARSession } from '@/lib/ar/ar-types'
+// import { measurementTools } from '@/lib/ar/measurement-tools'
+// import { damageClassifier } from '@/lib/ar/damage-classifier'
+import { 
+  Ruler, 
+  Square, 
+  Triangle, 
+  AlertTriangle, 
+  Camera, 
+  Save, 
+  Download,
+  RotateCcw,
+  Settings
+} from 'lucide-react'
+
+interface ARToolbarProps {
+  session: ARSession | null
+  activeTool: ARTool
+  onToolChange: (tool: ARTool) => void
+  onSaveSession: () => Promise<void>
+  onExportData: () => Promise<void>
+  onReset: () => Promise<void>
+  className?: string
+}
+
+export function ARToolbar({
+  session,
+  activeTool,
+  onToolChange,
+  onSaveSession,
+  onExportData,
+  onReset,
+  className = ''
+}: ARToolbarProps) {
+  const [isSaving, setIsSaving] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+
+  const tools = [
+    {
+      type: ARTool.DISTANCE,
+      icon: Ruler,
+      label: 'Distance',
+      description: 'Measure distance between two points'
+    },
+    {
+      type: ARTool.AREA,
+      icon: Square,
+      label: 'Area',
+      description: 'Measure area of a region'
+    },
+    {
+      type: ARTool.ANGLE,
+      icon: Triangle,
+      label: 'Angle',
+      description: 'Measure angles and roof pitch'
+    },
+    {
+      type: ARTool.DAMAGE_MARKER,
+      icon: AlertTriangle,
+      label: 'Damage',
+      description: 'Mark damage locations'
+    },
+    {
+      type: ARTool.PHOTO,
+      icon: Camera,
+      label: 'Photo',
+      description: 'Capture annotated photos'
+    }
+  ]
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      await onSaveSession()
+    } catch (error) {
+      console.error('Save failed:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true)
+      await onExportData()
+    } catch (error) {
+      console.error('Export failed:', error)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const getSessionSummary = () => {
+    if (!session) return null
+
+    const totalMeasurements = session.measurements.length
+    const totalDamageMarkers = session.damage_markers.length
+    const totalPhotos = session.photos.length
+
+    // Calculate total damaged area
+    const totalDamagedArea = session.damage_markers.reduce((total, marker) => {
+      const areaMeasurements = marker.measurements.filter(m => m.type === 'area')
+      return total + areaMeasurements.reduce((sum, m) => sum + m.value, 0)
+    }, 0)
+
+    return {
+      measurements: totalMeasurements,
+      damageMarkers: totalDamageMarkers,
+      photos: totalPhotos,
+      damagedArea: totalDamagedArea
+    }
+  }
+
+  const summary = getSessionSummary()
+
+  return (
+    <div className={'bg-white rounded-lg shadow-lg border border-gray-200 ' + className}>
+      {/* Tool Selection */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-lg font-medium text-gray-900 mb-3">AR Tools</h3>
+        
+        <div className="grid grid-cols-5 gap-2">
+          {tools.map((tool) => {
+            const Icon = tool.icon
+            const isActive = activeTool === tool.type
+            
+            return (
+              <button
+                key={tool.type}
+                onClick={() => onToolChange(tool.type)}
+                className={
+                  'flex flex-col items-center p-3 rounded-lg border-2 transition-colors ' +
+                  (isActive
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-600 hover:bg-gray-50')
+                }
+                title={tool.description}
+              >
+                <Icon className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium">{tool.label}</span>
+              </button>
+            )
+          })}
+        </div>
+        
+        {activeTool !== ARTool.NONE && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              {tools.find(t => t.type === activeTool)?.icon && (
+                <span className="text-blue-600">
+                  {React.createElement(tools.find(t => t.type === activeTool)!.icon, { 
+                    className: 'h-4 w-4' 
+                  })}
+                </span>
+              )}
+              <span className="text-sm font-medium text-blue-900">
+                {tools.find(t => t.type === activeTool)?.label} Mode
+              </span>
+            </div>
+            <p className="text-xs text-blue-700 mt-1">
+              {tools.find(t => t.type === activeTool)?.description}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Session Summary */}
+      {summary && (
+        <div className="p-4 border-b border-gray-200">
+          <h4 className="text-md font-medium text-gray-900 mb-3">Session Summary</h4>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{summary.measurements}</div>
+              <div className="text-xs text-gray-500">Measurements</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{summary.damageMarkers}</div>
+              <div className="text-xs text-gray-500">Damage Markers</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{summary.photos}</div>
+              <div className="text-xs text-gray-500">Photos</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {summary.damagedArea.toFixed(0)}
+              </div>
+              <div className="text-xs text-gray-500">sq ft damaged</div>
+            </div>
+          </div>
+
+          {session?.status && (
+            <div className="mt-3 text-center">
+              <span className={
+                'px-3 py-1 rounded-full text-sm font-medium ' +
+                (session.status === 'active'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800')
+              }>
+                Session {session.status}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !session}
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            <span className="text-sm">Save</span>
+          </button>
+
+          <button
+            onClick={handleExport}
+            disabled={isExporting || !session}
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isExporting ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            <span className="text-sm">Export</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={onReset}
+            disabled={!session}
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="text-sm">Reset</span>
+          </button>
+
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="text-sm">Settings</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="border-t border-gray-200 p-4 bg-gray-50">
+          <h4 className="text-md font-medium text-gray-900 mb-3">AR Settings</h4>
+          
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Measurement Unit
+              </label>
+              <select className="w-full px-3 py-1 text-sm border border-gray-300 rounded">
+                <option value="ft">Feet</option>
+                <option value="m">Meters</option>
+                <option value="in">Inches</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                  defaultChecked
+                />
+                <span className="text-sm text-gray-700">Show confidence indicators</span>
+              </label>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                  defaultChecked
+                />
+                <span className="text-sm text-gray-700">Auto-save measurements</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

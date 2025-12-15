@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
@@ -12,7 +12,7 @@ export type PostgresChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
 /**
  * Configuration for realtime subscription
  */
-export interface RealtimeSubscriptionConfig<T extends { [key: string]: any } = { [key: string]: any }> {
+export interface RealtimeSubscriptionConfig<T extends { [key: string]: unknown } = { [key: string]: unknown }> {
   /**
    * Name of the channel (must be unique per subscription)
    */
@@ -69,7 +69,7 @@ export interface RealtimeSubscriptionReturn {
   status: 'connecting' | 'connected' | 'disconnected' | 'error'
 
   /**
-   * Latest error if any
+   * Latest error if unknown
    */
   error: Error | null
 
@@ -99,7 +99,7 @@ export interface RealtimeSubscriptionReturn {
  * })
  * ```
  */
-export function useRealtimeSubscription<T extends { [key: string]: any } = { [key: string]: any }>(
+export function useRealtimeSubscription<T extends { [key: string]: unknown } = { [key: string]: unknown }>(
   config: RealtimeSubscriptionConfig<T>
 ): RealtimeSubscriptionReturn {
   const {
@@ -135,7 +135,7 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
   }
 
   // Subscribe function
-  const subscribe = () => {
+  const subscribe = useCallback(() => {
     if (!isMountedRef.current) return
 
     try {
@@ -146,7 +146,12 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
       const channel = supabase.channel(channelName)
 
       // Configure postgres changes listener
-      const changeConfig: any = {
+      const changeConfig: {
+        event: PostgresChangeEvent
+        schema: string
+        table: string
+        filter?: string
+      } = {
         event,
         schema,
         table,
@@ -156,7 +161,7 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
         changeConfig.filter = filter
       }
 
-      channel.on(
+      (channel as any).on(
         'postgres_changes',
         changeConfig,
         (payload: RealtimePostgresChangesPayload<T>) => {
@@ -216,7 +221,7 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
         }, reconnectDelay)
       }
     }
-  }
+  }, [channelName, table, event, schema, filter, onPayload, onError, autoReconnect, reconnectDelay])
 
   // Unsubscribe function
   const unsubscribe = () => {
@@ -239,7 +244,7 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
       isMountedRef.current = false
       cleanup()
     }
-  }, [channelName, table, event, schema, filter])
+  }, [subscribe])
 
   return {
     status,
@@ -264,7 +269,7 @@ export function useRealtimeSubscription<T extends { [key: string]: any } = { [ke
  * }
  * ```
  */
-export function createTableSubscription<T extends { [key: string]: any } = { [key: string]: any }>(table: string) {
+export function createTableSubscription<T extends { [key: string]: unknown } = { [key: string]: unknown }>(table: string) {
   return (
     config: Omit<RealtimeSubscriptionConfig<T>, 'table' | 'channelName'> & {
       channelName?: string

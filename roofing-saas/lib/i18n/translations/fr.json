@@ -1,0 +1,123 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer",
+    "print": "Imprimer",
+    "download": "Télécharger",
+    "upload": "Téléverser",
+    "close": "Fermer",
+    "open": "Ouvrir",
+    "view": "Voir",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "update": "Mettre à jour",
+    "create": "Créer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "customers": "Clients",
+    "contacts": "Contacts",
+    "projects": "Projets",
+    "pipeline": "Pipeline",
+    "calendar": "Calendrier",
+    "tasks": "Tâches",
+    "estimates": "Devis",
+    "invoices": "Factures",
+    "reports": "Rapports",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "signUp": "S'inscrire",
+    "forgotPassword": "Mot de passe oublié",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "email": "Courriel",
+    "password": "Mot de passe",
+    "rememberMe": "Se souvenir de moi"
+  },
+  "dashboard": {
+    "welcome": "Bon retour !",
+    "todaysTasks": "Tâches d'aujourd'hui",
+    "recentActivity": "Activité récente",
+    "upcomingEvents": "Événements à venir",
+    "quickActions": "Actions rapides"
+  },
+  "customers": {
+    "title": "Clients",
+    "addCustomer": "Ajouter un client",
+    "editCustomer": "Modifier le client",
+    "deleteCustomer": "Supprimer le client",
+    "customerDetails": "Détails du client",
+    "contactInfo": "Informations de contact",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Courriel",
+    "notes": "Notes"
+  },
+  "projects": {
+    "title": "Projets",
+    "addProject": "Ajouter un projet",
+    "editProject": "Modifier le projet",
+    "deleteProject": "Supprimer le projet",
+    "projectDetails": "Détails du projet",
+    "status": "Statut",
+    "progress": "Progrès",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "budget": "Budget",
+    "description": "Description"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "general": "Général",
+    "profile": "Profil",
+    "notifications": "Notifications",
+    "language": "Langue",
+    "preferences": "Préférences",
+    "account": "Compte",
+    "security": "Sécurité"
+  },
+  "language": {
+    "title": "Paramètres de langue",
+    "description": "Choisissez votre langue préférée pour l'application",
+    "selectLanguage": "Sélectionner la langue",
+    "currentLanguage": "Langue actuelle",
+    "availableLanguages": "Langues disponibles",
+    "changeLanguage": "Changer de langue"
+  },
+  "validation": {
+    "required": "Ce champ est requis",
+    "email": "Veuillez entrer une adresse courriel valide",
+    "minLength": "La longueur minimale est de {min} caractères",
+    "maxLength": "La longueur maximale est de {max} caractères",
+    "phoneNumber": "Veuillez entrer un numéro de téléphone valide",
+    "invalidFormat": "Format invalide"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "forbidden": "Accès interdit.",
+    "serverError": "Erreur interne du serveur. Veuillez réessayer plus tard.",
+    "timeout": "Délai d'attente expiré. Veuillez réessayer."
+  }
+}

@@ -23,11 +23,11 @@ export interface AuditEntry {
   action_type: AuditActionType
   entity_type: AuditEntityType
   entity_id: string
-  before_values: Record<string, any> | null
-  after_values: Record<string, any> | null
+  before_values: Record<string, unknown> | null
+  after_values: Record<string, unknown> | null
   ip_address: string | null
   user_agent: string | null
-  metadata: Record<string, any> | null
+  metadata: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
@@ -40,11 +40,11 @@ export interface CreateAuditEntryParams {
   action_type: AuditActionType
   entity_type: AuditEntityType
   entity_id: string
-  before_values?: Record<string, any> | null
-  after_values?: Record<string, any> | null
+  before_values?: Record<string, unknown> | null
+  after_values?: Record<string, unknown> | null
   ip_address?: string | null
   user_agent?: string | null
-  metadata?: Record<string, any> | null
+  metadata?: Record<string, unknown> | null
 }
 
 export interface AuditLogFilters {
@@ -71,8 +71,8 @@ export interface AuditLogResponse {
 
 export interface AuditDiff {
   field: string
-  old_value: any
-  new_value: any
+  old_value: unknown
+  new_value: unknown
   type: 'added' | 'removed' | 'changed'
 }
 
@@ -164,8 +164,8 @@ export class AuditStorageError extends AuditError {
  * This is a pure utility function safe for client-side use
  */
 export function calculateAuditDiff(
-  before: Record<string, any> | null,
-  after: Record<string, any> | null
+  before: Record<string, unknown> | null,
+  after: Record<string, unknown> | null
 ): AuditDiff[] {
   const diff: AuditDiff[] = []
 

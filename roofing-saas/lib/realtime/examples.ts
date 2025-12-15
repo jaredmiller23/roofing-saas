@@ -32,19 +32,21 @@ import {
  * })
  * ```
  */
-export function useEntitySubscription<T extends { [key: string]: any } = { [key: string]: any }>(
+export function useEntitySubscription<T extends { [key: string]: unknown } = { [key: string]: unknown }>(
   config: Omit<EntitySubscriptionConfig<T>, 'onStatusChange'> & {
     enabled?: boolean
   }
 ) {
-  const { enabled = true, ...rest } = config
+  const { enabled = true, entityType, entityId, tenantId, ...restConfig } = config
 
   useEffect(() => {
     if (!enabled) return
 
+    const subscriptionConfig = { entityType, entityId, tenantId, ...restConfig }
+
     const setupSubscription = async () => {
       try {
-        await subscribeToEntity(rest)
+        await subscribeToEntity(subscriptionConfig)
       } catch (error) {
         console.error('Failed to setup realtime subscription:', error)
       }
@@ -55,13 +57,13 @@ export function useEntitySubscription<T extends { [key: string]: any } = { [key:
     // Cleanup handled by manager, but we can explicitly unsubscribe
     return () => {
       const manager = getChannelManager()
-      if (rest.tenantId) {
-        manager.unsubscribe('subscription', rest.entityType, rest.entityId, rest.tenantId)
+      if (tenantId) {
+        manager.unsubscribe('subscription', entityType, entityId, tenantId)
       } else {
-        manager.unsubscribe('subscription', rest.entityType, rest.entityId)
+        manager.unsubscribe('subscription', entityType, entityId)
       }
     }
-  }, [enabled, rest.entityType, rest.entityId, rest.tenantId])
+  }, [enabled, entityType, entityId, tenantId, restConfig])
 }
 
 /**
@@ -86,34 +88,38 @@ export function useEntityPresence(config: {
     email?: string
     avatar?: string
   }
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   tenantId?: string
   enabled?: boolean
   onUserJoin?: (user: PresenceUser) => void
   onUserLeave?: (user: PresenceUser) => void
 }) {
-  const { enabled = true, onUserJoin, onUserLeave, ...rest } = config
+  const { enabled = true, onUserJoin, onUserLeave, entityType, entityId, user, tenantId, metadata } = config
   const [presentUsers, setPresentUsers] = React.useState<PresenceUser[]>([])
   const [isTracking, setIsTracking] = React.useState(false)
 
   useEffect(() => {
-    if (!enabled || !rest.user.id) return
+    if (!enabled || !user.id) return
 
     const setupPresence = async () => {
       try {
         await joinPresence({
-          ...rest,
+          entityType,
+          entityId,
+          user,
+          tenantId,
+          metadata,
           onSync: (users) => {
             setPresentUsers(users)
             setIsTracking(true)
           },
-          onJoin: (user) => {
-            setPresentUsers((prev) => [...prev, user])
-            onUserJoin?.(user)
+          onJoin: (joinedUser) => {
+            setPresentUsers((prev) => [...prev, joinedUser])
+            onUserJoin?.(joinedUser)
           },
-          onLeave: (user) => {
-            setPresentUsers((prev) => prev.filter((u) => u.userId !== user.userId))
-            onUserLeave?.(user)
+          onLeave: (leftUser) => {
+            setPresentUsers((prev) => prev.filter((u) => u.userId !== leftUser.userId))
+            onUserLeave?.(leftUser)
           },
           onError: (error) => {
             console.error('Presence error:', error)
@@ -128,11 +134,11 @@ export function useEntityPresence(config: {
     setupPresence()
 
     return () => {
-      leavePresence(rest.entityType, rest.entityId, rest.tenantId)
+      leavePresence(entityType, entityId, tenantId)
       setPresentUsers([])
       setIsTracking(false)
     }
-  }, [enabled, rest.entityType, rest.entityId, rest.user.id, rest.tenantId])
+  }, [enabled, entityType, entityId, user, tenantId, metadata, onUserJoin, onUserLeave])
 
   return {
     presentUsers,
@@ -164,25 +170,28 @@ export function useDebouncedBroadcast(config: {
   tenantId?: string
   delay?: number
 }) {
-  const { delay = 100, ...broadcastConfig } = config
+  const { delay = 100, entityType, entityId, event, tenantId } = config
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const debouncedBroadcast = useCallback(
-    (payload: Record<string, any>) => {
+    (payload: Record<string, unknown>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
 
       timeoutRef.current = setTimeout(() => {
         broadcast({
-          ...broadcastConfig,
+          entityType,
+          entityId,
+          event,
+          tenantId,
           payload,
         }).catch((error) => {
           console.error('Broadcast failed:', error)
         })
       }, delay)
     },
-    [broadcastConfig.entityType, broadcastConfig.entityId, broadcastConfig.event, delay]
+    [entityType, entityId, event, tenantId, delay]
   )
 
   useEffect(() => {
@@ -236,11 +245,17 @@ export function useCleanupOnLogout(isAuthenticated: boolean) {
 export function useMultiEntitySubscription(
   entities: Array<{ entityType: string; entityId: string; table?: string }>,
   callbacks: {
-    onInsert?: (payload: any) => void
-    onUpdate?: (payload: any) => void
-    onDelete?: (payload: any) => void
+    onInsert?: (payload: unknown) => void
+    onUpdate?: (payload: unknown) => void
+    onDelete?: (payload: unknown) => void
   }
 ) {
+  // Create stable references for the dependency array
+  const entitiesString = React.useMemo(
+    () => JSON.stringify(entities.map((e) => ({ t: e.entityType, i: e.entityId }))),
+    [entities]
+  )
+
   useEffect(() => {
     const setupSubscriptions = async () => {
       for (const entity of entities) {
@@ -266,7 +281,7 @@ export function useMultiEntitySubscription(
         manager.unsubscribe('subscription', entity.entityType, entity.entityId)
       })
     }
-  }, [JSON.stringify(entities.map((e) => ({ t: e.entityType, i: e.entityId })))])
+  }, [entities, callbacks, entitiesString])
 }
 
 /**

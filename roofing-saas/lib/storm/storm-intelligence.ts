@@ -11,7 +11,6 @@ import type {
   AffectedCustomer,
   AffectedAreaAnalysis,
   StormResponseConfig,
-  ResponseMode,
   AlertType,
   AlertPriority,
   CrewPositioning,

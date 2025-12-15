@@ -9,8 +9,7 @@ import {
   type SQLQuery,
   type QueryContext,
   type QueryFilter,
-  type TimeFrame,
-  SCHEMA_MAPPING
+  type TimeFrame
 } from './query-types'
 
 // Whitelist of allowed tables and their safe column mappings
@@ -65,7 +64,7 @@ const ALLOWED_TABLES = {
 
 // Maximum result set size to prevent performance issues
 const MAX_RESULT_SIZE = 1000
-const MAX_QUERY_COMPLEXITY = 5 // Max number of joins/subqueries
+const _MAX_QUERY_COMPLEXITY = 5 // Max number of joins/subqueries
 
 export class SQLGenerator {
   /**
@@ -104,7 +103,7 @@ export class SQLGenerator {
     }
   }
 
-  private assessRisk(interpretation: QueryInterpretation, context: QueryContext): 'LOW' | 'MEDIUM' | 'HIGH' {
+  private assessRisk(interpretation: QueryInterpretation, _context: QueryContext): 'LOW' | 'MEDIUM' | 'HIGH' {
     let riskScore = 0
 
     // Complex aggregations increase risk
@@ -343,29 +342,11 @@ export class SQLGenerator {
 
     const safeColumn = tableConfig.columns[dateColumn as keyof typeof tableConfig.columns]
 
-    // Convert relative timeframes to date ranges
-    const now = new Date()
-    let startDate: Date
-    let endDate: Date = now
+    // Use the existing getTimeFrameDates function
+    if (!timeframe.relative) return null
 
-    switch (timeframe.relative) {
-      case 'this month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        break
-      case 'last month':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0)
-        break
-      case 'this year':
-        startDate = new Date(now.getFullYear(), 0, 1)
-        break
-      case 'last year':
-        startDate = new Date(now.getFullYear() - 1, 0, 1)
-        endDate = new Date(now.getFullYear() - 1, 11, 31)
-        break
-      default:
-        return null
-    }
+    const { startDate, endDate } = this.getTimeFrameDates(timeframe.relative)
+    if (!startDate || !endDate) return null
 
     return {
       condition: `${safeColumn} BETWEEN $${parameterCount} AND $${parameterCount + 1}`,
@@ -443,8 +424,8 @@ export class SQLGenerator {
     return null
   }
 
-  private extractParameters(interpretation: QueryInterpretation, context: QueryContext): Record<string, any> {
-    const parameters: Record<string, any> = {}
+  private extractParameters(interpretation: QueryInterpretation, context: QueryContext): Record<string, unknown> {
+    const parameters: Record<string, unknown> = {}
     let paramIndex = 1
 
     // Tenant ID is always first parameter
@@ -508,7 +489,7 @@ export class SQLGenerator {
     }
   }
 
-  private assembleSQLQuery(sqlParts: any): string {
+  private assembleSQLQuery(sqlParts: { selectClause: string; fromClause: string; whereClause: string; groupByClause: string; orderByClause: string; limitClause: string }): string {
     const parts = [
       sqlParts.selectClause,
       sqlParts.fromClause,

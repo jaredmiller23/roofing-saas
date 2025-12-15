@@ -72,6 +72,7 @@
     "intuit-oauth": "^4.2.2",
     "lucide-react": "^0.544.0",
     "next": "^16.0.10",
+    "next-intl": "^4.6.0",
     "next-themes": "^0.4.6",
     "openai": "^6.10.0",
     "qrcode": "^1.5.4",

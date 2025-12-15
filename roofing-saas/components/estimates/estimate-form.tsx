@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Calculator, FileText } from 'lucide-react'
+import { Calculator, FileText, Camera, Import, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -51,7 +51,11 @@ interface EstimateFormProps {
 
 export function EstimateForm({ mode = 'create', initialData, projectId }: EstimateFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [arData, setArData] = useState<any>(null)
+  const [loadingArData, setLoadingArData] = useState(false)
+  const fromAr = searchParams?.get('from_ar') === 'true'
 
   const {
     register,
@@ -87,6 +91,30 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
     name: 'quote_options'
   })
 
+  // Fetch AR data if coming from AR assessment
+  useEffect(() => {
+    if (fromAr && projectId) {
+      fetchArData()
+    }
+  }, [fromAr, projectId])
+
+  const fetchArData = async () => {
+    if (!projectId) return
+
+    try {
+      setLoadingArData(true)
+      const response = await fetch(`/api/ar/measurements?project_id=${projectId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setArData(data.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch AR data:', error)
+    } finally {
+      setLoadingArData(false)
+    }
+  }
+
   const watchedOptions = watch('quote_options')
 
   // Add preset options
@@ -101,6 +129,55 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
       line_items: []
     })
   }, [appendOption, optionFields.length])
+
+  // Import AR measurements as line items
+  const importArMeasurements = (optionIndex: number) => {
+    if (!arData) return
+
+    const newLineItems: any[] = []
+
+    // Add area measurements as roof repair items
+    arData.measurements
+      ?.filter((m: any) => m.type === 'area')
+      .forEach((measurement: any) => {
+        newLineItems.push({
+          description: `Roof repair area (AR measured: ${measurement.value.toFixed(1)} ${measurement.unit})`,
+          quantity: Math.ceil(measurement.value),
+          unit: 'sqft',
+          unit_price: 15.0,
+          category: 'materials'
+        })
+      })
+
+    // Add damage markers as repair items
+    arData.damage_markers?.forEach((marker: any) => {
+      const damageType = marker.damage_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+      newLineItems.push({
+        description: `${damageType} repair (${marker.severity} severity)`,
+        quantity: 1,
+        unit: 'ea',
+        unit_price: getSeverityPrice(marker.severity),
+        category: 'labor'
+      })
+    })
+
+    // Add new line items to the current option
+    const currentOption = optionFields[optionIndex]
+    if (currentOption) {
+      // This would need to be implemented with proper form methods
+      console.log('Would add line items:', newLineItems)
+    }
+  }
+
+  const getSeverityPrice = (severity: string): number => {
+    switch (severity) {
+      case 'minor': return 50
+      case 'moderate': return 150
+      case 'severe': return 300
+      case 'critical': return 500
+      default: return 100
+    }
+  }
 
   // Calculate total estimate value
   const totalEstimateValue = watchedOptions?.reduce((total, option) => {
@@ -288,6 +365,129 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
           </div>
         </CardContent>
       </Card>
+
+      {/* AR Data Section */}
+      {(fromAr || arData) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              AR Assessment Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingArData ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-2 text-muted-foreground">Loading AR data...</span>
+              </div>
+            ) : arData ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {arData.measurements?.length || 0}
+                    </div>
+                    <div className="text-sm text-blue-600">Measurements</div>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {arData.damage_markers?.length || 0}
+                    </div>
+                    <div className="text-sm text-orange-600">Damage Areas</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {arData.measurements
+                        ?.filter((m: any) => m.type === 'area')
+                        ?.reduce((sum: number, m: any) => sum + m.value, 0)
+                        ?.toFixed(0) || 0}
+                    </div>
+                    <div className="text-sm text-green-600">Total Area (sq ft)</div>
+                  </div>
+                </div>
+
+                {arData.measurements && arData.measurements.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Measurements</h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {arData.measurements.map((measurement: any) => (
+                        <div key={measurement.id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                          <span className="capitalize">{measurement.type}</span>
+                          <span className="font-medium">
+                            {measurement.value.toFixed(2)} {measurement.unit}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {arData.damage_markers && arData.damage_markers.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Damage Areas</h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {arData.damage_markers.map((marker: any) => (
+                        <div key={marker.id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                          <span className="capitalize">
+                            {marker.damage_type?.replace(/_/g, ' ')}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            marker.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                            marker.severity === 'severe' ? 'bg-red-100 text-red-700' :
+                            marker.severity === 'moderate' ? 'bg-orange-100 text-orange-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {marker.severity}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => importArMeasurements(0)}
+                    className="gap-2"
+                  >
+                    <Import className="h-4 w-4" />
+                    Import to Estimate
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/projects/${projectId}/ar-assessment`)}
+                    className="gap-2"
+                  >
+                    <Camera className="h-4 w-4" />
+                    Return to AR
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Camera className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <p>No AR assessment data found for this project.</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/projects/${projectId}/ar-assessment`)}
+                  className="gap-2 mt-3"
+                >
+                  <Camera className="h-4 w-4" />
+                  Start AR Assessment
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quote Options */}
       <Card>

@@ -1,283 +1,176 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  TrendingUp,
-  UserPlus,
-  FolderPlus,
   DollarSign,
-  Clock,
-  CheckCircle2,
-  XCircle
+  Phone,
+  Mail,
+  MapPin,
+  Trophy,
+  Target,
+  Clock
 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
 
-interface ActivityItem {
+interface Activity {
   id: string
-  type: 'project_won' | 'project_lost' | 'project_created' | 'contact_added' | 'status_change'
+  type: 'sale' | 'knock' | 'call' | 'email' | 'achievement' | 'goal'
   title: string
   description: string
-  timestamp: string
-  metadata?: {
-    user?: string
-    value?: number
-    project_name?: string
-    contact_name?: string
-    old_status?: string
-    new_status?: string
-    project_id?: string
-    contact_id?: string
+  user: {
+    name: string
+    avatar?: string
   }
+  timestamp: Date
+  value?: number
+  badge?: string
 }
 
 export function ActivityFeed() {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchActivities()
-  }, [])
-
-  const fetchActivities = async () => {
-    setLoading(true)
-    setError(null)
-
-    // Create abort controller for timeout
-    const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
-
-    try {
-      const response = await fetch('/api/dashboard/activity', {
-        signal: abortController.signal
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
-
-      const result = await response.json()
-
-      if (result.success) {
-        setActivities(result.data.activities || [])
-      } else {
-        setError('Failed to load activity data')
-      }
-    } catch (error) {
-      clearTimeout(timeoutId)
-      console.error('Error fetching activities:', error)
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        setError('Request timeout - please try again')
-      } else if (error instanceof Error && error.message?.includes('Server error:')) {
-        setError('Server error - please try again')
-      } else {
-        setError('Failed to connect to server')
-      }
-    } finally {
-      setLoading(false)
+  // Mock data - in real implementation this would come from API
+  const activities: Activity[] = [
+    {
+      id: '1',
+      type: 'sale',
+      title: 'New Sale Closed',
+      description: 'Signed $12,500 roof replacement contract',
+      user: { name: 'Sarah Johnson', avatar: '/avatars/sarah.jpg' },
+      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
+      value: 12500,
+      badge: '$12.5K'
+    },
+    {
+      id: '2',
+      type: 'achievement',
+      title: 'Weekly Goal Achieved',
+      description: 'Hit 50 door knocks this week',
+      user: { name: 'Mike Chen', avatar: '/avatars/mike.jpg' },
+      timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
+      badge: '🏆'
+    },
+    {
+      id: '3',
+      type: 'knock',
+      title: 'Door Knock Session',
+      description: 'Completed 8 door knocks on Maple Street',
+      user: { name: 'Alex Rodriguez', avatar: '/avatars/alex.jpg' },
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+      badge: '8 knocks'
+    },
+    {
+      id: '4',
+      type: 'call',
+      title: 'Follow-up Call',
+      description: 'Scheduled estimate for interested homeowner',
+      user: { name: 'Emily Davis', avatar: '/avatars/emily.jpg' },
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+    },
+    {
+      id: '5',
+      type: 'sale',
+      title: 'New Sale Closed',
+      description: 'Signed $8,200 gutter replacement contract',
+      user: { name: 'David Wilson', avatar: '/avatars/david.jpg' },
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
+      value: 8200,
+      badge: '$8.2K'
     }
-  }
+  ]
 
-  const getActivityIcon = (type: ActivityItem['type']) => {
+  const getIcon = (type: Activity['type']) => {
     switch (type) {
-      case 'project_won':
-        return <CheckCircle2 className="h-5 w-5 text-chart-2" />
-      case 'project_lost':
-        return <XCircle className="h-5 w-5 text-muted-foreground" />
-      case 'project_created':
-        return <FolderPlus className="h-5 w-5 text-primary" />
-      case 'contact_added':
-        return <UserPlus className="h-5 w-5 text-primary" />
-      case 'status_change':
-        return <TrendingUp className="h-5 w-5 text-chart-4" />
+      case 'sale':
+        return DollarSign
+      case 'knock':
+        return MapPin
+      case 'call':
+        return Phone
+      case 'email':
+        return Mail
+      case 'achievement':
+        return Trophy
+      case 'goal':
+        return Target
       default:
-        return <Clock className="h-5 w-5 text-muted-foreground" />
+        return Clock
     }
   }
 
-  const getActivityColor = (type: ActivityItem['type']) => {
+  const getActivityColor = (type: Activity['type']) => {
     switch (type) {
-      case 'project_won':
-        return 'bg-chart-2/10 border-chart-2/30'
-      case 'project_lost':
-        return 'bg-muted border-border'
-      case 'project_created':
-        return 'bg-primary/10 border-primary/30'
-      case 'contact_added':
-        return 'bg-chart-5/10 border-chart-5/30'
-      case 'status_change':
-        return 'bg-chart-4/10 border-chart-4/30'
+      case 'sale':
+        return 'text-green-600 bg-green-100'
+      case 'knock':
+        return 'text-blue-600 bg-blue-100'
+      case 'call':
+        return 'text-purple-600 bg-purple-100'
+      case 'email':
+        return 'text-orange-600 bg-orange-100'
+      case 'achievement':
+        return 'text-yellow-600 bg-yellow-100'
+      case 'goal':
+        return 'text-indigo-600 bg-indigo-100'
       default:
-        return 'bg-muted border-border'
+        return 'text-gray-600 bg-gray-100'
     }
-  }
-
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-      return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes}m ago`
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`
-    } else if (diffInHours < 48) {
-      return 'Yesterday'
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24)
-      return `${diffInDays}d ago`
-    }
-  }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  if (loading) {
-    return (
-      <div className="bg-card rounded-lg shadow-sm border border-border p-6 animate-pulse">
-        <div className="mb-4">
-          <div className="h-6 bg-muted rounded w-32 mb-1" />
-          <div className="h-4 bg-muted rounded w-48" />
-        </div>
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-start gap-3 p-3">
-              <div className="w-10 h-10 bg-muted rounded-full flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-          <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
-        </div>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="text-muted-foreground mb-4">{error}</div>
-            <Button
-              onClick={() => fetchActivities()}
-              variant="outline"
-              size="sm"
-            >
-              Try again
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="bg-card rounded-lg shadow-sm border border-border p-6">
-      {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-        <p className="text-sm text-muted-foreground">Team updates from the last 7 days</p>
-      </div>
-
-      {/* Activity List */}
-      {activities.length > 0 && (
-        <div className="space-y-3">
+    <Card className="lg:col-span-1">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Recent Activity
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
           {activities.map((activity) => {
-            const hasLink = activity.metadata?.project_id || activity.metadata?.contact_id
-            const linkHref = activity.metadata?.project_id
-              ? `/projects/${activity.metadata.project_id}`
-              : activity.metadata?.contact_id
-                ? `/contacts/${activity.metadata.contact_id}`
-                : '#'
+            const Icon = getIcon(activity.type)
+            const colorClass = getActivityColor(activity.type)
 
-            const content = (
-              <>
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-full bg-card border border flex items-center justify-center flex-shrink-0">
-                  {getActivityIcon(activity.type)}
+            return (
+              <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                <div className={`p-2 rounded-full ${colorClass}`}>
+                  <Icon className="h-4 w-4" />
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="font-medium text-foreground text-sm">
-                      {activity.title}
-                    </p>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatTimestamp(activity.timestamp)}
-                    </span>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {activity.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.description}
+                      </p>
+                    </div>
+                    {activity.badge && (
+                      <Badge variant="secondary" className="text-xs">
+                        {activity.badge}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {activity.description}
-                  </p>
 
-                  {/* Value Display for Won Deals */}
-                  {activity.type === 'project_won' && activity.metadata?.value && (
-                    <div className="mt-2 flex items-center gap-1 text-chart-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="text-sm font-semibold">
-                        {formatCurrency(activity.metadata.value)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Value Display for New Projects */}
-                  {activity.type === 'project_created' && activity.metadata?.value && activity.metadata.value > 0 && (
-                    <div className="mt-2 flex items-center gap-1 text-primary">
-                      <span className="text-xs">
-                        Est. {formatCurrency(activity.metadata.value)}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Avatar className="h-4 w-4">
+                      <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
+                      <AvatarFallback className="text-xs">
+                        {activity.user.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{activity.user.name}</span>
+                    <span>•</span>
+                    <span>{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
+                  </div>
                 </div>
-              </>
-            )
-
-            return hasLink ? (
-              <Link
-                key={activity.id}
-                href={linkHref}
-                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors hover:shadow-md cursor-pointer ${getActivityColor(activity.type)}`}
-              >
-                {content}
-              </Link>
-            ) : (
-              <div
-                key={activity.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getActivityColor(activity.type)}`}
-              >
-                {content}
               </div>
             )
           })}
         </div>
-      )}
-
-      {/* Empty State */}
-      {activities.length === 0 && (
-        <div className="text-center py-8">
-          <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-          <p className="text-muted-foreground">No recent activity</p>
-          <p className="text-sm text-muted-foreground mt-1">Activity will appear here as your team works</p>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -18,7 +18,7 @@ export interface NaturalLanguageQuery {
 
 export interface SQLQuery {
   sql: string
-  parameters: Record<string, any>
+  parameters: Record<string, unknown>
   tables: string[]
   operations: ('SELECT' | 'COUNT' | 'SUM' | 'AVG' | 'GROUP BY')[]
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'
@@ -52,7 +52,7 @@ export interface QueryEntity {
 export interface QueryFilter {
   column: string
   operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'like' | 'in' | 'between'
-  value: any
+  value: unknown
   confidence: number
 }
 
@@ -65,7 +65,7 @@ export interface TimeFrame {
 
 export interface QueryResult {
   success: boolean
-  data: any[]
+  data: unknown[]
   columns: ResultColumn[]
   metadata: QueryMetadata
   visualization: VisualizationType

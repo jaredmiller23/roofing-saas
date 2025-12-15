@@ -1,8 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel, RealtimePresenceState } from '@supabase/supabase-js'
+
+// Type for presence payload
+interface _PresencePayload {
+  userId: string
+  userName?: string
+  userEmail?: string
+  userAvatar?: string
+  joinedAt: string
+  metadata?: Record<string, unknown>
+}
 
 /**
  * Represents a user's presence information
@@ -36,7 +46,7 @@ export interface PresenceUser {
   /**
    * Additional metadata
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -66,7 +76,7 @@ export interface UsePresenceConfig {
   /**
    * Additional metadata to track with presence
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 
   /**
    * Callback when presence list changes
@@ -109,14 +119,14 @@ export interface UsePresenceReturn {
   isTracking: boolean
 
   /**
-   * Latest error if any
+   * Latest error if unknown
    */
   error: Error | null
 
   /**
    * Manually update presence metadata
    */
-  updateMetadata: (metadata: Record<string, any>) => void
+  updateMetadata: (metadata: Record<string, unknown>) => void
 }
 
 /**
@@ -166,7 +176,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
   const channelName = `presence:${entityType}:${entityId}`
 
   // Convert Supabase presence state to our PresenceUser array
-  const parsePresenceState = (state: RealtimePresenceState<any>): PresenceUser[] => {
+  const parsePresenceState = useCallback((state: RealtimePresenceState<Record<string, any>>): PresenceUser[] => {
     const users: PresenceUser[] = []
 
     Object.keys(state).forEach((key) => {
@@ -187,10 +197,10 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
 
     // Filter out current user
     return users.filter(u => u.userId !== user.id)
-  }
+  }, [user.id])
 
   // Update metadata function
-  const updateMetadata = (newMetadata: Record<string, any>) => {
+  const updateMetadata = (newMetadata: Record<string, unknown>) => {
     if (channelRef.current && isTracking) {
       const presencePayload = {
         userId: user.id,
@@ -257,7 +267,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
     })
 
     // Listen for presence join events
-    channel.on('presence', { event: 'join' }, ({ key, newPresences }) => {
+    channel.on('presence', { event: 'join' }, ({ key: _key, newPresences }) => {
       if (!isMountedRef.current) return
 
       newPresences.forEach((presence: any) => {
@@ -276,7 +286,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
     })
 
     // Listen for presence leave events
-    channel.on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+    channel.on('presence', { event: 'leave' }, ({ key: _key, leftPresences }) => {
       if (!isMountedRef.current) return
 
       leftPresences.forEach((presence: any) => {
@@ -335,7 +345,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
 
       previousPresenceRef.current.clear()
     }
-  }, [enabled, entityType, entityId, user.id, channelName])
+  }, [enabled, entityType, entityId, user.id, user.name, user.email, user.avatar, channelName, metadata, onPresenceChange, onUserJoin, onUserLeave, parsePresenceState])
 
   return {
     presentUsers,

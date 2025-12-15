@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+// Initialize next-intl plugin
+const withNextIntl = createNextIntlPlugin('./lib/i18n/config.ts');
 
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
@@ -68,8 +72,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Wrap with Sentry for error tracking and performance monitoring
-export default withSentryConfig(withSerwist(nextConfig), {
+// Apply plugins in order: next-intl, Serwist, then Sentry
+export default withSentryConfig(withSerwist(withNextIntl(nextConfig)), {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 

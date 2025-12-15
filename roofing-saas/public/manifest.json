@@ -1,13 +1,45 @@
 {
-  "name": "Roofing SaaS - CRM & Field Management",
-  "short_name": "Roofing SaaS",
-  "description": "Complete roofing business management platform for CRM, field operations, and door-to-door sales",
+  "name": "Clarity - Roofing CRM & Field Management",
+  "short_name": "Clarity",
+  "description": "Complete roofing business management platform for CRM, field operations, and door-to-door sales with advanced offline capabilities",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
-  "theme_color": "#0066cc",
+  "theme_color": "#FF8243",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity"],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "iarc_rating_id": "e58c174a-81d2-5c3c-32cc-34b8de4a52e9",
+  "protocol_handlers": [
+    {
+      "protocol": "web+roofing",
+      "url": "/contact?url=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/vnd.ms-excel": [".xls"],
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"]
+      },
+      "icons": [
+        {
+          "src": "/icons/file-handler-csv.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ],
+      "launch_type": "single-client"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -68,44 +100,108 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-monochrome.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "monochrome"
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "540x720",
+      "src": "/screenshots/dashboard-mobile.png",
+      "sizes": "390x844",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Dashboard overview with project status and quick actions"
     },
     {
-      "src": "/screenshots/contacts.png",
-      "sizes": "540x720",
+      "src": "/screenshots/contacts-mobile.png",
+      "sizes": "390x844",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Contact management and lead tracking"
+    },
+    {
+      "src": "/screenshots/photos-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Property photo capture with offline sync"
+    },
+    {
+      "src": "/screenshots/offline-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Offline mode with cached data access"
+    },
+    {
+      "src": "/screenshots/dashboard-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Full dashboard with analytics and project management"
+    },
+    {
+      "src": "/screenshots/contacts-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Contact list with advanced filtering and search"
     }
   ],
   "shortcuts": [
     {
       "name": "New Contact",
       "short_name": "Contact",
-      "description": "Add a new contact",
+      "description": "Add a new contact quickly",
       "url": "/contacts/new",
       "icons": [
         {
           "src": "/icons/shortcut-contact.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
       "name": "Take Photo",
       "short_name": "Photo",
-      "description": "Capture property photo",
+      "description": "Capture property photos (works offline)",
       "url": "/photos/capture",
       "icons": [
         {
           "src": "/icons/shortcut-camera.png",
-          "sizes": "96x96"
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Create Estimate",
+      "short_name": "Estimate",
+      "description": "Create a new project estimate",
+      "url": "/estimates/new",
+      "icons": [
+        {
+          "src": "/icons/shortcut-estimate.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Offline Mode",
+      "short_name": "Offline",
+      "description": "Access cached data offline",
+      "url": "/offline",
+      "icons": [
+        {
+          "src": "/icons/shortcut-offline.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }
@@ -121,11 +217,76 @@
       "files": [
         {
           "name": "photos",
-          "accept": ["image/*"]
+          "accept": ["image/*", ".heic", ".heif"]
+        },
+        {
+          "name": "documents",
+          "accept": [".pdf", ".doc", ".docx", ".txt"]
         }
       ]
     }
   },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
+  "widgets": [
+    {
+      "name": "Quick Stats",
+      "short_name": "Stats",
+      "description": "View key metrics at a glance",
+      "tag": "stats",
+      "template": "stats-template",
+      "ms_ac_template": "adaptive-card.json",
+      "data": "/api/widget/stats",
+      "type": "application/json",
+      "screenshot": "/screenshots/widget-stats.png",
+      "icons": [
+        {
+          "src": "/icons/widget-stats.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ],
+      "auth": false,
+      "update": 300
+    },
+    {
+      "name": "Pending Sync",
+      "short_name": "Sync",
+      "description": "Monitor offline sync status",
+      "tag": "sync",
+      "template": "sync-template",
+      "data": "/api/widget/sync",
+      "type": "application/json",
+      "screenshot": "/screenshots/widget-sync.png",
+      "icons": [
+        {
+          "src": "/icons/widget-sync.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ],
+      "auth": false,
+      "update": 30
+    }
+  ],
   "related_applications": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "features": [
+    "cross-origin-isolated"
+  ],
+  "permissions": [
+    "camera",
+    "geolocation",
+    "notifications",
+    "persistent-storage",
+    "background-sync"
+  ],
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "type": "module",
+    "update_via_cache": "none"
+  }
 }

@@ -49,6 +49,9 @@ import type {
   RealtimePresenceState,
   SupabaseClient,
 } from '@supabase/supabase-js'
+import type {
+  SupabasePresencePayload
+} from '@/lib/types/supabase-presence'
 
 // Type for presence payload
 interface _PresencePayload {
@@ -388,8 +391,14 @@ export class RealtimeChannelManager {
         filter: `id=eq.${entityId}`,
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(channel as any).on('postgres_changes', changeConfig, (payload: RealtimePostgresChangesPayload<T>) => {
+      // Type assertion is necessary due to Supabase's incomplete typing for postgres_changes
+      ;(channel as RealtimeChannel & {
+        on: (
+          event: 'postgres_changes',
+          config: { event: PostgresChangeEvent; schema: string; table: string; filter: string },
+          callback: (payload: RealtimePostgresChangesPayload<T>) => void
+        ) => void
+      }).on('postgres_changes', changeConfig, (payload: RealtimePostgresChangesPayload<T>) => {
         logger.debug('Received postgres change', {
           channelName,
           eventType: payload.eventType,
@@ -526,14 +535,13 @@ export class RealtimeChannelManager {
       this.presenceStates.set(channelName, presenceMap)
 
       // Helper to parse presence state
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parsePresenceState = (state: RealtimePresenceState<Record<string, any>>): PresenceUser[] => {
+      const parsePresenceState = (state: RealtimePresenceState<Record<string, unknown>>): PresenceUser[] => {
         const users: PresenceUser[] = []
 
         Object.keys(state).forEach((key) => {
           const presences = state[key]
           if (presences && presences.length > 0) {
-            const presence = presences[0]
+            const presence = presences[0] as unknown as SupabasePresencePayload
             users.push({
               userId: presence.userId,
               userName: presence.userName,
@@ -569,23 +577,23 @@ export class RealtimeChannelManager {
 
       // Listen for presence join
       channel.on('presence', { event: 'join' }, ({ key: _key, newPresences }) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        newPresences.forEach((presence: any) => {
-          if (presence.userId !== user.id) {
+        newPresences.forEach((presence) => {
+          const typedPresence = presence as unknown as SupabasePresencePayload
+          if (typedPresence.userId !== user.id) {
             const presenceUser: PresenceUser = {
-              userId: presence.userId,
-              userName: presence.userName,
-              userEmail: presence.userEmail,
-              userAvatar: presence.userAvatar,
-              joinedAt: presence.joinedAt,
-              metadata: presence.metadata,
+              userId: typedPresence.userId,
+              userName: typedPresence.userName,
+              userEmail: typedPresence.userEmail,
+              userAvatar: typedPresence.userAvatar,
+              joinedAt: typedPresence.joinedAt,
+              metadata: typedPresence.metadata,
             }
 
-            presenceMap.set(presence.userId, presenceUser)
+            presenceMap.set(typedPresence.userId, presenceUser)
 
             logger.debug('User joined presence', {
               channelName,
-              userId: presence.userId,
+              userId: typedPresence.userId,
             })
 
             if (onJoin) {
@@ -597,22 +605,23 @@ export class RealtimeChannelManager {
 
       // Listen for presence leave
       channel.on('presence', { event: 'leave' }, ({ key: _key, leftPresences }) => {
-        leftPresences.forEach((presence: any) => {
-          if (presence.userId !== user.id) {
+        leftPresences.forEach((presence) => {
+          const typedPresence = presence as unknown as SupabasePresencePayload
+          if (typedPresence.userId !== user.id) {
             const presenceUser: PresenceUser = {
-              userId: presence.userId,
-              userName: presence.userName,
-              userEmail: presence.userEmail,
-              userAvatar: presence.userAvatar,
-              joinedAt: presence.joinedAt,
-              metadata: presence.metadata,
+              userId: typedPresence.userId,
+              userName: typedPresence.userName,
+              userEmail: typedPresence.userEmail,
+              userAvatar: typedPresence.userAvatar,
+              joinedAt: typedPresence.joinedAt,
+              metadata: typedPresence.metadata,
             }
 
-            presenceMap.delete(presence.userId)
+            presenceMap.delete(typedPresence.userId)
 
             logger.debug('User left presence', {
               channelName,
-              userId: presence.userId,
+              userId: typedPresence.userId,
             })
 
             if (onLeave) {

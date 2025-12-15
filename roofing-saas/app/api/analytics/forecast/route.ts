@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateRevenueForecast } from '@/lib/analytics/forecasting'
 import { createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
+import { PipelineStage } from '@/lib/types/api'
 
 /**
  * GET /api/analytics/forecast
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
                   period === '90_day' ? 'last_90_days' :
                   period === '6_month' ? 'last_6_months' : 'last_year'
         },
-        stages: stages as any,
+        stages: stages as PipelineStage[],
         leadSources,
         assignedTo
       }
