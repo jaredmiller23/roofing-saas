@@ -2,64 +2,70 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement a professional multi-option quoting system with Good/Better/Best
+  goal: 'Implement a project templates system with roofing-specific workflow templates
 
-    proposal options for roofing estimates.
+    for faster, more consistent project creation.
 
 
     Features to implement:
 
-    1. Quote templates with multiple pricing tiers
+    1. Pre-built roofing project templates
 
-    2. Good/Better/Best option presentation
+    2. Custom template creation from existing projects
 
-    3. Professional proposal PDF generation
+    3. Automated task and milestone generation from template
 
-    4. E-signature integration (using existing DocuSign/similar)
+    4. Template library management
 
-    5. Quote tracking and analytics
-
-
-    User Experience:
-
-    - Create estimate with multiple material/scope options
-
-    - Professional proposal view for customers
-
-    - Easy comparison between options
-
-    - One-click to send for signature
+    5. Template versioning and updates
 
 
-    Quote Structure:
+    Default Templates:
 
-    - Option name (Good/Better/Best or custom)
+    - Residential Roof Replacement
 
-    - Itemized line items per option
+    - Commercial Roof Installation
 
-    - Option-specific totals
+    - Storm Damage Repair
 
-    - Recommended option highlighting
+    - Roof Inspection
+
+    - Insurance Claim Project
+
+    - Emergency Repair
+
+
+    Template Contents:
+
+    - Default project stages
+
+    - Pre-populated tasks with estimated durations
+
+    - Milestone definitions
+
+    - Document checklist
+
+    - Default team assignments
 
     '
   success_criteria:
-  - Can create estimate with 2-3 pricing options
-  - Options display in professional comparison view
-  - PDF export shows all options professionally
-  - Customer can select preferred option
-  - Quote status tracking works
-  why: 'Research Finding: Single estimate only, not professional.
+  - Can select template when creating new project
+  - Template populates stages, tasks, and milestones
+  - Can create custom template from existing project
+  - Template library is manageable
+  - Template applies correctly to new projects
+  why: 'Research Finding: Every project created from scratch.
 
-    Competitor AccuLynx offers Good/Better/Best proposal options.
+    Competitor JobNimbus has roofing-specific templates.
 
 
     Business Impact:
 
-    - 25% increase in average deal size
+    - 50% faster project setup
 
-    - Professional presentation increases close rate
+    - 30% more consistent execution
 
-    - Upselling opportunities with tiered options
+    - Reduced training time for new users
 
     '
 dependencies: null
@@ -74,10 +80,10 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T19:00:00'
-  id: SPRINT3-002
+  id: SPRINT3-003
   priority: 2
   template: code-modification
-  title: Multi-Option Quoting System
+  title: Project Templates System
 on_failure:
   escalate:
     include:
@@ -88,38 +94,40 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/estimates/estimate-form.tsx
-  reason: Existing estimate form to enhance
+  path: components/projects/project-form.tsx
+  reason: Project creation form to add template selection
   required: true
 - extract: []
-  path: lib/types/estimate.ts
-  reason: Estimate type definitions
+  path: lib/types/project.ts
+  reason: Project type definitions
   required: true
 - extract: []
-  path: app/(dashboard)/estimates/[id]/page.tsx
-  reason: Estimate detail page to add options view
+  path: app/(dashboard)/projects/new/page.tsx
+  reason: New project page flow
   required: true
 scope:
   constraints: []
   create:
-  - lib/types/quote-option.ts
-  - components/estimates/QuoteOptions.tsx
-  - components/estimates/QuoteOptionCard.tsx
-  - components/estimates/QuoteComparison.tsx
-  - components/estimates/QuoteProposalView.tsx
-  - app/api/estimates/[id]/options/route.ts
+  - lib/types/project-template.ts
+  - components/projects/TemplateSelector.tsx
+  - components/projects/TemplateLibrary.tsx
+  - components/projects/TemplateEditor.tsx
+  - app/(dashboard)/settings/templates/page.tsx
+  - app/api/project-templates/route.ts
+  - app/api/project-templates/[id]/route.ts
+  - lib/data/default-templates.ts
   do_not_touch:
-  - app/api/estimates/route.ts
-  - lib/validations/estimate.ts
+  - app/api/projects/route.ts
+  - lib/validations/project.ts
   modify:
-  - components/estimates/estimate-form.tsx
-  - app/(dashboard)/estimates/[id]/page.tsx
+  - app/(dashboard)/projects/new/page.tsx
+  - components/projects/project-form.tsx
 thinking:
   level: think_hard
   triggers:
-  - Before designing quote option data model
-  - When planning PDF generation approach
-  - When designing comparison UI
+  - Before designing template data structure
+  - When planning template-to-project mapping
+  - When designing default templates
 validation:
   assertions: []
   post_commit: []
@@ -132,11 +140,15 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/types/quote-option.ts
+  - command: test -f lib/types/project-template.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f components/estimates/QuoteOptions.tsx
+  - command: test -f components/projects/TemplateSelector.tsx
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: test -f lib/data/default-templates.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60
