@@ -103,7 +103,8 @@ export function useCommandPalette() {
     }, 150)
 
     return () => clearTimeout(timer)
-  }, [searchQuery, context])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery])
 
   // Fetch search results
   useEffect(() => {
@@ -144,7 +145,8 @@ export function useCommandPalette() {
     if (context.isOpen) {
       fetchResults()
     }
-  }, [context])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context.query, context.isOpen])
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -184,7 +186,8 @@ export function useCommandPalette() {
         context.close()
         break
     }
-  }, [context])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context.isOpen, context.selectedIndex, context.results, context.actions])
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)
