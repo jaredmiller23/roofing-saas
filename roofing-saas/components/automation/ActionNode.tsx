@@ -13,7 +13,6 @@ import {
   Trash2,
   Edit,
   ChevronDown,
-  ChevronRight,
   Mail,
   MessageSquare,
   CheckSquare,
@@ -411,7 +410,7 @@ function UpdateFieldConfigComponent({
         <Label className="text-xs">Value</Label>
         <Input
           placeholder="New value"
-          value={config.value || ''}
+          value={typeof config.value === 'string' || typeof config.value === 'number' ? config.value : ''}
           onChange={(e) => onChange({ value: e.target.value })}
         />
       </div>

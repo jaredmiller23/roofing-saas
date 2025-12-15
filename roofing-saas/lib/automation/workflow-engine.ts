@@ -6,10 +6,9 @@
 import type {
   Workflow,
   WorkflowExecution,
-  ExecutionStatus,
-  TriggerConfig,
   VariableContext,
-  WorkflowCondition
+  WorkflowCondition,
+  WorkflowAction
 } from './workflow-types'
 import { TriggerManager } from './trigger-manager'
 import { ActionExecutor } from './action-executor'
@@ -53,7 +52,7 @@ export class WorkflowEngine {
    */
   async executeWorkflow(
     workflow: Workflow,
-    triggerData: Record<string, any>,
+    triggerData: Record<string, unknown>,
     context: VariableContext = {}
   ): Promise<WorkflowExecution> {
     const execution: WorkflowExecution = {
@@ -200,13 +199,13 @@ export class WorkflowEngine {
   /**
    * Get value from context using dot notation
    */
-  private getValueFromContext(field: string, context: VariableContext): any {
+  private getValueFromContext(field: string, context: VariableContext): unknown {
     const parts = field.split('.')
-    let value: any = context
+    let value: unknown = context
 
     for (const part of parts) {
       if (value && typeof value === 'object') {
-        value = value[part]
+        value = (value as Record<string, unknown>)[part]
       } else {
         return undefined
       }
@@ -220,11 +219,12 @@ export class WorkflowEngine {
    */
   private async scheduleDelayedAction(
     executionId: string,
-    action: any,
+    action: WorkflowAction,
     context: VariableContext
   ): Promise<void> {
     // In a production environment, this would use a job queue like Redis/Bull
     // For now, we'll use a simple setTimeout
+    const delayHours = (action as { delay?: number }).delay || 0
     setTimeout(async () => {
       const execution = this.activeExecutions.get(executionId)
       if (!execution) return
@@ -239,7 +239,7 @@ export class WorkflowEngine {
 
       // Update the saved execution
       await this.saveExecution(execution)
-    }, action.delay * 60 * 60 * 1000) // Convert hours to milliseconds
+    }, delayHours * 60 * 60 * 1000) // Convert hours to milliseconds
   }
 
   /**
@@ -314,15 +314,15 @@ export class WorkflowEngine {
    */
   async testWorkflow(
     workflow: Workflow,
-    sampleData: Record<string, any>
+    sampleData: Record<string, unknown>
   ): Promise<WorkflowExecution> {
     // Create a test context
     const context: VariableContext = {
-      contact: sampleData.contact || {},
-      project: sampleData.project || {},
-      user: sampleData.user || {},
-      organization: sampleData.organization || {},
-      custom: sampleData.custom || {}
+      contact: (sampleData.contact as Record<string, unknown>) || undefined,
+      project: (sampleData.project as Record<string, unknown>) || undefined,
+      user: (sampleData.user as Record<string, unknown>) || undefined,
+      organization: (sampleData.organization as Record<string, unknown>) || undefined,
+      custom: (sampleData.custom as Record<string, unknown>) || undefined
     }
 
     // Execute workflow in test mode (no actual side effects)
@@ -332,7 +332,7 @@ export class WorkflowEngine {
   /**
    * Manually trigger a workflow
    */
-  async triggerManual(workflowId: string, triggerData: Record<string, any> = {}): Promise<void> {
+  async triggerManual(workflowId: string, triggerData: Record<string, unknown> = {}): Promise<void> {
     // Get workflow
     const response = await fetch(`/api/automations/${workflowId}`)
     if (!response.ok) {

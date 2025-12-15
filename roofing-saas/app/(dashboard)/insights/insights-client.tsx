@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Sparkles, Plus, Clock, History, Star, TrendingUp } from 'lucide-react'
+import { Sparkles, Plus, Clock, Star, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QueryInput, useQueryInput } from '@/components/bi/QueryInput'
@@ -38,6 +38,7 @@ export function InsightsPageClient({
   const [activeTab, setActiveTab] = React.useState('explore')
 
   // Load initial data
+   
   React.useEffect(() => {
     loadSuggestions()
     loadQueryHistory()
@@ -211,7 +212,7 @@ export function InsightsPageClient({
     const headers = currentResult.columns.map(col => col.name).join(',')
     const rows = currentResult.data.map(row =>
       currentResult.columns.map(col => {
-        const value = row[col.name]
+        const value = (row as Record<string, unknown>)[col.name]
         return typeof value === 'string' && value.includes(',') ? `"${value}"` : value
       }).join(',')
     ).join('\n')

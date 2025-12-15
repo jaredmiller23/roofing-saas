@@ -315,7 +315,7 @@ function FieldChangedConfig({
         <Label className="text-xs">Value</Label>
         <Input
           placeholder="Enter value to watch for"
-          value={config.to_value || ''}
+          value={typeof config.to_value === 'string' || typeof config.to_value === 'number' ? config.to_value : ''}
           onChange={(e) => onChange({ to_value: e.target.value })}
         />
       </div>

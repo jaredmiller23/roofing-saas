@@ -127,7 +127,7 @@ export function ConditionNode({ condition, onChange, onDelete }: ConditionNodePr
               <Label className="text-xs">Value</Label>
               <Input
                 placeholder="Enter comparison value"
-                value={condition.value || ''}
+                value={typeof condition.value === 'string' || typeof condition.value === 'number' ? condition.value : ''}
                 onChange={(e) => onChange({ ...condition, value: e.target.value })}
               />
               {(condition.operator === 'in' || condition.operator === 'not_in') && (

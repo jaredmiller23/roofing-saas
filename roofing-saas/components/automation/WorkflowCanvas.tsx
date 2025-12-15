@@ -103,6 +103,7 @@ export function WorkflowCanvas({
   }
 
   const getActionSummary = (action: WorkflowAction) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const config = action.config as any
     switch (action.type) {
       case 'send_email':
@@ -220,7 +221,7 @@ export function WorkflowCanvas({
                           <Badge variant="outline">{condition.logic_gate}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {condition.field} {condition.operator} {condition.value}
+                          {condition.field} {condition.operator} {String(condition.value ?? '')}
                         </p>
                       </div>
                     </div>

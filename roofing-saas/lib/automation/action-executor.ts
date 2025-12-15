@@ -5,9 +5,7 @@
 
 import type {
   WorkflowAction,
-  ActionConfig,
   ActionExecution,
-  ExecutionStatus,
   VariableContext,
   SendEmailConfig,
   SendSMSConfig,
@@ -29,7 +27,7 @@ export class ActionExecutor {
   async executeAction(
     action: WorkflowAction,
     context: VariableContext,
-    triggerData: Record<string, any>
+    triggerData: Record<string, unknown>
   ): Promise<ActionExecution> {
     const execution: ActionExecution = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -41,7 +39,7 @@ export class ActionExecutor {
     try {
       execution.status = 'running'
 
-      let result: any
+      let result: unknown
       switch (action.type) {
         case 'send_email':
           result = await this.executeSendEmail(action.config as SendEmailConfig, context)
@@ -98,7 +96,7 @@ export class ActionExecutor {
   private async executeSendEmail(
     config: SendEmailConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const to = this.interpolateTemplate(config.to, context)
     const subject = this.interpolateTemplate(config.subject, context)
     const body = this.interpolateTemplate(config.body, context)
@@ -132,7 +130,7 @@ export class ActionExecutor {
   private async executeSendSMS(
     config: SendSMSConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const to = this.interpolateTemplate(config.to, context)
     const message = this.interpolateTemplate(config.message, context)
 
@@ -162,7 +160,7 @@ export class ActionExecutor {
   private async executeCreateTask(
     config: CreateTaskConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const title = this.interpolateTemplate(config.title, context)
     const description = config.description ? this.interpolateTemplate(config.description, context) : undefined
     const assignedTo = config.assigned_to ? this.interpolateTemplate(config.assigned_to, context) : undefined
@@ -197,9 +195,11 @@ export class ActionExecutor {
   private async executeUpdateField(
     config: UpdateFieldConfig,
     context: VariableContext,
-    triggerData: Record<string, any>
-  ): Promise<any> {
-    const contactId = context.contact?.id || triggerData.contact?.id
+    triggerData: Record<string, unknown>
+  ): Promise<unknown> {
+    const contact = context.contact as Record<string, unknown> | undefined
+    const triggerContact = triggerData.contact as Record<string, unknown> | undefined
+    const contactId = contact?.id || triggerContact?.id
     if (!contactId) {
       throw new Error('No contact ID found for field update')
     }
@@ -253,7 +253,7 @@ export class ActionExecutor {
   private async executeChangeStage(
     config: ChangeStageConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const contactId = context.contact?.id
     if (!contactId) {
       throw new Error('No contact ID found for stage change')
@@ -284,7 +284,7 @@ export class ActionExecutor {
   private async executeAssignUser(
     config: AssignUserConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const contactId = context.contact?.id
     if (!contactId) {
       throw new Error('No contact ID found for user assignment')
@@ -316,7 +316,7 @@ export class ActionExecutor {
   private async executeAddTag(
     config: AddTagConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const contactId = context.contact?.id
     if (!contactId) {
       throw new Error('No contact ID found for adding tags')
@@ -356,7 +356,7 @@ export class ActionExecutor {
   private async executeRemoveTag(
     config: RemoveTagConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const contactId = context.contact?.id
     if (!contactId) {
       throw new Error('No contact ID found for removing tags')
@@ -396,8 +396,8 @@ export class ActionExecutor {
   private async executeWebhook(
     config: WebhookConfig,
     context: VariableContext,
-    triggerData: Record<string, any>
-  ): Promise<any> {
+    triggerData: Record<string, unknown>
+  ): Promise<unknown> {
     const url = this.interpolateTemplate(config.url, context)
 
     const headers: Record<string, string> = {
@@ -455,7 +455,7 @@ export class ActionExecutor {
   /**
    * Execute wait action
    */
-  private async executeWait(config: WaitConfig): Promise<any> {
+  private async executeWait(config: WaitConfig): Promise<unknown> {
     const durationMs = config.duration * 60 * 60 * 1000 // Convert hours to milliseconds
 
     await new Promise(resolve => setTimeout(resolve, durationMs))
@@ -469,7 +469,7 @@ export class ActionExecutor {
   private async executeCreateProject(
     config: CreateProjectConfig,
     context: VariableContext
-  ): Promise<any> {
+  ): Promise<unknown> {
     const name = this.interpolateTemplate(config.name, context)
     const description = config.description ? this.interpolateTemplate(config.description, context) : undefined
     const assignedTo = config.assigned_to ? this.interpolateTemplate(config.assigned_to, context) : undefined
@@ -511,18 +511,18 @@ export class ActionExecutor {
    * Interpolate template variables in an object
    */
   private interpolateObject(
-    obj: Record<string, any>,
+    obj: Record<string, unknown>,
     context: VariableContext,
-    triggerData: Record<string, any>
-  ): Record<string, any> {
-    const result: Record<string, any> = {}
+    triggerData: Record<string, unknown>
+  ): Record<string, unknown> {
+    const result: Record<string, unknown> = {}
     const fullContext = { ...context, trigger: triggerData }
 
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'string') {
         result[key] = this.interpolateTemplate(value, fullContext)
       } else if (typeof value === 'object' && value !== null) {
-        result[key] = this.interpolateObject(value, fullContext, triggerData)
+        result[key] = this.interpolateObject(value as Record<string, unknown>, fullContext, triggerData)
       } else {
         result[key] = value
       }
@@ -534,13 +534,13 @@ export class ActionExecutor {
   /**
    * Get value by dot notation path
    */
-  private getValueByPath(obj: any, path: string): any {
+  private getValueByPath(obj: unknown, path: string): unknown {
     const parts = path.split('.')
-    let value = obj
+    let value: unknown = obj
 
     for (const part of parts) {
       if (value && typeof value === 'object') {
-        value = value[part]
+        value = (value as Record<string, unknown>)[part]
       } else {
         return undefined
       }

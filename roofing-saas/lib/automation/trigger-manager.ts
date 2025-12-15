@@ -5,15 +5,16 @@
 
 import type {
   Workflow,
-  WorkflowTrigger,
   TriggerType,
-  TriggerConfig,
   ContactCreatedConfig,
   StageChangedConfig,
   FieldChangedConfig,
   TimeElapsedConfig,
   ScheduledConfig,
-  VariableContext
+  VariableContext,
+  ContactStage,
+  ContactType,
+  ContactCategory
 } from './workflow-types'
 import type { WorkflowEngine } from './workflow-engine'
 
@@ -93,7 +94,7 @@ export class TriggerManager {
   /**
    * Handle contact created event
    */
-  async handleContactCreated(contactData: any): Promise<void> {
+  async handleContactCreated(contactData: Record<string, unknown>): Promise<void> {
     const workflows = this.getWorkflowsForTrigger('contact_created')
 
     for (const workflow of workflows) {
@@ -102,7 +103,7 @@ export class TriggerManager {
       if (this.matchesContactCreatedConfig(contactData, config)) {
         const context: VariableContext = {
           contact: contactData,
-          user: { id: contactData.created_by }
+          user: { id: contactData.created_by as string }
         }
 
         await this.engine.executeWorkflow(workflow, { contact: contactData }, context)
@@ -113,10 +114,10 @@ export class TriggerManager {
   /**
    * Handle contact updated event
    */
-  async handleContactUpdated(contactData: any, previousData: any): Promise<void> {
+  async handleContactUpdated(contactData: Record<string, unknown>, previousData: Record<string, unknown>): Promise<void> {
     // Check for stage changes
     if (contactData.stage !== previousData.stage) {
-      await this.handleStageChanged(contactData, previousData.stage, contactData.stage)
+      await this.handleStageChanged(contactData, previousData.stage as string, contactData.stage as string)
     }
 
     // Check for field changes
@@ -142,7 +143,7 @@ export class TriggerManager {
    * Handle stage changed event
    */
   private async handleStageChanged(
-    contactData: any,
+    contactData: Record<string, unknown>,
     fromStage: string,
     toStage: string
   ): Promise<void> {
@@ -169,7 +170,7 @@ export class TriggerManager {
   /**
    * Handle field changes
    */
-  private async handleFieldChanges(contactData: any, previousData: any): Promise<void> {
+  private async handleFieldChanges(contactData: Record<string, unknown>, previousData: Record<string, unknown>): Promise<void> {
     const workflows = this.getWorkflowsForTrigger('field_changed')
 
     for (const workflow of workflows) {
@@ -204,13 +205,13 @@ export class TriggerManager {
   /**
    * Handle form submitted event
    */
-  async handleFormSubmitted(formData: any): Promise<void> {
+  async handleFormSubmitted(formData: Record<string, unknown>): Promise<void> {
     const workflows = this.getWorkflowsForTrigger('form_submitted')
 
     for (const workflow of workflows) {
       const context: VariableContext = {
         form: formData,
-        contact: formData.contact
+        contact: formData.contact as Record<string, unknown>
       }
 
       await this.engine.executeWorkflow(workflow, { form: formData }, context)
@@ -220,13 +221,13 @@ export class TriggerManager {
   /**
    * Handle project created event
    */
-  async handleProjectCreated(projectData: any): Promise<void> {
+  async handleProjectCreated(projectData: Record<string, unknown>): Promise<void> {
     const workflows = this.getWorkflowsForTrigger('project_created')
 
     for (const workflow of workflows) {
       const context: VariableContext = {
         project: projectData,
-        contact: projectData.contact
+        contact: projectData.contact as Record<string, unknown>
       }
 
       await this.engine.executeWorkflow(workflow, { project: projectData }, context)
@@ -236,13 +237,13 @@ export class TriggerManager {
   /**
    * Manually trigger a workflow
    */
-  async triggerManual(workflowId: string, triggerData: any = {}): Promise<void> {
+  async triggerManual(workflowId: string, triggerData: Record<string, unknown> = {}): Promise<void> {
     const workflow = this.registeredWorkflows.get(workflowId)
     if (!workflow || workflow.trigger.type !== 'manual') {
       throw new Error(`Manual workflow not found: ${workflowId}`)
     }
 
-    const context: VariableContext = triggerData.context || {}
+    const context: VariableContext = (triggerData.context as VariableContext) || {}
     await this.engine.executeWorkflow(workflow, triggerData, context)
   }
 
@@ -374,22 +375,22 @@ export class TriggerManager {
    * Check if contact matches contact created config
    */
   private matchesContactCreatedConfig(
-    contactData: any,
+    contactData: Record<string, unknown>,
     config: ContactCreatedConfig
   ): boolean {
-    if (config.contact_type && !config.contact_type.includes(contactData.type)) {
+    if (config.contact_type && !config.contact_type.includes(contactData.type as ContactType)) {
       return false
     }
 
-    if (config.contact_category && !config.contact_category.includes(contactData.contact_category)) {
+    if (config.contact_category && !config.contact_category.includes(contactData.contact_category as ContactCategory)) {
       return false
     }
 
-    if (config.source && !config.source.includes(contactData.source)) {
+    if (config.source && !config.source.includes(contactData.source as string)) {
       return false
     }
 
-    if (config.assigned_to && !config.assigned_to.includes(contactData.assigned_to)) {
+    if (config.assigned_to && !config.assigned_to.includes(contactData.assigned_to as string)) {
       return false
     }
 
@@ -400,20 +401,20 @@ export class TriggerManager {
    * Check if stage change matches config
    */
   private matchesStageChangedConfig(
-    contactData: any,
+    contactData: Record<string, unknown>,
     fromStage: string,
     toStage: string,
     config: StageChangedConfig
   ): boolean {
-    if (config.from_stage && !config.from_stage.includes(fromStage as any)) {
+    if (config.from_stage && !config.from_stage.includes(fromStage as ContactStage)) {
       return false
     }
 
-    if (config.to_stage && !config.to_stage.includes(toStage as any)) {
+    if (config.to_stage && !config.to_stage.includes(toStage as ContactStage)) {
       return false
     }
 
-    if (config.contact_type && !config.contact_type.includes(contactData.type)) {
+    if (config.contact_type && !config.contact_type.includes(contactData.type as ContactType)) {
       return false
     }
 
@@ -424,8 +425,8 @@ export class TriggerManager {
    * Check if field change matches config
    */
   private matchesFieldChangeConfig(
-    previousValue: any,
-    currentValue: any,
+    previousValue: unknown,
+    currentValue: unknown,
     config: FieldChangedConfig
   ): boolean {
     if (previousValue === currentValue) {

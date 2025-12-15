@@ -50,6 +50,16 @@ import type {
   SupabaseClient,
 } from '@supabase/supabase-js'
 
+// Type for presence payload
+interface _PresencePayload {
+  userId: string
+  userName?: string
+  userEmail?: string
+  userAvatar?: string
+  joinedAt: string
+  metadata?: Record<string, unknown>
+}
+
 /**
  * Postgres change event types
  */
@@ -69,13 +79,13 @@ export interface PresenceUser {
   userEmail?: string
   userAvatar?: string
   joinedAt: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
  * Configuration for entity subscription
  */
-export interface EntitySubscriptionConfig<T extends { [key: string]: any } = { [key: string]: any }> {
+export interface EntitySubscriptionConfig<T extends { [key: string]: unknown } = { [key: string]: unknown }> {
   /**
    * Entity type (e.g., 'contact', 'project', 'estimate')
    */
@@ -117,7 +127,7 @@ export interface EntitySubscriptionConfig<T extends { [key: string]: any } = { [
   onDelete?: (payload: RealtimePostgresChangesPayload<T>) => void
 
   /**
-   * Callback for any change event
+   * Callback for unknown change event
    */
   onChange?: (payload: RealtimePostgresChangesPayload<T>) => void
 
@@ -174,7 +184,7 @@ export interface PresenceConfig {
   /**
    * Additional metadata to track
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 
   /**
    * Callback when presence state syncs
@@ -224,7 +234,7 @@ export interface BroadcastConfig {
   /**
    * Payload to broadcast
    */
-  payload: Record<string, any>
+  payload: Record<string, unknown>
 
   /**
    * Tenant ID for multi-tenancy (optional)
@@ -326,7 +336,7 @@ export class RealtimeChannelManager {
   /**
    * Subscribe to entity changes (INSERT, UPDATE, DELETE)
    */
-  public async subscribeToEntity<T extends { [key: string]: any } = { [key: string]: any }>(
+  public async subscribeToEntity<T extends { [key: string]: unknown } = { [key: string]: unknown }>(
     config: EntitySubscriptionConfig<T>
   ): Promise<RealtimeChannel> {
     const {
@@ -366,14 +376,20 @@ export class RealtimeChannelManager {
       const channel = this.supabase.channel(channelName)
 
       // Configure postgres changes listener
-      const changeConfig: any = {
+      const changeConfig: {
+        event: PostgresChangeEvent
+        schema: string
+        table: string
+        filter: string
+      } = {
         event,
         schema,
         table,
         filter: `id=eq.${entityId}`,
       }
 
-      channel.on('postgres_changes', changeConfig, (payload: RealtimePostgresChangesPayload<T>) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(channel as any).on('postgres_changes', changeConfig, (payload: RealtimePostgresChangesPayload<T>) => {
         logger.debug('Received postgres change', {
           channelName,
           eventType: payload.eventType,
@@ -510,7 +526,8 @@ export class RealtimeChannelManager {
       this.presenceStates.set(channelName, presenceMap)
 
       // Helper to parse presence state
-      const parsePresenceState = (state: RealtimePresenceState<any>): PresenceUser[] => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parsePresenceState = (state: RealtimePresenceState<Record<string, any>>): PresenceUser[] => {
         const users: PresenceUser[] = []
 
         Object.keys(state).forEach((key) => {
@@ -551,7 +568,8 @@ export class RealtimeChannelManager {
       })
 
       // Listen for presence join
-      channel.on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      channel.on('presence', { event: 'join' }, ({ key: _key, newPresences }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         newPresences.forEach((presence: any) => {
           if (presence.userId !== user.id) {
             const presenceUser: PresenceUser = {
@@ -578,7 +596,7 @@ export class RealtimeChannelManager {
       })
 
       // Listen for presence leave
-      channel.on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      channel.on('presence', { event: 'leave' }, ({ key: _key, leftPresences }) => {
         leftPresences.forEach((presence: any) => {
           if (presence.userId !== user.id) {
             const presenceUser: PresenceUser = {
@@ -710,7 +728,7 @@ export class RealtimeChannelManager {
   public async updatePresenceMetadata(
     entityType: string,
     entityId: string,
-    metadata: Record<string, any>,
+    metadata: Record<string, unknown>,
     tenantId?: string
   ): Promise<void> {
     const channelName = this.generateChannelName('presence', entityType, entityId, tenantId)
@@ -726,7 +744,7 @@ export class RealtimeChannelManager {
     try {
       // Get current presence state
       const state = channelInfo.channel.presenceState()
-      const currentPresence = Object.values(state)[0]?.[0] as { presence_ref: string; metadata?: Record<string, any> } | undefined
+      const currentPresence = Object.values(state)[0]?.[0] as { presence_ref: string; metadata?: Record<string, unknown> } | undefined
 
       if (currentPresence) {
         await channelInfo.channel.track({
@@ -842,7 +860,7 @@ export class RealtimeChannelManager {
     }
 
     try {
-      // Clear any pending reconnect
+      // Clear unknown pending reconnect
       if (channelInfo.reconnectTimeout) {
         clearTimeout(channelInfo.reconnectTimeout)
         channelInfo.reconnectTimeout = undefined
@@ -1058,7 +1076,7 @@ export const getChannelManager = () => RealtimeChannelManager.getInstance()
 /**
  * Export convenience methods
  */
-export const subscribeToEntity = <T extends { [key: string]: any } = { [key: string]: any }>(config: EntitySubscriptionConfig<T>) =>
+export const subscribeToEntity = <T extends { [key: string]: unknown } = { [key: string]: unknown }>(config: EntitySubscriptionConfig<T>) =>
   getChannelManager().subscribeToEntity(config)
 
 export const joinPresence = (config: PresenceConfig) => getChannelManager().joinPresence(config)

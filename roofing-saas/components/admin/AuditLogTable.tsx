@@ -234,7 +234,7 @@ export function AuditLogTable({
 
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {entry.metadata?.source || 'api'}
+                        {String(entry.metadata?.source || 'api')}
                       </Badge>
                     </TableCell>
 

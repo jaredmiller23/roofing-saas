@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env.test') })
  * - TEST_ENV=production uses the Vercel production URL
  * - Default: localhost:3000 for local development
  */
-const PRODUCTION_URL = 'https://roofing-saas-jaredmiller23.vercel.app'
+const PRODUCTION_URL = 'https://roofing-saas.vercel.app'
 const isProduction = process.env.TEST_ENV === 'production'
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || (isProduction ? PRODUCTION_URL : 'http://localhost:3000')
 
