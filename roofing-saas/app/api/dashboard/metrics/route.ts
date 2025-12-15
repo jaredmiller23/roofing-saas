@@ -202,24 +202,26 @@ export async function GET() {
       }
     })
 
-    // Return comprehensive metrics
+    // Return comprehensive metrics (wrapped in data for frontend compatibility)
     return NextResponse.json({
       success: true,
-      metrics: {
-        // Top-level KPIs
-        totalContacts: totalContacts || 0,
-        activeProjects: activeProjects || 0,
-        monthlyRevenue,
-        conversionRate: Math.round(conversionRate * 10) / 10, // Round to 1 decimal
-        avgJobValue: Math.round(avgJobValue),
-        avgSalesCycle: Math.round(avgSalesCycle * 10) / 10, // Days with 1 decimal
-        doorsKnockedPerDay: Math.round(doorsKnockedPerDay * 10) / 10,
-        doorsKnocked7Days,
+      data: {
+        metrics: {
+          // Top-level KPIs
+          totalContacts: totalContacts || 0,
+          activeProjects: activeProjects || 0,
+          monthlyRevenue,
+          conversionRate: Math.round(conversionRate * 10) / 10, // Round to 1 decimal
+          avgJobValue: Math.round(avgJobValue),
+          avgSalesCycle: Math.round(avgSalesCycle * 10) / 10, // Days with 1 decimal
+          doorsKnockedPerDay: Math.round(doorsKnockedPerDay * 10) / 10,
+          doorsKnocked7Days,
 
-        // Charts data
-        revenueTrend,
-        pipelineStatus,
-        activityTrend,
+          // Charts data
+          revenueTrend,
+          pipelineStatus,
+          activityTrend,
+        }
       }
     })
   } catch (error) {
