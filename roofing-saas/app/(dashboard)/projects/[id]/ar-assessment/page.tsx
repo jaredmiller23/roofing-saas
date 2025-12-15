@@ -230,22 +230,22 @@ export default function ARAssessmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
+    <div className="min-h-screen bg-muted">
+      <div className="bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href={'/projects/' + projectId}
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+              className="p-2 text-muted-foreground hover:bg-muted rounded-lg"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold text-foreground">
                 AR Damage Assessment
               </h1>
               {project && (
-                <p className="text-sm text-gray-500">{project.name}</p>
+                <p className="text-sm text-muted-foreground">{project.name}</p>
               )}
             </div>
           </div>
@@ -253,15 +253,15 @@ export default function ARAssessmentPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/projects/' + projectId)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted text-foreground rounded-lg hover:bg-muted/80"
             >
               <Eye className="h-4 w-4" />
               View Project
             </button>
-            
+
             <button
               onClick={navigateToEstimate}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
               <Calculator className="h-4 w-4" />
               Create Estimate
@@ -272,8 +272,8 @@ export default function ARAssessmentPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 h-[calc(100vh-80px)]">
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-lg h-full p-4">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">AR Camera View</h2>
+          <div className="bg-card rounded-lg shadow-lg h-full p-4">
+            <h2 className="text-lg font-medium text-foreground mb-4">AR Camera View</h2>
             <ARViewport
               projectId={projectId}
               onMeasurementComplete={handleMeasurementComplete}
@@ -325,9 +325,9 @@ export default function ARAssessmentPage() {
 
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 shadow-xl">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-900">Processing...</p>
+          <div className="bg-card rounded-lg p-6 shadow-xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-foreground">Processing...</p>
           </div>
         </div>
       )}

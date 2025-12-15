@@ -384,10 +384,13 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
             ) : arData ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
+                  {/* eslint-disable-next-line theme-compliance/no-hardcoded-colors -- Semantic color: blue indicates measurements data */}
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    {/* eslint-disable-next-line theme-compliance/no-hardcoded-colors -- Semantic color: blue indicates measurements data */}
                     <div className="text-2xl font-bold text-blue-600">
                       {arData.measurements?.length || 0}
                     </div>
+                    {/* eslint-disable-next-line theme-compliance/no-hardcoded-colors -- Semantic color: blue indicates measurements data */}
                     <div className="text-sm text-blue-600">Measurements</div>
                   </div>
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
@@ -409,10 +412,10 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
 
                 {arData.measurements && arData.measurements.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Measurements</h4>
+                    <h4 className="font-medium text-foreground mb-2">Measurements</h4>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {arData.measurements.map((measurement: any) => (
-                        <div key={measurement.id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                        <div key={measurement.id} className="flex justify-between items-center text-sm bg-muted p-2 rounded">
                           <span className="capitalize">{measurement.type}</span>
                           <span className="font-medium">
                             {measurement.value.toFixed(2)} {measurement.unit}
@@ -425,10 +428,10 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
 
                 {arData.damage_markers && arData.damage_markers.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Damage Areas</h4>
+                    <h4 className="font-medium text-foreground mb-2">Damage Areas</h4>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {arData.damage_markers.map((marker: any) => (
-                        <div key={marker.id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                        <div key={marker.id} className="flex justify-between items-center text-sm bg-muted p-2 rounded">
                           <span className="capitalize">
                             {marker.damage_type?.replace(/_/g, ' ')}
                           </span>
@@ -471,7 +474,7 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                <Camera className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <Camera className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                 <p>No AR assessment data found for this project.</p>
                 <Button
                   type="button"
