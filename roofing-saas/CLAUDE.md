@@ -73,6 +73,27 @@ const [_unused, setUsed] = useState(false)
 
 ### 4. React Hooks Rules
 
+**NEVER put entire context/state objects in dependency arrays:**
+
+```tsx
+// BAD - Causes infinite re-renders (WILL FREEZE THE APP)
+const context = useMyContext()
+useEffect(() => {
+  doSomething(context.value)
+}, [context])  // ❌ context object changes every render
+
+// GOOD - Use specific values
+useEffect(() => {
+  doSomething(context.value)
+}, [context.value])  // ✅ Only re-run when value changes
+
+// GOOD - Disable with specific values listed
+useEffect(() => {
+  doSomething(context.value)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [context.value, context.isOpen])
+```
+
 **useEffect dependencies must be complete** or explicitly disabled:
 
 ```tsx
