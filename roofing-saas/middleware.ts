@@ -34,16 +34,20 @@ export async function middleware(request: NextRequest) {
   const method = request.method
 
   // Handle i18n routing first (locale detection, redirects)
-  // Skip for API routes, static assets, auth routes, and root landing page
+  // Skip for API routes, static assets, auth routes, root landing page,
+  // and paths that already have a locale prefix
   // These routes exist outside the [locale] directory structure
   const authRoutes = ['/login', '/register', '/reset-password', '/auth']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
   const isRootPath = pathname === '/'
+  const hasLocalePrefix = locales.some(locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`)
 
+  // Only run i18n middleware for paths that need locale prefix added
   if (!pathname.startsWith('/api/') &&
       !pathname.startsWith('/_next/') &&
       !isAuthRoute &&
-      !isRootPath) {
+      !isRootPath &&
+      !hasLocalePrefix) {
     const intlResponse = intlMiddleware(request)
     // If intl middleware wants to redirect, return that response
     if (intlResponse.headers.get('x-middleware-rewrite') ||
