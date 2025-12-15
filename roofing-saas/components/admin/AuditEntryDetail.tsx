@@ -27,7 +27,7 @@ import {
   Edit3,
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { AuditLogger } from '@/lib/audit/audit-logger'
+import { calculateAuditDiff } from '@/lib/audit/audit-types'
 import type { AuditEntry, AuditDiff, AuditActionType } from '@/lib/audit/audit-types'
 
 interface AuditEntryDetailProps {
@@ -181,7 +181,7 @@ export function AuditEntryDetail({ entry }: AuditEntryDetailProps) {
 
   // Calculate diff between before and after values
   const diff = useMemo(() => {
-    return AuditLogger.calculateDiff(entry.before_values, entry.after_values)
+    return calculateAuditDiff(entry.before_values, entry.after_values)
   }, [entry.before_values, entry.after_values])
 
   const ActionIcon = actionIcons[entry.action_type]

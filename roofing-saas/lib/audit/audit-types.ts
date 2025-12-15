@@ -158,3 +158,80 @@ export class AuditStorageError extends AuditError {
     this.name = 'AuditStorageError'
   }
 }
+
+/**
+ * Calculate diff between before and after values
+ * This is a pure utility function safe for client-side use
+ */
+export function calculateAuditDiff(
+  before: Record<string, any> | null,
+  after: Record<string, any> | null
+): AuditDiff[] {
+  const diff: AuditDiff[] = []
+
+  if (!before && !after) {
+    return diff
+  }
+
+  if (!before && after) {
+    // Create operation
+    Object.keys(after).forEach(key => {
+      diff.push({
+        field: key,
+        old_value: null,
+        new_value: after[key],
+        type: 'added'
+      })
+    })
+    return diff
+  }
+
+  if (before && !after) {
+    // Delete operation
+    Object.keys(before).forEach(key => {
+      diff.push({
+        field: key,
+        old_value: before[key],
+        new_value: null,
+        type: 'removed'
+      })
+    })
+    return diff
+  }
+
+  // Update operation - compare before and after
+  const allKeys = new Set([
+    ...Object.keys(before || {}),
+    ...Object.keys(after || {})
+  ])
+
+  allKeys.forEach(key => {
+    const oldValue = before?.[key]
+    const newValue = after?.[key]
+
+    if (oldValue === undefined && newValue !== undefined) {
+      diff.push({
+        field: key,
+        old_value: null,
+        new_value: newValue,
+        type: 'added'
+      })
+    } else if (oldValue !== undefined && newValue === undefined) {
+      diff.push({
+        field: key,
+        old_value: oldValue,
+        new_value: null,
+        type: 'removed'
+      })
+    } else if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+      diff.push({
+        field: key,
+        old_value: oldValue,
+        new_value: newValue,
+        type: 'changed'
+      })
+    }
+  })
+
+  return diff
+}
