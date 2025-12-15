@@ -10,22 +10,14 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(app/[locale]/(dashboard)/contacts/[id]/page.tsx)",
-      "Edit(app/[locale]/(dashboard)/contacts/[id]/page.tsx)",
-      "Write(app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx)",
-      "Edit(app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx)",
-      "Write(app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx)",
-      "Edit(app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx)",
-      "Write(app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx)",
-      "Edit(app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx)",
-      "Write(app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx)",
-      "Edit(app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx)",
-      "Write(app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx)",
-      "Edit(app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx)",
-      "Write(components/ar/ARToolbar.tsx)",
-      "Edit(components/ar/ARToolbar.tsx)",
-      "Write(components/ar/MeasurementOverlay.tsx)",
-      "Edit(components/ar/MeasurementOverlay.tsx)"
+      "Write(app/api/contacts/check-duplicate/route.ts)",
+      "Edit(app/api/contacts/check-duplicate/route.ts)",
+      "Write(components/contacts/DuplicateWarningDialog.tsx)",
+      "Edit(components/contacts/DuplicateWarningDialog.tsx)",
+      "Write(components/contacts/contact-form.tsx)",
+      "Edit(components/contacts/contact-form.tsx)",
+      "Write(app/(dashboard)/contacts/new/page.tsx)",
+      "Edit(app/(dashboard)/contacts/new/page.tsx)"
     ]
   }
 }

@@ -2,42 +2,50 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Fix 149 theme-compliance errors across 8 files.\nAll hardcoded Tailwind colors\
-    \ must be replaced with theme-aware CSS variables\nto support dark mode and maintain\
-    \ UI consistency.\n\nAffected Files (8 total, 149 errors):\n1. app/[locale]/(dashboard)/contacts/[id]/page.tsx\n\
-    2. app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx\n\
-    3. app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx\n\
-    4. app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx\n5. app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx\n\
-    6. app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx\n7. components/ar/ARToolbar.tsx\n\
-    8. components/ar/MeasurementOverlay.tsx\n\nColor Mapping (use EXACTLY these replacements):\n\
-    BACKGROUNDS:\n- bg-white \u2192 bg-card or bg-background\n- bg-gray-50 \u2192\
-    \ bg-muted/30 or bg-background\n- bg-gray-100 \u2192 bg-muted\n- bg-gray-200 \u2192\
-    \ bg-muted\n- bg-blue-50 \u2192 bg-primary/10\n- bg-blue-100 \u2192 bg-primary/20\n\
-    - bg-blue-600 \u2192 bg-primary\n- bg-purple-100 \u2192 bg-secondary/20\n\nTEXT:\n\
-    - text-gray-900 \u2192 text-foreground\n- text-gray-700 \u2192 text-foreground\n\
-    - text-gray-600 \u2192 text-muted-foreground\n- text-gray-500 \u2192 text-muted-foreground\n\
-    - text-gray-400 \u2192 text-muted-foreground/70\n- text-blue-600 \u2192 text-primary\n\
-    - text-blue-800 \u2192 text-primary\n- text-purple-800 \u2192 text-secondary-foreground\n\
-    \nBORDERS:\n- border-gray-200 \u2192 border-border\n- border-gray-300 \u2192 border-border\n\
-    - border-blue-600 \u2192 border-primary\n\nHOVER:\n- hover:bg-gray-50 \u2192 hover:bg-muted/50\n\
-    - hover:bg-gray-100 \u2192 hover:bg-muted\n- hover:bg-blue-700 \u2192 hover:bg-primary/90\n"
+  goal: 'Implement contact duplicate detection to prevent data quality issues.
+
+
+    Features to implement:
+
+    1. Real-time duplicate check during contact creation
+
+    2. Warning dialog when potential duplicate found
+
+    3. Option to view existing contact or continue creating
+
+    4. Match on: email (exact), phone (normalized), name + address combo
+
+
+    User Flow:
+
+    1. User fills in contact form
+
+    2. On blur of email/phone fields, check for duplicates
+
+    3. If match found, show warning with link to existing contact
+
+    4. User can choose to view existing or continue creating
+
+    '
   success_criteria:
-  - Zero theme-compliance errors after completion
-  - All 8 affected files modified
-  - TypeScript compilation passes
-  - Build succeeds
-  why: 'Theme-compliance plugin added Dec 12. Sprint 5 harness ran Dec 14-15 without
+  - Duplicate check fires on email field blur
+  - Duplicate check fires on phone field blur
+  - Warning dialog shows when duplicate found
+  - Dialog links to existing contact
+  - User can dismiss warning and continue
+  - Backend API endpoint for duplicate checking exists
+  why: 'Research Finding: Users are creating duplicate contacts causing data chaos.
 
-    enforcement, generating 149 hardcoded color violations.
+    Competitor AccuLynx has intelligent duplicate detection - table stakes feature.
 
 
-    These must be fixed to:
+    Business Impact:
 
-    1. Enable dark mode support
+    - Sales reps contacting same person multiple times
 
-    2. Pass pre-commit lint checks
+    - Incorrect reporting due to duplicate data
 
-    3. Maintain consistent theming
+    - Customer frustration from repeated outreach
 
     '
 dependencies: null
@@ -51,11 +59,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T10:00:00'
-  id: CLEANUP-004
+  created: '2025-12-14T16:00:00'
+  id: SPRINT1-003
   priority: 2
   template: code-modification
-  title: Fix Theme Compliance - Replace Hardcoded Colors
+  title: Contact Duplicate Detection System
 on_failure:
   escalate:
     include:
@@ -66,34 +74,33 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: app/[locale]/(dashboard)/contacts/[id]/page.tsx
-  reason: Largest file - understand the pattern
+  path: components/contacts/contact-form.tsx
+  reason: Form to add duplicate checking to
   required: true
 - extract: []
-  path: components/ar/ARToolbar.tsx
-  reason: AR component with many violations
+  path: app/api/contacts/route.ts
+  reason: Understand contact API patterns
   required: true
+- extract: []
+  path: lib/types/contact.ts
+  reason: Contact type definitions
+  required: false
 scope:
   constraints: []
-  create: []
+  create:
+  - app/api/contacts/check-duplicate/route.ts
+  - components/contacts/DuplicateWarningDialog.tsx
   do_not_touch:
-  - app/api/**
-  - lib/**
-  - components/ui/**
+  - app/api/contacts/route.ts
+  - lib/validations/contact.ts
   modify:
-  - app/[locale]/(dashboard)/contacts/[id]/page.tsx
-  - app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx
-  - app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx
-  - app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx
-  - app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx
-  - app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx
-  - components/ar/ARToolbar.tsx
-  - components/ar/MeasurementOverlay.tsx
+  - components/contacts/contact-form.tsx
+  - app/(dashboard)/contacts/new/page.tsx
 thinking:
-  level: think
+  level: think_hard
   triggers:
-  - When processing files with semantic colors (status indicators)
-  - When unsure about correct replacement
+  - Before designing duplicate matching algorithm
+  - When deciding API response format
 validation:
   assertions: []
   post_commit: []
@@ -101,8 +108,16 @@ validation:
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
     timeout: 60
-  - command: npm run lint -- --quiet 2>&1 | grep -c 'theme-compliance' || echo 0
-    expect: 'output: 0'
+  - command: test -f app/api/contacts/check-duplicate/route.ts
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: grep -q "DuplicateWarning" components/contacts/contact-form.tsx
+    expect: 'exit_code: 0'
     required: true
     timeout: 60

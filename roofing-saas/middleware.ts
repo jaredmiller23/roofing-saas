@@ -29,7 +29,7 @@ const intlMiddleware = createIntlMiddleware({
  * Note: For Phase 1, we're starting with a single tenant.
  * Multi-tenant subdomain routing will be added in a future phase.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
 

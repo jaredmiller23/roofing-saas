@@ -1,24 +1,15 @@
 {
-  "task_id": "CLEANUP-004",
+  "task_id": "SPRINT1-003",
   "files_read": [
-    "app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx",
-    "app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx",
-    "app/[locale]/(dashboard)/contacts/[id]/page.tsx",
-    "components/ar/MeasurementOverlay.tsx",
-    "components/ar/ARToolbar.tsx",
-    "app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx",
-    "app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx",
-    "app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx"
+    "lib/types/contact.ts",
+    "app/api/contacts/check-duplicate/route.ts",
+    "components/contacts/DuplicateWarningDialog.tsx",
+    "components/contacts/contact-form.tsx",
+    "app/api/contacts/route.ts",
+    "app/(dashboard)/contacts/new/page.tsx"
   ],
   "files_modified": [
-    "app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx",
-    "app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx",
-    "components/ar/MeasurementOverlay.tsx",
-    "app/[locale]/(dashboard)/contacts/[id]/page.tsx",
-    "components/ar/ARToolbar.tsx",
-    "app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx",
-    "app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx",
-    "app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx"
+    "components/contacts/contact-form.tsx"
   ],
   "validation_passed": true,
   "progress_updated": false,
