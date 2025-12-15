@@ -8,13 +8,15 @@ import { PipelineSettings } from './PipelineSettings'
 import { TemplateSettings } from './TemplateSettings'
 import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
+import { AppearanceSettings } from './appearance-settings'
 import {
   Settings,
   Palette,
   Workflow,
   FileText,
   Shield,
-  Tag
+  Tag,
+  Monitor
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -36,6 +38,13 @@ export function SettingsTabs() {
             >
               <Settings className="h-4 w-4" />
               General
+            </TabsTrigger>
+            <TabsTrigger
+              value="appearance"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <Monitor className="h-4 w-4" />
+              Appearance
             </TabsTrigger>
             <TabsTrigger
               value="branding"
@@ -76,6 +85,10 @@ export function SettingsTabs() {
 
           <TabsContent value="general">
             <GeneralSettings />
+          </TabsContent>
+
+          <TabsContent value="appearance">
+            <AppearanceSettings />
           </TabsContent>
 
           <TabsContent value="branding">

@@ -1,0 +1,81 @@
+/* Dark theme overrides for the Coral Jade Afternoon design system
+ * 
+ * This file contains additional dark theme styling.
+ * The main dark theme variables are already defined in app/globals.css
+ * This file can be used for theme-specific component overrides.
+ */
+
+/* Dark theme specific component styles */
+.dark {
+  /* Enhanced dark mode styles */
+  --glass-bg: rgba(26, 31, 46, 0.85);
+  --glass-border: rgba(255, 130, 67, 0.1);
+  
+  /* Dark mode specific shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.24);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.24);
+}
+
+/* Dark mode scrollbar styling */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 130, 67, 0.3);
+}
+
+/* Dark mode selection styling */
+.dark ::selection {
+  background: rgba(255, 130, 67, 0.3);
+  color: var(--foreground);
+}
+
+/* Dark mode focus ring enhancement */
+.dark *:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Theme transition classes */
+.theme-transition {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced dark mode styles for specific components */
+.dark .card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .dropdown-menu {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark mode specific animations */
+@keyframes dark-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 130, 67, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 130, 67, 0.5);
+  }
+}
+
+.dark .animate-glow {
+  animation: dark-glow 2s ease-in-out infinite;
+}

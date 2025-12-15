@@ -2,72 +2,70 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement a comprehensive audit trail system for compliance and
+  goal: 'Implement dark mode theme support with system preference detection
 
-    data change tracking across the application.
+    and manual toggle capability.
 
 
     Features to implement:
 
-    1. Track all CRUD operations with user attribution
+    1. Dark mode color scheme following design system
 
-    2. Store before/after values for all changes
+    2. System preference detection (prefers-color-scheme)
 
-    3. Audit log viewer in admin panel
+    3. Manual theme toggle in settings
 
-    4. Compliance reports (who changed what, when)
+    4. Persist user preference
 
-    5. Data retention policy management
-
-
-    What to Track:
-
-    - Contact changes (all fields)
-
-    - Project status changes
-
-    - Estimate modifications
-
-    - User permission changes
-
-    - Settings changes
-
-    - Document access
+    5. Smooth theme transition animations
 
 
-    Audit Entry Structure:
+    Technical Approach:
 
-    - Timestamp
+    - Use Tailwind CSS dark mode (class strategy)
 
-    - User ID and name
+    - Theme provider with next-themes
 
-    - Action type (create/update/delete)
+    - Update all hardcoded colors to use CSS variables
 
-    - Entity type and ID
+    - Ensure all components respect theme
 
-    - Before/after JSON diff
 
-    - IP address and user agent
+    Color Mapping:
+
+    - bg-background, bg-card (light/dark variants)
+
+    - text-foreground, text-muted-foreground
+
+    - border-border
+
+    - Ensure proper contrast ratios in both modes
+
+
+    NOTE: This builds on SPRINT2-003 UI Consistency work.
+
+    Many hardcoded colors should already be fixed.
 
     '
   success_criteria:
-  - All entity changes are logged automatically
-  - Audit log viewer shows history with filters
-  - Can export audit reports
-  - Before/after values are captured
-  - Performance impact is minimal
-  why: 'Research Finding: Only admin impersonation tracking exists.
+  - Dark mode toggle works in settings
+  - System preference is detected on first visit
+  - All pages render correctly in dark mode
+  - Charts and graphs respect dark theme
+  - No contrast issues or illegible text
+  - Preference persists across sessions
+  why: 'Research Finding: Dark mode is standard expectation in 2024 SaaS.
 
-    Compliance Need: Complete data change tracking for regulatory requirements.
+    User Impact: Reduced eye strain, modern aesthetic appeal.
 
 
     Business Impact:
 
-    - Reduced compliance risk
+    - Improved user satisfaction
 
-    - Enables troubleshooting and rollback
+    - Reduced eye strain for heavy users
 
-    - Required for enterprise customers
+    - Modern, professional appearance
 
     '
 dependencies: null
@@ -82,10 +80,10 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T19:00:00'
-  id: SPRINT3-005
-  priority: 2
+  id: SPRINT3-006
+  priority: 3
   template: code-modification
-  title: Comprehensive Audit Trail
+  title: Dark Mode Theme Support
 on_failure:
   escalate:
     include:
@@ -96,43 +94,37 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: app/api/contacts/route.ts
-  reason: API route pattern to add audit logging
+  path: tailwind.config.ts
+  reason: Tailwind dark mode configuration
   required: true
 - extract: []
-  path: app/api/contacts/[id]/route.ts
-  reason: Update/delete patterns for audit
+  path: app/layout.tsx
+  reason: Root layout for theme provider
   required: true
 - extract: []
-  path: lib/auth/session.ts
-  reason: User context for audit entries
+  path: globals.css
+  reason: Global styles and CSS variables
   required: true
 scope:
   constraints: []
   create:
-  - lib/audit/audit-logger.ts
-  - lib/audit/audit-types.ts
-  - lib/audit/audit-middleware.ts
-  - app/(dashboard)/admin/audit-log/page.tsx
-  - components/admin/AuditLogTable.tsx
-  - components/admin/AuditLogFilters.tsx
-  - components/admin/AuditEntryDetail.tsx
-  - app/api/admin/audit-log/route.ts
-  - app/api/admin/audit-log/export/route.ts
+  - components/theme/ThemeProvider.tsx
+  - components/theme/ThemeToggle.tsx
+  - lib/hooks/useTheme.ts
+  - styles/themes/dark.css
   do_not_touch:
-  - lib/supabase/server.ts
-  - database migrations
+  - components/ui/button.tsx
+  - components/ui/input.tsx
   modify:
-  - app/api/contacts/route.ts
-  - app/api/contacts/[id]/route.ts
-  - app/api/projects/route.ts
-  - app/api/projects/[id]/route.ts
+  - app/layout.tsx
+  - app/(dashboard)/layout.tsx
+  - tailwind.config.ts
+  - components/settings/appearance-settings.tsx
 thinking:
-  level: think_hard
+  level: think
   triggers:
-  - Before designing audit log schema
-  - When planning middleware integration
-  - When optimizing storage strategy
+  - Before planning CSS variable structure
+  - When auditing components for theme compliance
 validation:
   assertions: []
   post_commit: []
@@ -145,15 +137,15 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/audit/audit-logger.ts
+  - command: test -f components/theme/ThemeProvider.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f app/(dashboard)/admin/audit-log/page.tsx
+  - command: test -f components/theme/ThemeToggle.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: grep -q "auditLog" app/api/contacts/route.ts
+  - command: grep -q "ThemeProvider" app/layout.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
