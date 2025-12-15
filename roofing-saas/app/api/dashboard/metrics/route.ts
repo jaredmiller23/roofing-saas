@@ -32,9 +32,7 @@ export async function GET() {
     // Get current date ranges
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const _startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const _endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-    const _startOfYear = new Date(now.getFullYear(), 0, 1)
+    // Note: startOfLastMonth and endOfLastMonth defined later for revenue comparison
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
@@ -66,6 +64,26 @@ export async function GET() {
     const monthlyRevenue = wonProjectsThisMonth?.reduce((sum, p) =>
       sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
     ) || 0
+
+    // === Last Month Revenue (for comparison) ===
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+    const { data: wonProjectsLastMonth } = await supabase
+      .from('projects')
+      .select('final_value, approved_value, estimated_value')
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .eq('status', 'won')
+      .gte('updated_at', startOfLastMonth.toISOString())
+      .lte('updated_at', endOfLastMonth.toISOString())
+
+    const lastMonthRevenue = wonProjectsLastMonth?.reduce((sum, p) =>
+      sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
+    ) || 0
+
+    const revenueChange = lastMonthRevenue > 0
+      ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
+      : 0
 
     // === Revenue Trend (last 6 months) ===
     const { data: revenueData } = await supabase
@@ -183,6 +201,11 @@ export async function GET() {
       value: data.value
     }))
 
+    // Calculate total pipeline value
+    const totalPipelineValue = pipelineData?.reduce((sum, p) =>
+      sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
+    ) || 0
+
     // === Activity Trend (last 7 days) ===
     const activityTrend = Array.from({ length: 7 }, (_, i) => {
       const date = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000)
@@ -202,22 +225,36 @@ export async function GET() {
       }
     })
 
-    // Return comprehensive metrics (wrapped in data for frontend compatibility)
+    // Return metrics in format expected by DashboardMetrics component
     return NextResponse.json({
       success: true,
       data: {
         metrics: {
-          // Top-level KPIs
+          revenue: {
+            value: monthlyRevenue,
+            change: revenueChange,
+            trend: revenueChange >= 0 ? 'up' : 'down'
+          },
+          pipeline: {
+            value: totalPipelineValue,
+            change: activeProjects || 0, // Show count as change indicator
+            trend: (activeProjects || 0) > 0 ? 'up' : 'down'
+          },
+          knocks: {
+            value: doorsKnocked7Days,
+            change: Math.round(doorsKnockedPerDay * 10) / 10,
+            trend: doorsKnocked7Days > 0 ? 'up' : 'down'
+          },
+          conversion: {
+            value: Math.round(conversionRate * 10) / 10,
+            change: 0, // Would need historical data for comparison
+            trend: conversionRate > 20 ? 'up' : 'down'
+          },
+          // Additional data for charts/extended display
           totalContacts: totalContacts || 0,
           activeProjects: activeProjects || 0,
-          monthlyRevenue,
-          conversionRate: Math.round(conversionRate * 10) / 10, // Round to 1 decimal
           avgJobValue: Math.round(avgJobValue),
-          avgSalesCycle: Math.round(avgSalesCycle * 10) / 10, // Days with 1 decimal
-          doorsKnockedPerDay: Math.round(doorsKnockedPerDay * 10) / 10,
-          doorsKnocked7Days,
-
-          // Charts data
+          avgSalesCycle: Math.round(avgSalesCycle * 10) / 10,
           revenueTrend,
           pipelineStatus,
           activityTrend,
