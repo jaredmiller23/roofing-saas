@@ -84,7 +84,7 @@ export function RevenueForecast({ data, onPeriodClick, loading, className }: Rev
       case 'high': return 'bg-green-500'
       case 'medium': return 'bg-yellow-500'
       case 'low': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      default: return 'bg-muted'
     }
   }
 
@@ -93,7 +93,7 @@ export function RevenueForecast({ data, onPeriodClick, loading, className }: Rev
       case 'high': return <CheckCircle className="h-4 w-4 text-green-600" />
       case 'medium': return <AlertCircle className="h-4 w-4 text-yellow-600" />
       case 'low': return <AlertCircle className="h-4 w-4 text-red-600" />
-      default: return <AlertCircle className="h-4 w-4 text-gray-600" />
+      default: return <AlertCircle className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -164,7 +164,7 @@ export function RevenueForecast({ data, onPeriodClick, loading, className }: Rev
             <div className="text-sm text-muted-foreground">Avg Deal Size</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary">
               {formatCurrency(data.monthlyRunRate)}
             </div>
             <div className="text-sm text-muted-foreground">Monthly Run Rate</div>
@@ -236,7 +236,7 @@ export function RevenueForecast({ data, onPeriodClick, loading, className }: Rev
                   <XAxis dataKey="period" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="pipeline" fill="#3b82f6" name="Pipeline Forecast" />
+                  <Bar dataKey="pipeline" fill="hsl(var(--primary))" name="Pipeline Forecast" />
                   <Bar dataKey="historical" fill="#8b5cf6" name="Historical Forecast" />
                   <Bar dataKey="combined" fill="#10b981" name="Combined Forecast" />
                 </BarChart>

@@ -141,7 +141,7 @@ export function ARViewport({
           <p className="text-red-800 mb-4">{error}</p>
           <button
             onClick={initializeAR}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="px-4 py-2 bg-red-600 text-primary-foreground rounded hover:bg-red-700"
           >
             Retry
           </button>
@@ -192,13 +192,13 @@ export function ARViewport({
           <div className="absolute top-4 right-4 flex flex-col gap-2">
             <button
               onClick={stopARSession}
-              className="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700"
+              className="px-4 py-2 bg-red-600 text-primary-foreground rounded shadow hover:bg-red-700"
             >
               Stop AR
             </button>
           </div>
 
-          <div className="absolute bottom-4 left-4 bg-black/75 text-white p-3 rounded">
+          <div className="absolute bottom-4 left-4 bg-black/75 text-primary-foreground p-3 rounded">
             <div className="text-sm">
               <p>Session: {arState.session.status}</p>
               <p>Measurements: {arState.session.measurements.length}</p>

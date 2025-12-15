@@ -63,7 +63,7 @@ export function DamageMarker({
       case DamageSeverity.CRITICAL:
         return 'text-red-800 bg-red-200'
       default:
-        return 'text-gray-600 bg-gray-100'
+        return 'text-muted-foreground bg-muted'
     }
   }
 
@@ -77,19 +77,19 @@ export function DamageMarker({
 
   if (isEditing) {
     return (
-      <div className={'bg-white rounded-lg shadow-lg border-2 border-blue-500 p-4 ' + className}>
+      <div className={'bg-card rounded-lg shadow-lg border-2 border-primary p-4 ' + className}>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-lg font-medium text-gray-900">Edit Damage Marker</h4>
+          <h4 className="text-lg font-medium text-foreground">Edit Damage Marker</h4>
           <div className="flex gap-2">
             <button
               onClick={handleSave}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              className="px-3 py-1 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90"
             >
               Save
             </button>
             <button
               onClick={handleCancel}
-              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
+              className="px-3 py-1 bg-muted text-foreground text-sm rounded hover:bg-muted/80"
             >
               Cancel
             </button>
@@ -98,13 +98,13 @@ export function DamageMarker({
 
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Damage Type
             </label>
             <select
               value={editData.type}
               onChange={(e) => setEditData({ ...editData, type: e.target.value as DamageType })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {Object.values(DamageType).map((type) => (
                 <option key={type} value={type}>
@@ -115,13 +115,13 @@ export function DamageMarker({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Severity
             </label>
             <select
               value={editData.severity}
               onChange={(e) => setEditData({ ...editData, severity: e.target.value as DamageSeverity })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {Object.values(DamageSeverity).map((severity) => (
                 <option key={severity} value={severity}>
@@ -132,14 +132,14 @@ export function DamageMarker({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
               value={editData.description}
               onChange={(e) => setEditData({ ...editData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Describe the damage in detail..."
             />
           </div>
@@ -149,11 +149,11 @@ export function DamageMarker({
   }
 
   return (
-    <div className={'bg-white rounded-lg shadow-lg border border-gray-200 p-4 ' + className}>
+    <div className={'bg-card rounded-lg shadow-lg border border-border p-4 ' + className}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-orange-500" />
-          <h4 className="text-lg font-medium text-gray-900">
+          <h4 className="text-lg font-medium text-foreground">
             {getDamageTypeLabel(marker.type)}
           </h4>
         </div>
@@ -161,7 +161,7 @@ export function DamageMarker({
         <div className="flex gap-1">
           <button
             onClick={() => setIsEditing(true)}
-            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+            className="p-1 text-muted-foreground hover:bg-muted rounded"
             title="Edit marker"
           >
             <Edit3 className="h-4 w-4" />
@@ -185,9 +185,9 @@ export function DamageMarker({
           </span>
         </div>
 
-        <p className="text-gray-700 text-sm">{marker.description}</p>
+        <p className="text-foreground text-sm">{marker.description}</p>
 
-        <div className="flex items-center gap-4 text-xs text-gray-500">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             <span>
@@ -201,13 +201,13 @@ export function DamageMarker({
         </div>
 
         {marker.measurements.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <h5 className="text-sm font-medium text-gray-700 mb-2">
+          <div className="mt-3 pt-3 border-t border-border">
+            <h5 className="text-sm font-medium text-foreground mb-2">
               Associated Measurements ({marker.measurements.length})
             </h5>
             <div className="space-y-1">
               {marker.measurements.map((measurement) => (
-                <div key={measurement.id} className="text-sm text-gray-600">
+                <div key={measurement.id} className="text-sm text-muted-foreground">
                   {measurement.type}: {measurement.value.toFixed(2)} {measurement.unit}
                 </div>
               ))}
@@ -216,8 +216,8 @@ export function DamageMarker({
         )}
 
         {marker.photos && marker.photos.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <Camera className="h-4 w-4" />
               <span>{marker.photos.length} photo{marker.photos.length !== 1 ? 's' : ''}</span>
             </div>
@@ -243,10 +243,10 @@ export function DamageMarkerList({
 }: DamageMarkerListProps) {
   if (markers.length === 0) {
     return (
-      <div className={'bg-white rounded-lg shadow p-6 text-center ' + className}>
-        <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No Damage Markers</h3>
-        <p className="text-gray-500">
+      <div className={'bg-card rounded-lg shadow p-6 text-center ' + className}>
+        <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+        <h3 className="text-lg font-medium text-foreground mb-1">No Damage Markers</h3>
+        <p className="text-muted-foreground">
           Use the AR viewport to add damage markers to the roof
         </p>
       </div>
@@ -255,7 +255,7 @@ export function DamageMarkerList({
 
   return (
     <div className={'space-y-4 ' + className}>
-      <h3 className="text-lg font-medium text-gray-900">
+      <h3 className="text-lg font-medium text-foreground">
         Damage Markers ({markers.length})
       </h3>
       
