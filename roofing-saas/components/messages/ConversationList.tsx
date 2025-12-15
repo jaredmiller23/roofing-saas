@@ -56,14 +56,14 @@ export function ConversationList({
       {/* Search Header */}
       <div className="p-4 border-b border-border bg-background sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+          <h2 className="text-lg font-semibold flex items-center gap-2 md:text-xl">
+            <MessageSquare className="h-5 w-5 md:h-6 md:w-6" />
             Messages
           </h2>
           {/* New conversation button - mobile only */}
           <Link
             href="/contacts"
-            className="md:hidden flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium text-sm"
+            className="md:hidden flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:bg-primary/80 font-medium text-sm transition-colors touch-manipulation"
           >
             <Plus className="h-4 w-4" />
             New
@@ -76,13 +76,13 @@ export function ConversationList({
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 touch-manipulation"
           />
         </div>
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain">
         {filteredConversations.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
             {searchQuery ? (
@@ -101,14 +101,16 @@ export function ConversationList({
             )}
           </div>
         ) : (
-          filteredConversations.map((conversation) => (
-            <ConversationItem
-              key={conversation.contact_id}
-              conversation={conversation}
-              isActive={conversation.contact_id === selectedContactId}
-              onClick={() => onSelectContact(conversation.contact_id)}
-            />
-          ))
+          <div className="divide-y divide-border/50">
+            {filteredConversations.map((conversation) => (
+              <ConversationItem
+                key={conversation.contact_id}
+                conversation={conversation}
+                isActive={conversation.contact_id === selectedContactId}
+                onClick={() => onSelectContact(conversation.contact_id)}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -130,7 +130,7 @@ export function MessagesSplitView() {
       </div>
 
       {/* Mobile: Single-pane view with navigation */}
-      <div className="md:hidden w-full flex flex-col overflow-hidden">
+      <div className="md:hidden w-full flex flex-col overflow-hidden h-full">
         {mobileView === 'conversations' ? (
           <ConversationList
             conversations={conversations}

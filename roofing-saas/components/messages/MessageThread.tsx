@@ -124,7 +124,7 @@ export function MessageThread({
   return (
     <div className="flex flex-col h-full">
       {/* Thread Header */}
-      <div className="border-b border-border p-4 bg-background">
+      <div className="border-b border-border p-4 bg-background sticky top-0 z-10">
         <div className="flex items-center gap-3">
           {/* Back button - mobile only */}
           {showBackButton && (
@@ -132,23 +132,23 @@ export function MessageThread({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="md:hidden h-8 w-8"
+              className="md:hidden h-9 w-9 touch-manipulation"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <div className="flex-1">
-            <h2 className="font-semibold text-lg">{contactName}</h2>
-            {contactPhone && <p className="text-sm text-muted-foreground">{contactPhone}</p>}
+          <div className="flex-1 min-w-0">
+            <h2 className="font-semibold text-lg truncate">{contactName}</h2>
+            {contactPhone && <p className="text-sm text-muted-foreground truncate">{contactPhone}</p>}
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-y-contain p-3 md:p-4 space-y-3">
         {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            <p>No messages yet. Send a message to start the conversation.</p>
+          <div className="h-full flex items-center justify-center text-muted-foreground px-4">
+            <p className="text-center">No messages yet. Send a message to start the conversation.</p>
           </div>
         ) : (
           messages.map((message) => <MessageBubble key={message.id} message={message} />)
