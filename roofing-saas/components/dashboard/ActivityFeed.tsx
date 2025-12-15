@@ -57,19 +57,41 @@ export function ActivityFeed() {
       const result = await response.json()
       if (result.success && result.data) {
         // Transform the data to match our interface
+        // API returns different format - adapt it
         const transformedActivities = (result.data.activities || []).map((item: {
           id: string
-          type: Activity['type']
+          type: string
           title: string
           description: string
-          user: { name: string; avatar?: string }
           timestamp: string
-          value?: number
-          badge?: string
-        }) => ({
-          ...item,
-          timestamp: new Date(item.timestamp)
-        }))
+          metadata?: {
+            user?: string
+            value?: number
+            contact_name?: string
+          }
+        }) => {
+          // Map API types to component types
+          let mappedType: Activity['type'] = 'goal'
+          if (item.type === 'project_won') mappedType = 'sale'
+          else if (item.type === 'project_lost') mappedType = 'goal'
+          else if (item.type === 'project_created') mappedType = 'goal'
+          else if (item.type === 'contact_added') mappedType = 'knock'
+          else if (item.type === 'status_change') mappedType = 'goal'
+
+          return {
+            id: item.id,
+            type: mappedType,
+            title: item.title,
+            description: item.description,
+            user: {
+              name: item.metadata?.contact_name || item.metadata?.user || 'Team Member',
+              avatar: undefined
+            },
+            timestamp: new Date(item.timestamp),
+            value: item.metadata?.value,
+            badge: item.type === 'project_won' ? 'Won' : undefined
+          }
+        })
         setActivities(transformedActivities)
       } else {
         setError('Failed to load activity data')
