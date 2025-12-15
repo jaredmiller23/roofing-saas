@@ -122,10 +122,10 @@ export function TasksList({ params = {} }: TasksListProps) {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      todo: 'bg-gray-100 text-muted-foreground',
-      in_progress: 'bg-blue-100 text-blue-700',
-      completed: 'bg-green-100 text-green-700',
-      cancelled: 'bg-red-100 text-red-700'
+      todo: 'bg-muted text-muted-foreground',
+      in_progress: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+      completed: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
+      cancelled: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
     }
 
     const labels = {
@@ -144,9 +144,9 @@ export function TasksList({ params = {} }: TasksListProps) {
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      low: 'bg-gray-100 text-muted-foreground',
-      medium: 'bg-yellow-100 text-yellow-700',
-      high: 'bg-red-100 text-red-700'
+      low: 'bg-muted text-muted-foreground',
+      medium: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
+      high: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
     }
 
     const labels = {

@@ -2,84 +2,67 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Enhance the file management system with centralized document organization.
+  goal: 'Standardize UI patterns across the application for consistency and maintainability.
 
 
-    Features to implement:
+    Phase 1 Focus Areas:
 
-    1. File categorization system (contracts, photos, permits, invoices, etc.)
+    1. Replace all hardcoded colors with theme variables
 
-    2. Folder hierarchy for organizing files within projects
+    2. Standardize loading states with skeleton components
 
-    3. File search and filtering capabilities
+    3. Create consistent empty state patterns
 
-    4. File versioning support (track file history)
+    4. Standardize form layouts (spacing, labels, errors)
 
-    5. Bulk file operations (select multiple, move, delete)
-
-    6. Mobile-optimized file upload with photo capture
+    5. Ensure all buttons use the shadcn/ui Button component
 
 
-    File Categories for Roofing:
+    Patterns to Enforce:
 
-    - Contracts & Agreements
+    - NO hardcoded colors (bg-white, text-gray-500, etc.)
 
-    - Photos (before/during/after)
+    - Use bg-background, bg-card, text-foreground, text-muted-foreground
 
-    - Permits & Inspections
+    - Use border-border instead of border-gray-*
 
-    - Invoices & Estimates
-
-    - Insurance Documents
-
-    - Warranty Documents
-
-    - Material Specs
-
-    - Other
+    - All interactive elements use shadcn components
 
 
-    NOTE: Build on existing project-files infrastructure.
+    Key Files to Audit:
+
+    - Dashboard components
+
+    - Settings pages
+
+    - Pipeline views
+
+    - Any pages with inline styles
 
 
-    IMPORTANT CODE QUALITY REQUIREMENTS:
-
-    - Run `npm run typecheck` and fix ALL errors before completing
-
-    - Run `npm run lint` and fix errors, keep warnings under 10
-
-    - Do NOT create duplicate type definitions
-
-    - Import all types you use (FileType, RoofingFileCategory, etc.)
-
-    - Do NOT use `any` type - use proper types or `unknown`
-
-    - Prefix unused parameters with underscore: `_param`
-
-    - Use theme variables, not hardcoded colors
+    DO NOT BREAK EXISTING FUNCTIONALITY. Only change styling, not behavior.
 
     '
   success_criteria:
-  - Files can be categorized
-  - Folder structure supported
-  - Search/filter works on files
-  - Version history accessible
-  - Mobile upload functional
-  - Bulk operations work
-  why: 'Research Finding: No centralized document organization causes project chaos.
+  - No hardcoded color classes in components
+  - Skeleton loading states in list views
+  - Empty states for all list components
+  - Form layouts follow consistent pattern
+  - All buttons use Button component
+  why: 'Research Finding: Mixed component patterns create maintenance nightmare.
 
-    Competitor Buildertrend provides complete document management.
+    Technical debt accumulating with multiple implementation patterns.
 
 
-    Business Impact:
+    Problems:
 
-    - Projects lose critical documents
+    - Inconsistent visual appearance across modules
 
-    - No version control on contracts
+    - Dark mode support impossible with hardcoded colors
 
-    - Field teams can''t access files on mobile
+    - Difficult to maintain and update styles
 
-    - Compliance risk from missing documentation
+    - Poor developer experience
 
     '
 dependencies: null
@@ -94,10 +77,10 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T18:00:00'
-  id: SPRINT2-002
+  id: SPRINT2-003
   priority: 2
   template: code-modification
-  title: File Management System Core Features
+  title: UI Consistency Standardization Phase 1
 on_failure:
   escalate:
     include:
@@ -108,41 +91,47 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/project-files/project-files-table.tsx
-  reason: Existing file table to enhance
+  path: components/ui/button.tsx
+  reason: Standard button component to use
   required: true
 - extract: []
-  path: components/project-files/project-file-form.tsx
-  reason: Existing upload form to enhance
+  path: components/territories/TerritoryMapDirect.tsx
+  reason: Has 6 hardcoded colors - highest priority
   required: true
 - extract: []
-  path: app/api/project-files/route.ts
-  reason: Existing file API patterns
+  path: components/projects/TemplateSelector.tsx
+  reason: Has 4 hardcoded colors - high priority
   required: true
 scope:
   constraints: []
-  create:
-  - lib/types/file.ts
-  - components/project-files/FileCategories.tsx
-  - components/project-files/FileFolderTree.tsx
-  - components/project-files/FileVersionHistory.tsx
-  - components/project-files/BulkFileActions.tsx
-  - components/project-files/MobileFileUpload.tsx
-  - app/api/project-files/versions/route.ts
-  - app/api/project-files/search/route.ts
+  create: []
   do_not_touch:
-  - storage bucket configurations
-  - Supabase storage policies
+  - components/ui/button.tsx
+  - components/ui/input.tsx
+  - components/ui/select.tsx
+  - lib/validations/**
+  - app/api/**
   modify:
-  - components/project-files/project-files-table.tsx
-  - components/project-files/project-file-form.tsx
-  - app/api/project-files/route.ts
-  - app/api/project-files/[id]/route.ts
+  - components/territories/TerritoryMapDirect.tsx
+  - components/territories/TerritoryMapClient.tsx
+  - components/projects/TemplateSelector.tsx
+  - components/projects/TemplateLibrary.tsx
+  - components/tasks/TasksList.tsx
+  - components/substatus/SubstatusBadge.tsx
+  - components/storm/StormResponseMode.tsx
+  - components/knocks/KnockLogger.tsx
+  - components/automation/WorkflowCanvas.tsx
+  - components/analytics/ConversionFunnel.tsx
+  - components/admin/AuditLogsTable.tsx
+  - components/voice/VoiceDiagnostics.tsx
+  - components/ui/switch.tsx
+  - components/territories/PinPopup.tsx
+  - components/project-files/FileVersionHistory.tsx
 thinking:
   level: think_hard
   triggers:
-  - Before designing folder hierarchy structure
-  - When implementing file versioning
+  - Before establishing pattern for skeleton states
+  - When deciding empty state design
 validation:
   assertions: []
   post_commit: []
@@ -151,19 +140,12 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 120
-  - command: npm run lint -- --max-warnings 5
+  - command: npm run lint -- --max-warnings 0
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/types/file.ts
+  - command: '! grep -rE ''bg-white|bg-gray-|text-gray-|border-gray-'' components/territories/
+      components/projects/ --include=''*.tsx'' 2>/dev/null | head -1'
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
-  - command: grep -q "FileCategories" components/project-files/project-files-table.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f components/project-files/MobileFileUpload.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
+    timeout: 30

@@ -407,7 +407,7 @@ export function VersionCompare({
         {/* Compare Version */}
         <div className="border border-border rounded p-4">
           <div className="flex items-center space-x-2 mb-3">
-            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
             <span className="font-medium">Version {compareVersion.version}</span>
           </div>
           <div className="space-y-2 text-sm">

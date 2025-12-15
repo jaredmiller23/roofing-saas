@@ -35,7 +35,7 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
   // Get stage color
   const getStageColor = (stageName: string) => {
     const colors = {
-      'Prospect': 'bg-gray-500',
+      'Prospect': 'bg-muted-foreground',
       'Qualified': 'bg-blue-500',
       'Quote Sent': 'bg-purple-500',
       'Negotiation': 'bg-orange-500',
@@ -43,7 +43,7 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
       'Production': 'bg-cyan-500',
       'Complete': 'bg-emerald-600',
     }
-    return colors[stageName as keyof typeof colors] || 'bg-gray-400'
+    return colors[stageName as keyof typeof colors] || 'bg-muted-foreground'
   }
 
   const handleStageClick = (stage: FunnelStage) => {

@@ -258,14 +258,14 @@ export function WorkflowCanvas({
                   className={`border-2 cursor-pointer hover:shadow-md transition-shadow ${
                     action.enabled
                       ? 'border-green-500 bg-green-50'
-                      : 'border-gray-400 bg-muted'
+                      : 'border-border bg-muted'
                   }`}
                   onClick={() => onActionClick?.(action)}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        action.enabled ? 'bg-green-500' : 'bg-gray-400'
+                        action.enabled ? 'bg-green-500' : 'bg-muted-foreground'
                       }`}>
                         {ACTION_ICONS[action.type] || <Settings className="h-6 w-6 text-foreground" />}
                       </div>

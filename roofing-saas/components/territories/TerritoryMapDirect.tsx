@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface TerritoryBoundary {
   type: 'Polygon' | 'MultiPolygon'
@@ -46,6 +47,7 @@ export default function TerritoryMapDirect({
   const mapRef = useRef<google.maps.Map | null>(null)
   const polygonsRef = useRef<google.maps.Polygon[]>([])
   const currentMapTypeRef = useRef<string>('hybrid')
+  const [currentMapType, setCurrentMapType] = useState<string>('hybrid')
   const isInitializedRef = useRef(false)
   const hasFitBoundsRef = useRef(false)
 
@@ -196,26 +198,14 @@ export default function TerritoryMapDirect({
     return paths
   }
 
-  // Switch map type imperatively - NO STATE UPDATES
+  // Switch map type imperatively
   const switchMapType = (type: string) => {
     if (!mapRef.current) return
 
     console.log('[TerritoryMapDirect] Switching to:', type)
     mapRef.current.setMapTypeId(type)
     currentMapTypeRef.current = type
-
-    // Update button styles manually
-    const buttons = document.querySelectorAll('[data-map-type-button]')
-    buttons.forEach(button => {
-      const buttonType = button.getAttribute('data-map-type')
-      if (buttonType === type) {
-        button.classList.remove('bg-card', 'text-muted-foreground', 'hover:bg-gray-100')
-        button.classList.add('bg-blue-600', 'text-white')
-      } else {
-        button.classList.remove('bg-blue-600', 'text-white')
-        button.classList.add('bg-card', 'text-muted-foreground', 'hover:bg-gray-100')
-      }
-    })
+    setCurrentMapType(type) // Update state to trigger re-render for button variants
   }
 
   if (typeof google === 'undefined') {
@@ -239,58 +229,50 @@ export default function TerritoryMapDirect({
 
       {/* Map Type Controls */}
       <div className="absolute top-4 right-4 bg-card rounded-lg shadow-lg p-2 z-10 flex gap-1">
-        <button
+        <Button
           onClick={() => switchMapType('roadmap')}
           data-map-type-button
           data-map-type="roadmap"
-          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
-            currentMapTypeRef.current === 'roadmap'
-              ? 'bg-blue-600 text-white'
-              : 'bg-card text-muted-foreground hover:bg-gray-100'
-          }`}
+          variant={currentMapType === 'roadmap' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs font-medium"
           title="Road Map"
         >
           Map
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => switchMapType('satellite')}
           data-map-type-button
           data-map-type="satellite"
-          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
-            currentMapTypeRef.current === 'satellite'
-              ? 'bg-blue-600 text-white'
-              : 'bg-card text-muted-foreground hover:bg-gray-100'
-          }`}
+          variant={currentMapType === 'satellite' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs font-medium"
           title="Satellite View"
         >
           Satellite
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => switchMapType('hybrid')}
           data-map-type-button
           data-map-type="hybrid"
-          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
-            currentMapTypeRef.current === 'hybrid'
-              ? 'bg-blue-600 text-white'
-              : 'bg-card text-muted-foreground hover:bg-gray-100'
-          }`}
+          variant={currentMapType === 'hybrid' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs font-medium"
           title="Hybrid View"
         >
           Hybrid
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => switchMapType('terrain')}
           data-map-type-button
           data-map-type="terrain"
-          className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
-            currentMapTypeRef.current === 'terrain'
-              ? 'bg-blue-600 text-white'
-              : 'bg-card text-muted-foreground hover:bg-gray-100'
-          }`}
+          variant={currentMapType === 'terrain' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs font-medium"
           title="Terrain Map"
         >
           Terrain
-        </button>
+        </Button>
       </div>
 
       {/* Legend */}

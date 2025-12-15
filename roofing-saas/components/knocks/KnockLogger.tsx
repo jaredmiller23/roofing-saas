@@ -145,8 +145,8 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
       value: 'not_home' as Disposition,
       label: 'Not Home',
       icon: Home,
-      color: 'bg-gray-100 hover:bg-muted text-foreground',
-      activeColor: 'bg-gray-600 text-white'
+      color: 'bg-muted hover:bg-muted/80 text-foreground',
+      activeColor: 'bg-muted-foreground text-background'
     },
     {
       value: 'interested' as Disposition,

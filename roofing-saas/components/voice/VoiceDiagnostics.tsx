@@ -243,7 +243,7 @@ export function VoiceDiagnostics() {
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-gray-300 text-sm font-medium"
+              className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 text-sm font-medium"
             >
               Close
             </button>

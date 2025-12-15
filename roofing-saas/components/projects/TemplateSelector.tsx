@@ -55,37 +55,37 @@ const CATEGORY_INFO = {
     name: 'Residential',
     description: 'Single-family and multi-family homes',
     icon: Home,
-    color: 'bg-blue-100 text-blue-800'
+    color: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
   },
   commercial: {
     name: 'Commercial',
     description: 'Office buildings and commercial properties',
     icon: Building2,
-    color: 'bg-purple-100 text-purple-800'
+    color: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
   },
   repair: {
     name: 'Repair',
     description: 'Maintenance and repair projects',
     icon: Wrench,
-    color: 'bg-orange-100 text-orange-800'
+    color: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
   },
   inspection: {
     name: 'Inspection',
     description: 'Assessment and evaluation services',
     icon: Search,
-    color: 'bg-green-100 text-green-800'
+    color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
   },
   insurance: {
     name: 'Insurance',
     description: 'Insurance claim projects',
     icon: ShieldCheck,
-    color: 'bg-indigo-100 text-indigo-800'
+    color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
   },
   emergency: {
     name: 'Emergency',
     description: 'Urgent repair and emergency services',
     icon: AlertTriangle,
-    color: 'bg-red-100 text-red-800'
+    color: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
   }
 } as const
 
@@ -206,13 +206,13 @@ export function TemplateSelector({
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-full"></div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                  <div className="h-3 bg-muted rounded w-2/3"></div>
                 </div>
               </CardContent>
             </Card>

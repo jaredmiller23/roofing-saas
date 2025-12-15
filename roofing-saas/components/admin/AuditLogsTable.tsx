@@ -55,12 +55,12 @@ export function AuditLogsTable() {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline', color: string }> = {
       active: { variant: 'default', color: 'bg-green-500' },
-      ended: { variant: 'secondary', color: 'bg-gray-500' },
+      ended: { variant: 'secondary', color: 'bg-muted-foreground' },
       expired: { variant: 'outline', color: 'bg-orange-500' },
       terminated: { variant: 'destructive', color: 'bg-red-500' },
     }
 
-    const config = variants[status] || { variant: 'outline' as const, color: 'bg-gray-500' }
+    const config = variants[status] || { variant: 'outline' as const, color: 'bg-muted-foreground' }
 
     return (
       <Badge variant={config.variant} className="capitalize">

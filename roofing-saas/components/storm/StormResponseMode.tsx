@@ -77,7 +77,7 @@ export function StormResponseMode({
           {/* Activation Toggle */}
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
               <div>
                 <div className="font-semibold">
                   {isActive ? 'Response Mode Active' : 'Response Mode Inactive'}
@@ -191,7 +191,7 @@ export function StormResponseMode({
  */
 function ModeBadge({ mode }: { mode: ResponseMode }) {
   const configs: Record<ResponseMode, { label: string; className: string }> = {
-    normal: { label: 'Normal', className: 'bg-gray-500' },
+    normal: { label: 'Normal', className: 'bg-muted-foreground' },
     storm_watch: { label: 'Storm Watch', className: 'bg-yellow-500' },
     storm_response: { label: 'Storm Response', className: 'bg-orange-500 animate-pulse' },
     emergency: { label: 'EMERGENCY', className: 'bg-red-500 animate-pulse' },

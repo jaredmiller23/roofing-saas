@@ -44,7 +44,7 @@ export function PinPopup({ pin, isEditMode = false, onSave, onCancel, onDelete }
     { value: 'not_interested', label: '❌ Not Interested', color: 'bg-red-500 hover:bg-red-600' },
     { value: 'appointment', label: '📅 Appointment', color: 'bg-blue-500 hover:bg-blue-600' },
     { value: 'callback', label: '📞 Callback', color: 'bg-purple-500 hover:bg-purple-600' },
-    { value: 'do_not_contact', label: '🚫 DNC', color: 'bg-gray-500 hover:bg-gray-600' },
+    { value: 'do_not_contact', label: '🚫 DNC', color: 'bg-muted hover:bg-muted/80' },
     { value: 'already_customer', label: '✅ Customer', color: 'bg-teal-500 hover:bg-teal-600' },
   ]
 
