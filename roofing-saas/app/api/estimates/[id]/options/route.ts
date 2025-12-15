@@ -121,7 +121,7 @@ export async function GET(
     })
 
   } catch (error) {
-    logger.error('Error in GET /api/estimates/[id]/options', { error, projectId: params.id })
+    logger.error('Error in GET /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
@@ -142,13 +142,14 @@ export async function POST(
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    const projectId = params.id
+    const resolvedParams = await params
+    const projectId = resolvedParams.id
     const body = await request.json()
 
     // Validate input
     const validationResult = createQuoteOptionSchema.safeParse(body)
     if (!validationResult.success) {
-      throw ValidationError('Invalid input', validationResult.error.errors)
+      throw ValidationError('Invalid input', validationResult.error.issues)
     }
 
     const data = validationResult.data
@@ -246,7 +247,7 @@ export async function POST(
     })
 
   } catch (error) {
-    logger.error('Error in POST /api/estimates/[id]/options', { error, projectId: params.id })
+    logger.error('Error in POST /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
@@ -254,7 +255,7 @@ export async function POST(
 // PATCH - Update quote option
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -267,13 +268,14 @@ export async function PATCH(
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    const projectId = params.id
+    const resolvedParams = await params
+    const projectId = resolvedParams.id
     const body = await request.json()
 
     // Validate input
     const validationResult = updateQuoteOptionSchema.safeParse(body)
     if (!validationResult.success) {
-      throw ValidationError('Invalid input', validationResult.error.errors)
+      throw ValidationError('Invalid input', validationResult.error.issues)
     }
 
     const data = validationResult.data
@@ -378,7 +380,7 @@ export async function PATCH(
     })
 
   } catch (error) {
-    logger.error('Error in PATCH /api/estimates/[id]/options', { error, projectId: params.id })
+    logger.error('Error in PATCH /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
@@ -386,7 +388,7 @@ export async function PATCH(
 // DELETE - Delete quote option
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -399,7 +401,8 @@ export async function DELETE(
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    const projectId = params.id
+    const resolvedParams = await params
+    const projectId = resolvedParams.id
     const url = new URL(request.url)
     const optionId = url.searchParams.get('option_id')
 
@@ -451,7 +454,7 @@ export async function DELETE(
     return successResponse({ deleted: true, option_id: optionId })
 
   } catch (error) {
-    logger.error('Error in DELETE /api/estimates/[id]/options', { error, projectId: params.id })
+    logger.error('Error in DELETE /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -20,7 +20,7 @@ import {
 import { ChatHistory } from './ChatHistory'
 import { ChatInput } from './ChatInput'
 import { QuickActionsMenu } from './QuickActionsMenu'
-import { ConversationList } from './ConversationList'
+import { AIConversationList } from './AIConversationList'
 import { useAIAssistant } from '@/lib/ai-assistant/context'
 
 export function AIAssistantBar() {
@@ -227,7 +227,7 @@ export function AIAssistantBar() {
               <div className="flex-1 flex overflow-hidden">
                 {/* Conversations sidebar */}
                 <div className="w-72 border-r border-gray-200">
-                  <ConversationList onClose={() => setShowConversations(false)} />
+                  <AIConversationList onClose={() => setShowConversations(false)} />
                 </div>
 
                 {/* Chat history */}

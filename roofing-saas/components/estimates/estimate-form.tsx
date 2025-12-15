@@ -5,16 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2, Calculator, FileText } from 'lucide-react'
+import { Calculator, FileText } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuoteOptions } from './QuoteOptions'
 import {
-  CreateEstimateInput,
-  CreateQuoteOptionInput,
-  CreateQuoteLineItemInput,
-  LINE_ITEM_CATEGORIES,
   QUOTE_OPTION_PRESETS,
   calculateQuoteOptionTotals,
   formatCurrency
@@ -33,7 +29,7 @@ const estimateSchema = z.object({
     name: z.string().min(1, 'Option name is required'),
     description: z.string().optional(),
     is_recommended: z.boolean().optional(),
-    display_order: z.number().min(0),
+    display_order: z.number().min(0).optional(),
     tax_rate: z.number().min(0).max(100).optional(),
     line_items: z.array(z.object({
       description: z.string().min(1, 'Description is required'),
@@ -62,7 +58,6 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
     handleSubmit,
     control,
     watch,
-    setValue,
     formState: { errors }
   } = useForm<EstimateFormData>({
     resolver: zodResolver(estimateSchema),
@@ -335,10 +330,10 @@ export function EstimateForm({ mode = 'create', initialData, projectId }: Estima
         </CardHeader>
         <CardContent>
           <QuoteOptions
-            control={control}
-            register={register}
-            errors={errors}
-            optionFields={optionFields}
+            control={control as never}
+            register={register as never}
+            errors={errors as never}
+            optionFields={optionFields as never}
             removeOption={removeOption}
           />
           {errors.quote_options && (

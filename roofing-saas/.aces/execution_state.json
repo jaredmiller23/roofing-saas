@@ -23,6 +23,7 @@
     "app/(dashboard)/estimates/[id]/page.tsx",
     "app/(dashboard)/projects/[id]/page.tsx",
     "lib/types/estimate.ts",
+    "supabase/migrations/20251214210000_quote_options_system.sql",
     "components/estimates/estimate-form.tsx"
   ],
   "validation_passed": false,

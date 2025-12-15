@@ -304,9 +304,9 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               Organization
             </label>
             <OrganizationSelector
-              value={watch('organization_id')}
-              onChange={(value) => setValue('organization_id', value)}
-              error={errors.organization_id?.message}
+              value={watch('organization_id') ?? undefined}
+              onChange={(value) => setValue('organization_id' as never, value as never)}
+              error={(errors as Record<string, { message?: string }>).organization_id?.message}
             />
             <p className="mt-1 text-xs text-muted-foreground">
               Link this contact to an existing organization

@@ -101,16 +101,21 @@ export default function ProjectDetailPage() {
       const projectRes = await fetch(`/api/projects/${projectId}`)
       if (projectRes.ok) {
         const projectData = await projectRes.json()
-        setProject(projectData.project || projectData)
+        const projectObj = projectData.project || projectData
+        setProject(projectObj)
 
         // Fetch contact if exists
-        if (projectData.project?.contact_id || projectData.contact_id) {
-          const contactId = projectData.project?.contact_id || projectData.contact_id
-          const contactRes = await fetch(`/api/contacts/${contactId}`)
+        if (projectObj?.contact_id) {
+          const contactRes = await fetch(`/api/contacts/${projectObj.contact_id}`)
           if (contactRes.ok) {
             const contactData = await contactRes.json()
             setContact(contactData.contact || contactData)
           }
+        }
+
+        // Fetch quote options if this is an estimate/quote project
+        if (projectObj && isEstimateProject(projectObj)) {
+          await fetchQuoteOptions()
         }
       }
 
@@ -126,11 +131,6 @@ export default function ProjectDetailPage() {
       if (activitiesRes.ok) {
         const activitiesData = await activitiesRes.json()
         setActivities(activitiesData.activities || activitiesData.data?.activities || [])
-      }
-
-      // Fetch quote options if this is an estimate/quote project
-      if (isEstimateProject(projectData.project || projectData)) {
-        await fetchQuoteOptions()
       }
     } catch (error) {
       console.error('Failed to fetch project data:', error)
