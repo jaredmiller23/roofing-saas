@@ -145,9 +145,8 @@ export async function middleware(request: NextRequest) {
   // Protect authenticated routes
   if (!user && !isPublicRoute) {
     // No user, redirect to login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    // Use explicit URL construction to avoid locale prefix bleeding through
+    return NextResponse.redirect(new URL('/login', request.nextUrl.origin))
   }
 
   // If user is logged in and tries to access auth pages, redirect to dashboard
@@ -155,9 +154,9 @@ export async function middleware(request: NextRequest) {
     pathnameWithoutLocale.startsWith('/login') ||
     pathnameWithoutLocale.startsWith('/register')
   )) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    // Redirect to locale-prefixed dashboard since dashboard pages are under [locale]
+    const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
+    return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.nextUrl.origin))
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
