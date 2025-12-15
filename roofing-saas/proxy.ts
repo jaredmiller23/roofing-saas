@@ -1,11 +1,20 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import createIntlMiddleware from 'next-intl/middleware'
 import {
   signatureDocumentRateLimit,
   projectUpdateRateLimit,
   authRateLimit,
   applyRateLimit,
 } from './lib/rate-limit'
+import { locales, defaultLocale } from './lib/i18n/config'
+
+// Create i18n middleware instance
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localeDetection: true,
+})
 
 /**
  * Proxy middleware for authentication, tenant context, and rate limiting
@@ -23,6 +32,18 @@ import {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
+
+  // Handle i18n routing first (locale detection, redirects)
+  // Skip for API routes and static assets
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
+    const intlResponse = intlMiddleware(request)
+    // If intl middleware wants to redirect, return that response
+    if (intlResponse.headers.get('x-middleware-rewrite') ||
+        intlResponse.status === 307 ||
+        intlResponse.status === 308) {
+      return intlResponse
+    }
+  }
 
   // Apply rate limiting to signature documents endpoints
   if (pathname.startsWith('/api/signature-documents/')) {
@@ -84,6 +105,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Public routes that don't require authentication
+  // Note: These are checked without locale prefix since i18n routing happens first
   const publicRoutes = [
     '/', // Marketing landing page
     '/login',
@@ -102,8 +124,14 @@ export async function proxy(request: NextRequest) {
     '/api/voice/recording',
   ]
 
+  // Strip locale prefix for route matching (e.g., /en/login -> /login)
+  const pathnameWithoutLocale = locales.reduce(
+    (path, locale) => path.replace(new RegExp(`^/${locale}`), ''),
+    pathname
+  ) || '/'
+
   const isPublicRoute = publicRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
+    pathnameWithoutLocale.startsWith(route)
   )
 
   // Protect authenticated routes
@@ -116,8 +144,8 @@ export async function proxy(request: NextRequest) {
 
   // If user is logged in and tries to access auth pages, redirect to dashboard
   if (user && (
-    request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/register')
+    pathnameWithoutLocale.startsWith('/login') ||
+    pathnameWithoutLocale.startsWith('/register')
   )) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
@@ -147,8 +175,13 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     *
+     * Also includes i18n locale paths:
+     * - / (root for locale redirect)
+     * - /(en|es|fr)/:path* (locale-prefixed paths)
      */
+    '/',
+    '/(en|es|fr)/:path*',
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
