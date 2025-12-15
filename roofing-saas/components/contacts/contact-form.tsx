@@ -77,7 +77,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     if (mode === 'edit') return
 
     // Build the check data based on field type
-    const checkData: any = {}
+    const checkData: Record<string, string> = {}
 
     if (fieldType === 'email' && currentValues.email?.trim()) {
       checkData.email = currentValues.email.trim()
