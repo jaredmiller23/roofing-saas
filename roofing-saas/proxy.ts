@@ -34,8 +34,13 @@ export async function proxy(request: NextRequest) {
   const method = request.method
 
   // Handle i18n routing first (locale detection, redirects)
-  // Skip for API routes and static assets
-  if (!pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
+  // Skip for API routes, static assets, and auth routes (which are not under [locale])
+  const authRoutes = ['/login', '/register', '/reset-password', '/auth']
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+
+  if (!pathname.startsWith('/api/') &&
+      !pathname.startsWith('/_next/') &&
+      !isAuthRoute) {
     const intlResponse = intlMiddleware(request)
     // If intl middleware wants to redirect, return that response
     if (intlResponse.headers.get('x-middleware-rewrite') ||
