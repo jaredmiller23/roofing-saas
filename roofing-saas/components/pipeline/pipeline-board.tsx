@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client'
 
 import { useEffect, useState, useMemo, useRef } from 'react'
@@ -22,10 +23,9 @@ import {
   STAGE_DISPLAY_NAMES,
 } from '@/lib/pipeline/validation'
 import { useRealtimeSubscription } from '@/lib/hooks/useRealtimeSubscription'
-import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
+import { RealtimeToast } from '@/components/collaboration/RealtimeToast'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },

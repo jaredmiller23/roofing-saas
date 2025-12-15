@@ -179,7 +179,7 @@ export function RealtimeToast({
         }
       }
     }
-  }, [duration])
+  }, [duration, handleDismiss])
 
   const handleDismiss = React.useCallback(() => {
     setIsVisible(false)

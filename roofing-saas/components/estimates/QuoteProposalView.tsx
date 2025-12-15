@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Star, Check, Calendar, Phone, Mail, MapPin, FileText, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -82,9 +83,11 @@ export function QuoteProposalView({
       <div className="bg-primary text-primary-foreground p-8 text-center">
         <div className="flex items-center justify-center gap-4 mb-4">
           {companyInfo?.logo ? (
-            <img
+            <Image
               src={companyInfo.logo}
               alt={companyInfo.name}
+              width={96}
+              height={48}
               className="h-12 w-auto"
             />
           ) : (
@@ -288,7 +291,7 @@ export function QuoteProposalView({
           <div className="text-center space-y-4">
             <Alert>
               <AlertDescription>
-                By clicking "Accept Proposal" below, you agree to proceed with the selected option
+                By clicking &quot;Accept Proposal&quot; below, you agree to proceed with the selected option
                 and authorize us to begin work according to the terms outlined in this proposal.
               </AlertDescription>
             </Alert>
@@ -326,7 +329,7 @@ export function QuoteProposalView({
             <Check className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               <strong>Proposal Accepted!</strong> Thank you for choosing our services.
-              We'll be in touch soon to schedule the next steps.
+              We&apos;ll be in touch soon to schedule the next steps.
             </AlertDescription>
           </Alert>
         )}
@@ -370,7 +373,7 @@ function OptionLineItems({ option }: OptionLineItemsProps) {
 
   return (
     <div className="space-y-4">
-      <h4 className="font-medium">What's Included:</h4>
+      <h4 className="font-medium">What&apos;s Included:</h4>
 
       {Object.entries(itemsByCategory).map(([category, items]) => {
         const categoryInfo = LINE_ITEM_CATEGORIES.find(cat => cat.value === category) ||

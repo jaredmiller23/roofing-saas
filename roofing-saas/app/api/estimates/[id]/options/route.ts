@@ -6,8 +6,6 @@ import { successResponse, errorResponse, createdResponse } from '@/lib/api/respo
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
 import {
-  CreateQuoteOptionInput,
-  UpdateQuoteOptionInput,
   calculateQuoteOptionTotals
 } from '@/lib/types/quote-option'
 
@@ -309,7 +307,7 @@ export async function PATCH(
     }
 
     // If line items are being updated, recalculate totals
-    let updateData: any = {
+    let updateData: Record<string, unknown> = {
       name: data.name,
       description: data.description,
       is_recommended: data.is_recommended,

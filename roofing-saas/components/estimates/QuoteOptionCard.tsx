@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, Check, Eye, FileText, Download } from 'lucide-react'
+import { Star, Check, Eye, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -31,10 +31,6 @@ export function QuoteOptionCard({
   showLineItems = false,
   className = ''
 }: QuoteOptionCardProps) {
-  const getCategoryInfo = (category: string) => {
-    const categoryData = LINE_ITEM_CATEGORIES.find(cat => cat.value === category)
-    return categoryData || { value: category, label: category, icon: '📦' }
-  }
 
   const handleCardClick = () => {
     if (mode === 'selection' && onSelect) {

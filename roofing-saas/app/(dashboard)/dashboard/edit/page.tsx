@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 export default function DashboardEditPage() {
   const router = useRouter()
 
-  const handleSave = (dashboard: any) => {
+  const handleSave = (dashboard: Record<string, unknown>) => {
     // TODO: Save dashboard to database
     console.log('Saving dashboard:', dashboard)
     router.push('/dashboard')

@@ -16,7 +16,7 @@ async function run() {
   try {
     await page.waitForURL('**/dashboard', { timeout: 15000 });
     console.log('✅ Login SUCCESS - on dashboard');
-  } catch (e) {
+  } catch (_e) {
     console.log('Current URL:', page.url());
   }
   await page.screenshot({ path: '/tmp/validation-screenshots/10-dashboard.png', fullPage: true });

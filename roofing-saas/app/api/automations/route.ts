@@ -8,7 +8,7 @@ import type {
 } from '@/lib/automation/workflow-types'
 
 // Mock data - in a real app this would connect to your database
-let mockWorkflows: Workflow[] = [
+const mockWorkflows: Workflow[] = [
   {
     id: '1',
     tenant_id: 'tenant_1',
@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const filters: WorkflowFilters = {
-      status: searchParams.get('status')?.split(',') as any,
-      trigger_type: searchParams.get('trigger_type')?.split(',') as any,
+      status: searchParams.get('status')?.split(',') as WorkflowFilters['status'],
+      trigger_type: searchParams.get('trigger_type')?.split(',') as WorkflowFilters['trigger_type'],
       is_template: searchParams.get('is_template') === 'true',
       search: searchParams.get('search') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter workflows based on criteria
-    let filteredWorkflows = mockWorkflows.filter(workflow => {
+    const filteredWorkflows = mockWorkflows.filter(workflow => {
       // Filter by status
       if (filters.status && filters.status.length > 0) {
         if (!filters.status.includes(workflow.status)) return false
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
     // Create new workflow
     const newWorkflow: Workflow = {
       id: `workflow_${Date.now()}`,
-      tenant_id: (user as any).tenant_id || 'default',
+      tenant_id: (user as { tenant_id?: string }).tenant_id || 'default',
       name: body.name,
       description: body.description,
       status: body.status || 'draft',

@@ -156,6 +156,7 @@ export default function PipelineAnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   if (loading) {
@@ -205,7 +206,7 @@ export default function PipelineAnalyticsPage() {
                 ].map((period) => (
                   <button
                     key={period.id}
-                    onClick={() => handlePeriodChange(period.id as any)}
+                    onClick={() => handlePeriodChange(period.id as '30_day' | '90_day' | '6_month' | '1_year')}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       filters.dateRange.period ===
                         (period.id === '30_day' ? 'last_30_days' :

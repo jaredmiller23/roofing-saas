@@ -87,7 +87,7 @@ export function ActionNode({
 }: ActionNodeProps) {
   const [expanded, setExpanded] = useState(isEditing)
 
-  const updateConfig = (updates: Partial<any>) => {
+  const updateConfig = (updates: Partial<WorkflowAction['config']>) => {
     onChange({
       ...action,
       config: { ...action.config, ...updates }
@@ -347,7 +347,7 @@ function CreateTaskConfigComponent({
         <Label className="text-xs">Priority</Label>
         <Select
           value={config.priority || 'normal'}
-          onValueChange={(value) => onChange({ priority: value as any })}
+          onValueChange={(value) => onChange({ priority: value as CreateTaskConfig['priority'] })}
         >
           <SelectTrigger>
             <SelectValue />
@@ -393,7 +393,7 @@ function UpdateFieldConfigComponent({
         <Label className="text-xs">Operation</Label>
         <Select
           value={config.operator || 'set'}
-          onValueChange={(value) => onChange({ operator: value as any })}
+          onValueChange={(value) => onChange({ operator: value as UpdateFieldConfig['operator'] })}
         >
           <SelectTrigger>
             <SelectValue />
@@ -548,7 +548,7 @@ function WebhookConfigComponent({
         <Label className="text-xs">Method</Label>
         <Select
           value={config.method || 'POST'}
-          onValueChange={(value) => onChange({ method: value as any })}
+          onValueChange={(value) => onChange({ method: value as WebhookConfig['method'] })}
         >
           <SelectTrigger>
             <SelectValue />

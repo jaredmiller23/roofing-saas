@@ -10,14 +10,10 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(app/api/contacts/check-duplicate/route.ts)",
-      "Edit(app/api/contacts/check-duplicate/route.ts)",
-      "Write(components/contacts/DuplicateWarningDialog.tsx)",
-      "Edit(components/contacts/DuplicateWarningDialog.tsx)",
-      "Write(components/contacts/contact-form.tsx)",
-      "Edit(components/contacts/contact-form.tsx)",
-      "Write(app/(dashboard)/contacts/new/page.tsx)",
-      "Edit(app/(dashboard)/contacts/new/page.tsx)"
+      "Write(**/*.ts)",
+      "Edit(**/*.ts)",
+      "Write(**/*.tsx)",
+      "Edit(**/*.tsx)"
     ]
   }
 }

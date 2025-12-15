@@ -211,7 +211,7 @@ function QuoteOptionComparisonCard({
   isRecommended,
   isSelected,
   onSelect,
-  mode,
+  _mode,
   viewMode,
   showSelection
 }: QuoteOptionComparisonCardProps) {
@@ -311,7 +311,7 @@ function OptionSummary({ option }: OptionSummaryProps) {
 
   return (
     <div className="space-y-3">
-      <h4 className="font-medium">What's Included:</h4>
+      <h4 className="font-medium">What&apos;s Included:</h4>
       <div className="space-y-2">
         {Object.entries(categoryTotals).map(([category, total]) => {
           const categoryInfo = LINE_ITEM_CATEGORIES.find(cat => cat.value === category) ||

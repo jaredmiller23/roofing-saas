@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { WorkflowBuilder } from '@/components/automation/WorkflowBuilder'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Play, Pause, Trash2, Copy, Activity, Clock } from 'lucide-react'
@@ -24,6 +24,7 @@ export default function WorkflowDetailsPage() {
   useEffect(() => {
     loadWorkflow()
     loadExecutions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workflowId])
 
   const loadWorkflow = async () => {
@@ -332,7 +333,7 @@ export default function WorkflowDetailsPage() {
                       <Clock className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                       <p className="text-muted-foreground">No executions yet</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        This workflow hasn't been triggered yet
+                        This workflow hasn&apos;t been triggered yet
                       </p>
                     </CardContent>
                   </Card>

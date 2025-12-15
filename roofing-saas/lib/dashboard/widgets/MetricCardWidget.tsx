@@ -7,7 +7,7 @@
  */
 
 import React from 'react'
-import { TrendingUp, TrendingDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowUp, ArrowDown } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import type { MetricCardConfig } from '@/lib/dashboard/dashboard-types'
 

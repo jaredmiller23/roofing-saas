@@ -2,50 +2,33 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement contact duplicate detection to prevent data quality issues.
-
-
-    Features to implement:
-
-    1. Real-time duplicate check during contact creation
-
-    2. Warning dialog when potential duplicate found
-
-    3. Option to view existing contact or continue creating
-
-    4. Match on: email (exact), phone (normalized), name + address combo
-
-
-    User Flow:
-
-    1. User fills in contact form
-
-    2. On blur of email/phone fields, check for duplicates
-
-    3. If match found, show warning with link to existing contact
-
-    4. User can choose to view existing or continue creating
-
-    '
+  goal: "Reduce lint warnings from 295 to under 5 to unblock all future tasks.\n\n\
+    WARNING BREAKDOWN (approximate):\n- @typescript-eslint/no-unused-vars: ~140 warnings\n\
+    - @typescript-eslint/no-explicit-any: ~20 warnings\n- react-hooks/exhaustive-deps:\
+    \ ~15 warnings\n- react/no-unescaped-entities: ~5 warnings\n- Other: ~115 warnings\n\
+    \nFIX STRATEGIES:\n\n1. UNUSED VARS (@typescript-eslint/no-unused-vars):\n   -\
+    \ If parameter is required by interface but unused: prefix with underscore\n \
+    \    Example: `function handler(req, _res)` or `const { used, _unused } = obj`\n\
+    \   - If import is unused: remove the import entirely\n   - If variable is truly\
+    \ unused: remove the declaration\n\n2. EXPLICIT ANY (@typescript-eslint/no-explicit-any):\n\
+    \   - Replace with specific type if known\n   - Use `unknown` if type is truly\
+    \ unknown\n   - Use generics where appropriate\n   - For event handlers: `React.MouseEvent<HTMLElement>`\n\
+    \n3. REACT HOOKS (react-hooks/exhaustive-deps):\n   - Add missing dependencies\
+    \ to dependency array\n   - If intentionally omitting: add eslint-disable comment\
+    \ with explanation\n   - Consider useCallback/useMemo for function dependencies\n\
+    \n4. UNESCAPED ENTITIES (react/no-unescaped-entities):\n   - Replace \" with &quot;\
+    \ or {'\"'}\n   - Replace ' with &apos; or {\"'\"}\n\nIMPORTANT:\n- Do NOT add\
+    \ eslint-disable comments unless absolutely necessary\n- Do NOT break existing\
+    \ functionality\n- Run typecheck after changes to ensure type safety\n- Focus\
+    \ on files with most warnings first\n"
   success_criteria:
-  - Duplicate check fires on email field blur
-  - Duplicate check fires on phone field blur
-  - Warning dialog shows when duplicate found
-  - Dialog links to existing contact
-  - User can dismiss warning and continue
-  - Backend API endpoint for duplicate checking exists
-  why: 'Research Finding: Users are creating duplicate contacts causing data chaos.
+  - Lint warnings under 5
+  - TypeScript compilation passes
+  - Build succeeds
+  - No functionality broken
+  why: '295 lint warnings blocks ALL task validation (max-warnings 5 policy).
 
-    Competitor AccuLynx has intelligent duplicate detection - table stakes feature.
-
-
-    Business Impact:
-
-    - Sales reps contacting same person multiple times
-
-    - Incorrect reporting due to duplicate data
-
-    - Customer frustration from repeated outreach
+    This technical debt must be cleared to enable feature development.
 
     '
 dependencies: null
@@ -59,11 +42,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T16:00:00'
-  id: SPRINT1-003
-  priority: 2
+  created: '2025-12-15T12:30:00'
+  id: LINT-CLEANUP-ALL
+  priority: 1
   template: code-modification
-  title: Contact Duplicate Detection System
+  title: Fix All Lint Warnings (295 total)
 on_failure:
   escalate:
     include:
@@ -74,33 +57,32 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/contacts/contact-form.tsx
-  reason: Form to add duplicate checking to
+  path: lib/dashboard/dashboard-config.ts
+  reason: Has many unused vars
   required: true
 - extract: []
-  path: app/api/contacts/route.ts
-  reason: Understand contact API patterns
+  path: lib/hooks/usePresence.ts
+  reason: Has any types to fix
   required: true
 - extract: []
-  path: lib/types/contact.ts
-  reason: Contact type definitions
-  required: false
+  path: app/(dashboard)/automations/[id]/page.tsx
+  reason: Has hook dependency issues
+  required: true
 scope:
   constraints: []
-  create:
-  - app/api/contacts/check-duplicate/route.ts
-  - components/contacts/DuplicateWarningDialog.tsx
+  create: []
   do_not_touch:
-  - app/api/contacts/route.ts
-  - lib/validations/contact.ts
+  - node_modules/**
+  - .next/**
+  - '*.config.*'
   modify:
-  - components/contacts/contact-form.tsx
-  - app/(dashboard)/contacts/new/page.tsx
+  - '**/*.ts'
+  - '**/*.tsx'
 thinking:
   level: think_hard
   triggers:
-  - Before designing duplicate matching algorithm
-  - When deciding API response format
+  - When deciding if eslint-disable is necessary
+  - When replacing any types
 validation:
   assertions: []
   post_commit: []
@@ -112,12 +94,8 @@ validation:
   - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
-  - command: test -f app/api/contacts/check-duplicate/route.ts
+    timeout: 120
+  - command: npm run build
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
-  - command: grep -q "DuplicateWarning" components/contacts/contact-form.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
+    timeout: 300

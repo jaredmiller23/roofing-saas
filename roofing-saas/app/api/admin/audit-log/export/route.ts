@@ -44,13 +44,13 @@ export async function GET(request: NextRequest) {
     const filters: Omit<AuditLogFilters, 'page' | 'limit'> = {
       search: searchParams.get('search') || undefined,
       user_id: searchParams.get('user_id') || undefined,
-      entity_type: searchParams.get('entity_type') as any || undefined,
-      action_type: searchParams.get('action_type') as any || undefined,
+      entity_type: (searchParams.get('entity_type') as AuditLogFilters['entity_type']) || undefined,
+      action_type: (searchParams.get('action_type') as AuditLogFilters['action_type']) || undefined,
       entity_id: searchParams.get('entity_id') || undefined,
       start_date: searchParams.get('start_date') || undefined,
       end_date: searchParams.get('end_date') || undefined,
-      sort_by: (searchParams.get('sort_by') as any) || 'timestamp',
-      sort_order: (searchParams.get('sort_order') as any) || 'desc',
+      sort_by: (searchParams.get('sort_by') as AuditLogFilters['sort_by']) || 'timestamp',
+      sort_order: (searchParams.get('sort_order') as AuditLogFilters['sort_order']) || 'desc',
     }
 
     // Validate sort parameters
@@ -188,7 +188,7 @@ function generateCSV(entries: AuditEntry[]): string {
   ]
 
   // Escape CSV field values
-  const escapeCSV = (value: any): string => {
+  const escapeCSV = (value: unknown): string => {
     if (value === null || value === undefined) {
       return ''
     }

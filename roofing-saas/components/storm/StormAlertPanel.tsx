@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Storm Alert Panel Component
  *

@@ -20,7 +20,7 @@ export function OrganizationsTable({ params }: OrganizationsTableProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(parseInt((params.page as string) || '1'))
+  const [_page, setPage] = useState(parseInt((params.page as string) || '1'))
   const [sortField, setSortField] = useState<SortField>((params.sort as SortField) || 'name')
   const [sortDirection, setSortDirection] = useState<SortDirection>((params.sort_order as SortDirection) || 'asc')
 

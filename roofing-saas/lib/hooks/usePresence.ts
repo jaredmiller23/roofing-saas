@@ -176,7 +176,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
   const channelName = `presence:${entityType}:${entityId}`
 
   // Convert Supabase presence state to our PresenceUser array
-  const parsePresenceState = useCallback((state: RealtimePresenceState<Record<string, any>>): PresenceUser[] => {
+  const parsePresenceState = useCallback((state: RealtimePresenceState<Record<string, unknown>>): PresenceUser[] => {
     const users: PresenceUser[] = []
 
     Object.keys(state).forEach((key) => {
@@ -270,15 +270,16 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
     channel.on('presence', { event: 'join' }, ({ key: _key, newPresences }) => {
       if (!isMountedRef.current) return
 
-      newPresences.forEach((presence: any) => {
-        if (presence.userId !== user.id && onUserJoin) {
+      newPresences.forEach((presence: unknown) => {
+        const presenceData = presence as PresenceUser
+        if (presenceData.userId !== user.id && onUserJoin) {
           const presenceUser: PresenceUser = {
-            userId: presence.userId,
-            userName: presence.userName,
-            userEmail: presence.userEmail,
-            userAvatar: presence.userAvatar,
-            joinedAt: presence.joinedAt,
-            metadata: presence.metadata,
+            userId: presenceData.userId,
+            userName: presenceData.userName,
+            userEmail: presenceData.userEmail,
+            userAvatar: presenceData.userAvatar,
+            joinedAt: presenceData.joinedAt,
+            metadata: presenceData.metadata,
           }
           onUserJoin(presenceUser)
         }
@@ -289,15 +290,16 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
     channel.on('presence', { event: 'leave' }, ({ key: _key, leftPresences }) => {
       if (!isMountedRef.current) return
 
-      leftPresences.forEach((presence: any) => {
-        if (presence.userId !== user.id && onUserLeave) {
+      leftPresences.forEach((presence: unknown) => {
+        const presenceData = presence as PresenceUser
+        if (presenceData.userId !== user.id && onUserLeave) {
           const presenceUser: PresenceUser = {
-            userId: presence.userId,
-            userName: presence.userName,
-            userEmail: presence.userEmail,
-            userAvatar: presence.userAvatar,
-            joinedAt: presence.joinedAt,
-            metadata: presence.metadata,
+            userId: presenceData.userId,
+            userName: presenceData.userName,
+            userEmail: presenceData.userEmail,
+            userAvatar: presenceData.userAvatar,
+            joinedAt: presenceData.joinedAt,
+            metadata: presenceData.metadata,
           }
           onUserLeave(presenceUser)
         }

@@ -98,7 +98,7 @@ export function ScoreBreakdown({
               '--progress-foreground': getScoreLevelColor(leadScore.level) === 'red' ? '#dc2626' :
                                      getScoreLevelColor(leadScore.level) === 'orange' ? '#ea580c' :
                                      '#2563eb',
-            } as any}
+            } as React.CSSProperties}
           />
           
           {/* Score thresholds indicators */}

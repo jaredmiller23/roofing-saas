@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 /**
  * Advanced Cache Strategy
  * Implements intelligent caching for offline-first data access

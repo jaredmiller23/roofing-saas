@@ -14,7 +14,6 @@ import type {
   DashboardFilters,
   DashboardListResponse,
   WidgetDataResponse,
-  WidgetDataSource,
   QueryDataSource,
   DashboardPermissions,
   WidgetPosition,
@@ -352,7 +351,7 @@ export async function fetchWidgetData(
 async function fetchQueryData(
   widget: DashboardWidget,
   config: QueryDataSource,
-  context?: Record<string, unknown>
+  _context?: Record<string, unknown>
 ): Promise<WidgetDataResponse> {
   const supabase = createClient()
 
@@ -420,9 +419,9 @@ async function fetchQueryData(
  * Fetch data from external API
  */
 async function fetchAPIData(
-  widget: DashboardWidget,
-  config: unknown,
-  context?: Record<string, unknown>
+  _widget: DashboardWidget,
+  _config: unknown,
+  _context?: Record<string, unknown>
 ): Promise<WidgetDataResponse> {
   // TODO: Implement API data fetching
   throw new Error('API data source not yet implemented')
@@ -432,9 +431,9 @@ async function fetchAPIData(
  * Fetch realtime data
  */
 async function fetchRealtimeData(
-  widget: DashboardWidget,
-  config: unknown,
-  context?: Record<string, unknown>
+  _widget: DashboardWidget,
+  _config: unknown,
+  _context?: Record<string, unknown>
 ): Promise<WidgetDataResponse> {
   // TODO: Implement realtime data subscription
   throw new Error('Realtime data source not yet implemented')
@@ -444,9 +443,9 @@ async function fetchRealtimeData(
  * Fetch computed data
  */
 async function fetchComputedData(
-  widget: DashboardWidget,
-  config: unknown,
-  context?: Record<string, unknown>
+  _widget: DashboardWidget,
+  _config: unknown,
+  _context?: Record<string, unknown>
 ): Promise<WidgetDataResponse> {
   // TODO: Implement computed data
   throw new Error('Computed data source not yet implemented')

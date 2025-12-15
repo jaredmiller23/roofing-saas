@@ -8,7 +8,7 @@ import { OfflineRecord, ConflictResolution, OfflineFormData, OfflinePhoto, Offli
 
 // Enhanced database schema
 interface EnhancedOfflineDB extends DBSchema {
-  [key: string]: any;
+  [key: string]: unknown;
   offline_records: {
     key: string;
     value: OfflineRecord;

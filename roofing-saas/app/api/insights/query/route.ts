@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
       const executionStartTime = Date.now()
 
       // Execute the query directly using Supabase's query interface
-      let data: any[] = []
-      let queryError: any = null
+      let data: Record<string, unknown>[] = []
+      let queryError: { message?: string } | null = null
 
       // Execute the query based on interpretation and table
       const primaryTable = sqlQuery.tables[0]
@@ -172,10 +172,10 @@ export async function POST(request: NextRequest) {
         if (intent.type === 'count') {
           data = [{ total_count: result.count || 0 }]
         } else if (intent.type === 'sum' && result.data) {
-          const total = result.data.reduce((sum: number, row: any) => sum + (row.value || 0), 0)
+          const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
           data = [{ total_value: total }]
         } else if (intent.type === 'average' && result.data) {
-          const total = result.data.reduce((sum: number, row: any) => sum + (row.value || 0), 0)
+          const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
           const avg = result.data.length > 0 ? total / result.data.length : 0
           data = [{ average_value: avg }]
         }
@@ -211,15 +211,15 @@ export async function POST(request: NextRequest) {
         // Handle revenue aggregations
         if (intent.type === 'sum' && result.data) {
           if (interpretation.metrics.includes('revenue')) {
-            const total = result.data.reduce((sum: number, row: any) => sum + (row.revenue || 0), 0)
+            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
             data = [{ total_revenue: total }]
           } else if (interpretation.metrics.includes('profit')) {
-            const total = result.data.reduce((sum: number, row: any) => sum + (row.gross_profit || 0), 0)
+            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.gross_profit) || 0), 0)
             data = [{ total_profit: total }]
           }
         } else if (intent.type === 'average' && result.data) {
           if (interpretation.metrics.includes('revenue')) {
-            const total = result.data.reduce((sum: number, row: any) => sum + (row.revenue || 0), 0)
+            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
             const avg = result.data.length > 0 ? total / result.data.length : 0
             data = [{ average_revenue: avg }]
           }
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
 
       // Transform result into standardized format
       const resultColumns: ResultColumn[] = []
-      let processedData: any[] = []
+      let processedData: Record<string, unknown>[] = []
 
       if (data && Array.isArray(data) && data.length > 0) {
         // Infer columns from first row
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest) {
 // Rate limiting helper (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
-function checkRateLimit(userId: string, maxRequests = 50, windowMs = 60000): boolean {
+function _checkRateLimit(userId: string, maxRequests = 50, windowMs = 60000): boolean {
   const now = Date.now()
   const userLimit = rateLimitStore.get(userId)
 

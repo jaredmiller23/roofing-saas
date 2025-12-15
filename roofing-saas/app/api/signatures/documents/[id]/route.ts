@@ -3,8 +3,7 @@ import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
   AuthorizationError,
-  NotFoundError,
-  InternalError
+  NotFoundError
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'

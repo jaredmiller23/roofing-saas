@@ -38,7 +38,7 @@ export async function GET(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
       .single()
 
     if (fetchError || !contact) {
@@ -54,12 +54,12 @@ export async function GET(
     // Update the contact's lead_score in the database
     const { error: updateError } = await supabase
       .from('contacts')
-      .update({ 
+      .update({
         lead_score: leadScore.total,
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -127,7 +127,7 @@ export async function POST(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
       .single()
 
     if (fetchError || !contact) {
@@ -144,12 +144,12 @@ export async function POST(
     // Update the contact's lead_score in the database
     const { error: updateError } = await supabase
       .from('contacts')
-      .update({ 
+      .update({
         lead_score: leadScore.total,
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -236,7 +236,7 @@ export async function PATCH(
       .from('contacts')
       .select('id, lead_score')
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
       .single()
 
     if (fetchError || !contact) {
@@ -251,12 +251,12 @@ export async function PATCH(
     // Update the contact's lead_score in the database
     const { error: updateError } = await supabase
       .from('contacts')
-      .update({ 
+      .update({
         lead_score: score,
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as any).tenant_id)
+      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -284,7 +284,7 @@ export async function PATCH(
         scoreChange: score - previousScore,
         manualOverride: true,
         reason: reason || 'Manual override',
-        updatedBy: (user as any).id,
+        updatedBy: (user as { id?: string }).id,
         updatedAt: new Date().toISOString(),
       },
     })

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import Image from 'next/image'
 import {
   Camera,
   Upload,
@@ -478,9 +479,11 @@ export function MobileFileUpload({
               <div key={index} className="bg-card border border-border rounded-lg p-3">
                 <div className="flex items-center space-x-3">
                   {previewUrl ? (
-                    <img
+                    <Image
                       src={previewUrl}
                       alt={file.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 object-cover rounded border"
                     />
                   ) : (

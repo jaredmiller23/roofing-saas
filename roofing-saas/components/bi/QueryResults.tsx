@@ -15,7 +15,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer
 } from 'recharts'
 import {
@@ -25,7 +24,6 @@ import {
   Clock,
   Database,
   AlertCircle,
-  TrendingUp,
   Eye,
   Copy,
   MoreVertical
@@ -91,7 +89,7 @@ export function QueryResults({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground mb-1">Results for: "{query}"</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-1">Results for: &quot;{query}&quot;</h3>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Database className="h-4 w-4" />
@@ -188,8 +186,8 @@ function QueryVisualization({
   columns,
   visualization
 }: {
-  data: any[]
-  columns: any[]
+  data: Record<string, unknown>[]
+  columns: Array<{ name: string; type: string; description?: string; format?: string }>
   visualization: VisualizationType
 }) {
   const chartData = React.useMemo(() => {
@@ -221,7 +219,7 @@ function QueryVisualization({
   }
 }
 
-function NumberVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function NumberVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string; description?: string }> }) {
   const numericColumn = columns.find(col => col.type === 'number')
   const value = data[0]?.[numericColumn?.name || Object.keys(data[0] || {})[0]] || 0
 
@@ -237,7 +235,7 @@ function NumberVisualization({ data, columns }: { data: any[], columns: any[] })
   )
 }
 
-function BarVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function BarVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string }> }) {
   const stringColumn = columns.find(col => col.type === 'string')?.name || Object.keys(data[0] || {})[0]
   const numericColumn = columns.find(col => col.type === 'number')?.name || Object.keys(data[0] || {})[1]
 
@@ -261,7 +259,7 @@ function BarVisualization({ data, columns }: { data: any[], columns: any[] }) {
   )
 }
 
-function LineVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function LineVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string }> }) {
   const xColumn = columns.find(col => col.type === 'date' || col.type === 'string')?.name || Object.keys(data[0] || {})[0]
   const yColumn = columns.find(col => col.type === 'number')?.name || Object.keys(data[0] || {})[1]
 
@@ -285,7 +283,7 @@ function LineVisualization({ data, columns }: { data: any[], columns: any[] }) {
   )
 }
 
-function PieVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function PieVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string }> }) {
   const labelColumn = columns.find(col => col.type === 'string')?.name || Object.keys(data[0] || {})[0]
   const valueColumn = columns.find(col => col.type === 'number')?.name || Object.keys(data[0] || {})[1]
 
@@ -304,7 +302,7 @@ function PieVisualization({ data, columns }: { data: any[], columns: any[] }) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={(entry: any) => `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
+            label={(entry: { name: string; percent: number }) => `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
             outerRadius={80}
             dataKey="value"
           >
@@ -319,7 +317,7 @@ function PieVisualization({ data, columns }: { data: any[], columns: any[] }) {
   )
 }
 
-function AreaVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function AreaVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string }> }) {
   const xColumn = columns.find(col => col.type === 'date' || col.type === 'string')?.name || Object.keys(data[0] || {})[0]
   const yColumn = columns.find(col => col.type === 'number')?.name || Object.keys(data[0] || {})[1]
 
@@ -344,7 +342,7 @@ function AreaVisualization({ data, columns }: { data: any[], columns: any[] }) {
   )
 }
 
-function TableVisualization({ data, columns }: { data: any[], columns: any[] }) {
+function TableVisualization({ data, columns }: { data: Record<string, unknown>[], columns: Array<{ name: string; type: string; format?: string }> }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
@@ -378,7 +376,7 @@ function TableVisualization({ data, columns }: { data: any[], columns: any[] }) 
   )
 }
 
-function formatCellValue(value: any, type: string, format?: string): string {
+function formatCellValue(value: unknown, type: string, _format?: string): string {
   if (value == null) return ''
 
   switch (type) {
@@ -396,7 +394,7 @@ function QueryResultsSkeleton({ query }: { query: string }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground mb-1">Analyzing: "{query}"</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-1">Analyzing: &quot;{query}&quot;</h3>
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <span className="text-sm text-muted-foreground">Processing your query...</span>
@@ -424,7 +422,7 @@ function QueryError({ error, query }: { error: string, query: string }) {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground mb-1">Error for: "{query}"</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-1">Error for: &quot;{query}&quot;</h3>
         </div>
       </div>
 
@@ -435,7 +433,7 @@ function QueryError({ error, query }: { error: string, query: string }) {
             <p className="font-medium text-destructive mb-1">Query Failed</p>
             <p className="text-sm text-muted-foreground">{error}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Try rephrasing your question or check that the data you're asking about exists.
+              Try rephrasing your question or check that the data you&apos;re asking about exists.
             </p>
           </div>
         </div>

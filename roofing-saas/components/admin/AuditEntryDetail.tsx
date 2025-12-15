@@ -6,18 +6,8 @@ import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  User,
-  Calendar,
   Globe,
   Monitor,
   Code,
@@ -58,7 +48,7 @@ const diffTypeIcons = {
   changed: ArrowRight,
 }
 
-function JsonViewer({ data, title }: { data: any; title: string }) {
+function JsonViewer({ data, title }: { data: Record<string, unknown> | null; title: string }) {
   if (!data || Object.keys(data).length === 0) {
     return (
       <Card>
@@ -88,7 +78,7 @@ function JsonViewer({ data, title }: { data: any; title: string }) {
   )
 }
 
-function formatValue(value: any): string {
+function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
     return 'null'
   }
@@ -195,11 +185,11 @@ export function AuditEntryDetail({ entry }: AuditEntryDetailProps) {
       .slice(0, 2)
   }
 
-  const formatMetadata = (metadata: Record<string, any> | null) => {
+  const formatMetadata = (metadata: Record<string, unknown> | null) => {
     if (!metadata) return {}
 
     // Remove common fields that are displayed elsewhere
-    const { ip_address, user_agent, ...displayMetadata } = metadata
+    const { ip_address: _ip_address, user_agent: _user_agent, ...displayMetadata } = metadata
     return displayMetadata
   }
 

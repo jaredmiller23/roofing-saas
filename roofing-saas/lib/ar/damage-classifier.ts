@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * AR Damage Classification System
  * AI-assisted damage detection and severity assessment

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Eye, Calculator, Download, Share } from 'lucide-react'
+import { ArrowLeft, Eye, Calculator } from 'lucide-react'
 
 import { ARViewport } from '@/components/ar/ARViewport'
 import { MeasurementOverlay } from '@/components/ar/MeasurementOverlay'
@@ -25,16 +25,17 @@ export default function ARAssessmentPage() {
   const router = useRouter()
   const projectId = params.id as string
 
-  const [arSession, setArSession] = useState<ARSession | null>(null)
+  const [arSession, _setArSession] = useState<ARSession | null>(null)
   const [currentTool, setCurrentTool] = useState<ARTool>(ARTool.NONE)
   const [measurements, setMeasurements] = useState<ARMeasurement[]>([])
   const [damageMarkers, setDamageMarkers] = useState<DamageMarker[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [project, setProject] = useState<any>(null)
+  const [project, setProject] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
     fetchProjectData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const fetchProjectData = async () => {
@@ -163,13 +164,13 @@ export default function ARAssessmentPage() {
   }
 
   const generateLineItems = (
-    analysis: any,
+    analysis: Record<string, unknown>,
     measurements: ARMeasurement[],
-    damageMarkers: DamageMarker[]
+    _damageMarkers: DamageMarker[]
   ) => {
     const lineItems = []
 
-    const totalArea = measurements
+    measurements
       .filter(m => m.type === 'area')
       .reduce((sum, m) => sum + m.value, 0)
 

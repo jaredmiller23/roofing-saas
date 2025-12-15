@@ -86,7 +86,7 @@ export async function PATCH(
     const contact = await auditedUpdate(
       'contact',
       id,
-      async (beforeValues) => {
+      async (_beforeValues) => {
         const supabase = await createClient()
 
         const { data, error } = await supabase
@@ -161,7 +161,7 @@ export async function DELETE(
     const result = await auditedDelete(
       'contact',
       id,
-      async (beforeValues) => {
+      async (_beforeValues) => {
         const supabase = await createClient()
 
         // Soft delete

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { WinLossAnalysis as WinLossData, DrilldownContext } from '@/lib/analytics/analytics-types'
+import { WinLossAnalysis as WinLossData } from '@/lib/analytics/analytics-types'
 import { CheckCircle, XCircle, TrendingUp, DollarSign, Clock, Target } from 'lucide-react'
 
 interface WinLossAnalysisProps {

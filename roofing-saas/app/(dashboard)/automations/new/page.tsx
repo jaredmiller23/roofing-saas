@@ -7,7 +7,7 @@ import type { Workflow } from '@/lib/automation/workflow-types'
 
 export default function NewWorkflowPage() {
   const router = useRouter()
-  const [isSaving, setIsSaving] = useState(false)
+  const [_isSaving, setIsSaving] = useState(false)
 
   const handleSave = async (workflowData: Partial<Workflow>) => {
     setIsSaving(true)

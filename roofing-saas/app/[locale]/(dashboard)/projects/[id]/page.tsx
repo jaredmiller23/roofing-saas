@@ -7,7 +7,6 @@ import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, P
 import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
-import { QuoteProposalView } from '@/components/estimates/QuoteProposalView'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -117,7 +116,7 @@ export default function ProjectDetailPage() {
   }, [])
 
   // Track presence for this project
-  const { presentUsers, count } = usePresence({
+  const { presentUsers: _presentUsers, count: _count } = usePresence({
     entityType: 'project',
     entityId: projectId,
     user: currentUser || { id: '', name: '', email: '', avatar: '' },

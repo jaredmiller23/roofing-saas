@@ -59,7 +59,7 @@ const OPERATORS = [
 export function TriggerNode({ trigger, onChange, onDelete, isExpanded = false }: TriggerNodeProps) {
   const [expanded, setExpanded] = useState(isExpanded)
 
-  const updateConfig = (updates: Partial<any>) => {
+  const updateConfig = (updates: Partial<WorkflowTrigger['config']>) => {
     onChange({
       ...trigger,
       config: { ...trigger.config, ...updates }
@@ -298,7 +298,7 @@ function FieldChangedConfig({
         <Label className="text-xs">Condition</Label>
         <Select
           value={config.operator || 'equals'}
-          onValueChange={(value) => onChange({ operator: value as any })}
+          onValueChange={(value) => onChange({ operator: value as FieldChangedConfig['operator'] })}
         >
           <SelectTrigger>
             <SelectValue />
@@ -346,7 +346,7 @@ function TimeElapsedConfig({
         <Label className="text-xs">Reference Field</Label>
         <Select
           value={config.field || 'created_at'}
-          onValueChange={(value) => onChange({ field: value as any })}
+          onValueChange={(value) => onChange({ field: value as TimeElapsedConfig['field'] })}
         >
           <SelectTrigger>
             <SelectValue />
@@ -386,7 +386,7 @@ function ScheduledConfigComponent({
         <Label className="text-xs">Schedule</Label>
         <Select
           value={config.schedule || 'daily'}
-          onValueChange={(value) => onChange({ schedule: value as any })}
+          onValueChange={(value) => onChange({ schedule: value as ScheduledConfig['schedule'] })}
         >
           <SelectTrigger>
             <SelectValue />

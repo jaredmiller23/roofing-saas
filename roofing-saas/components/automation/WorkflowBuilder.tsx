@@ -3,16 +3,12 @@
 import React, { useState, useCallback } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import {
   Save,
   Play,
-  Pause,
-  Trash2,
   Plus,
   Settings,
   Zap,
@@ -29,13 +25,11 @@ import type {
   Workflow,
   WorkflowAction,
   WorkflowTrigger,
-  WorkflowCondition,
   TriggerType,
   ActionType
 } from '@/lib/automation/workflow-types'
 import { TriggerNode } from './TriggerNode'
 import { ActionNode } from './ActionNode'
-import { ConditionNode } from './ConditionNode'
 import { WorkflowCanvas } from './WorkflowCanvas'
 
 interface WorkflowBuilderProps {
@@ -172,7 +166,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
   const [description, setDescription] = useState(workflow?.description || '')
   const [trigger, setTrigger] = useState<WorkflowTrigger | null>(workflow?.trigger || null)
   const [actions, setActions] = useState<WorkflowAction[]>(workflow?.actions || [])
-  const [conditions, setConditions] = useState<WorkflowCondition[]>(workflow?.conditions || [])
+  const [_conditions, _setConditions] = useState(workflow?.conditions || [])
   const [isSaving, setIsSaving] = useState(false)
   const [isTesting, setIsTesting] = useState(false)
   const [showTriggerPanel, setShowTriggerPanel] = useState(!trigger)
@@ -255,7 +249,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
     const newTrigger: WorkflowTrigger = {
       id: `trigger_${Date.now()}`,
       type: triggerType,
-      config: { type: triggerType } as any,
+      config: { type: triggerType } as WorkflowTrigger['config'],
       enabled: true
     }
     setTrigger(newTrigger)
@@ -266,7 +260,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
     const newAction: WorkflowAction = {
       id: `action_${Date.now()}`,
       type: actionType,
-      config: { type: actionType } as any,
+      config: { type: actionType } as WorkflowAction['config'],
       enabled: true,
       order: actions.length
     }
@@ -444,11 +438,11 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
 
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="actions">
-                {(provided: any) => (
+                {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                     {actions.map((action, index) => (
                       <Draggable key={action.id} draggableId={action.id} index={index}>
-                        {(provided: any) => (
+                        {(provided) => (
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}

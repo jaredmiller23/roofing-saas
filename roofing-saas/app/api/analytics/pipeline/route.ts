@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
                   period === '90_day' ? 'last_90_days' :
                   period === '6_month' ? 'last_6_months' : 'last_year'
         },
-        stages: stages as any,
+        stages: stages as AnalyticsFilters['stages'],
         leadSources,
         assignedTo,
         minValue,

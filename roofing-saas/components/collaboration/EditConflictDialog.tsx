@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { AlertTriangle, RefreshCw, Save, X } from "lucide-react"
-import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -107,7 +106,7 @@ export function EditConflictDialog({
   open,
   onOpenChange,
   conflicts,
-  entityName = "this item",
+  entityName: _entityName = "this item",
   onSaveAnyway,
   onReload,
   onCancel,

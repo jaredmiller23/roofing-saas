@@ -13,7 +13,7 @@ export { WeeklyChallengeWidget } from './WeeklyChallengeWidget'
 export { DashboardEditor, default as default } from '../../lib/dashboard/DashboardEditor'
 
 // Placeholder renderWidget function for dashboard usage example
-export function renderWidget(widget: any, data?: any) {
+export function renderWidget(widget: { type: string }, _data?: unknown): JSX.Element {
   return (
     <div className="flex items-center justify-center h-full text-muted-foreground">
       <p>Widget: {widget.type}</p>

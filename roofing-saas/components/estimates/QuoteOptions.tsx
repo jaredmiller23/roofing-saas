@@ -3,7 +3,7 @@
 import { Control, FieldErrors, UseFormRegister, FieldArrayWithId, useFieldArray } from 'react-hook-form'
 import { Plus, Trash2, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   LINE_ITEM_CATEGORIES,
   CreateQuoteLineItemInput,
@@ -22,7 +22,7 @@ interface QuoteOption {
 
 interface EstimateFormData {
   quote_options: QuoteOption[]
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface QuoteOptionsProps {
@@ -164,7 +164,7 @@ function QuoteOptionCard({
 
           {lineItemFields.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-              <p>No line items yet. Click "Add Item" to get started.</p>
+              <p>No line items yet. Click &quot;Add Item&quot; to get started.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -217,7 +217,7 @@ function LineItemRow({
   optionIndex,
   lineItemIndex,
   register,
-  errors,
+  errors: _errors,
   removeLineItem,
   showRemove
 }: LineItemRowProps) {

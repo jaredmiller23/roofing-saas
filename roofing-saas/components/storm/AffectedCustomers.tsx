@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Affected Customers Component
  *

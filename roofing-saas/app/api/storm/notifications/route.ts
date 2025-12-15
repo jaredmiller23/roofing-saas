@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
-    const { customers, template, method } = body as {
+    const { customers, method } = body as {
       customers: AffectedCustomer[]
       template?: string
       method: 'email' | 'sms' | 'both'
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const details: NotificationResponse['details'] = []
     let sent = 0
     let failed = 0
-    let scheduled = 0
+    const scheduled = 0
 
     // Process each customer
     for (const customer of customers) {
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 /**
  * Get notification templates
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = await createClient()
 

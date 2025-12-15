@@ -46,7 +46,7 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
     return colors[stageName as keyof typeof colors] || 'bg-gray-400'
   }
 
-  const handleStageClick = (stage: any) => {
+  const handleStageClick = (stage: { stage: string; prospects: number; conversions: number; conversionRate: number }) => {
     if (onStageClick) {
       onStageClick({
         type: 'stage',

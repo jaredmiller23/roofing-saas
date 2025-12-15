@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { PhotoManager } from '@/components/photos'
@@ -46,7 +45,7 @@ interface ContactDetailClientProps {
 
 export function ContactDetailClient({ contact, tenantId, user }: ContactDetailClientProps) {
   // Track presence for this contact
-  const { presentUsers, count } = usePresence({
+  const { presentUsers: _presentUsers, count: _count } = usePresence({
     entityType: 'contact',
     entityId: contact.id,
     user: {

@@ -7,10 +7,10 @@ import type { Workflow } from '@/lib/automation/workflow-types'
 
 export default function NewWorkflowPage() {
   const router = useRouter()
-  const [isSaving, setIsSaving] = useState(false)
+  const [_isSaving, _setIsSaving] = useState(false)
 
   const handleSave = async (workflowData: Partial<Workflow>) => {
-    setIsSaving(true)
+    _setIsSaving(true)
     try {
       const response = await fetch('/api/automations', {
         method: 'POST',
@@ -30,7 +30,7 @@ export default function NewWorkflowPage() {
       console.error('Error creating workflow:', error)
       throw error
     } finally {
-      setIsSaving(false)
+      _setIsSaving(false)
     }
   }
 

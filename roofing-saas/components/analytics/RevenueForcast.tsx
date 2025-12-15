@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { RevenueForecast, DrilldownContext } from '@/lib/analytics/analytics-types'
+import { RevenueForecast } from '@/lib/analytics/analytics-types'
 import { TrendingUp, TrendingDown, DollarSign, Target, Calendar, Zap } from 'lucide-react'
 
 interface RevenueForecastProps {

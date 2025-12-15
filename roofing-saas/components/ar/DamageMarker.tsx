@@ -26,7 +26,7 @@ export function DamageMarker({
   })
 
   const handleSave = () => {
-    const classification = damageClassifier.classifyDamage(
+    damageClassifier.classifyDamage(
       undefined,
       editData.description
     )

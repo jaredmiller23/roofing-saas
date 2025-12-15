@@ -26,7 +26,7 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
   }, [data.stages])
 
   // Get trend icon and color
-  const getTrendIcon = (trend: 'faster' | 'slower' | 'stable', percentage: number) => {
+  const getTrendIcon = (trend: 'faster' | 'slower' | 'stable', _percentage: number) => {
     if (trend === 'faster') {
       return <TrendingUp className="h-4 w-4 text-green-500" />
     } else if (trend === 'slower') {
@@ -52,7 +52,7 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
     return { label: 'Slow', color: 'text-red-600', icon: AlertTriangle }
   }
 
-  const handleStageClick = (stage: any) => {
+  const handleStageClick = (stage: { stage: string; averageDays: number }) => {
     if (onStageClick) {
       onStageClick({
         type: 'stage',
@@ -268,14 +268,14 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
               </div>
             )}
 
-            {data.bottlenecks.includes('prospect' as any) && (
+            {data.bottlenecks.includes('prospect' as never) && (
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-primary" />
                 <span>Focus on lead qualification to reduce time in prospect stage</span>
               </div>
             )}
 
-            {data.bottlenecks.includes('negotiation' as any) && (
+            {data.bottlenecks.includes('negotiation' as never) && (
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-yellow-500" />
                 <span>Review pricing strategy and proposal process to speed up negotiations</span>

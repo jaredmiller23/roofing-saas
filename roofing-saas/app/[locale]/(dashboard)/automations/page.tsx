@@ -15,7 +15,6 @@ import {
   Zap,
   Clock,
   CheckCircle,
-  XCircle,
   Activity
 } from 'lucide-react'
 import Link from 'next/link'

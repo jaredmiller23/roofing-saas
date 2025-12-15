@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     const analysis = analyzeAffectedArea(stormEvent, affectedCustomers)
 
     // Create alert
-    const alert = createStormAlert(stormEvent, analysis)
+    createStormAlert(stormEvent, analysis)
 
     // Generate recommendations
     const recommendations: string[] = []
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = await createClient()
 

@@ -157,7 +157,7 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
                 <div>
                   <div className="font-medium text-yellow-800">Primary Loss Reason</div>
                   <div className="text-sm text-yellow-700">
-                    "{data.winLossAnalysis.lossReasons[0].reason}" accounts for {formatPercentage(data.winLossAnalysis.lossReasons[0].percentage)} of losses.
+                    &quot;{data.winLossAnalysis.lossReasons[0].reason}&quot; accounts for {formatPercentage(data.winLossAnalysis.lossReasons[0].percentage)} of losses.
                     Focus on addressing this specific issue.
                   </div>
                 </div>

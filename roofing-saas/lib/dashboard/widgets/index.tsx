@@ -45,7 +45,7 @@ export function renderWidget(widget: DashboardWidget, data?: unknown) {
     case 'custom_html':
       return (
         <div className="flex items-center justify-center h-full text-muted-foreground">
-          <p className="text-sm">Widget type "{widget.type}" not yet implemented</p>
+          <p className="text-sm">Widget type &quot;{widget.type}&quot; not yet implemented</p>
         </div>
       )
 

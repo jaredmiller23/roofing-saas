@@ -3,19 +3,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { arEngine } from '@/lib/ar/ar-engine'
 import { measurementTools } from '@/lib/ar/measurement-tools'
-import { ARTool, ARState, ARMeasurement, DamageMarker } from '@/lib/ar/ar-types'
+import { ARState, ARMeasurement, DamageMarker } from '@/lib/ar/ar-types'
 
 interface ARViewportProps {
   projectId: string
   onMeasurementComplete: (measurement: ARMeasurement) => void
-  onDamageMarkerAdded: (marker: DamageMarker) => void
+  _onDamageMarkerAdded: (marker: DamageMarker) => void
   className?: string
 }
 
 export function ARViewport({
   projectId,
   onMeasurementComplete,
-  onDamageMarkerAdded,
+  _onDamageMarkerAdded,
   className = ''
 }: ARViewportProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -28,6 +28,7 @@ export function ARViewport({
     return () => {
       cleanup()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

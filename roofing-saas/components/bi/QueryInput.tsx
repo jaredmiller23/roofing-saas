@@ -91,7 +91,7 @@ export function QueryInput({
                 onClick={() => handleSubmit(query)}
                 className="mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors"
               >
-                Ask: "{query}"
+                Ask: &quot;{query}&quot;
               </button>
             )}
           </div>
@@ -183,7 +183,7 @@ export function QueryInput({
             >
               <Sparkles className="h-4 w-4 text-primary" />
               <div className="flex-1">
-                <div className="font-medium text-sm">Ask: "{query}"</div>
+                <div className="font-medium text-sm">Ask: &quot;{query}&quot;</div>
                 <div className="text-xs text-muted-foreground">Custom natural language query</div>
               </div>
             </CommandItem>

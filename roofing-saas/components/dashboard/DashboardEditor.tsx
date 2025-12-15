@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,7 +10,7 @@ interface DashboardWidget {
   id: string
   type: string
   position: { x: number; y: number; w: number; h: number }
-  props?: Record<string, any>
+  props?: Record<string, unknown>
 }
 
 interface Dashboard {
@@ -57,8 +56,8 @@ export function DashboardEditor({
     }
   )
 
-  const [selectedWidget, setSelectedWidget] = useState<string | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [selectedWidget, _setSelectedWidget] = useState<string | null>(null)
+  const [_isEditing, _setIsEditing] = useState(false)
 
   const handleSave = useCallback(() => {
     if (onSave) {
@@ -91,7 +90,7 @@ export function DashboardEditor({
     }
   }, [selectedWidget])
 
-  const updateWidget = useCallback((widgetId: string, updates: Partial<DashboardWidget>) => {
+  const _updateWidget = useCallback((widgetId: string, updates: Partial<DashboardWidget>) => {
     setDashboard(prev => ({
       ...prev,
       widgets: prev.widgets.map(w =>

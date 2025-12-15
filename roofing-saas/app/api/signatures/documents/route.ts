@@ -2,13 +2,10 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
-  AuthorizationError,
-  ValidationError,
-  InternalError
+  AuthorizationError
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { createClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/signatures/documents

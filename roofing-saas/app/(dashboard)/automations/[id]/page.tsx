@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { WorkflowBuilder } from '@/components/automation/WorkflowBuilder'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Play, Pause, Trash2, Copy, Activity, Clock } from 'lucide-react'
@@ -24,9 +24,9 @@ export default function WorkflowDetailsPage() {
   useEffect(() => {
     loadWorkflow()
     loadExecutions()
-  }, [workflowId])
+  }, [workflowId, loadWorkflow, loadExecutions])
 
-  const loadWorkflow = async () => {
+  const loadWorkflow = useCallback(async () => {
     try {
       const response = await fetch(`/api/automations/${workflowId}`)
       if (response.ok) {
@@ -38,9 +38,9 @@ export default function WorkflowDetailsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [workflowId])
 
-  const loadExecutions = async () => {
+  const loadExecutions = useCallback(async () => {
     try {
       const response = await fetch(`/api/automations/${workflowId}/executions`)
       if (response.ok) {
@@ -50,7 +50,7 @@ export default function WorkflowDetailsPage() {
     } catch (error) {
       console.error('Error loading executions:', error)
     }
-  }
+  }, [workflowId])
 
   const handleSave = async (workflowData: Partial<Workflow>) => {
     try {
@@ -332,7 +332,7 @@ export default function WorkflowDetailsPage() {
                       <Clock className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                       <p className="text-muted-foreground">No executions yet</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        This workflow hasn't been triggered yet
+                        This workflow hasn&apos;t been triggered yet
                       </p>
                     </CardContent>
                   </Card>

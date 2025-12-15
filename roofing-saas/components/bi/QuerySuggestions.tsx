@@ -8,7 +8,6 @@ import {
   Calendar,
   Target,
   BarChart3,
-  PieChart,
   Activity,
   Clock,
   Star,
@@ -237,7 +236,7 @@ export function QuerySuggestions({
 
       {/* Suggestions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.entries(filteredSuggestions).map(([category, categorySuggestions]) =>
+        {Object.entries(filteredSuggestions).map(([_category, categorySuggestions]) =>
           categorySuggestions.slice(0, selectedCategory ? 20 : 6).map((suggestion) => (
             <SuggestionCard
               key={suggestion.id}

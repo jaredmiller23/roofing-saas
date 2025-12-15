@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { useTheme } from '@/lib/hooks/useTheme'
 import { Monitor, Moon, Sun } from 'lucide-react'
@@ -64,7 +63,7 @@ export function AppearanceSettings() {
             Theme Preference
           </CardTitle>
           <CardDescription>
-            Choose how the application should appear. System theme automatically adapts to your device's theme settings.
+            Choose how the application should appear. System theme automatically adapts to your device&apos;s theme settings.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -139,7 +138,7 @@ export function AppearanceSettings() {
               • <strong>Dark theme:</strong> Reduced eye strain in low-light conditions
             </p>
             <p className="text-muted-foreground">
-              • <strong>System theme:</strong> Automatically switches based on your device's time-of-day settings
+              • <strong>System theme:</strong> Automatically switches based on your device&apos;s time-of-day settings
             </p>
           </div>
         </CardContent>

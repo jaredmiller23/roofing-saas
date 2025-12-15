@@ -79,7 +79,7 @@ export function RevenueForecast({ data, onPeriodClick, loading, className }: Rev
     return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`
   }
 
-  const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
+  const _getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
     switch (confidence) {
       case 'high': return 'bg-green-500'
       case 'medium': return 'bg-yellow-500'

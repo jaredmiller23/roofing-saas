@@ -33,7 +33,7 @@ interface ScoringConfig {
   rules: ScoringRules
 }
 
-export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
+export function ScoringSettingsClient({ user: _user }: ScoringSettingsClientProps) {
   const [config, setConfig] = useState<ScoringConfig>({
     enabled: true,
     autoUpdate: true,
@@ -90,7 +90,7 @@ export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
     toast.info('Configuration reset to defaults')
   }
 
-  const updatePropertyValueRange = (index: number, field: keyof PropertyValueRange, value: any) => {
+  const updatePropertyValueRange = (index: number, field: keyof PropertyValueRange, value: string | number) => {
     const newRanges = [...config.rules.propertyValueRanges]
     newRanges[index] = { ...newRanges[index], [field]: value }
     setConfig({
@@ -99,7 +99,7 @@ export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
     })
   }
 
-  const updateRoofAgeMultiplier = (index: number, field: keyof RoofAgeMultiplier, value: any) => {
+  const updateRoofAgeMultiplier = (index: number, field: keyof RoofAgeMultiplier, value: string | number) => {
     const newMultipliers = [...config.rules.roofAgeMultipliers]
     newMultipliers[index] = { ...newMultipliers[index], [field]: value }
     setConfig({
@@ -108,7 +108,7 @@ export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
     })
   }
 
-  const updateSourceWeight = (index: number, field: keyof SourceWeight, value: any) => {
+  const updateSourceWeight = (index: number, field: keyof SourceWeight, value: string | number) => {
     const newWeights = [...config.rules.sourceWeights]
     newWeights[index] = { ...newWeights[index], [field]: value }
     setConfig({
@@ -428,7 +428,7 @@ export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
                         min="0"
                         max="1"
                         value={weight}
-                        onChange={(e) => updateCategoryWeight(category as any, parseFloat(e.target.value))}
+                        onChange={(e) => updateCategoryWeight(category as keyof typeof config.rules.categoryWeights, parseFloat(e.target.value))}
                       />
                     </div>
                   </div>
