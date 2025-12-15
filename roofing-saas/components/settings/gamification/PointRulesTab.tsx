@@ -24,7 +24,7 @@ import {
 import { PointRuleFormDialog } from './dialogs/PointRuleFormDialog'
 import type { PointRuleConfigDB } from '@/lib/gamification/types'
 
-// Pre-built point rule templates
+// Pre-built point rule templates - using semantic theme tokens
 const POINT_RULE_TEMPLATES = [
   {
     id: 'contact-created',
@@ -34,8 +34,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Lead Generation',
     description: 'Award points when a new contact is added to the system',
     icon: Users,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'contact-qualified',
@@ -45,8 +45,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Lead Generation',
     description: 'Award points when a contact is qualified as a sales lead',
     icon: CheckCircle,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'call-completed',
@@ -56,8 +56,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Communication',
     description: 'Award points for each completed phone call',
     icon: Phone,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'email-sent',
@@ -67,8 +67,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Communication',
     description: 'Award points for each email sent to a contact',
     icon: Mail,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'sms-sent',
@@ -78,8 +78,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Communication',
     description: 'Award points for each SMS message sent',
     icon: MessageSquare,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'appointment-set',
@@ -89,8 +89,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Communication',
     description: 'Award points when an appointment is scheduled',
     icon: Calendar,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'photo-uploaded',
@@ -100,8 +100,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Field Work',
     description: 'Award points for each property photo uploaded',
     icon: Camera,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'territory-created',
@@ -111,8 +111,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Field Work',
     description: 'Award points when a new territory is mapped',
     icon: MapPin,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'project-created',
@@ -122,8 +122,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Sales',
     description: 'Award points when a new project is created',
     icon: FileText,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'project-won',
@@ -133,8 +133,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Sales',
     description: 'Award points when a project is marked as won',
     icon: DollarSign,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'door-knock-logged',
@@ -144,8 +144,8 @@ const POINT_RULE_TEMPLATES = [
     category: 'Field Work',
     description: 'Award points for each door knock logged',
     icon: TrendingUp,
-    color: 'text-violet-600',
-    bgColor: 'bg-violet-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   }
 ]
 
@@ -360,7 +360,7 @@ export function PointRulesTab() {
                     {rules.map(rule => (
                       <div
                         key={rule.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                        className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                       >
                         <div className="flex items-center gap-4">
                           <Switch
@@ -374,7 +374,7 @@ export function PointRulesTab() {
                                 {rule.points_value} points
                               </Badge>
                               {rule.is_active ? (
-                                <span className="text-xs text-green-600">Active</span>
+                                <span className="text-xs text-primary">Active</span>
                               ) : (
                                 <span className="text-xs text-muted-foreground">Inactive</span>
                               )}
@@ -384,7 +384,7 @@ export function PointRulesTab() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => deletePointRule(rule.id)}
                         >
                           <Trash2 className="h-4 w-4" />

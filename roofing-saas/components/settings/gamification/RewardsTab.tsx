@@ -18,7 +18,7 @@ import {
 import { RewardFormDialog } from './dialogs/RewardFormDialog'
 import type { RewardConfigDB } from '@/lib/gamification/types'
 
-// Pre-built reward templates
+// Pre-built reward templates - using semantic theme tokens
 const REWARD_TEMPLATES = [
   {
     id: 'gift-card-25',
@@ -29,8 +29,8 @@ const REWARD_TEMPLATES = [
     reward_value: '$25',
     quantity_available: 10,
     icon: CreditCard,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'gift-card-50',
@@ -41,8 +41,8 @@ const REWARD_TEMPLATES = [
     reward_value: '$50',
     quantity_available: 5,
     icon: CreditCard,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'bonus-100',
@@ -53,8 +53,8 @@ const REWARD_TEMPLATES = [
     reward_value: '$100',
     quantity_available: 3,
     icon: DollarSign,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'pto-day',
@@ -65,8 +65,8 @@ const REWARD_TEMPLATES = [
     reward_value: '1 day',
     quantity_available: 10,
     icon: CalendarIcon,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'prize-hoodie',
@@ -77,8 +77,8 @@ const REWARD_TEMPLATES = [
     reward_value: 'Premium Hoodie',
     quantity_available: 20,
     icon: Package,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'prize-hat',
@@ -89,8 +89,8 @@ const REWARD_TEMPLATES = [
     reward_value: 'Trucker Cap',
     quantity_available: 50,
     icon: Package,
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   }
 ]
 
@@ -321,7 +321,7 @@ export function RewardsTab() {
                       return (
                         <div
                           key={reward.id}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                          className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                         >
                           <div className="flex items-center gap-4">
                             <Switch
@@ -340,7 +340,7 @@ export function RewardsTab() {
                                   </Badge>
                                 )}
                                 {reward.is_active ? (
-                                  <span className="text-xs text-green-600">Active</span>
+                                  <span className="text-xs text-primary">Active</span>
                                 ) : (
                                   <span className="text-xs text-muted-foreground">Inactive</span>
                                 )}
@@ -350,7 +350,7 @@ export function RewardsTab() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => deleteReward(reward.id)}
                           >
                             <Trash2 className="h-4 w-4" />

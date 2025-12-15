@@ -136,11 +136,11 @@ export function KpisTab() {
                 return (
                   <div
                     key={kpi.id}
-                    className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
+                    className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2 rounded-lg bg-card">
-                        <Icon className="h-5 w-5 text-blue-600" />
+                        <Icon className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <h4 className="font-medium text-foreground">{kpi.name}</h4>
@@ -155,7 +155,7 @@ export function KpisTab() {
                             System
                           </Badge>
                           {kpi.is_active ? (
-                            <span className="text-xs text-green-600">Active</span>
+                            <span className="text-xs text-primary">Active</span>
                           ) : (
                             <span className="text-xs text-muted-foreground">Inactive</span>
                           )}
@@ -210,7 +210,7 @@ export function KpisTab() {
                 return (
                   <div
                     key={kpi.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                    className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                   >
                     <div className="flex items-center gap-4">
                       <Switch
@@ -218,7 +218,7 @@ export function KpisTab() {
                         onCheckedChange={(checked: boolean) => toggleKpi(kpi.id, checked)}
                       />
                       <div className="p-2 rounded-lg bg-card">
-                        <Icon className="h-5 w-5 text-purple-600" />
+                        <Icon className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <h4 className="font-medium text-foreground">{kpi.name}</h4>
@@ -230,7 +230,7 @@ export function KpisTab() {
                             {kpi.frequency}
                           </Badge>
                           {kpi.is_active ? (
-                            <span className="text-xs text-green-600">Active</span>
+                            <span className="text-xs text-primary">Active</span>
                           ) : (
                             <span className="text-xs text-muted-foreground">Inactive</span>
                           )}
@@ -243,7 +243,7 @@ export function KpisTab() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => deleteKpi(kpi.id, kpi.is_system)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -264,8 +264,8 @@ export function KpisTab() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">1</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">1</span>
               </div>
               <h4 className="font-medium">Define Metric</h4>
               <p className="text-sm text-muted-foreground mt-1">
@@ -273,8 +273,8 @@ export function KpisTab() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">2</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">2</span>
               </div>
               <h4 className="font-medium">Auto Calculate</h4>
               <p className="text-sm text-muted-foreground mt-1">
@@ -282,8 +282,8 @@ export function KpisTab() {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span className="text-blue-600 font-bold">3</span>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <span className="text-primary font-bold">3</span>
               </div>
               <h4 className="font-medium">Track Progress</h4>
               <p className="text-sm text-muted-foreground mt-1">

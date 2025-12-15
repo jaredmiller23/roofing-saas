@@ -16,7 +16,7 @@ import { ChallengeFormDialog } from './dialogs/ChallengeFormDialog'
 import type { ChallengeConfigDB } from '@/lib/gamification/types'
 import { format, isAfter, isBefore } from 'date-fns'
 
-// Pre-built challenge templates
+// Pre-built challenge templates - using semantic theme tokens
 const CHALLENGE_TEMPLATES = [
   {
     id: 'weekly-doors',
@@ -30,8 +30,8 @@ const CHALLENGE_TEMPLATES = [
     reward_description: '',
     duration_days: 7,
     icon: '🚪',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'monthly-sales',
@@ -46,8 +46,8 @@ const CHALLENGE_TEMPLATES = [
     reward_description: '$100 bonus',
     duration_days: 30,
     icon: '💰',
-    color: 'text-green-600',
-    bgColor: 'bg-green-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'daily-calls',
@@ -61,8 +61,8 @@ const CHALLENGE_TEMPLATES = [
     reward_description: '',
     duration_days: 1,
     icon: '📞',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   },
   {
     id: 'photo-challenge',
@@ -76,8 +76,8 @@ const CHALLENGE_TEMPLATES = [
     reward_description: '',
     duration_days: 7,
     icon: '📸',
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-50'
+    color: 'text-primary',
+    bgColor: 'bg-muted'
   }
 ]
 
@@ -272,7 +272,7 @@ export function ChallengesTab() {
               {activeChallenges.map(challenge => (
                 <div
                   key={challenge.id}
-                  className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200"
+                  className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                 >
                   <div className="flex items-center gap-4">
                     <Switch
@@ -294,7 +294,7 @@ export function ChallengesTab() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => deleteChallenge(challenge.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -318,10 +318,10 @@ export function ChallengesTab() {
               {upcomingChallenges.map(challenge => (
                 <div
                   key={challenge.id}
-                  className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200"
+                  className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border"
                 >
                   <div className="flex items-center gap-4">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                    <Clock className="h-5 w-5 text-primary" />
                     <div>
                       <h4 className="font-medium text-foreground">{challenge.title}</h4>
                       <span className="text-xs text-muted-foreground">
@@ -332,7 +332,7 @@ export function ChallengesTab() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => deleteChallenge(challenge.id)}
                   >
                     <Trash2 className="h-4 w-4" />

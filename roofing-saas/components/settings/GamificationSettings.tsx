@@ -24,7 +24,7 @@ export function GamificationSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
+            <Trophy className="h-5 w-5 text-primary" />
             <CardTitle>Gamification Settings</CardTitle>
           </div>
           <CardDescription>
@@ -38,35 +38,35 @@ export function GamificationSettings() {
         <TabsList className="grid w-full grid-cols-5 h-auto">
           <TabsTrigger
             value="point-rules"
-            className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white px-4 py-3"
+            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-3"
           >
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Point Rules</span>
           </TabsTrigger>
           <TabsTrigger
             value="achievements"
-            className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white px-4 py-3"
+            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-3"
           >
             <Award className="h-4 w-4" />
             <span className="hidden sm:inline">Achievements</span>
           </TabsTrigger>
           <TabsTrigger
             value="challenges"
-            className="flex items-center gap-2 data-[state=active]:bg-orange-600 data-[state=active]:text-white px-4 py-3"
+            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-3"
           >
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Challenges</span>
           </TabsTrigger>
           <TabsTrigger
             value="rewards"
-            className="flex items-center gap-2 data-[state=active]:bg-pink-600 data-[state=active]:text-white px-4 py-3"
+            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-3"
           >
             <Gift className="h-4 w-4" />
             <span className="hidden sm:inline">Rewards</span>
           </TabsTrigger>
           <TabsTrigger
             value="kpis"
-            className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white px-4 py-3"
+            className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-3"
           >
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">KPIs</span>
