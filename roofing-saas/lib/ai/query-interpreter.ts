@@ -114,9 +114,12 @@ export class QueryInterpreter {
 
     for (const [type, pattern] of Object.entries(patterns)) {
       if (pattern.test(query)) {
-        const confidence = query.match(pattern)?.[0].length || 0
-        if (confidence > bestMatch.confidence) {
-          bestMatch = { type: type as keyof typeof patterns, confidence: confidence / query.length }
+        const matchLength = query.match(pattern)?.[0].length || 0
+        // Give count patterns higher priority
+        const priorityBonus = type === 'count' ? 0.5 : 0
+        const normalizedConfidence = (matchLength / query.length) + priorityBonus
+        if (normalizedConfidence > bestMatch.confidence) {
+          bestMatch = { type: type as keyof typeof patterns, confidence: normalizedConfidence }
         }
       }
     }
@@ -155,7 +158,9 @@ export class QueryInterpreter {
     for (const [tableName, config] of Object.entries(SCHEMA_MAPPING)) {
       const allNames = [tableName, ...config.commonNames]
       for (const name of allNames) {
-        if (query.includes(name)) {
+        // Use word boundary regex to avoid partial matches
+        const wordPattern = new RegExp(`\\b${name.toLowerCase()}\\b`, 'i')
+        if (wordPattern.test(query)) {
           entities.push({
             name: tableName,
             type: 'table',

@@ -2,67 +2,42 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Standardize UI patterns across the application for consistency and maintainability.
-
-
-    Phase 1 Focus Areas:
-
-    1. Replace all hardcoded colors with theme variables
-
-    2. Standardize loading states with skeleton components
-
-    3. Create consistent empty state patterns
-
-    4. Standardize form layouts (spacing, labels, errors)
-
-    5. Ensure all buttons use the shadcn/ui Button component
-
-
-    Patterns to Enforce:
-
-    - NO hardcoded colors (bg-white, text-gray-500, etc.)
-
-    - Use bg-background, bg-card, text-foreground, text-muted-foreground
-
-    - Use border-border instead of border-gray-*
-
-    - All interactive elements use shadcn components
-
-
-    Key Files to Audit:
-
-    - Dashboard components
-
-    - Settings pages
-
-    - Pipeline views
-
-    - Any pages with inline styles
-
-
-    DO NOT BREAK EXISTING FUNCTIONALITY. Only change styling, not behavior.
-
-    '
+  goal: "Remove eslint-disable comments that were added as shortcuts and fix the\n\
+    underlying code issues properly.\n\nFiles with shortcuts to fix:\n\n1. app/(dashboard)/insights/insights-client.tsx\n\
+    \   - Line 41: eslint-disable-next-line react-hooks/exhaustive-deps\n   - Fix:\
+    \ Wrap loadSuggestions and loadQueryHistory in useCallback, add to deps\n\n2.\
+    \ components/automation/WorkflowCanvas.tsx\n   - Line 106: eslint-disable-next-line\
+    \ @typescript-eslint/no-explicit-any\n   - Fix: Create proper ActionConfig interface\
+    \ for workflow action configs\n\n3. lib/realtime/channel-manager.ts\n   - Line\
+    \ 572: eslint-disable-next-line @typescript-eslint/no-explicit-any\n   - Fix:\
+    \ Create SupabasePresencePayload interface for presence callbacks\n\nProper Fixes\
+    \ Required:\n\nFor useEffect dependencies:\n```typescript\nconst loadSuggestions\
+    \ = useCallback(async () => {\n  // existing code\n}, [userRole, tenantId])\n\n\
+    const loadQueryHistory = useCallback(async () => {\n  // existing code\n}, [tenantId,\
+    \ userId])\n\nuseEffect(() => {\n  loadSuggestions()\n  loadQueryHistory()\n},\
+    \ [loadSuggestions, loadQueryHistory])\n```\n\nFor any types - create interfaces:\n\
+    ```typescript\ninterface SupabasePresencePayload {\n  userId: string\n  userName:\
+    \ string\n  userEmail: string\n  userAvatar?: string\n  joinedAt: string\n  metadata?:\
+    \ Record<string, unknown>\n}\n```\n"
   success_criteria:
-  - No hardcoded color classes in components
-  - Skeleton loading states in list views
-  - Empty states for all list components
-  - Form layouts follow consistent pattern
-  - All buttons use Button component
-  why: 'Research Finding: Mixed component patterns create maintenance nightmare.
+  - No eslint-disable comments in the three specified files
+  - useEffect in insights-client.tsx has correct dependencies
+  - Proper TypeScript interfaces replace all `any` types
+  - npm run lint passes with 0 warnings in modified files
+  - npm run typecheck passes
+  why: 'ESLint warnings exist for a reason. Suppressing them without fixing the
 
-    Technical debt accumulating with multiple implementation patterns.
+    underlying issue is technical debt that compounds over time.
 
 
-    Problems:
+    - react-hooks/exhaustive-deps prevents stale closure bugs
 
-    - Inconsistent visual appearance across modules
+    - no-explicit-any ensures type safety throughout the codebase
 
-    - Dark mode support impossible with hardcoded colors
 
-    - Difficult to maintain and update styles
+    These shortcuts were added to unblock a commit, but the proper fix should
 
-    - Poor developer experience
+    have been done from the start. This task corrects that mistake.
 
     '
 dependencies: null
@@ -76,11 +51,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T18:00:00'
-  id: SPRINT2-003
+  created: '2025-12-15T09:00:00'
+  id: CLEANUP-001
   priority: 2
   template: code-modification
-  title: UI Consistency Standardization Phase 1
+  title: Remove ESLint Shortcuts - Fix Code Properly
 on_failure:
   escalate:
     include:
@@ -88,64 +63,57 @@ on_failure:
     - files_modified
     to: human
   rollback:
-  - git stash
+  - git checkout -- app/(dashboard)/insights/insights-client.tsx
+  - git checkout -- components/automation/WorkflowCanvas.tsx
+  - git checkout -- lib/realtime/channel-manager.ts
 read_first:
 - extract: []
-  path: components/ui/button.tsx
-  reason: Standard button component to use
+  path: app/(dashboard)/insights/insights-client.tsx
+  reason: Understand the useEffect pattern and what needs useCallback
   required: true
 - extract: []
-  path: components/territories/TerritoryMapDirect.tsx
-  reason: Has 6 hardcoded colors - highest priority
+  path: lib/realtime/channel-manager.ts
+  reason: Understand Supabase presence callback structure
   required: true
 - extract: []
-  path: components/projects/TemplateSelector.tsx
-  reason: Has 4 hardcoded colors - high priority
+  path: components/automation/WorkflowCanvas.tsx
+  reason: Understand workflow action config structure
+  required: true
+- extract: []
+  path: lib/automation/workflow-types.ts
+  reason: Existing workflow type definitions
   required: true
 scope:
   constraints: []
-  create: []
+  create:
+  - lib/types/supabase-presence.ts
   do_not_touch:
-  - components/ui/button.tsx
-  - components/ui/input.tsx
-  - components/ui/select.tsx
-  - lib/validations/**
-  - app/api/**
+  - Any files not listed above
+  - Test files
   modify:
-  - components/territories/TerritoryMapDirect.tsx
-  - components/territories/TerritoryMapClient.tsx
-  - components/projects/TemplateSelector.tsx
-  - components/projects/TemplateLibrary.tsx
-  - components/tasks/TasksList.tsx
-  - components/substatus/SubstatusBadge.tsx
-  - components/storm/StormResponseMode.tsx
-  - components/knocks/KnockLogger.tsx
+  - app/(dashboard)/insights/insights-client.tsx
   - components/automation/WorkflowCanvas.tsx
-  - components/analytics/ConversionFunnel.tsx
-  - components/admin/AuditLogsTable.tsx
-  - components/voice/VoiceDiagnostics.tsx
-  - components/ui/switch.tsx
-  - components/territories/PinPopup.tsx
-  - components/project-files/FileVersionHistory.tsx
+  - lib/realtime/channel-manager.ts
 thinking:
-  level: think_hard
+  level: think
   triggers:
-  - Before establishing pattern for skeleton states
-  - When deciding empty state design
+  - When designing the presence payload interface
+  - When restructuring useEffect dependencies
 validation:
   assertions: []
   post_commit: []
   pre_commit:
+  - command: grep -r 'eslint-disable' app/(dashboard)/insights/insights-client.tsx
+      components/automation/WorkflowCanvas.tsx lib/realtime/channel-manager.ts | wc
+      -l
+    expect: 'output: 0'
+    required: true
+    timeout: 60
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 120
+    timeout: 60
   - command: npm run lint -- --max-warnings 0
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: '! grep -rE ''bg-white|bg-gray-|text-gray-|border-gray-'' components/territories/
-      components/projects/ --include=''*.tsx'' 2>/dev/null | head -1'
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 30
