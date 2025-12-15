@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-realtime-preview-2024-12-17',
+        model: 'gpt-realtime',
         voice: 'alloy',
       }),
     })
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         project_id: project_id || null,
         context: context || {},
         connection_info: {
-          model: 'gpt-4o-realtime-preview-2024-12-17',
+          model: 'gpt-realtime',
           voice: 'alloy',
         },
       })

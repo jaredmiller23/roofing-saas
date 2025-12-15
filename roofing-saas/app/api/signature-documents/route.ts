@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
         signatures(*)
       `)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .order('created_at', { ascending: false })
 
     if (status) {

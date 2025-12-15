@@ -9,6 +9,9 @@ import { TemplateSettings } from './TemplateSettings'
 import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
 import { AppearanceSettings } from './appearance-settings'
+import { CallComplianceSettings } from './CallComplianceSettings'
+import { GamificationSettings } from './GamificationSettings'
+import { IntegrationsSettings } from './IntegrationsSettings'
 import {
   Settings,
   Palette,
@@ -16,7 +19,11 @@ import {
   FileText,
   Shield,
   Tag,
-  Monitor
+  Monitor,
+  Zap,
+  PhoneOff,
+  Trophy,
+  Plug
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -81,6 +88,34 @@ export function SettingsTabs() {
               <Tag className="h-4 w-4" />
               Substatuses
             </TabsTrigger>
+            <TabsTrigger
+              value="automations"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <Zap className="h-4 w-4" />
+              Automations
+            </TabsTrigger>
+            <TabsTrigger
+              value="compliance"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <PhoneOff className="h-4 w-4" />
+              Compliance
+            </TabsTrigger>
+            <TabsTrigger
+              value="gamification"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <Trophy className="h-4 w-4" />
+              Incentives
+            </TabsTrigger>
+            <TabsTrigger
+              value="integrations"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <Plug className="h-4 w-4" />
+              Integrations
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -109,6 +144,52 @@ export function SettingsTabs() {
 
           <TabsContent value="substatuses">
             <SubstatusSettings />
+          </TabsContent>
+
+          <TabsContent value="automations">
+            <div className="space-y-6">
+              <div className="text-center py-12">
+                <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Workflow Automation Settings</h3>
+                <p className="text-muted-foreground mb-6">
+                  Configure global automation settings and preferences
+                </p>
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="text-left space-y-2">
+                    <h4 className="font-medium">Automation features:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Visual workflow builder available at /automations</li>
+                      <li>• Trigger-based automation system</li>
+                      <li>• Email and SMS action support</li>
+                      <li>• Task creation and field updates</li>
+                      <li>• Webhook integrations</li>
+                      <li>• Pre-built workflow templates</li>
+                    </ul>
+                  </div>
+                  <div className="pt-4">
+                    <a
+                      href="/automations"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
+                      <Zap className="h-4 w-4 mr-2" />
+                      Go to Automations
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="compliance">
+            <CallComplianceSettings />
+          </TabsContent>
+
+          <TabsContent value="gamification">
+            <GamificationSettings />
+          </TabsContent>
+
+          <TabsContent value="integrations">
+            <IntegrationsSettings />
           </TabsContent>
         </Tabs>
       </div>

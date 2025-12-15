@@ -252,6 +252,7 @@ export function VoiceSession({
     } catch (error) {
       const err = error as Error
       console.error('Failed to start voice session:', err)
+      console.error('Error stack:', err.stack)
       setStatus('error')
       setErrorMessage(err.message)
       onError?.(err)

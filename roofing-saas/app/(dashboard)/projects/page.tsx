@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
 import { LeadsWithFilters } from '@/components/projects/leads-with-filters'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, Table, Plus } from 'lucide-react'
+import { LayoutGrid, Table, Plus, BarChart3 } from 'lucide-react'
 
 /**
  * Unified Pipeline Page
@@ -69,6 +69,14 @@ export default function ProjectsPage() {
                   <span className="hidden sm:inline">Table</span>
                 </button>
               </div>
+
+              {/* Analytics Button */}
+              <Link href="/pipeline/analytics">
+                <Button variant="outline" className="gap-2 w-full sm:w-auto">
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </Button>
+              </Link>
 
               {/* Add New Button */}
               <Link href="/contacts/new">

@@ -2,100 +2,71 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Implement advanced pipeline analytics with conversion funnels,\nvelocity\
-    \ tracking, and predictive forecasting.\n\nFeatures to implement:\n1. Visual conversion\
-    \ funnel with drop-off analysis\n2. Pipeline velocity metrics (days in each stage)\n\
-    3. Win/loss analysis with reasons\n4. Revenue forecasting based on pipeline\n\
-    5. Team performance comparisons\n\nKey Metrics:\n- Stage conversion rates\n- Average\
-    \ time in each stage\n- Pipeline velocity trend\n- Win rate by lead source\n-\
-    \ Lost deal reasons distribution\n- Revenue forecast (30/60/90 day)\n\nVisualization\
-    \ Types:\n- Funnel chart (stage progression)\n- Trend lines (velocity over time)\n\
-    - Heatmap (bottleneck identification)\n- Cohort analysis (lead source performance)\n\
-    \nDrill-Down Capabilities:\n- Click funnel stage \u2192 See deals\n- Click metric\
-    \ \u2192 See underlying data\n- Filter by date, rep, source\n"
+  goal: 'Fix the 404 error when clicking "Edit Project" from the project detail page.
+
+
+    Bug Report:
+
+    - Page: /pipeline
+
+    - Action: Click on project name to open detail, then click "Edit Project"
+
+    - Error: 404 page not found
+
+
+    Investigation Steps:
+
+    1. Find the Edit Project button/link in project detail
+
+    2. Check the href/route it navigates to
+
+    3. Verify the edit page route exists
+
+    4. Fix routing or create missing page
+
+    '
   success_criteria:
-  - Conversion funnel visualizes correctly
-  - Pipeline velocity calculates accurately
-  - Forecasting uses historical data
-  - Drill-down shows underlying deals
-  - Date range filtering works
-  why: 'Research Finding: Pipeline exists but lacks analytics.
+  - Edit Project button navigates to edit form
+  - Edit form loads and displays project data
+  - No 404 error
+  why: 'Users cannot edit projects, blocking a core workflow.
 
-    Industry Need: Data-driven sales optimization.
-
-
-    Business Impact:
-
-    - Identify bottlenecks before they hurt revenue
-
-    - 15% improvement in conversion through optimization
-
-    - Better sales forecasting accuracy
+    This is a critical navigation bug.
 
     '
 dependencies: null
-handoff:
-  format: null
-  progress_file: .vest/last_run_summary.md
-  update_on:
-  - task_start
-  - task_complete
-  - failure
+handoff: null
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T19:00:00'
-  id: SPRINT4-004
-  priority: 3
-  template: code-modification
-  title: Advanced Pipeline Analytics
-on_failure:
-  escalate:
-    include:
-    - error_output
-    - files_modified
-    to: human
-  rollback:
-  - git stash
+  created: '2025-12-15T00:00:00'
+  id: BUG-004
+  priority: 2
+  template: bug-fix
+  title: 'Fix: Edit Project 404 error'
+on_failure: null
 read_first:
 - extract: []
-  path: components/pipeline/PipelineBoard.tsx
-  reason: Pipeline structure and data
+  path: app/(dashboard)/projects/[id]/page.tsx
+  reason: Find Edit Project button
   required: true
 - extract: []
   path: app/(dashboard)/pipeline/page.tsx
-  reason: Pipeline page for analytics link
-  required: true
-- extract: []
-  path: lib/types/pipeline.ts
-  reason: Pipeline type definitions
+  reason: Check pipeline navigation
   required: false
 scope:
   constraints: []
   create:
-  - lib/analytics/pipeline-analytics.ts
-  - lib/analytics/forecasting.ts
-  - lib/analytics/analytics-types.ts
-  - components/analytics/ConversionFunnel.tsx
-  - components/analytics/VelocityChart.tsx
-  - components/analytics/WinLossAnalysis.tsx
-  - components/analytics/RevenueForcast.tsx
-  - components/analytics/PipelineInsights.tsx
-  - app/(dashboard)/pipeline/analytics/page.tsx
-  - app/api/analytics/pipeline/route.ts
-  - app/api/analytics/forecast/route.ts
+  - app/(dashboard)/projects/[id]/edit/page.tsx
   do_not_touch:
-  - app/api/pipeline/route.ts
-  - components/pipeline/PipelineColumn.tsx
+  - lib/supabase/server.ts
   modify:
-  - app/(dashboard)/pipeline/page.tsx
-  - components/pipeline/PipelineBoard.tsx
+  - app/(dashboard)/projects/[id]/**/*.tsx
+  - app/(dashboard)/pipeline/**/*.tsx
 thinking:
-  level: think_hard
+  level: think
   triggers:
-  - Before designing analytics calculations
-  - When planning forecasting algorithm
-  - When optimizing query performance
+  - When tracing navigation flow
 validation:
   assertions: []
   post_commit: []
@@ -103,20 +74,8 @@ validation:
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 120
+    timeout: 60
   - command: npm run lint -- --max-warnings 5
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f lib/analytics/pipeline-analytics.ts
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f components/analytics/ConversionFunnel.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f app/(dashboard)/pipeline/analytics/page.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60

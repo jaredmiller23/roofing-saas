@@ -47,6 +47,7 @@ export async function GET(
       `)
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (error || !document) {
@@ -111,6 +112,7 @@ export async function PATCH(
       .select('id')
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (!existing) {
@@ -122,6 +124,7 @@ export async function PATCH(
       .update(updates)
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .select()
       .single()
 
@@ -174,6 +177,7 @@ export async function DELETE(
       .select('id')
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (!existing) {

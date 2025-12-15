@@ -124,9 +124,9 @@ export class OpenAIProvider extends VoiceProvider {
     const offer = await pc.createOffer()
     await pc.setLocalDescription(offer)
 
-    // Send offer to OpenAI and get answer
+    // Send offer to OpenAI and get answer using the correct endpoint for gpt-realtime
     const sdpResponse = await fetch(
-      'https://api.openai.com/v1/realtime/sessions',
+      'https://api.openai.com/v1/realtime/calls',
       {
         method: 'POST',
         headers: {
@@ -134,14 +134,21 @@ export class OpenAIProvider extends VoiceProvider {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-realtime-preview-2024-12-17',
+          model: 'gpt-realtime',
           voice: sessionResponse.config?.voice || 'alloy',
+          offer: offer,
         }),
       }
     )
 
     if (!sdpResponse.ok) {
-      throw new Error('Failed to get SDP answer from OpenAI')
+      const errorText = await sdpResponse.text()
+      logger.error('Failed to get SDP answer from OpenAI', {
+        status: sdpResponse.status,
+        statusText: sdpResponse.statusText,
+        error: errorText
+      })
+      throw new Error(`Failed to get SDP answer from OpenAI: ${sdpResponse.status} ${sdpResponse.statusText} - ${errorText}`)
     }
 
     const sdpData = await sdpResponse.json()

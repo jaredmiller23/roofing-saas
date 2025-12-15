@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { VoiceSession } from '@/components/voice/VoiceSession'
 import { VoiceDiagnostics } from '@/components/voice/VoiceDiagnostics'
 import { getAvailableProviders, VoiceProviderType } from '@/lib/voice/providers'
-import { Mic, Info, AlertCircle } from 'lucide-react'
+import { Mic, Info, AlertCircle, RefreshCw } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Contact {
@@ -38,23 +38,38 @@ export default function VoiceAssistantPage() {
 
   const loadContextData = async () => {
     setIsLoadingData(true)
+    setError(null)
+
     try {
       const [contactsRes, projectsRes] = await Promise.all([
         fetch('/api/contacts?limit=50'),
         fetch('/api/projects?limit=50')
       ])
 
+      // Handle contacts response
       if (contactsRes.ok) {
         const contactsData = await contactsRes.json()
+        console.log('Contacts data:', contactsData)
         setContacts(contactsData.contacts || [])
+      } else {
+        const contactsError = await contactsRes.text()
+        console.error('Contacts API error:', contactsRes.status, contactsError)
+        setError(`Failed to load contacts: ${contactsRes.status} ${contactsError}`)
       }
 
+      // Handle projects response
       if (projectsRes.ok) {
         const projectsData = await projectsRes.json()
+        console.log('Projects data:', projectsData)
         setProjects(projectsData.projects || [])
+      } else {
+        const projectsError = await projectsRes.text()
+        console.error('Projects API error:', projectsRes.status, projectsError)
+        setError(`Failed to load projects: ${projectsRes.status} ${projectsError}`)
       }
     } catch (err) {
       console.error('Error loading context data:', err)
+      setError(`Network error loading context data: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoadingData(false)
     }
@@ -165,49 +180,100 @@ export default function VoiceAssistantPage() {
         {/* Context Selection */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Context (Optional)</CardTitle>
-            <CardDescription>Select a contact or project to provide context to ARIA</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Context (Optional)</CardTitle>
+                <CardDescription>
+                  Select a contact or project to provide context to ARIA
+                  {isLoadingData && " (Loading...)"}
+                  {!isLoadingData && (
+                    <span className="text-xs ml-2">
+                      ({contacts.length} contacts, {projects.length} projects)
+                    </span>
+                  )}
+                </CardDescription>
+              </div>
+              <button
+                onClick={loadContextData}
+                disabled={isLoadingData}
+                className="flex items-center gap-2 px-3 py-1 text-sm bg-muted hover:bg-muted/80 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh context data"
+              >
+                <RefreshCw className={`h-3 w-3 ${isLoadingData ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Contact
+                  Contact {isLoadingData && "(Loading...)"}
                 </label>
                 <select
                   value={selectedContact}
                   onChange={(e) => setSelectedContact(e.target.value)}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isLoadingData}
                 >
-                  <option value="">No contact selected</option>
-                  {contacts.map((contact) => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.first_name} {contact.last_name}
-                    </option>
-                  ))}
+                  {isLoadingData ? (
+                    <option value="">Loading contacts...</option>
+                  ) : contacts.length === 0 ? (
+                    <option value="">No contacts available</option>
+                  ) : (
+                    <>
+                      <option value="">No contact selected</option>
+                      {contacts.map((contact) => (
+                        <option key={contact.id} value={contact.id}>
+                          {contact.first_name} {contact.last_name}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  Project
+                  Project {isLoadingData && "(Loading...)"}
                 </label>
                 <select
                   value={selectedProject}
                   onChange={(e) => setSelectedProject(e.target.value)}
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isLoadingData}
                 >
-                  <option value="">No project selected</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
+                  {isLoadingData ? (
+                    <option value="">Loading projects...</option>
+                  ) : projects.length === 0 ? (
+                    <option value="">No projects available</option>
+                  ) : (
+                    <>
+                      <option value="">No project selected</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
             </div>
+
+            {/* Debug info */}
+            {!isLoadingData && (
+              <div className="mt-4 p-3 bg-muted rounded-md text-xs text-muted-foreground">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium">Contacts:</span> {contacts.length} loaded
+                  </div>
+                  <div>
+                    <span className="font-medium">Projects:</span> {projects.length} loaded
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -1,20 +1,14 @@
 {
-  "task_id": "SPRINT4-004",
+  "task_id": "BUG-004",
   "files_read": [
-    "components/pipeline/pipeline-column.tsx",
-    "components/pipeline/PipelineBoard.tsx",
-    ".aces/current_task.yaml",
-    "components/signatures/SignatureDocuments.tsx",
-    "components/pipeline/project-card.tsx",
-    "app/(dashboard)/projects/page.tsx",
-    "app/(dashboard)/pipeline/page.tsx",
-    "components/pipeline/pipeline-board.tsx",
     "lib/types/api.ts",
-    ".vest/hook_errors.jsonl"
+    "app/api/projects/[id]/route.ts",
+    "app/(dashboard)/projects/new/page.tsx",
+    "app/(dashboard)/pipeline/page.tsx",
+    "app/(dashboard)/projects/[id]/page.tsx",
+    "components/projects/project-form.tsx"
   ],
-  "files_modified": [
-    "lib/analytics/analytics-types.ts"
-  ],
+  "files_modified": [],
   "validation_passed": false,
   "progress_updated": false,
   "started_at": null,
