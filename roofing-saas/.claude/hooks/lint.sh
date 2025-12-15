@@ -3,8 +3,10 @@
 # Runs linting before code edits to catch style and potential issues
 # NOTE: Uses max-warnings to allow incremental fixes without blocking
 
-# Skip hook if HARNESS_MODE is set (for autonomous task execution)
-if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ]; then
+# Skip hook if harness mode detected via:
+# 1. ACES_TASK environment variable
+# 2. .aces/current_task.yaml file exists (harness creates this)
+if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ] || [ -f ".aces/current_task.yaml" ]; then
   echo "⚡ Harness mode - skipping pre-edit lint (will validate at end)"
   exit 0
 fi

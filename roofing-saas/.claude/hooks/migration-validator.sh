@@ -3,8 +3,11 @@
 # Validates Supabase migrations follow conventions and warns on destructive operations
 # Exit 0 = allow, Exit 2 = block
 
-# Skip hook if HARNESS_MODE is set (for autonomous task execution)
-if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ]; then
+# Skip hook if harness mode detected via:
+# 1. ACES_TASK environment variable
+# 2. .aces/current_task.yaml file exists (harness creates this)
+if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ] || [ -f ".aces/current_task.yaml" ]; then
+  echo "⚡ Harness mode - skipping migration validation (will validate at end)"
   exit 0
 fi
 
