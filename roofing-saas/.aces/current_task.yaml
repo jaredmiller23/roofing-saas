@@ -2,35 +2,72 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Fix the "Signature document not found not found" error displayed
+  goal: 'Implement a comprehensive audit trail system for compliance and
 
-    on the signatures page when clicking on a document.
+    data change tracking across the application.
 
 
-    Steps:
+    Features to implement:
 
-    1. Document the bug - reproduce and capture error details
+    1. Track all CRUD operations with user attribution
 
-    2. Investigate root cause - trace through signatures page code
+    2. Store before/after values for all changes
 
-    3. Plan fix - identify what needs to change
+    3. Audit log viewer in admin panel
 
-    4. Implement fix - make necessary code changes
+    4. Compliance reports (who changed what, when)
 
-    5. Validate - ensure fix works and doesn''t break other functionality
+    5. Data retention policy management
+
+
+    What to Track:
+
+    - Contact changes (all fields)
+
+    - Project status changes
+
+    - Estimate modifications
+
+    - User permission changes
+
+    - Settings changes
+
+    - Document access
+
+
+    Audit Entry Structure:
+
+    - Timestamp
+
+    - User ID and name
+
+    - Action type (create/update/delete)
+
+    - Entity type and ID
+
+    - Before/after JSON diff
+
+    - IP address and user agent
 
     '
   success_criteria:
-  - Bug is documented with reproduction steps
-  - Root cause is identified
-  - Fix is implemented and tested
-  - Error message is properly formatted if document not found
-  why: 'User reports error when clicking documents on signatures page.
+  - All entity changes are logged automatically
+  - Audit log viewer shows history with filters
+  - Can export audit reports
+  - Before/after values are captured
+  - Performance impact is minimal
+  why: 'Research Finding: Only admin impersonation tracking exists.
 
-    Error message shows ''not found'' duplicated - ''Signature document not found
-    not found''.
+    Compliance Need: Complete data change tracking for regulatory requirements.
 
-    This is a user-facing bug that needs immediate attention.
+
+    Business Impact:
+
+    - Reduced compliance risk
+
+    - Enables troubleshooting and rollback
+
+    - Required for enterprise customers
 
     '
 dependencies: null
@@ -44,11 +81,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T01:35:00'
-  id: BUG-001
+  created: '2025-12-14T19:00:00'
+  id: SPRINT3-005
   priority: 2
-  template: bug-fix
-  title: Fix Signature Document Not Found Error
+  template: code-modification
+  title: Comprehensive Audit Trail
 on_failure:
   escalate:
     include:
@@ -59,32 +96,43 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: app/(dashboard)/signatures/page.tsx
-  reason: Main signatures page to understand error source
+  path: app/api/contacts/route.ts
+  reason: API route pattern to add audit logging
   required: true
 - extract: []
-  path: components/signatures/SignatureDocuments.tsx
-  reason: Document list component
+  path: app/api/contacts/[id]/route.ts
+  reason: Update/delete patterns for audit
   required: true
 - extract: []
-  path: app/api/signatures/documents/[id]/route.ts
-  reason: API endpoint for document fetch
+  path: lib/auth/session.ts
+  reason: User context for audit entries
   required: true
 scope:
   constraints: []
-  create: []
+  create:
+  - lib/audit/audit-logger.ts
+  - lib/audit/audit-types.ts
+  - lib/audit/audit-middleware.ts
+  - app/(dashboard)/admin/audit-log/page.tsx
+  - components/admin/AuditLogTable.tsx
+  - components/admin/AuditLogFilters.tsx
+  - components/admin/AuditEntryDetail.tsx
+  - app/api/admin/audit-log/route.ts
+  - app/api/admin/audit-log/export/route.ts
   do_not_touch:
   - lib/supabase/server.ts
+  - database migrations
   modify:
-  - app/(dashboard)/signatures/page.tsx
-  - components/signatures/SignatureDocuments.tsx
-  - app/api/signatures/documents/route.ts
-  - app/api/signatures/documents/[id]/route.ts
+  - app/api/contacts/route.ts
+  - app/api/contacts/[id]/route.ts
+  - app/api/projects/route.ts
+  - app/api/projects/[id]/route.ts
 thinking:
   level: think_hard
   triggers:
-  - When identifying error source
-  - Before implementing fix
+  - Before designing audit log schema
+  - When planning middleware integration
+  - When optimizing storage strategy
 validation:
   assertions: []
   post_commit: []
@@ -92,12 +140,20 @@ validation:
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
+    timeout: 120
   - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run build
+  - command: test -f lib/audit/audit-logger.ts
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: test -f app/(dashboard)/admin/audit-log/page.tsx
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: grep -q "auditLog" app/api/contacts/route.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60

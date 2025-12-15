@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger'
 import type { ContactListResponse } from '@/lib/types/api'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 import { triggerWorkflow } from '@/lib/automation/engine'
+import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
 
 /**
  * GET /api/contacts
@@ -143,6 +144,12 @@ export async function POST(request: NextRequest) {
       throw AuthorizationError('User is not associated with a tenant')
     }
 
+    // Get audit context for logging
+    const auditContext = await getAuditContext(request)
+    if (!auditContext) {
+      throw AuthenticationError('Failed to get audit context')
+    }
+
     logger.apiRequest('POST', '/api/contacts', { tenantId, userId: user.id })
 
     const body = await request.json()
@@ -155,24 +162,37 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Create contact
-    const { data: contact, error } = await supabase
-      .from('contacts')
-      .insert({
-        ...validatedData.data,
-        tenant_id: tenantId,
-        created_by: user.id,
-      })
-      .select()
-      .single()
+    // Create contact with audit logging
+    const contact = await auditedCreate(
+      'contact',
+      async () => {
+        const { data, error } = await supabase
+          .from('contacts')
+          .insert({
+            ...validatedData.data,
+            tenant_id: tenantId,
+            created_by: user.id,
+          })
+          .select()
+          .single()
 
-    if (error) {
-      // Handle duplicate email
-      if (error.code === '23505') {
-        throw ConflictError('A contact with this email already exists', { email: validatedData.data.email })
+        if (error) {
+          // Handle duplicate email
+          if (error.code === '23505') {
+            throw ConflictError('A contact with this email already exists', { email: validatedData.data.email })
+          }
+          throw mapSupabaseError(error)
+        }
+
+        return data
+      },
+      auditContext,
+      {
+        operation: 'contact_creation',
+        source: 'api',
+        contact_type: validatedData.data.type
       }
-      throw mapSupabaseError(error)
-    }
+    )
 
     // Award points for creating a contact (non-blocking)
     awardPointsSafe(

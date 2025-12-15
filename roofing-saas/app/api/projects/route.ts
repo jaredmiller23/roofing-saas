@@ -4,6 +4,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
 
 /**
  * Projects API
@@ -154,25 +155,47 @@ export async function POST(request: NextRequest) {
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    const body = await request.json()
-    const supabase = await createClient()
-
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({
-        ...body,
-        tenant_id: tenantId,
-        created_by: user.id,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      logger.error('Project creation error', { error })
-      throw InternalError('Failed to create project')
+    // Get audit context for logging
+    const auditContext = await getAuditContext(request)
+    if (!auditContext) {
+      throw AuthenticationError('Failed to get audit context')
     }
 
-    return createdResponse({ project: data })
+    const body = await request.json()
+
+    // Create project with audit logging
+    const project = await auditedCreate(
+      'project',
+      async () => {
+        const supabase = await createClient()
+
+        const { data, error } = await supabase
+          .from('projects')
+          .insert({
+            ...body,
+            tenant_id: tenantId,
+            created_by: user.id,
+          })
+          .select()
+          .single()
+
+        if (error) {
+          logger.error('Project creation error', { error })
+          throw InternalError('Failed to create project')
+        }
+
+        return data
+      },
+      auditContext,
+      {
+        operation: 'project_creation',
+        source: 'api',
+        project_type: body.type,
+        estimated_value: body.estimated_value
+      }
+    )
+
+    return createdResponse({ project })
   } catch (error) {
     logger.error('Error in POST /api/projects', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

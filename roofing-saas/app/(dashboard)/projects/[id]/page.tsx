@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send } from 'lucide-react'
+import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
 import { QuoteProposalView } from '@/components/estimates/QuoteProposalView'
@@ -13,6 +14,10 @@ import { Button } from '@/components/ui/button'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 import type { QuoteOption } from '@/lib/types/quote-option'
+import { PresenceIndicator } from '@/components/collaboration/PresenceIndicator'
+import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
+import { usePresence, type PresenceUser } from '@/lib/hooks/usePresence'
+import { createClient } from '@/lib/supabase/client'
 
 interface Project {
   id: string
@@ -87,6 +92,49 @@ export default function ProjectDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [startingProduction, setStartingProduction] = useState(false)
   const [loadingQuoteOptions, setLoadingQuoteOptions] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{
+    id: string
+    email?: string
+    name?: string
+    avatar?: string
+  } | null>(null)
+
+  // Get current user for presence tracking
+  useEffect(() => {
+    async function fetchUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUser({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || user.user_metadata?.full_name,
+          avatar: user.user_metadata?.avatar_url,
+        })
+      }
+    }
+    fetchUser()
+  }, [])
+
+  // Track presence for this project
+  const { presentUsers, count } = usePresence({
+    entityType: 'project',
+    entityId: projectId,
+    user: currentUser || { id: '', name: '', email: '', avatar: '' },
+    enabled: !!currentUser,
+    onUserJoin: (presenceUser: PresenceUser) => {
+      const userName = presenceUser.userName || presenceUser.userEmail || 'Someone'
+      toast.custom(() => (
+        <RealtimeToast {...realtimeToastPresets.userJoined(userName, presenceUser.userAvatar)} />
+      ))
+    },
+    onUserLeave: (presenceUser: PresenceUser) => {
+      const userName = presenceUser.userName || presenceUser.userEmail || 'Someone'
+      toast.custom(() => (
+        <RealtimeToast {...realtimeToastPresets.userLeft(userName, presenceUser.userAvatar)} />
+      ))
+    },
+  })
 
   useEffect(() => {
     fetchProjectData()
@@ -281,8 +329,20 @@ export default function ProjectDetailPage() {
             ← Back to Projects
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
+                {/* Presence Indicator */}
+                {currentUser && (
+                  <PresenceIndicator
+                    entityType="project"
+                    entityId={projectId}
+                    user={currentUser}
+                    size="sm"
+                    maxDisplay={3}
+                  />
+                )}
+              </div>
               {project.project_number && (
                 <p className="text-sm text-muted-foreground mt-1">Project #{project.project_number}</p>
               )}

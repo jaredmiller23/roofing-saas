@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit-middleware'
 
 /**
  * GET /api/contacts/[id]
@@ -66,6 +67,12 @@ export async function PATCH(
       throw AuthorizationError('User not associated with any tenant')
     }
 
+    // Get audit context for logging
+    const auditContext = await getAuditContext(request)
+    if (!auditContext) {
+      throw AuthenticationError('Failed to get audit context')
+    }
+
     const { id } = await params
     const body = await request.json()
 
@@ -75,27 +82,41 @@ export async function PATCH(
     // Remove id from update data
     const { id: _, ...updateData } = validatedData
 
-    const supabase = await createClient()
+    // Update contact with audit logging
+    const contact = await auditedUpdate(
+      'contact',
+      id,
+      async (beforeValues) => {
+        const supabase = await createClient()
 
-    // Update contact
-    const { data: contact, error } = await supabase
-      .from('contacts')
-      .update(updateData)
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .select()
-      .single()
+        const { data, error } = await supabase
+          .from('contacts')
+          .update(updateData)
+          .eq('id', id)
+          .eq('tenant_id', tenantId)
+          .eq('is_deleted', false)
+          .select()
+          .single()
 
-    if (error || !contact) {
-      logger.error('Error updating contact', { error })
+        if (error || !data) {
+          logger.error('Error updating contact', { error })
 
-      if (error?.code === '23505') {
-        throw ConflictError('A contact with this email already exists')
+          if (error?.code === '23505') {
+            throw ConflictError('A contact with this email already exists')
+          }
+
+          throw NotFoundError('Contact')
+        }
+
+        return data
+      },
+      auditContext,
+      {
+        operation: 'contact_update',
+        source: 'api',
+        updated_fields: Object.keys(updateData)
       }
-
-      throw NotFoundError('Contact')
-    }
+    )
 
     return successResponse({ contact })
   } catch (error) {
@@ -128,22 +149,44 @@ export async function DELETE(
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    const { id } = await params
-    const supabase = await createClient()
-
-    // Soft delete
-    const { error } = await supabase
-      .from('contacts')
-      .update({ is_deleted: true })
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-
-    if (error) {
-      logger.error('Error deleting contact', { error })
-      throw InternalError('Failed to delete contact')
+    // Get audit context for logging
+    const auditContext = await getAuditContext(request)
+    if (!auditContext) {
+      throw AuthenticationError('Failed to get audit context')
     }
 
-    return successResponse({ success: true })
+    const { id } = await params
+
+    // Delete contact with audit logging
+    const result = await auditedDelete(
+      'contact',
+      id,
+      async (beforeValues) => {
+        const supabase = await createClient()
+
+        // Soft delete
+        const { error } = await supabase
+          .from('contacts')
+          .update({ is_deleted: true })
+          .eq('id', id)
+          .eq('tenant_id', tenantId)
+
+        if (error) {
+          logger.error('Error deleting contact', { error })
+          throw InternalError('Failed to delete contact')
+        }
+
+        return { success: true }
+      },
+      auditContext,
+      {
+        operation: 'contact_delete',
+        source: 'api',
+        delete_type: 'soft'
+      }
+    )
+
+    return successResponse(result)
   } catch (error) {
     logger.error('Error in DELETE /api/contacts/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

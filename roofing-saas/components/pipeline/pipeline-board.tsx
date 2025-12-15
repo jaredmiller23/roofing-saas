@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
 import {
   DndContext,
@@ -21,6 +21,11 @@ import {
   formatMissingFieldsError,
   STAGE_DISPLAY_NAMES,
 } from '@/lib/pipeline/validation'
+import { useRealtimeSubscription } from '@/lib/hooks/useRealtimeSubscription'
+import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
+import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },
@@ -70,6 +75,9 @@ export function PipelineBoard() {
   const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
   const [validationError, setValidationError] = useState<ValidationError | null>(null)
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const locallyDraggingRef = useRef<Set<string>>(new Set())
+  const recentUpdatesRef = useRef<Map<string, number>>(new Map())
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -81,6 +89,18 @@ export function PipelineBoard() {
 
   useEffect(() => {
     fetchProjects()
+  }, [])
+
+  // Get current user on mount
+  useEffect(() => {
+    async function getCurrentUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+    }
+    getCurrentUser()
   }, [])
 
   async function fetchProjects() {
@@ -100,9 +120,63 @@ export function PipelineBoard() {
     }
   }
 
+  // Real-time subscription for project updates
+  useRealtimeSubscription({
+    channelName: 'pipeline-board-projects',
+    table: 'projects',
+    event: 'UPDATE',
+    onPayload: (payload: any) => {
+      const updatedProject = payload.new as Project
+      const oldProject = payload.old as Project
+
+      if (updatedProject.pipeline_stage !== oldProject.pipeline_stage) {
+        const projectId = updatedProject.id
+        const now = Date.now()
+        const recentUpdate = recentUpdatesRef.current.get(projectId)
+        const isRecentLocalUpdate = recentUpdate && (now - recentUpdate) < 2000
+
+        if (isRecentLocalUpdate || locallyDraggingRef.current.has(projectId)) {
+          locallyDraggingRef.current.delete(projectId)
+          return
+        }
+
+        setProjects((prev) => {
+          const existingIndex = prev.findIndex((p) => p.id === projectId)
+          if (existingIndex >= 0) {
+            const newProjects = [...prev]
+            newProjects[existingIndex] = updatedProject
+            return newProjects
+          }
+          return prev
+        })
+
+        const projectName = updatedProject.name || 'Unnamed Project'
+        const fromStage = STAGE_DISPLAY_NAMES[oldProject.pipeline_stage] || oldProject.pipeline_stage
+        const toStage = STAGE_DISPLAY_NAMES[updatedProject.pipeline_stage] || updatedProject.pipeline_stage
+
+        toast.custom((t) => (
+          <RealtimeToast
+            type="data-updated"
+            title="Project moved"
+            description={`${projectName} moved from ${fromStage} to ${toStage}`}
+            duration={4000}
+            onDismiss={() => toast.dismiss(t)}
+          />
+        ))
+      }
+    },
+    onError: (error) => {
+      console.error('Realtime subscription error:', error)
+    },
+  })
+
   function handleDragStart(event: DragStartEvent) {
     const project = projects.find((p) => p.id === event.active.id)
     setActiveProject(project || null)
+
+    if (project) {
+      locallyDraggingRef.current.add(project.id)
+    }
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -148,6 +222,9 @@ export function PipelineBoard() {
       return
     }
 
+    // Track this update as local
+    recentUpdatesRef.current.set(projectId, Date.now())
+
     // Optimistic update
     setProjects((prev) =>
       prev.map((p) =>
@@ -177,6 +254,9 @@ export function PipelineBoard() {
       }
     } catch (error) {
       console.error('Failed to update project stage:', error)
+      // Clean up tracking on error
+      locallyDraggingRef.current.delete(projectId)
+      recentUpdatesRef.current.delete(projectId)
       // Revert on error
       setProjects((prev) =>
         prev.map((p) =>
