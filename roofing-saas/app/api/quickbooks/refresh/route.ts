@@ -37,6 +37,21 @@ export async function POST(request: NextRequest) {
       throw NotFoundError('QuickBooks connection')
     }
 
+    // Decrypt tokens from database (they are stored encrypted)
+    const { data: decryptedAccessToken, error: decryptAccessError } = await supabase
+      .rpc('decrypt_qb_token', { encrypted_data: connection.access_token })
+
+    const { data: decryptedRefreshToken, error: decryptRefreshError } = await supabase
+      .rpc('decrypt_qb_token', { encrypted_data: connection.refresh_token })
+
+    if (decryptAccessError || decryptRefreshError || !decryptedAccessToken || !decryptedRefreshToken) {
+      logger.error('Failed to decrypt QB tokens for refresh', {
+        decryptAccessError,
+        decryptRefreshError
+      })
+      throw InternalError('Failed to decrypt QuickBooks tokens')
+    }
+
     // Check if token is already expired
     const expiresAt = new Date(connection.expires_at)
     if (expiresAt <= new Date()) {
@@ -44,11 +59,11 @@ export async function POST(request: NextRequest) {
       // (QuickBooks refresh tokens are valid for 100 days from last refresh)
     }
 
-    // Initialize OAuth client with current tokens
+    // Initialize OAuth client with decrypted tokens
     const oauthClient = getOAuthClient()
     oauthClient.setToken({
-      access_token: connection.access_token,
-      refresh_token: connection.refresh_token,
+      access_token: decryptedAccessToken,
+      refresh_token: decryptedRefreshToken,
       token_type: 'bearer',
       expires_in: 3600,
       x_refresh_token_expires_in: 8726400, // 100 days in seconds
