@@ -118,10 +118,10 @@ export function ARToolbar({
   const summary = getSessionSummary()
 
   return (
-    <div className={'bg-white rounded-lg shadow-lg border border-gray-200 ' + className}>
+    <div className={'bg-card rounded-lg shadow-lg border border-border ' + className}>
       {/* Tool Selection */}
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 mb-3">AR Tools</h3>
+      <div className="p-4 border-b border-border">
+        <h3 className="text-lg font-medium text-foreground mb-3">AR Tools</h3>
         
         <div className="grid grid-cols-5 gap-2">
           {tools.map((tool) => {
@@ -135,8 +135,8 @@ export function ARToolbar({
                 className={
                   'flex flex-col items-center p-3 rounded-lg border-2 transition-colors ' +
                   (isActive
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-600 hover:bg-gray-50')
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:border-border text-muted-foreground hover:bg-muted/50')
                 }
                 title={tool.description}
               >
@@ -148,20 +148,20 @@ export function ARToolbar({
         </div>
         
         {activeTool !== ARTool.NONE && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-2">
               {tools.find(t => t.type === activeTool)?.icon && (
-                <span className="text-blue-600">
-                  {React.createElement(tools.find(t => t.type === activeTool)!.icon, { 
-                    className: 'h-4 w-4' 
+                <span className="text-primary">
+                  {React.createElement(tools.find(t => t.type === activeTool)!.icon, {
+                    className: 'h-4 w-4'
                   })}
                 </span>
               )}
-              <span className="text-sm font-medium text-blue-900">
+              <span className="text-sm font-medium text-primary">
                 {tools.find(t => t.type === activeTool)?.label} Mode
               </span>
             </div>
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-xs text-primary/80 mt-1">
               {tools.find(t => t.type === activeTool)?.description}
             </p>
           </div>
@@ -170,30 +170,30 @@ export function ARToolbar({
 
       {/* Session Summary */}
       {summary && (
-        <div className="p-4 border-b border-gray-200">
-          <h4 className="text-md font-medium text-gray-900 mb-3">Session Summary</h4>
+        <div className="p-4 border-b border-border">
+          <h4 className="text-md font-medium text-foreground mb-3">Session Summary</h4>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{summary.measurements}</div>
-              <div className="text-xs text-gray-500">Measurements</div>
+              <div className="text-2xl font-bold text-primary">{summary.measurements}</div>
+              <div className="text-xs text-muted-foreground">Measurements</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">{summary.damageMarkers}</div>
-              <div className="text-xs text-gray-500">Damage Markers</div>
+              <div className="text-xs text-muted-foreground">Damage Markers</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{summary.photos}</div>
-              <div className="text-xs text-gray-500">Photos</div>
+              <div className="text-xs text-muted-foreground">Photos</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
                 {summary.damagedArea.toFixed(0)}
               </div>
-              <div className="text-xs text-gray-500">sq ft damaged</div>
+              <div className="text-xs text-muted-foreground">sq ft damaged</div>
             </div>
           </div>
 
@@ -203,7 +203,7 @@ export function ARToolbar({
                 'px-3 py-1 rounded-full text-sm font-medium ' +
                 (session.status === 'active'
                   ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800')
+                  : 'bg-muted text-muted-foreground')
               }>
                 Session {session.status}
               </span>
@@ -218,7 +218,7 @@ export function ARToolbar({
           <button
             onClick={handleSave}
             disabled={isSaving || !session}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -231,7 +231,7 @@ export function ARToolbar({
           <button
             onClick={handleExport}
             disabled={isExporting || !session}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-primary-foreground rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isExporting ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -246,7 +246,7 @@ export function ARToolbar({
           <button
             onClick={onReset}
             disabled={!session}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-primary-foreground rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RotateCcw className="h-4 w-4" />
             <span className="text-sm">Reset</span>
@@ -254,7 +254,7 @@ export function ARToolbar({
 
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
           >
             <Settings className="h-4 w-4" />
             <span className="text-sm">Settings</span>
@@ -264,15 +264,15 @@ export function ARToolbar({
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <h4 className="text-md font-medium text-gray-900 mb-3">AR Settings</h4>
+        <div className="border-t border-border p-4 bg-muted/30">
+          <h4 className="text-md font-medium text-foreground mb-3">AR Settings</h4>
           
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Measurement Unit
               </label>
-              <select className="w-full px-3 py-1 text-sm border border-gray-300 rounded">
+              <select className="w-full px-3 py-1 text-sm border border-border rounded">
                 <option value="ft">Feet</option>
                 <option value="m">Meters</option>
                 <option value="in">Inches</option>
@@ -283,10 +283,10 @@ export function ARToolbar({
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                  className="w-4 h-4 text-primary border-border rounded"
                   defaultChecked
                 />
-                <span className="text-sm text-gray-700">Show confidence indicators</span>
+                <span className="text-sm text-foreground">Show confidence indicators</span>
               </label>
             </div>
 
@@ -294,10 +294,10 @@ export function ARToolbar({
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                  className="w-4 h-4 text-primary border-border rounded"
                   defaultChecked
                 />
-                <span className="text-sm text-gray-700">Auto-save measurements</span>
+                <span className="text-sm text-foreground">Auto-save measurements</span>
               </label>
             </div>
           </div>

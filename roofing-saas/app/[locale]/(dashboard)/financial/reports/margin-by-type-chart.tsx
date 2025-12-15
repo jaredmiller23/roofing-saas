@@ -34,6 +34,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
 
   const getMarginColor = (margin: number) => {
     if (margin >= 30) return 'bg-green-500'
+     
     if (margin >= 20) return 'bg-blue-500'
     if (margin >= 10) return 'bg-yellow-500'
     if (margin >= 0) return 'bg-orange-500'
@@ -76,7 +77,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
 
       {/* Legend */}
       {chartData.length > 0 && (
-        <div className="mt-6 pt-4 border-t border">
+        <div className="mt-6 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground mb-2">Margin Indicators:</p>
           <div className="flex flex-wrap gap-3 text-xs">
             <div className="flex items-center gap-1">
@@ -84,6 +85,7 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
               <span className="text-muted-foreground">Excellent (≥30%)</span>
             </div>
             <div className="flex items-center gap-1">
+              {/* eslint-disable-next-line theme-compliance/no-hardcoded-colors -- semantic color for margin indicator */}
               <div className="w-3 h-3 bg-blue-500 rounded" />
               <span className="text-muted-foreground">Good (20-29%)</span>
             </div>

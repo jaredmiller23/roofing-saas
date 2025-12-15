@@ -2,56 +2,42 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Fix all remaining ESLint warnings and errors across the codebase to achieve\n\
-    zero-warning compliance. This is transitional cleanup of harness-generated\nSprint\
-    \ 5 code that was created before the strict validation policy.\n\nCurrent State\
-    \ (98 files, 536 issues):\n- 187 @typescript-eslint/no-explicit-any warnings\n\
-    - 149 @typescript-eslint/no-unused-vars warnings\n- 8 react-hooks/exhaustive-deps\
-    \ warnings\n- Various other issues\n\nIssue Categories and Fixes:\n\n1. NO-EXPLICIT-ANY\
-    \ (187 issues)\n   Pattern: Replace `any` with proper types\n\n   Common patterns\
-    \ to fix:\n   - Function parameters: `(data: any)` -> `(data: Record<string, unknown>)`\n\
-    \   - API responses: `response.json() as any` -> proper interface\n   - Event\
-    \ handlers: `(e: any)` -> `(e: React.ChangeEvent<HTMLInputElement>)`\n   - Supabase\
-    \ data: Add proper table row types\n\n   Strategy:\n   - Create interfaces for\
-    \ repeated patterns\n   - Use `unknown` with type guards for truly dynamic data\n\
-    \   - Use generics where appropriate\n\n2. NO-UNUSED-VARS (149 issues)\n   Pattern:\
-    \ Remove unused imports and variables\n\n   Fixes:\n   - Remove unused imports\n\
-    \   - Prefix intentionally unused params with underscore: `_param`\n   - Remove\
-    \ dead code\n\n3. REACT-HOOKS/EXHAUSTIVE-DEPS (8 issues)\n   Pattern: Fix useEffect/useCallback\
-    \ dependencies\n\n   Fixes:\n   - Add missing dependencies\n   - Wrap callbacks\
-    \ in useCallback\n   - Use refs for values that shouldn't trigger re-renders\n\
-    \nFile Categories (prioritized):\n\nHIGH PRIORITY (Core functionality):\n- lib/offline/*.ts\
-    \ (5 files) - PWA/offline infrastructure\n- lib/dashboard/*.tsx (2 files) - Dashboard\
-    \ components\n- app/api/**/*.ts (12 files) - API routes\n- components/ar/*.tsx\
-    \ (4 files) - AR assessment\n\nMEDIUM PRIORITY (Feature pages):\n- app/(dashboard)/**/*.tsx\
-    \ - Dashboard pages\n- app/[locale]/**/*.tsx - Internationalized pages\n\nApproach:\n\
-    - Fix by module/feature area, not file-by-file\n- Create shared type definitions\
-    \ in lib/types/\n- Run lint after each module to verify progress\n- Commit incrementally\
-    \ if needed\n"
+  goal: "Fix 149 theme-compliance errors across 8 files.\nAll hardcoded Tailwind colors\
+    \ must be replaced with theme-aware CSS variables\nto support dark mode and maintain\
+    \ UI consistency.\n\nAffected Files (8 total, 149 errors):\n1. app/[locale]/(dashboard)/contacts/[id]/page.tsx\n\
+    2. app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx\n\
+    3. app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx\n\
+    4. app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx\n5. app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx\n\
+    6. app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx\n7. components/ar/ARToolbar.tsx\n\
+    8. components/ar/MeasurementOverlay.tsx\n\nColor Mapping (use EXACTLY these replacements):\n\
+    BACKGROUNDS:\n- bg-white \u2192 bg-card or bg-background\n- bg-gray-50 \u2192\
+    \ bg-muted/30 or bg-background\n- bg-gray-100 \u2192 bg-muted\n- bg-gray-200 \u2192\
+    \ bg-muted\n- bg-blue-50 \u2192 bg-primary/10\n- bg-blue-100 \u2192 bg-primary/20\n\
+    - bg-blue-600 \u2192 bg-primary\n- bg-purple-100 \u2192 bg-secondary/20\n\nTEXT:\n\
+    - text-gray-900 \u2192 text-foreground\n- text-gray-700 \u2192 text-foreground\n\
+    - text-gray-600 \u2192 text-muted-foreground\n- text-gray-500 \u2192 text-muted-foreground\n\
+    - text-gray-400 \u2192 text-muted-foreground/70\n- text-blue-600 \u2192 text-primary\n\
+    - text-blue-800 \u2192 text-primary\n- text-purple-800 \u2192 text-secondary-foreground\n\
+    \nBORDERS:\n- border-gray-200 \u2192 border-border\n- border-gray-300 \u2192 border-border\n\
+    - border-blue-600 \u2192 border-primary\n\nHOVER:\n- hover:bg-gray-50 \u2192 hover:bg-muted/50\n\
+    - hover:bg-gray-100 \u2192 hover:bg-muted\n- hover:bg-blue-700 \u2192 hover:bg-primary/90\n"
   success_criteria:
-  - npm run lint -- --max-warnings 0 passes
-  - npm run typecheck passes
-  - No eslint-disable comments added (fix underlying issues)
-  - All 98 files with issues are clean
-  why: 'This is the final cleanup of transitional code from Sprint 5 harness output.
+  - Zero theme-compliance errors after completion
+  - All 8 affected files modified
+  - TypeScript compilation passes
+  - Build succeeds
+  why: 'Theme-compliance plugin added Dec 12. Sprint 5 harness ran Dec 14-15 without
+
+    enforcement, generating 149 hardcoded color violations.
 
 
-    The Sprint 5 tasks (AR, PWA, Dashboard, i18n, Marketplace) were executed
+    These must be fixed to:
 
-    before IMPROVEMENT-002 enforced --max-warnings 0. As a result, they
+    1. Enable dark mode support
 
-    produced code with `any` types and other lint issues.
+    2. Pass pre-commit lint checks
 
-
-    After this task:
-
-    - Codebase will have zero lint warnings
-
-    - All future harness output will be held to the same standard
-
-    - Pre-commit hooks will pass without --no-verify
-
-    - Clean baseline for ongoing development
+    3. Maintain consistent theming
 
     '
 dependencies: null
@@ -66,95 +52,57 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-15T10:00:00'
-  id: CLEANUP-003
+  id: CLEANUP-004
   priority: 2
   template: code-modification
-  title: Fix All Remaining Lint Issues - Sprint 5 Transitional Cleanup
+  title: Fix Theme Compliance - Replace Hardcoded Colors
 on_failure:
   escalate:
     include:
     - error_output
     - files_modified
-    - remaining_lint_issues
     to: human
   rollback:
   - git stash
 read_first:
 - extract: []
-  path: lib/offline/offline-types.ts
-  reason: Understand existing offline type definitions
+  path: app/[locale]/(dashboard)/contacts/[id]/page.tsx
+  reason: Largest file - understand the pattern
   required: true
 - extract: []
-  path: lib/types/supabase-presence.ts
-  reason: Pattern for creating proper type definitions
+  path: components/ar/ARToolbar.tsx
+  reason: AR component with many violations
   required: true
-- extract: []
-  path: tsconfig.json
-  reason: TypeScript configuration
-  required: false
 scope:
   constraints: []
-  create:
-  - lib/types/api-responses.ts
-  - lib/types/offline-types.ts
-  - lib/types/ar-types.ts
+  create: []
   do_not_touch:
-  - node_modules/
-  - .next/
-  - Test files unless they have issues
+  - app/api/**
+  - lib/**
+  - components/ui/**
   modify:
-  - lib/offline/indexed-db.ts
-  - lib/offline/sync-manager.ts
-  - lib/offline/cache-strategy.ts
-  - lib/offline/offline-types.ts
-  - lib/offline/conflict-resolution.ts
-  - lib/dashboard/DashboardEditor.tsx
-  - lib/dashboard/examples/dashboard-usage-example.tsx
-  - components/ar/ARViewport.tsx
+  - app/[locale]/(dashboard)/contacts/[id]/page.tsx
+  - app/[locale]/(dashboard)/financial/commissions/add-commission-button.tsx
+  - app/[locale]/(dashboard)/financial/commissions/add-commission-dialog.tsx
+  - app/[locale]/(dashboard)/financial/reports/margin-by-type-chart.tsx
+  - app/[locale]/(dashboard)/projects/[id]/costing/add-expense-button.tsx
+  - app/[locale]/(dashboard)/projects/[id]/costing/add-expense-dialog.tsx
   - components/ar/ARToolbar.tsx
   - components/ar/MeasurementOverlay.tsx
-  - components/ar/DamageMarker.tsx
-  - app/api/admin/audit-log/route.ts
-  - app/api/admin/audit-log/export/route.ts
-  - app/api/analytics/forecast/route.ts
-  - app/api/analytics/pipeline/route.ts
-  - app/api/ar/measurements/route.ts
-  - app/api/automations/route.ts
-  - app/api/contacts/[id]/route.ts
-  - app/api/contacts/[id]/score/route.ts
-  - app/api/estimates/[id]/options/route.ts
-  - app/api/insights/query/route.ts
-  - app/api/storm/notifications/route.ts
-  - app/api/storm/predictions/route.ts
-  - app/api/sync/route.ts
-  - app/(dashboard)/automations/[id]/page.tsx
-  - app/(dashboard)/automations/new/page.tsx
-  - app/(dashboard)/automations/page.tsx
-  - app/[locale]/(dashboard)/automations/[id]/page.tsx
-  - app/[locale]/(dashboard)/automations/new/page.tsx
-  - app/[locale]/(dashboard)/automations/page.tsx
-  - app/(dashboard)/contacts/[id]/ContactDetailClient.tsx
-  - app/(dashboard)/dashboard/edit/page.tsx
-  - app/(dashboard)/pipeline/analytics/page.tsx
-  - app/(dashboard)/projects/[id]/ar-assessment/page.tsx
-  - app/(dashboard)/projects/[id]/page.tsx
-  - app/(dashboard)/settings/scoring/ScoringSettingsClient.tsx
-  - app/(dashboard)/storm-tracking/page.tsx
 thinking:
-  level: think_hard
+  level: think
   triggers:
-  - When designing shared type definitions
-  - When fixing complex generic patterns
-  - When deciding between unknown and specific types
+  - When processing files with semantic colors (status indicators)
+  - When unsure about correct replacement
 validation:
   assertions: []
   post_commit: []
   pre_commit:
-  - command: npm run lint -- --max-warnings 0
+  - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run typecheck
-    expect: 'exit_code: 0'
+  - command: npm run lint -- --quiet 2>&1 | grep -c 'theme-compliance' || echo 0
+    expect: 'output: 0'
     required: true
     timeout: 60
