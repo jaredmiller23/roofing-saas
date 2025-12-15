@@ -10,12 +10,10 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(app/(dashboard)/projects/[id]/edit/page.tsx)",
-      "Edit(app/(dashboard)/projects/[id]/edit/page.tsx)",
-      "Write(app/(dashboard)/projects/[id]/**/*.tsx)",
-      "Edit(app/(dashboard)/projects/[id]/**/*.tsx)",
-      "Write(app/(dashboard)/pipeline/**/*.tsx)",
-      "Edit(app/(dashboard)/pipeline/**/*.tsx)"
+      "Write(app/**/*.tsx)",
+      "Edit(app/**/*.tsx)",
+      "Write(components/**/*.tsx)",
+      "Edit(components/**/*.tsx)"
     ]
   }
 }

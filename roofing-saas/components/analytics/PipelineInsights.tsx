@@ -34,7 +34,7 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
       title: "Revenue Pipeline",
       value: formatCurrency(data.revenueForecast.totalPipelineValue),
       icon: DollarSign,
-      color: "text-blue-600",
+      color: "text-primary",
       detail: `${data.conversionFunnel.totalProspects} active opportunities`
     },
     {
@@ -106,16 +106,16 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
             </div>
           </div>
 
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-primary/10 border border-primary rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              <h4 className="font-medium text-blue-800">Forecast Trend</h4>
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h4 className="font-medium text-primary">Forecast Trend</h4>
             </div>
             <div className="space-y-1">
-              <div className="font-bold text-blue-800">
+              <div className="font-bold text-primary">
                 {data.revenueForecast.pipelineGrowth > 0 ? '+' : ''}{formatPercentage(data.revenueForecast.pipelineGrowth)}
               </div>
-              <div className="text-sm text-blue-700">Pipeline growth vs. previous period</div>
+              <div className="text-sm text-primary">Pipeline growth vs. previous period</div>
             </div>
           </div>
         </div>
@@ -178,11 +178,11 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
             )}
 
             {data.dataQuality.missingValues > data.conversionFunnel.totalProspects * 0.3 && (
-              <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <BarChart3 className="h-5 w-5 text-gray-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-muted border border-border rounded-lg">
+                <BarChart3 className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <div className="font-medium text-gray-800">Data Quality Issue</div>
-                  <div className="text-sm text-gray-700">
+                  <div className="font-medium text-foreground">Data Quality Issue</div>
+                  <div className="text-sm text-foreground">
                     {data.dataQuality.missingValues} deals missing value data.
                     Improve data entry to get more accurate forecasts.
                   </div>

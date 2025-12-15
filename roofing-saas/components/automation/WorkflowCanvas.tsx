@@ -147,15 +147,15 @@ export function WorkflowCanvas({
         {trigger ? (
           <div className="relative">
             <Card
-              className={`border-2 border-blue-500 cursor-pointer hover:shadow-md transition-shadow ${
-                trigger.enabled ? 'bg-blue-50' : 'bg-gray-50'
+              className={`border-2 border-primary cursor-pointer hover:shadow-md transition-shadow ${
+                trigger.enabled ? 'bg-primary/10' : 'bg-muted'
               }`}
               onClick={onTriggerClick}
             >
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-primary/100 rounded-full flex items-center justify-center">
+                    <Zap className="h-6 w-6 text-foreground" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -168,7 +168,7 @@ export function WorkflowCanvas({
                       Workflow starts when this condition is met
                     </p>
                   </div>
-                  <Play className="h-5 w-5 text-blue-500" />
+                  <Play className="h-5 w-5 text-primary" />
                 </div>
               </CardContent>
             </Card>
@@ -251,7 +251,7 @@ export function WorkflowCanvas({
                   className={`border-2 cursor-pointer hover:shadow-md transition-shadow ${
                     action.enabled
                       ? 'border-green-500 bg-green-50'
-                      : 'border-gray-400 bg-gray-50'
+                      : 'border-gray-400 bg-muted'
                   }`}
                   onClick={() => onActionClick?.(action)}
                 >
@@ -260,7 +260,7 @@ export function WorkflowCanvas({
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                         action.enabled ? 'bg-green-500' : 'bg-gray-400'
                       }`}>
-                        {ACTION_ICONS[action.type] || <Settings className="h-6 w-6 text-white" />}
+                        {ACTION_ICONS[action.type] || <Settings className="h-6 w-6 text-foreground" />}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -323,11 +323,11 @@ export function WorkflowCanvas({
             <div className="flex justify-center">
               <ArrowDown className="h-6 w-6 text-muted-foreground" />
             </div>
-            <Card className="border-2 border-gray-300 bg-gray-50">
+            <Card className="border-2 border-border bg-muted">
               <CardContent className="p-6">
                 <div className="text-center space-y-2">
-                  <div className="w-12 h-12 mx-auto bg-gray-500 rounded-full flex items-center justify-center">
-                    <CheckSquare className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 mx-auto bg-muted0 rounded-full flex items-center justify-center">
+                    <CheckSquare className="h-6 w-6 text-foreground" />
                   </div>
                   <h3 className="font-semibold">Workflow Complete</h3>
                   <p className="text-sm text-muted-foreground">

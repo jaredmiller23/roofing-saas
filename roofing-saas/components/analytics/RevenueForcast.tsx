@@ -73,7 +73,7 @@ export function RevenueForcast({ data, onPeriodClick, className }: RevenueForeca
             <div className="text-sm text-muted-foreground">Avg Deal Size</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-primary">
               {formatCurrency(data.monthlyRunRate)}
             </div>
             <div className="text-sm text-muted-foreground">Monthly Run Rate</div>
@@ -148,7 +148,7 @@ export function RevenueForcast({ data, onPeriodClick, className }: RevenueForeca
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="h-5 w-5 text-blue-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
               <h4 className="font-medium text-foreground">Pipeline Growth</h4>
             </div>
             <div className="flex items-center gap-2">
@@ -162,7 +162,7 @@ export function RevenueForcast({ data, onPeriodClick, className }: RevenueForeca
 
           <div className="p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-5 w-5 text-purple-500" />
+              <Zap className="h-5 w-5 text-primary" />
               <h4 className="font-medium text-foreground">Deal Size Trend</h4>
             </div>
             <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export function RevenueForcast({ data, onPeriodClick, className }: RevenueForeca
 
             {data.monthlyRunRate > data.averageDealSize * 5 && (
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-blue-500" />
+                <Zap className="h-4 w-4 text-primary" />
                 <span>Strong monthly run rate indicates consistent closing ability</span>
               </div>
             )}

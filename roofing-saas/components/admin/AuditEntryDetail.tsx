@@ -152,7 +152,7 @@ function DiffTable({ diff }: { diff: AuditDiff[] }) {
                   <div className="font-medium text-xs text-muted-foreground mb-1">
                     Previous Value
                   </div>
-                  <div className="bg-white/50 p-2 rounded border">
+                  <div className="bg-card/50 p-2 rounded border">
                     <code className="text-xs">{formatValue(change.old_value)}</code>
                   </div>
                 </div>
@@ -163,7 +163,7 @@ function DiffTable({ diff }: { diff: AuditDiff[] }) {
                   <div className="font-medium text-xs text-muted-foreground mb-1">
                     New Value
                   </div>
-                  <div className="bg-white/50 p-2 rounded border">
+                  <div className="bg-card/50 p-2 rounded border">
                     <code className="text-xs">{formatValue(change.new_value)}</code>
                   </div>
                 </div>

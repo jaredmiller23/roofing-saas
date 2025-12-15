@@ -90,7 +90,7 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
             <div className="text-sm text-muted-foreground">Conversion Rate</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{Math.round(data.averageLeadToWin)}d</div>
+            <div className="text-2xl font-bold text-primary">{Math.round(data.averageLeadToWin)}d</div>
             <div className="text-sm text-muted-foreground">Avg. Lead-to-Win</div>
           </div>
         </div>

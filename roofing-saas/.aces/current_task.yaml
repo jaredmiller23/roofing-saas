@@ -2,36 +2,33 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Fix the 404 error when clicking "Edit Project" from the project detail page.
-
-
-    Bug Report:
-
-    - Page: /pipeline
-
-    - Action: Click on project name to open detail, then click "Edit Project"
-
-    - Error: 404 page not found
-
-
-    Investigation Steps:
-
-    1. Find the Edit Project button/link in project detail
-
-    2. Check the href/route it navigates to
-
-    3. Verify the edit page route exists
-
-    4. Fix routing or create missing page
-
-    '
+  goal: "Fix all theme compliance violations across the codebase. The ESLint rule\n\
+    theme-compliance/no-hardcoded-colors is detecting hardcoded Tailwind colors\n\
+    that should use semantic theme tokens instead.\n\nThis is a CRITICAL compliance\
+    \ issue - no bypassing allowed.\n\nPattern to fix:\n- text-blue-600 \u2192 text-primary\n\
+    - text-green-600 \u2192 text-primary (for success states, consider text-emerald-600\
+    \ if semantic)\n- text-red-600 \u2192 text-destructive\n- text-purple-600 \u2192\
+    \ text-primary or text-accent\n- bg-blue-500 \u2192 bg-primary\n- bg-green-500\
+    \ \u2192 bg-primary (or semantic success color)\n- bg-red-500 \u2192 bg-destructive\n\
+    - Similar patterns for all hardcoded colors\n\nFor status indicators (success/error/warning),\
+    \ use the semantic alternatives:\n- Success: text-emerald-600 / bg-emerald-* (if\
+    \ allowed by lint)\n- Error: text-destructive / bg-destructive\n- Warning: text-amber-600\
+    \ / bg-amber-*\n- Info: text-primary / bg-primary\n\nIf the lint rule blocks ALL\
+    \ color usage, check the rule config and use\nonly the allowed semantic tokens.\n"
   success_criteria:
-  - Edit Project button navigates to edit form
-  - Edit form loads and displays project data
-  - No 404 error
-  why: 'Users cannot edit projects, blocking a core workflow.
+  - npm run lint passes with 0 errors for theme-compliance rule
+  - All hardcoded colors replaced with semantic tokens
+  - TypeScript compiles without errors
+  - Visual appearance preserved (colors should look similar)
+  why: 'Theme compliance is non-negotiable. Hardcoded colors break:
 
-    This is a critical navigation bug.
+    - Dark mode support
+
+    - Brand customization
+
+    - Accessibility
+
+    - Design system consistency
 
     '
 dependencies: null
@@ -40,42 +37,47 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-15T00:00:00'
-  id: BUG-004
-  priority: 2
+  id: COMPLIANCE-001
+  priority: 1
   template: bug-fix
-  title: 'Fix: Edit Project 404 error'
+  title: 'Fix: Theme compliance - replace hardcoded colors with semantic tokens'
 on_failure: null
 read_first:
 - extract: []
-  path: app/(dashboard)/projects/[id]/page.tsx
-  reason: Find Edit Project button
+  path: .eslintrc.json
+  reason: Check theme-compliance rule configuration
   required: true
 - extract: []
-  path: app/(dashboard)/pipeline/page.tsx
-  reason: Check pipeline navigation
+  path: app/globals.css
+  reason: Check available CSS variables/tokens
+  required: true
+- extract: []
+  path: tailwind.config.ts
+  reason: Check theme configuration
   required: false
 scope:
   constraints: []
-  create:
-  - app/(dashboard)/projects/[id]/edit/page.tsx
+  create: []
   do_not_touch:
   - lib/supabase/server.ts
+  - node_modules/**
   modify:
-  - app/(dashboard)/projects/[id]/**/*.tsx
-  - app/(dashboard)/pipeline/**/*.tsx
+  - app/**/*.tsx
+  - components/**/*.tsx
 thinking:
-  level: think
+  level: think_hard
   triggers:
-  - When tracing navigation flow
+  - When determining correct semantic replacement
+  - When handling status-specific colors
 validation:
   assertions: []
   post_commit: []
   pre_commit:
-  - command: npm run typecheck
+  - command: npm run lint -- --max-warnings 0
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run lint -- --max-warnings 5
+  - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
     timeout: 60

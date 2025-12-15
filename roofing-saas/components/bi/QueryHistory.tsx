@@ -184,7 +184,7 @@ export function QueryHistory({
 
           <div className="bg-card rounded-lg border p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Clock className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Avg Time</span>
             </div>
             <span className="text-2xl font-bold">{stats.avgExecutionTime}ms</span>
@@ -192,7 +192,7 @@ export function QueryHistory({
 
           <div className="bg-card rounded-lg border p-4">
             <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="h-4 w-4 text-purple-500" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">This Week</span>
             </div>
             <span className="text-2xl font-bold">

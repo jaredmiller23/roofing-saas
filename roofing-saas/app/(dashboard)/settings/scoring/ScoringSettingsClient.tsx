@@ -230,7 +230,7 @@ export function ScoringSettingsClient({ user }: ScoringSettingsClientProps) {
 
               <div className="bg-muted/30 p-4 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <h4 className="font-medium text-foreground">Scoring Algorithm</h4>
                     <p className="text-sm text-muted-foreground mt-1">

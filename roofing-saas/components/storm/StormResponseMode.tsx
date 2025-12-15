@@ -200,7 +200,7 @@ function ModeBadge({ mode }: { mode: ResponseMode }) {
   const config = configs[mode]
 
   return (
-    <Badge className={`${config.className} text-white`}>
+    <Badge className={`${config.className} text-foreground`}>
       {config.label}
     </Badge>
   )

@@ -151,8 +151,8 @@ export function QueryInput({
                   {suggestion.icon ? (
                     <div className="mt-0.5">
                       {suggestion.icon === 'trending' && <TrendingUp className="h-4 w-4 text-green-500" />}
-                      {suggestion.icon === 'search' && <Search className="h-4 w-4 text-blue-500" />}
-                      {suggestion.icon === 'sparkles' && <Sparkles className="h-4 w-4 text-purple-500" />}
+                      {suggestion.icon === 'search' && <Search className="h-4 w-4 text-primary" />}
+                      {suggestion.icon === 'sparkles' && <Sparkles className="h-4 w-4 text-primary" />}
                     </div>
                   ) : (
                     <div className="mt-0.5 h-4 w-4 rounded-full bg-muted" />

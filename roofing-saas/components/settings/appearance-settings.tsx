@@ -89,7 +89,7 @@ export function AppearanceSettings() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Moon className="h-4 w-4 text-blue-400" />
+                <Moon className="h-4 w-4 text-primary" />
                 <div>
                   <p className="text-sm font-medium">Dark</p>
                   <p className="text-xs text-muted-foreground">Easy on the eyes with warm coral accents</p>
