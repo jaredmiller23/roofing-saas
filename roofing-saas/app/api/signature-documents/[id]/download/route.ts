@@ -55,7 +55,7 @@ export async function GET(
       .single()
 
     if (error || !document) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     // Check if document has been signed

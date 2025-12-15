@@ -79,7 +79,7 @@ export async function POST(
       .single()
 
     if (fetchError || !document) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     // Check if document is in valid state to send

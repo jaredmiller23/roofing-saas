@@ -1,21 +1,15 @@
 {
-  "task_id": "SPRINT3-003",
+  "task_id": "BUG-001",
   "files_read": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/lib/types/api.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/(dashboard)/projects/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/lib/types/project.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/(dashboard)/contacts/new/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/projects/project-form.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/(dashboard)/projects/new/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/contacts/contact-form.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/docs/PRD/29-DATA-MODELS-AND-TYPES.md"
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signature-documents/route.ts",
+    "app/api/signatures/documents/[id]/route.ts",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/(dashboard)/signatures/[id]/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signature-documents/[id]/route.ts",
+    "app/(dashboard)/signatures/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/.claude_settings.json",
+    "/Users/ccai/Roofing SaaS/roofing-saas/lib/api/errors.ts"
   ],
-  "files_modified": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/lib/types/project-template.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/projects/TemplateSelector.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/lib/data/default-templates.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/projects/TemplateLibrary.tsx"
-  ],
+  "files_modified": [],
   "validation_passed": false,
   "progress_updated": false,
   "started_at": null,

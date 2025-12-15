@@ -157,12 +157,14 @@ class SmokeTest {
         }
 
         const result = await response.json()
-        if (!result.contact?.id) {
+        // API wraps response in { success: true, data: { contact: {...} } }
+        const contactId = result.data?.contact?.id || result.contact?.id
+        if (!contactId) {
           throw new Error('Contact creation returned no ID')
         }
 
         // Clean up - delete the test contact
-        const deleteResponse = await fetch(`${this.baseUrl}/api/contacts/${result.contact.id}`, {
+        const deleteResponse = await fetch(`${this.baseUrl}/api/contacts/${contactId}`, {
           method: 'DELETE',
           headers: { 'Cookie': cookieHeader },
         })
@@ -195,17 +197,19 @@ class SmokeTest {
         }
 
         const result = await response.json()
-        if (!result.project?.id) {
-          throw new Error('Project creation returned no ID')
+        // API wraps response in { success: true, data: { project: {...} } }
+        const projectId = result.data?.project?.id || result.project?.id
+        if (!projectId) {
+          throw new Error(`Project creation returned no ID. Response: ${JSON.stringify(result).slice(0, 200)}`)
         }
 
         // Clean up
-        const deleteResponse = await fetch(`${this.baseUrl}/api/projects/${result.project.id}`, {
+        const deleteResponse = await fetch(`${this.baseUrl}/api/projects/${projectId}`, {
           method: 'DELETE',
           headers: { 'Cookie': cookieHeader },
         })
         if (!deleteResponse.ok) {
-          console.log(`    (Cleanup: Failed to delete test project ${result.project.id})`)
+          console.log(`    (Cleanup: Failed to delete test project ${projectId})`)
         }
       })
 

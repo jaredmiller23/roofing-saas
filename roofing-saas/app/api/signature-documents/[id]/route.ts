@@ -51,7 +51,7 @@ export async function GET(
 
     if (error || !document) {
       logger.warn('Signature document not found', { id, tenantId })
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     const duration = Date.now() - startTime
@@ -114,7 +114,7 @@ export async function PATCH(
       .single()
 
     if (!existing) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     const { data: document, error } = await supabase
@@ -177,7 +177,7 @@ export async function DELETE(
       .single()
 
     if (!existing) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     const { error } = await supabase

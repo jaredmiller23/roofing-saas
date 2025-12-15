@@ -93,7 +93,7 @@ export async function POST(
       .single()
 
     if (fetchError || !rawDocument) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     const document = rawDocument as unknown as DocumentRecord

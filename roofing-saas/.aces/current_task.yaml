@@ -2,70 +2,35 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement a project templates system with roofing-specific workflow templates
+  goal: 'Fix the "Signature document not found not found" error displayed
 
-    for faster, more consistent project creation.
-
-
-    Features to implement:
-
-    1. Pre-built roofing project templates
-
-    2. Custom template creation from existing projects
-
-    3. Automated task and milestone generation from template
-
-    4. Template library management
-
-    5. Template versioning and updates
+    on the signatures page when clicking on a document.
 
 
-    Default Templates:
+    Steps:
 
-    - Residential Roof Replacement
+    1. Document the bug - reproduce and capture error details
 
-    - Commercial Roof Installation
+    2. Investigate root cause - trace through signatures page code
 
-    - Storm Damage Repair
+    3. Plan fix - identify what needs to change
 
-    - Roof Inspection
+    4. Implement fix - make necessary code changes
 
-    - Insurance Claim Project
-
-    - Emergency Repair
-
-
-    Template Contents:
-
-    - Default project stages
-
-    - Pre-populated tasks with estimated durations
-
-    - Milestone definitions
-
-    - Document checklist
-
-    - Default team assignments
+    5. Validate - ensure fix works and doesn''t break other functionality
 
     '
   success_criteria:
-  - Can select template when creating new project
-  - Template populates stages, tasks, and milestones
-  - Can create custom template from existing project
-  - Template library is manageable
-  - Template applies correctly to new projects
-  why: 'Research Finding: Every project created from scratch.
+  - Bug is documented with reproduction steps
+  - Root cause is identified
+  - Fix is implemented and tested
+  - Error message is properly formatted if document not found
+  why: 'User reports error when clicking documents on signatures page.
 
-    Competitor JobNimbus has roofing-specific templates.
+    Error message shows ''not found'' duplicated - ''Signature document not found
+    not found''.
 
-
-    Business Impact:
-
-    - 50% faster project setup
-
-    - 30% more consistent execution
-
-    - Reduced training time for new users
+    This is a user-facing bug that needs immediate attention.
 
     '
 dependencies: null
@@ -79,11 +44,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T19:00:00'
-  id: SPRINT3-003
+  created: '2025-12-15T01:35:00'
+  id: BUG-001
   priority: 2
-  template: code-modification
-  title: Project Templates System
+  template: bug-fix
+  title: Fix Signature Document Not Found Error
 on_failure:
   escalate:
     include:
@@ -94,40 +59,32 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: components/projects/project-form.tsx
-  reason: Project creation form to add template selection
+  path: app/(dashboard)/signatures/page.tsx
+  reason: Main signatures page to understand error source
   required: true
 - extract: []
-  path: lib/types/project.ts
-  reason: Project type definitions
+  path: components/signatures/SignatureDocuments.tsx
+  reason: Document list component
   required: true
 - extract: []
-  path: app/(dashboard)/projects/new/page.tsx
-  reason: New project page flow
+  path: app/api/signatures/documents/[id]/route.ts
+  reason: API endpoint for document fetch
   required: true
 scope:
   constraints: []
-  create:
-  - lib/types/project-template.ts
-  - components/projects/TemplateSelector.tsx
-  - components/projects/TemplateLibrary.tsx
-  - components/projects/TemplateEditor.tsx
-  - app/(dashboard)/settings/templates/page.tsx
-  - app/api/project-templates/route.ts
-  - app/api/project-templates/[id]/route.ts
-  - lib/data/default-templates.ts
+  create: []
   do_not_touch:
-  - app/api/projects/route.ts
-  - lib/validations/project.ts
+  - lib/supabase/server.ts
   modify:
-  - app/(dashboard)/projects/new/page.tsx
-  - components/projects/project-form.tsx
+  - app/(dashboard)/signatures/page.tsx
+  - components/signatures/SignatureDocuments.tsx
+  - app/api/signatures/documents/route.ts
+  - app/api/signatures/documents/[id]/route.ts
 thinking:
   level: think_hard
   triggers:
-  - Before designing template data structure
-  - When planning template-to-project mapping
-  - When designing default templates
+  - When identifying error source
+  - Before implementing fix
 validation:
   assertions: []
   post_commit: []
@@ -135,20 +92,12 @@ validation:
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 120
+    timeout: 60
   - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/types/project-template.ts
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f components/projects/TemplateSelector.tsx
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 60
-  - command: test -f lib/data/default-templates.ts
+  - command: npm run build
     expect: 'exit_code: 0'
     required: true
     timeout: 60

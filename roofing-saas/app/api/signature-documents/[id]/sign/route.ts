@@ -67,7 +67,7 @@ export async function POST(
         .single()
 
       if (fetchError || !document) {
-        throw NotFoundError('Signature document not found')
+        throw NotFoundError('Signature document')
       }
 
       // Check document status
@@ -200,7 +200,7 @@ export async function POST(
       .single()
 
     if (fetchError || !document) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     // Check document status
@@ -351,7 +351,7 @@ export async function GET(
       .single()
 
     if (error || !document) {
-      throw NotFoundError('Signature document not found')
+      throw NotFoundError('Signature document')
     }
 
     // Check expiration
