@@ -159,7 +159,7 @@ export function RealtimeToast({
   className,
 }: RealtimeToastProps) {
   const [isVisible, setIsVisible] = React.useState(true)
-  const timeoutRef = React.useRef<NodeJS.Timeout>()
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const config = typeConfig[type]
   const Icon = config.icon

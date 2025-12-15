@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -33,14 +32,12 @@ interface SignatureDocumentsProps {
   documents: SignatureDocument[]
   isLoading?: boolean
   error?: string | null
-  onRefresh?: () => void
 }
 
 export default function SignatureDocuments({ 
   documents, 
   isLoading = false, 
-  error = null, 
-  onRefresh 
+  error = null
 }: SignatureDocumentsProps) {
   const router = useRouter()
 

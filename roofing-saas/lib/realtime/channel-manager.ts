@@ -75,7 +75,7 @@ export interface PresenceUser {
 /**
  * Configuration for entity subscription
  */
-export interface EntitySubscriptionConfig<T = any> {
+export interface EntitySubscriptionConfig<T extends { [key: string]: any } = { [key: string]: any }> {
   /**
    * Entity type (e.g., 'contact', 'project', 'estimate')
    */
@@ -298,7 +298,7 @@ export class RealtimeChannelManager {
   ): string {
     const parts = [type, entityType, entityId]
     if (tenantId) {
-      parts.unshift(\`tenant:\${tenantId}\`)
+      parts.unshift(`tenant:${tenantId}`)
     }
     return parts.join(':')
   }
@@ -326,13 +326,13 @@ export class RealtimeChannelManager {
   /**
    * Subscribe to entity changes (INSERT, UPDATE, DELETE)
    */
-  public async subscribeToEntity<T = any>(
+  public async subscribeToEntity<T extends { [key: string]: any } = { [key: string]: any }>(
     config: EntitySubscriptionConfig<T>
   ): Promise<RealtimeChannel> {
     const {
       entityType,
       entityId,
-      table = \`\${entityType}s\`,
+      table = `${entityType}s`,
       schema = 'public',
       event = '*',
       onInsert,
@@ -370,7 +370,7 @@ export class RealtimeChannelManager {
         event,
         schema,
         table,
-        filter: \`id=eq.\${entityId}\`,
+        filter: `id=eq.${entityId}`,
       }
 
       channel.on('postgres_changes', changeConfig, (payload: RealtimePostgresChangesPayload<T>) => {
@@ -429,7 +429,7 @@ export class RealtimeChannelManager {
           channelInfo.reconnectAttempts = 0
           logger.info('Channel subscribed successfully', { channelName })
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          const error = err || new Error(\`Channel \${status}\`)
+          const error = err || new Error(`Channel ${status}`)
           logger.error('Channel error', {
             channelName,
             status,
@@ -646,7 +646,7 @@ export class RealtimeChannelManager {
             userId: user.id,
           })
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          const error = new Error(\`Presence channel \${status}\`)
+          const error = new Error(`Presence channel ${status}`)
           logger.error('Presence channel error', {
             channelName,
             status,
@@ -726,12 +726,12 @@ export class RealtimeChannelManager {
     try {
       // Get current presence state
       const state = channelInfo.channel.presenceState()
-      const currentPresence = Object.values(state)[0]?.[0]
+      const currentPresence = Object.values(state)[0]?.[0] as { presence_ref: string; metadata?: Record<string, any> } | undefined
 
       if (currentPresence) {
         await channelInfo.channel.track({
           ...currentPresence,
-          metadata: { ...currentPresence.metadata, ...metadata },
+          metadata: { ...(currentPresence.metadata || {}), ...metadata },
         })
 
         logger.debug('Updated presence metadata', {
@@ -1058,7 +1058,7 @@ export const getChannelManager = () => RealtimeChannelManager.getInstance()
 /**
  * Export convenience methods
  */
-export const subscribeToEntity = <T = any>(config: EntitySubscriptionConfig<T>) =>
+export const subscribeToEntity = <T extends { [key: string]: any } = { [key: string]: any }>(config: EntitySubscriptionConfig<T>) =>
   getChannelManager().subscribeToEntity(config)
 
 export const joinPresence = (config: PresenceConfig) => getChannelManager().joinPresence(config)

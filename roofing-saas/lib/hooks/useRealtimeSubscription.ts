@@ -12,7 +12,7 @@ export type PostgresChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*'
 /**
  * Configuration for realtime subscription
  */
-export interface RealtimeSubscriptionConfig<T = any> {
+export interface RealtimeSubscriptionConfig<T extends { [key: string]: any } = { [key: string]: any }> {
   /**
    * Name of the channel (must be unique per subscription)
    */
@@ -99,7 +99,7 @@ export interface RealtimeSubscriptionReturn {
  * })
  * ```
  */
-export function useRealtimeSubscription<T = any>(
+export function useRealtimeSubscription<T extends { [key: string]: any } = { [key: string]: any }>(
   config: RealtimeSubscriptionConfig<T>
 ): RealtimeSubscriptionReturn {
   const {
@@ -264,7 +264,7 @@ export function useRealtimeSubscription<T = any>(
  * }
  * ```
  */
-export function createTableSubscription<T = any>(table: string) {
+export function createTableSubscription<T extends { [key: string]: any } = { [key: string]: any }>(table: string) {
   return (
     config: Omit<RealtimeSubscriptionConfig<T>, 'table' | 'channelName'> & {
       channelName?: string
