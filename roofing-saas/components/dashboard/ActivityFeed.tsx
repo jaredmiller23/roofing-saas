@@ -85,7 +85,7 @@ export function ActivityFeed() {
   const getActivityIcon = (type: ActivityItem['type']) => {
     switch (type) {
       case 'project_won':
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />
+        return <CheckCircle2 className="h-5 w-5 text-chart-2" />
       case 'project_lost':
         return <XCircle className="h-5 w-5 text-muted-foreground" />
       case 'project_created':
@@ -93,7 +93,7 @@ export function ActivityFeed() {
       case 'contact_added':
         return <UserPlus className="h-5 w-5 text-primary" />
       case 'status_change':
-        return <TrendingUp className="h-5 w-5 text-orange-600" />
+        return <TrendingUp className="h-5 w-5 text-chart-4" />
       default:
         return <Clock className="h-5 w-5 text-muted-foreground" />
     }
@@ -102,17 +102,17 @@ export function ActivityFeed() {
   const getActivityColor = (type: ActivityItem['type']) => {
     switch (type) {
       case 'project_won':
-        return 'bg-green-50 border-green-200'
+        return 'bg-chart-2/10 border-chart-2/30'
       case 'project_lost':
-        return 'bg-gray-50 border'
+        return 'bg-muted border-border'
       case 'project_created':
-        return 'bg-blue-50 border-blue-200'
+        return 'bg-primary/10 border-primary/30'
       case 'contact_added':
-        return 'bg-purple-50 border-purple-200'
+        return 'bg-chart-5/10 border-chart-5/30'
       case 'status_change':
-        return 'bg-orange-50 border-orange-200'
+        return 'bg-chart-4/10 border-chart-4/30'
       default:
-        return 'bg-gray-50 border'
+        return 'bg-muted border-border'
     }
   }
 
@@ -230,7 +230,7 @@ export function ActivityFeed() {
 
                   {/* Value Display for Won Deals */}
                   {activity.type === 'project_won' && activity.metadata?.value && (
-                    <div className="mt-2 flex items-center gap-1 text-green-700">
+                    <div className="mt-2 flex items-center gap-1 text-chart-2">
                       <DollarSign className="h-4 w-4" />
                       <span className="text-sm font-semibold">
                         {formatCurrency(activity.metadata.value)}
