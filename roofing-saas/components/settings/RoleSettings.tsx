@@ -207,9 +207,9 @@ export function RoleSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert className="bg-chart-2/10 border-chart-2/30">
+          <CheckCircle className="h-4 w-4 text-chart-2" />
+          <AlertDescription className="text-foreground">
             Role saved successfully!
           </AlertDescription>
         </Alert>
@@ -217,8 +217,8 @@ export function RoleSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertDescription className="text-foreground">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -261,7 +261,7 @@ export function RoleSettings() {
                       </button>
                       <button
                         onClick={() => handleDelete(role.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-destructive hover:text-destructive/80"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -337,7 +337,7 @@ export function RoleSettings() {
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Permissions</h4>
               <div className="border border rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-border">
                   <thead className="bg-muted">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -353,7 +353,7 @@ export function RoleSettings() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-card divide-y divide-gray-200">
+                  <tbody className="bg-card divide-y divide-border">
                     {PERMISSION_MODULES.map((module) => {
                       const modulePerms = formData.permissions[module.key as keyof typeof formData.permissions]
                       return (

@@ -160,9 +160,9 @@ export function PipelineSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert className="bg-chart-2/10 border-chart-2/30">
+          <CheckCircle className="h-4 w-4 text-chart-2" />
+          <AlertDescription className="text-foreground">
             Pipeline stage saved successfully!
           </AlertDescription>
         </Alert>
@@ -170,8 +170,8 @@ export function PipelineSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertDescription className="text-foreground">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -384,8 +384,8 @@ export function PipelineSettings() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      stage.stage_type === 'won' ? 'bg-green-100 text-green-800' :
-                      stage.stage_type === 'lost' ? 'bg-red-100 text-red-800' :
+                      stage.stage_type === 'won' ? 'bg-chart-2/10 text-chart-2' :
+                      stage.stage_type === 'lost' ? 'bg-destructive/10 text-destructive' :
                       'bg-primary/10 text-primary'
                     }`}>
                       {stage.stage_type}
@@ -412,7 +412,7 @@ export function PipelineSettings() {
                     </button>
                     <button
                       onClick={() => handleDelete(stage.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-destructive hover:text-destructive/80"
                     >
                       Delete
                     </button>

@@ -105,9 +105,9 @@ export function BrandingSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert className="bg-chart-2/10 border-chart-2/30">
+          <CheckCircle className="h-4 w-4 text-chart-2" />
+          <AlertDescription className="text-foreground">
             Branding settings saved successfully!
           </AlertDescription>
         </Alert>
@@ -115,8 +115,8 @@ export function BrandingSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertDescription className="text-foreground">{error}</AlertDescription>
         </Alert>
       )}
 

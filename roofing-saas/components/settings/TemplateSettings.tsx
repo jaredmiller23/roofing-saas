@@ -219,9 +219,9 @@ export function TemplateSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert className="bg-chart-2/10 border-chart-2/30">
+          <CheckCircle className="h-4 w-4 text-chart-2" />
+          <AlertDescription className="text-foreground">
             Template saved successfully!
           </AlertDescription>
         </Alert>
@@ -229,8 +229,8 @@ export function TemplateSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertDescription className="text-foreground">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -240,14 +240,14 @@ export function TemplateSettings() {
           <div className="flex gap-2">
             <Button
               onClick={() => { setActiveType('email'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'email' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}
+              className={activeType === 'email' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
             >
               <Mail className="h-4 w-4 mr-2" />
               Email Templates
             </Button>
             <Button
               onClick={() => { setActiveType('sms'); setShowAddForm(false); setEditingTemplate(null) }}
-              className={activeType === 'sms' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}
+              className={activeType === 'sms' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               SMS Templates
@@ -292,7 +292,7 @@ export function TemplateSettings() {
                     </button>
                     <button
                       onClick={() => handleDelete(template.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-destructive hover:text-destructive/80"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -458,7 +458,7 @@ export function TemplateSettings() {
                 Available variables: {'{'}{'{'} contact_name {'}'}{'}'}, {'{'}{'{'} company_name {'}'}{'}'}, {'{'}{'{'} date {'}'}{'}'}, {'{'}{'{'} time {'}'}{'}'}
               </p>
               {smsFormData.message.length > 160 && (
-                <p className="text-xs text-orange-600 mt-1">
+                <p className="text-xs text-chart-4 mt-1">
                   ⚠️ Message will be sent as {Math.ceil(smsFormData.message.length / 160)} SMS parts
                 </p>
               )}

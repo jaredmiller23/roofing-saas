@@ -188,9 +188,9 @@ export function SubstatusSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert className="bg-chart-2/10 border-chart-2/30">
+          <CheckCircle className="h-4 w-4 text-chart-2" />
+          <AlertDescription className="text-foreground">
             Substatus saved successfully!
           </AlertDescription>
         </Alert>
@@ -198,8 +198,8 @@ export function SubstatusSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertDescription className="text-foreground">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -489,7 +489,7 @@ export function SubstatusSettings() {
                             {substatus.substatus_label}
                           </span>
                           {substatus.is_default && (
-                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                            <Star className="h-3 w-3 text-chart-4 fill-chart-4" />
                           )}
                         </div>
                       </div>
@@ -507,7 +507,7 @@ export function SubstatusSettings() {
                           </span>
                         )}
                         {substatus.is_terminal && (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-600 rounded">
+                          <span className="px-2 py-0.5 bg-destructive/10 text-destructive rounded">
                             Terminal
                           </span>
                         )}
@@ -527,7 +527,7 @@ export function SubstatusSettings() {
                           className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
                           title="Delete"
                         >
-                          <Trash2 className="h-3 w-3 text-red-600" />
+                          <Trash2 className="h-3 w-3 text-destructive" />
                         </button>
                       </div>
                     </div>
