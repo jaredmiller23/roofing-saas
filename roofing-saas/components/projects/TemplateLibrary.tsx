@@ -26,7 +26,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   AlertDialog,
@@ -41,9 +40,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   ProjectTemplate,
-  TemplateType,
   TemplateFilters,
-  TemplateAnalytics,
   TemplatePerformanceMetrics
 } from '@/lib/types/project-template'
 import { DEFAULT_TEMPLATES } from '@/lib/data/default-templates'
@@ -53,16 +50,13 @@ import {
   Copy,
   Edit,
   Trash2,
-  Download,
   Eye,
   Plus,
-  TrendingUp,
   Clock,
   DollarSign,
   BarChart3,
   Grid3x3,
   List,
-  Filter,
   Star,
   Users,
   Calendar
@@ -86,7 +80,7 @@ export function TemplateLibrary({
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null)
   const [templateToDelete, setTemplateToDelete] = useState<ProjectTemplate | null>(null)
-  const [showAnalytics, setShowAnalytics] = useState(false)
+  const [_showAnalytics, _setShowAnalytics] = useState(false)
   const [filters, setFilters] = useState<TemplateFilters>({
     search: '',
     template_type: undefined,
@@ -99,8 +93,12 @@ export function TemplateLibrary({
   const [analytics, setAnalytics] = useState<TemplatePerformanceMetrics | null>(null)
 
   useEffect(() => {
-    loadTemplates()
-    loadAnalytics()
+    const fetchData = async () => {
+      await loadTemplates()
+      await loadAnalytics()
+    }
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   const loadTemplates = async () => {
@@ -179,7 +177,7 @@ export function TemplateLibrary({
       const allTemplates = [...defaultTemplates, ...customTemplates] as ProjectTemplate[]
 
       // Apply filters
-      let filteredTemplates = allTemplates.filter(template => {
+      const filteredTemplates = allTemplates.filter(template => {
         const matchesSearch = !filters.search ||
           template.name.toLowerCase().includes(filters.search.toLowerCase()) ||
           template.description?.toLowerCase().includes(filters.search.toLowerCase())
@@ -196,21 +194,24 @@ export function TemplateLibrary({
       // Apply sorting
       if (filters.sort_by) {
         filteredTemplates.sort((a, b) => {
-          let aValue: any = a[filters.sort_by!]
-          let bValue: any = b[filters.sort_by!]
+          const aRaw = a[filters.sort_by as keyof ProjectTemplate]
+          const bRaw = b[filters.sort_by as keyof ProjectTemplate]
 
-          if (filters.sort_by === 'usage_count' || filters.sort_by === 'last_used_at') {
-            aValue = aValue || 0
-            bValue = bValue || 0
+          // Handle undefined/null values
+          const aValue = aRaw ?? ''
+          const bValue = bRaw ?? ''
+
+          // Compare as strings (case-insensitive) or numbers
+          let comparison = 0
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase())
+          } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+            comparison = aValue - bValue
+          } else {
+            comparison = String(aValue).localeCompare(String(bValue))
           }
 
-          if (typeof aValue === 'string') {
-            aValue = aValue.toLowerCase()
-            bValue = bValue?.toLowerCase() || ''
-          }
-
-          const result = aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-          return filters.sort_order === 'desc' ? -result : result
+          return filters.sort_order === 'desc' ? -comparison : comparison
         })
       }
 
@@ -714,7 +715,7 @@ export function TemplateLibrary({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Template</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{templateToDelete?.name}&rdquo;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
