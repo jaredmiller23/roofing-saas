@@ -4,12 +4,15 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { MFAChallenge } from '@/components/auth/MFAChallenge'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showMFA, setShowMFA] = useState(false)
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -31,7 +34,23 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Successful login - middleware will handle redirect
+        // Check if MFA is required
+        const { data: assuranceData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+        if (assuranceData?.nextLevel === 'aal2') {
+          // MFA required - get the first available factor
+          const { data: factorsData } = await supabase.auth.mfa.listFactors()
+          const verifiedFactor = factorsData?.totp.find(f => f.status === 'verified')
+
+          if (verifiedFactor) {
+            setMfaFactorId(verifiedFactor.id)
+            setShowMFA(true)
+            setLoading(false)
+            return
+          }
+        }
+
+        // Successful login without MFA or MFA already verified
         router.push('/dashboard')
         router.refresh()
       }
@@ -39,6 +58,33 @@ export default function LoginPage() {
       setError('An unexpected error occurred')
       setLoading(false)
     }
+  }
+
+  const handleMFAVerified = () => {
+    setShowMFA(false)
+    router.push('/dashboard')
+    router.refresh()
+  }
+
+  const handleMFABack = () => {
+    setShowMFA(false)
+    setMfaFactorId(null)
+    // Sign out the user since they didn't complete MFA
+    supabase.auth.signOut()
+  }
+
+  // Show MFA challenge if required
+  if (showMFA && mfaFactorId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <MFAChallenge
+          factorId={mfaFactorId}
+          onVerified={handleMFAVerified}
+          onBack={handleMFABack}
+          allowRecovery={true}
+        />
+      </div>
+    )
   }
 
   return (

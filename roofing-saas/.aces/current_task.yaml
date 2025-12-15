@@ -2,48 +2,23 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Fix the dashboard loading issue where metrics widgets show skeleton placeholders
-    indefinitely.
+  goal: 'Implement Multi-Factor Authentication (MFA) for admin accounts using
 
-    The root cause is that API errors fail silently - the component doesn''t check
-    response.ok before
+    Supabase TOTP MFA. This addresses a security recommendation from the
 
-    parsing JSON, so if the API returns 401/403/500, the component stays in loading
-    state forever.
-
-
-    Changes needed:
-
-    1. DashboardMetrics.tsx: Add response.ok check, timeout handling, user-visible
-    error state with retry
-
-    2. ActivityFeed.tsx: Same fixes - add response.ok check and error state
-
-    3. WeeklyChallengeWidget.tsx: Same fixes - add response.ok check and error state
-
-
-    The error state should show a clear message and a "Retry" button, not just log
-    to console.
+    authentication system analysis.
 
     '
   success_criteria:
-  - DashboardMetrics.tsx checks response.ok before JSON parsing
-  - DashboardMetrics.tsx shows user-visible error with retry button when API fails
-  - DashboardMetrics.tsx has timeout handling (30s max)
-  - ActivityFeed.tsx has same error handling improvements
-  - WeeklyChallengeWidget.tsx has same error handling improvements
-  - No silent failures - all errors visible to users
-  why: 'Smoke tests revealed the dashboard shows skeleton placeholders indefinitely
-    on production.
-
-    Users see a broken dashboard with no indication of what went wrong. This is a
-    critical UX issue.
-
-    '
+  - MFA enrollment flow for admin users
+  - MFA challenge on admin login
+  - Recovery codes generated
+  - Supabase TOTP properly configured
+  why: Security risk - admin accounts lack MFA protection
 dependencies: null
 handoff:
   format: null
-  progress_file: .vest/last_run_summary.md
+  progress_file: .vest/quickwin-005-progress.md
   update_on:
   - task_start
   - task_complete
@@ -51,56 +26,38 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T15:30:00'
-  id: FIX-001
-  priority: 3
-  template: code-modification
-  title: Fix Dashboard Error Handling - Prevent Silent Failures
+  created: '2025-12-14T00:00:00'
+  id: QUICKWIN-005
+  priority: 1
+  template: api-endpoint
+  title: Enable MFA for Admin Accounts
 on_failure:
   escalate:
     include:
     - error_output
-    - files_modified
-    - partial_progress
+    - partial_implementation
     to: human
-  rollback:
-  - git checkout -- components/dashboard/
+  rollback: []
 read_first:
 - extract: []
-  path: components/dashboard/DashboardMetrics.tsx
-  reason: Main component to fix - understand current fetch logic
+  path: lib/auth/index.ts
+  reason: Current auth implementation
   required: true
 - extract: []
-  path: components/dashboard/ActivityFeed.tsx
-  reason: Secondary component needing same fix
+  path: app/(auth)/login/page.tsx
+  reason: Current login flow
   required: true
-- extract: []
-  path: components/dashboard/WeeklyChallengeWidget.tsx
-  reason: Third component needing same fix
-  required: true
-- extract: []
-  path: components/ui/button.tsx
-  reason: Use existing Button component for retry
-  required: false
 scope:
-  constraints:
-  - Only modify the specified component files
-  - Keep existing functionality intact
-  - Add error handling without breaking happy path
-  - Use existing UI patterns for error states
-  create: []
+  constraints: []
+  create:
+  - components/auth/MFASetup.tsx
+  - components/auth/MFAChallenge.tsx
   do_not_touch:
-  - app/api/**
-  - lib/**
+  - supabase/migrations/**
   modify:
-  - components/dashboard/DashboardMetrics.tsx
-  - components/dashboard/ActivityFeed.tsx
-  - components/dashboard/WeeklyChallengeWidget.tsx
-thinking:
-  level: think_hard
-  triggers:
-  - Before modifying fetch logic
-  - When designing error state UI
+  - app/(dashboard)/settings/**
+  - lib/auth/**
+thinking: null
 validation:
   assertions: []
   post_commit: []
@@ -108,12 +65,8 @@ validation:
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 120
-  - command: npm run build
+    timeout: 60
+  - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
-  - command: npm run lint
-    expect: 'exit_code: 0'
-    required: false
     timeout: 60

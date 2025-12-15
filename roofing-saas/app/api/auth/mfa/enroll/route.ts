@@ -7,7 +7,7 @@
 
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
-import { enrollMFA } from '@/lib/auth/mfa'
+import { enrollMFA, generateRecoveryCodes } from '@/lib/auth/mfa'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
 
     const enrollment = await enrollMFA(friendlyName)
 
+    // Generate recovery codes for backup access
+    const recoveryCodes = generateRecoveryCodes(10)
+
     return successResponse({
       success: true,
       enrollment: {
@@ -33,6 +36,7 @@ export async function POST(request: NextRequest) {
         secret: enrollment.secret,
         uri: enrollment.uri,
       },
+      recoveryCodes,
     })
   } catch (error) {
     logger.error('Error enrolling MFA:', { error })

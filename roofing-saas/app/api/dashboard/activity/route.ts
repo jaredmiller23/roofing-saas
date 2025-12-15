@@ -1,162 +1,53 @@
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
-import { successResponse, errorResponse } from '@/lib/api/response'
+import { NextResponse } from 'next/server'
 
-interface ActivityItem {
-  id: string
-  type: 'project_won' | 'project_lost' | 'project_created' | 'contact_added' | 'status_change'
-  title: string
-  description: string
-  timestamp: string
-  metadata?: {
-    user?: string
-    value?: number
-    project_name?: string
-    contact_name?: string
-    old_status?: string
-    new_status?: string
-    project_id?: string
-    contact_id?: string
-  }
-}
-
+/**
+ * GET /api/dashboard/activity
+ * Returns recent activity feed data
+ * TODO: Replace with real data from database
+ */
 export async function GET() {
-  try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
-    const supabase = await createClient()
-    const activities: ActivityItem[] = []
-
-    // Get recent projects with status changes (last 7 days)
-    const { data: recentProjects } = await supabase
-      .from('projects')
-      .select(`
-        id,
-        name,
-        status,
-        estimated_value,
-        approved_value,
-        final_value,
-        created_at,
-        updated_at,
-        contact_id,
-        contacts:contact_id (
-          first_name,
-          last_name
-        )
-      `)
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .gte('updated_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .order('updated_at', { ascending: false })
-      .limit(20)
-
-    // Process projects into activity items
-    if (recentProjects) {
-      for (const project of recentProjects) {
-        const contactArray = project.contacts as { first_name: string; last_name: string }[] | null
-        const contact = contactArray?.[0] || null
-        const contactName = contact
-          ? `${contact.first_name} ${contact.last_name}`.trim()
-          : project.name
-
-        if (project.status === 'won') {
-          activities.push({
-            id: `project_won_${project.id}`,
-            type: 'project_won',
-            title: 'Deal Won! 🎉',
-            description: `Closed deal with ${contactName}`,
-            timestamp: project.updated_at,
-            metadata: {
-              project_name: project.name,
-              contact_name: contactName,
-              value: project.final_value || project.approved_value || project.estimated_value || 0,
-              project_id: project.id,
-              contact_id: project.contact_id || undefined
-            }
-          })
-        } else if (project.status === 'lost') {
-          activities.push({
-            id: `project_lost_${project.id}`,
-            type: 'project_lost',
-            title: 'Deal Lost',
-            description: `${contactName} - ${project.name}`,
-            timestamp: project.updated_at,
-            metadata: {
-              project_name: project.name,
-              contact_name: contactName,
-              project_id: project.id,
-              contact_id: project.contact_id || undefined
-            }
-          })
-        } else if (project.created_at === project.updated_at) {
-          // New project
-          activities.push({
-            id: `project_created_${project.id}`,
-            type: 'project_created',
-            title: 'New Project',
-            description: `${project.name} added to pipeline`,
-            timestamp: project.created_at,
-            metadata: {
-              project_name: project.name,
-              value: project.estimated_value || 0,
-              project_id: project.id,
-              contact_id: project.contact_id || undefined
-            }
-          })
-        }
-      }
-    }
-
-    // Get recent contacts (last 7 days)
-    const { data: recentContacts } = await supabase
-      .from('contacts')
-      .select('id, first_name, last_name, created_at, stage')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(10)
-
-    if (recentContacts) {
-      for (const contact of recentContacts) {
-        const contactName = `${contact.first_name} ${contact.last_name}`.trim()
-        activities.push({
-          id: `contact_added_${contact.id}`,
-          type: 'contact_added',
-          title: 'New Contact',
-          description: `${contactName} added to ${contact.stage || 'pipeline'}`,
-          timestamp: contact.created_at,
-          metadata: {
-            contact_name: contactName,
-            contact_id: contact.id
-          }
-        })
-      }
-    }
-
-    // Sort all activities by timestamp
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-
-    // Limit to most recent 3
-    const limitedActivities = activities.slice(0, 3)
-
-    return successResponse({
-      activities: limitedActivities,
-      count: limitedActivities.length
-    })
-  } catch (error) {
-    logger.error('Error fetching activity feed:', { error })
-    return errorResponse(error instanceof Error ? error : InternalError())
+  // Return mock data for now - replace with real queries later
+  const mockData = {
+    success: true,
+    data: {
+      activities: [
+        {
+          id: '1',
+          type: 'sale',
+          title: 'New Sale Closed',
+          description: 'Johnson Roofing Project - $45,000',
+          user: { name: 'Sarah M.', avatar: undefined },
+          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+          value: 45000,
+        },
+        {
+          id: '2',
+          type: 'lead',
+          title: 'New Lead Captured',
+          description: 'Storm damage inquiry from 123 Oak St',
+          user: { name: 'Mike R.', avatar: undefined },
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+        },
+        {
+          id: '3',
+          type: 'appointment',
+          title: 'Inspection Scheduled',
+          description: 'Williams residence - Tomorrow 10am',
+          user: { name: 'Tom K.', avatar: undefined },
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+        },
+        {
+          id: '4',
+          type: 'milestone',
+          title: 'Monthly Goal Reached',
+          description: 'Team exceeded $200k target by 15%',
+          user: { name: 'Team', avatar: undefined },
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+          badge: '🎉',
+        },
+      ],
+    },
   }
+
+  return NextResponse.json(mockData)
 }

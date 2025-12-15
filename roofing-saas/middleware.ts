@@ -8,6 +8,7 @@ import {
   applyRateLimit,
 } from './lib/rate-limit'
 import { locales, defaultLocale } from './lib/i18n/config'
+import { shouldBlockRequest } from './lib/auth/mfa-enforcement'
 
 // Create i18n middleware instance
 const intlMiddleware = createIntlMiddleware({
@@ -164,6 +165,21 @@ export async function middleware(request: NextRequest) {
     const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
     const origin = new URL(request.url).origin
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
+  }
+
+  // Check MFA enforcement for authenticated users accessing protected routes
+  if (user && !isPublicRoute) {
+    try {
+      const blockResult = await shouldBlockRequest(pathnameWithoutLocale)
+      if (blockResult.shouldBlock && blockResult.redirectPath) {
+        const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
+        const origin = new URL(request.url).origin
+        return NextResponse.redirect(new URL(`/${locale}${blockResult.redirectPath}`, origin))
+      }
+    } catch (error) {
+      // Log error but don't block the request - MFA enforcement should be graceful
+      console.error('MFA enforcement check failed:', error)
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

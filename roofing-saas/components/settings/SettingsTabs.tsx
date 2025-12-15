@@ -10,6 +10,7 @@ import { TemplateSettings } from './TemplateSettings'
 import { RoleSettings } from './RoleSettings'
 import { SubstatusSettings } from './SubstatusSettings'
 import { AppearanceSettings } from './appearance-settings'
+import { SecuritySettings } from './SecuritySettings'
 import { CallComplianceSettings } from './CallComplianceSettings'
 import { GamificationSettings } from './GamificationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
@@ -83,6 +84,13 @@ export function SettingsTabs() {
               Roles
             </TabsTrigger>
             <TabsTrigger
+              value="security"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <Shield className="h-4 w-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger
               value="substatuses"
               className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
             >
@@ -141,6 +149,10 @@ export function SettingsTabs() {
 
           <TabsContent value="roles">
             <RoleSettings />
+          </TabsContent>
+
+          <TabsContent value="security">
+            <SecuritySettings />
           </TabsContent>
 
           <TabsContent value="substatuses">

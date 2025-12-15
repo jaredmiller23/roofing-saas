@@ -10,12 +10,14 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(components/dashboard/DashboardMetrics.tsx)",
-      "Edit(components/dashboard/DashboardMetrics.tsx)",
-      "Write(components/dashboard/ActivityFeed.tsx)",
-      "Edit(components/dashboard/ActivityFeed.tsx)",
-      "Write(components/dashboard/WeeklyChallengeWidget.tsx)",
-      "Edit(components/dashboard/WeeklyChallengeWidget.tsx)"
+      "Write(components/auth/MFASetup.tsx)",
+      "Edit(components/auth/MFASetup.tsx)",
+      "Write(components/auth/MFAChallenge.tsx)",
+      "Edit(components/auth/MFAChallenge.tsx)",
+      "Write(app/(dashboard)/settings/**)",
+      "Edit(app/(dashboard)/settings/**)",
+      "Write(lib/auth/**)",
+      "Edit(lib/auth/**)"
     ]
   }
 }
