@@ -62,7 +62,7 @@ export function TriggerNode({ trigger, onChange, onDelete, isExpanded = false }:
   const updateConfig = (updates: Partial<WorkflowTrigger['config']>) => {
     onChange({
       ...trigger,
-      config: { ...trigger.config, ...updates }
+      config: { ...trigger.config, ...updates } as typeof trigger.config
     })
   }
 

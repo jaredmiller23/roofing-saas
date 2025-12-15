@@ -22,7 +22,6 @@ interface QuoteOption {
 
 interface EstimateFormData {
   quote_options: QuoteOption[]
-  [key: string]: unknown
 }
 
 interface QuoteOptionsProps {

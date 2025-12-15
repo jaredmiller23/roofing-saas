@@ -2,30 +2,84 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Fix 68 TypeScript errors introduced by aggressive lint cleanup.\n\nCOMMON\
-    \ ISSUES TO FIX:\n\n1. UNKNOWN TYPE ERRORS:\n   The lint cleanup replaced `any`\
-    \ with `unknown` too aggressively.\n   - If accessing properties on unknown: Add\
-    \ type assertion or interface\n   - Example: `(data as MyType).property` or proper\
-    \ interface\n   - For function params: Use proper parameter types, not unknown\n\
-    \n2. BLOCK-SCOPED VARIABLE ERRORS:\n   Variables used before declaration due to\
-    \ useCallback refactoring.\n   - Move variable declarations before usage\n   -\
-    \ Or restructure the code to avoid circular references\n\n3. TYPE ASSIGNMENT ERRORS:\n\
-    \   Incompatible type assignments from Record<string, unknown>.\n   - Replace\
-    \ Record<string, unknown> with specific interfaces\n   - Add proper type assertions\
-    \ where needed\n\n4. MISSING NAMESPACE ERRORS:\n   JSX namespace issues.\n   -\
-    \ Ensure React types are properly imported\n   - Check tsconfig for proper JSX\
-    \ settings\n\nFIX STRATEGIES:\n- Restore `any` ONLY if proper typing is genuinely\
-    \ complex\n- Prefer specific interfaces over unknown\n- Use type guards for runtime\
-    \ type checking\n- Add type assertions with `as Type` syntax\n\nDO NOT:\n- Add\
-    \ eslint-disable comments\n- Break existing functionality\n- Create new lint warnings\n"
-  success_criteria:
-  - npm run typecheck passes with 0 errors
-  - npm run lint still passes with 0 warnings
-  - npm run build succeeds
-  - No functionality broken
-  why: 'The lint cleanup reduced warnings from 295 to 0 but introduced 68 TypeScript
+  goal: 'Enhance the file management system with centralized document organization.
 
-    errors. These must be fixed to restore build functionality.
+
+    Features to implement:
+
+    1. File categorization system (contracts, photos, permits, invoices, etc.)
+
+    2. Folder hierarchy for organizing files within projects
+
+    3. File search and filtering capabilities
+
+    4. File versioning support (track file history)
+
+    5. Bulk file operations (select multiple, move, delete)
+
+    6. Mobile-optimized file upload with photo capture
+
+
+    File Categories for Roofing:
+
+    - Contracts & Agreements
+
+    - Photos (before/during/after)
+
+    - Permits & Inspections
+
+    - Invoices & Estimates
+
+    - Insurance Documents
+
+    - Warranty Documents
+
+    - Material Specs
+
+    - Other
+
+
+    NOTE: Build on existing project-files infrastructure.
+
+
+    IMPORTANT CODE QUALITY REQUIREMENTS:
+
+    - Run `npm run typecheck` and fix ALL errors before completing
+
+    - Run `npm run lint` and fix errors, keep warnings under 10
+
+    - Do NOT create duplicate type definitions
+
+    - Import all types you use (FileType, RoofingFileCategory, etc.)
+
+    - Do NOT use `any` type - use proper types or `unknown`
+
+    - Prefix unused parameters with underscore: `_param`
+
+    - Use theme variables, not hardcoded colors
+
+    '
+  success_criteria:
+  - Files can be categorized
+  - Folder structure supported
+  - Search/filter works on files
+  - Version history accessible
+  - Mobile upload functional
+  - Bulk operations work
+  why: 'Research Finding: No centralized document organization causes project chaos.
+
+    Competitor Buildertrend provides complete document management.
+
+
+    Business Impact:
+
+    - Projects lose critical documents
+
+    - No version control on contracts
+
+    - Field teams can''t access files on mobile
+
+    - Compliance risk from missing documentation
 
     '
 dependencies: null
@@ -39,11 +93,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T13:00:00'
-  id: TYPESCRIPT-FIX-POST-LINT
-  priority: 1
+  created: '2025-12-14T18:00:00'
+  id: SPRINT2-002
+  priority: 2
   template: code-modification
-  title: Fix TypeScript Errors from Lint Cleanup
+  title: File Management System Core Features
 on_failure:
   escalate:
     include:
@@ -54,34 +108,41 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: app/(dashboard)/automations/[id]/page.tsx
-  reason: Has block-scoped variable errors
+  path: components/project-files/project-files-table.tsx
+  reason: Existing file table to enhance
   required: true
 - extract: []
-  path: lib/hooks/usePresence.ts
-  reason: Has unknown type errors
+  path: components/project-files/project-file-form.tsx
+  reason: Existing upload form to enhance
   required: true
 - extract: []
-  path: components/bi/QueryResults.tsx
-  reason: Has multiple type errors
+  path: app/api/project-files/route.ts
+  reason: Existing file API patterns
   required: true
 scope:
   constraints: []
-  create: []
+  create:
+  - lib/types/file.ts
+  - components/project-files/FileCategories.tsx
+  - components/project-files/FileFolderTree.tsx
+  - components/project-files/FileVersionHistory.tsx
+  - components/project-files/BulkFileActions.tsx
+  - components/project-files/MobileFileUpload.tsx
+  - app/api/project-files/versions/route.ts
+  - app/api/project-files/search/route.ts
   do_not_touch:
-  - node_modules/**
-  - .next/**
+  - storage bucket configurations
+  - Supabase storage policies
   modify:
-  - app/(dashboard)/**/*.tsx
-  - app/[locale]/(dashboard)/**/*.tsx
-  - app/api/**/*.ts
-  - components/**/*.tsx
-  - lib/**/*.ts
+  - components/project-files/project-files-table.tsx
+  - components/project-files/project-file-form.tsx
+  - app/api/project-files/route.ts
+  - app/api/project-files/[id]/route.ts
 thinking:
   level: think_hard
   triggers:
-  - When deciding between any and proper types
-  - When fixing complex type assertions
+  - Before designing folder hierarchy structure
+  - When implementing file versioning
 validation:
   assertions: []
   post_commit: []
@@ -90,11 +151,19 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 120
-  - command: npm run lint -- --max-warnings 0
+  - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
-    timeout: 120
-  - command: npm run build
+    timeout: 60
+  - command: test -f lib/types/file.ts
     expect: 'exit_code: 0'
     required: true
-    timeout: 300
+    timeout: 60
+  - command: grep -q "FileCategories" components/project-files/project-files-table.tsx
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: test -f components/project-files/MobileFileUpload.tsx
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60

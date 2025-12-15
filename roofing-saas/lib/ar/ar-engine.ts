@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/// <reference types="webxr" />
 /**
  * AR Damage Assessment Engine
  * Core AR functionality for roof damage assessment
  */
 
-import type { ARDevice, ARState, ARSession, ARMeasurement, ARPoint, ARTool, MeasurementResult } from './ar-types'
+import type { ARDevice, ARState, ARSession, ARMeasurement, ARPoint, MeasurementResult } from './ar-types'
+import { ARTool } from './ar-types'
 
 export class AREngine {
   private state: ARState
-  private session?: unknown // XRSession
-  private referenceSpace?: unknown // XRReferenceSpace
+  private session?: XRSession
+  private referenceSpace?: XRReferenceSpace
   private gl?: WebGL2RenderingContext
   private frame?: unknown // XRFrame
   
@@ -31,7 +33,7 @@ export class AREngine {
         return false
       }
 
-      const isSupported = await (navigator as { xr: { isSessionSupported: (mode: string) => Promise<boolean> } }).xr.isSessionSupported('immersive-ar')
+      const isSupported = await navigator.xr?.isSessionSupported('immersive-ar')
       if (!isSupported) {
         this.state.last_error = 'AR sessions not supported'
         return false
@@ -47,7 +49,7 @@ export class AREngine {
 
   async startSession(projectId: string): Promise<ARSession | null> {
     try {
-      this.session = await (navigator as { xr?: { requestSession: (mode: string, options: unknown) => Promise<unknown> } }).xr?.requestSession('immersive-ar', {
+      this.session = await navigator.xr?.requestSession('immersive-ar', {
         requiredFeatures: ['local', 'hit-test'],
         optionalFeatures: ['dom-overlay', 'camera-access']
       })
@@ -194,10 +196,10 @@ export class AREngine {
 
     return {
       platform,
-      supports_ar: 'xr' in (navigator as { xr?: { requestSession: (mode: string, options: unknown) => Promise<unknown> } }),
-      supports_arcore: platform === 'android' && 'xr' in (navigator as { xr?: { requestSession: (mode: string, options: unknown) => Promise<unknown> } }),
-      supports_arkit: platform === 'ios' && 'xr' in (navigator as { xr?: { requestSession: (mode: string, options: unknown) => Promise<unknown> } }),
-      supports_webxr: 'xr' in (navigator as { xr?: { requestSession: (mode: string, options: unknown) => Promise<unknown> } }),
+      supports_ar: 'xr' in navigator,
+      supports_arcore: platform === 'android' && 'xr' in navigator,
+      supports_arkit: platform === 'ios' && 'xr' in navigator,
+      supports_webxr: 'xr' in navigator,
       camera_permissions: false,
       motion_permissions: false
     }

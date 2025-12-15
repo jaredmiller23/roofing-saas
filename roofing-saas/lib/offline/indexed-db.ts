@@ -8,16 +8,15 @@ import { OfflineRecord, ConflictResolution, OfflineFormData, OfflinePhoto, Offli
 
 // Enhanced database schema
 interface EnhancedOfflineDB extends DBSchema {
-  [key: string]: unknown;
   offline_records: {
     key: string;
     value: OfflineRecord;
-    indexes: { 'by-table': string; 'by-synced': boolean; 'by-timestamp': number };
+    indexes: { 'by-table': string; 'by-synced': number; 'by-timestamp': number };
   };
   conflicts: {
     key: string;
     value: ConflictResolution;
-    indexes: { 'by-resolved': boolean };
+    indexes: { 'by-resolved': number };
   };
   cached_data: {
     key: string;
@@ -33,22 +32,22 @@ interface EnhancedOfflineDB extends DBSchema {
   offline_forms: {
     key: string;
     value: OfflineFormData;
-    indexes: { 'by-type': string; 'by-synced': boolean; 'by-timestamp': number };
+    indexes: { 'by-type': string; 'by-synced': number; 'by-timestamp': number };
   };
   offline_photos: {
     key: string;
     value: OfflinePhoto;
-    indexes: { 'by-synced': boolean; 'by-timestamp': number };
+    indexes: { 'by-synced': number; 'by-timestamp': number };
   };
   offline_projects: {
     key: string;
     value: OfflineProject;
-    indexes: { 'by-synced': boolean; 'by-timestamp': number };
+    indexes: { 'by-synced': number; 'by-timestamp': number };
   };
   offline_documents: {
     key: string;
     value: OfflineDocument;
-    indexes: { 'by-synced': boolean; 'by-timestamp': number };
+    indexes: { 'by-synced': number; 'by-timestamp': number };
   };
   sync_metadata: {
     key: string;
@@ -160,6 +159,7 @@ export async function addOfflineRecord(record: Omit<OfflineRecord, 'id' | 'times
     id,
     timestamp: Date.now(),
     retry_count: 0,
+    synced: record.synced ?? false,
   };
 
   await db.put('offline_records', fullRecord);
@@ -178,7 +178,7 @@ export async function getOfflineRecords(table?: string): Promise<OfflineRecord[]
 
 export async function getUnsyncedRecords(): Promise<OfflineRecord[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('offline_records', 'by-synced', false);
+  return await db.getAllFromIndex('offline_records', 'by-synced', 0);
 }
 
 export async function markRecordSynced(id: string): Promise<void> {
@@ -211,7 +211,7 @@ export async function addConflict(conflict: ConflictResolution): Promise<void> {
 
 export async function getUnresolvedConflicts(): Promise<ConflictResolution[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('conflicts', 'by-resolved', false);
+  return await db.getAllFromIndex('conflicts', 'by-resolved', 0);
 }
 
 export async function resolveConflict(id: string, resolvedData: Record<string, unknown>): Promise<void> {
@@ -295,7 +295,7 @@ export async function getOfflineForms(formType?: string): Promise<OfflineFormDat
 
 export async function getUnsyncedForms(): Promise<OfflineFormData[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('offline_forms', 'by-synced', false);
+  return await db.getAllFromIndex('offline_forms', 'by-synced', 0);
 }
 
 // ==================== OFFLINE PHOTOS ====================
@@ -307,7 +307,7 @@ export async function saveOfflinePhoto(photo: OfflinePhoto): Promise<void> {
 
 export async function getUnsyncedPhotos(): Promise<OfflinePhoto[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('offline_photos', 'by-synced', false);
+  return await db.getAllFromIndex('offline_photos', 'by-synced', 0);
 }
 
 // ==================== OFFLINE PROJECTS ====================
@@ -324,7 +324,7 @@ export async function getOfflineProjects(): Promise<OfflineProject[]> {
 
 export async function getUnsyncedProjects(): Promise<OfflineProject[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('offline_projects', 'by-synced', false);
+  return await db.getAllFromIndex('offline_projects', 'by-synced', 0);
 }
 
 // ==================== OFFLINE DOCUMENTS ====================
@@ -336,7 +336,7 @@ export async function saveOfflineDocument(document: OfflineDocument): Promise<vo
 
 export async function getUnsyncedDocuments(): Promise<OfflineDocument[]> {
   const db = await getEnhancedDB();
-  return await db.getAllFromIndex('offline_documents', 'by-synced', false);
+  return await db.getAllFromIndex('offline_documents', 'by-synced', 0);
 }
 
 // ==================== SYNC METADATA ====================
@@ -399,8 +399,8 @@ export async function getStorageStats(): Promise<{
     offlineForms
   ] = await Promise.all([
     db.count('offline_records'),
-    db.countFromIndex('offline_records', 'by-synced', false),
-    db.countFromIndex('conflicts', 'by-resolved', false),
+    db.countFromIndex('offline_records', 'by-synced', 0),
+    db.countFromIndex('conflicts', 'by-resolved', 0),
     db.count('cached_data'),
     db.count('offline_forms'),
   ]);

@@ -171,7 +171,7 @@ export function QueryResults({
           </div>
         ) : (
           <QueryVisualization
-            data={result.data}
+            data={result.data as Record<string, unknown>[]}
             columns={result.columns}
             visualization={result.visualization}
           />
@@ -226,7 +226,7 @@ function NumberVisualization({ data, columns }: { data: Record<string, unknown>[
   return (
     <div className="text-center py-8">
       <div className="text-4xl font-bold text-primary mb-2">
-        {typeof value === 'number' ? value.toLocaleString() : value}
+        {typeof value === 'number' ? value.toLocaleString() : String(value || 0)}
       </div>
       <div className="text-muted-foreground">
         {numericColumn?.description || numericColumn?.name || 'Result'}
@@ -302,7 +302,7 @@ function PieVisualization({ data, columns }: { data: Record<string, unknown>[], 
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={(entry) => `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
+            label={(props: { name?: string; percent?: number }) => `${props.name || ''}: ${((props.percent || 0) * 100).toFixed(0)}%`}
             outerRadius={80}
             dataKey="value"
           >

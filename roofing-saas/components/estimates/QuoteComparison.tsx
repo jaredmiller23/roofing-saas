@@ -211,7 +211,7 @@ function QuoteOptionComparisonCard({
   isRecommended,
   isSelected,
   onSelect,
-  _mode,
+  mode: _mode,
   viewMode,
   showSelection
 }: QuoteOptionComparisonCardProps) {

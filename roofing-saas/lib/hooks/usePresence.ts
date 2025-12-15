@@ -184,7 +184,7 @@ export function usePresence(config: UsePresenceConfig): UsePresenceReturn {
       if (presences && presences.length > 0) {
         // Take the first presence for each key (user can have multiple connections)
         const presence = presences[0]
-        const presenceData = presence as _PresencePayload
+        const presenceData = presence as unknown as _PresencePayload
         users.push({
           userId: presenceData.userId,
           userName: presenceData.userName,

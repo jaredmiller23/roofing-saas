@@ -90,7 +90,7 @@ export function ActionNode({
   const updateConfig = (updates: Partial<WorkflowAction['config']>) => {
     onChange({
       ...action,
-      config: { ...action.config, ...updates }
+      config: { ...action.config, ...updates } as typeof action.config
     })
   }
 
