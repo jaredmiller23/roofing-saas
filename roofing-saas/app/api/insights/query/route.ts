@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
         query = query.limit(1000)
         const result = await query
-        data = result.data || []
+        data = Array.isArray(result.data) ? result.data as unknown as Record<string, unknown>[] : []
         queryError = result.error
 
         // Handle count queries
@@ -165,17 +165,17 @@ export async function POST(request: NextRequest) {
 
         query = query.limit(1000)
         const result = await query
-        data = result.data || []
+        data = Array.isArray(result.data) ? result.data as unknown as Record<string, unknown>[] : []
         queryError = result.error
 
         // Handle aggregation queries
         if (intent.type === 'count') {
           data = [{ total_count: result.count || 0 }]
-        } else if (intent.type === 'sum' && result.data) {
-          const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
+        } else if (intent.type === 'sum' && Array.isArray(result.data)) {
+          const total = (result.data as unknown as Record<string, unknown>[]).reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
           data = [{ total_value: total }]
-        } else if (intent.type === 'average' && result.data) {
-          const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
+        } else if (intent.type === 'average' && Array.isArray(result.data)) {
+          const total = (result.data as unknown as Record<string, unknown>[]).reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.value) || 0), 0)
           const avg = result.data.length > 0 ? total / result.data.length : 0
           data = [{ average_value: avg }]
         }
@@ -205,21 +205,21 @@ export async function POST(request: NextRequest) {
 
         query = query.limit(1000)
         const result = await query
-        data = result.data || []
+        data = Array.isArray(result.data) ? result.data as unknown as Record<string, unknown>[] : []
         queryError = result.error
 
         // Handle revenue aggregations
-        if (intent.type === 'sum' && result.data) {
+        if (intent.type === 'sum' && Array.isArray(result.data)) {
           if (interpretation.metrics.includes('revenue')) {
-            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
+            const total = (result.data as unknown as Record<string, unknown>[]).reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
             data = [{ total_revenue: total }]
           } else if (interpretation.metrics.includes('profit')) {
-            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.gross_profit) || 0), 0)
+            const total = (result.data as unknown as Record<string, unknown>[]).reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.gross_profit) || 0), 0)
             data = [{ total_profit: total }]
           }
-        } else if (intent.type === 'average' && result.data) {
+        } else if (intent.type === 'average' && Array.isArray(result.data)) {
           if (interpretation.metrics.includes('revenue')) {
-            const total = result.data.reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
+            const total = (result.data as unknown as Record<string, unknown>[]).reduce((sum: number, row: Record<string, unknown>) => sum + (Number(row.revenue) || 0), 0)
             const avg = result.data.length > 0 ? total / result.data.length : 0
             data = [{ average_revenue: avg }]
           }

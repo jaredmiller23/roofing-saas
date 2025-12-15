@@ -202,7 +202,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
         description: description.trim() || undefined,
         trigger,
         actions,
-        conditions: conditions.length > 0 ? conditions : undefined,
+        conditions: _conditions.length > 0 ? _conditions : undefined,
         status: 'draft'
       }
 
@@ -233,7 +233,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
         description,
         trigger,
         actions,
-        conditions
+        conditions: _conditions
       }
 
       await onTest?.(testWorkflow)
@@ -473,7 +473,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
           <WorkflowCanvas
             trigger={trigger}
             actions={actions}
-            conditions={conditions}
+            conditions={_conditions}
             onTriggerClick={() => setShowTriggerPanel(true)}
             onActionClick={setEditingAction}
           />

@@ -21,11 +21,6 @@ export default function WorkflowDetailsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('builder')
 
-  useEffect(() => {
-    loadWorkflow()
-    loadExecutions()
-  }, [workflowId, loadWorkflow, loadExecutions])
-
   const loadWorkflow = useCallback(async () => {
     try {
       const response = await fetch(`/api/automations/${workflowId}`)
@@ -51,6 +46,11 @@ export default function WorkflowDetailsPage() {
       console.error('Error loading executions:', error)
     }
   }, [workflowId])
+
+  useEffect(() => {
+    loadWorkflow()
+    loadExecutions()
+  }, [workflowId, loadWorkflow, loadExecutions])
 
   const handleSave = async (workflowData: Partial<Workflow>) => {
     try {

@@ -2,33 +2,30 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Reduce lint warnings from 295 to under 5 to unblock all future tasks.\n\n\
-    WARNING BREAKDOWN (approximate):\n- @typescript-eslint/no-unused-vars: ~140 warnings\n\
-    - @typescript-eslint/no-explicit-any: ~20 warnings\n- react-hooks/exhaustive-deps:\
-    \ ~15 warnings\n- react/no-unescaped-entities: ~5 warnings\n- Other: ~115 warnings\n\
-    \nFIX STRATEGIES:\n\n1. UNUSED VARS (@typescript-eslint/no-unused-vars):\n   -\
-    \ If parameter is required by interface but unused: prefix with underscore\n \
-    \    Example: `function handler(req, _res)` or `const { used, _unused } = obj`\n\
-    \   - If import is unused: remove the import entirely\n   - If variable is truly\
-    \ unused: remove the declaration\n\n2. EXPLICIT ANY (@typescript-eslint/no-explicit-any):\n\
-    \   - Replace with specific type if known\n   - Use `unknown` if type is truly\
-    \ unknown\n   - Use generics where appropriate\n   - For event handlers: `React.MouseEvent<HTMLElement>`\n\
-    \n3. REACT HOOKS (react-hooks/exhaustive-deps):\n   - Add missing dependencies\
-    \ to dependency array\n   - If intentionally omitting: add eslint-disable comment\
-    \ with explanation\n   - Consider useCallback/useMemo for function dependencies\n\
-    \n4. UNESCAPED ENTITIES (react/no-unescaped-entities):\n   - Replace \" with &quot;\
-    \ or {'\"'}\n   - Replace ' with &apos; or {\"'\"}\n\nIMPORTANT:\n- Do NOT add\
-    \ eslint-disable comments unless absolutely necessary\n- Do NOT break existing\
-    \ functionality\n- Run typecheck after changes to ensure type safety\n- Focus\
-    \ on files with most warnings first\n"
+  goal: "Fix 68 TypeScript errors introduced by aggressive lint cleanup.\n\nCOMMON\
+    \ ISSUES TO FIX:\n\n1. UNKNOWN TYPE ERRORS:\n   The lint cleanup replaced `any`\
+    \ with `unknown` too aggressively.\n   - If accessing properties on unknown: Add\
+    \ type assertion or interface\n   - Example: `(data as MyType).property` or proper\
+    \ interface\n   - For function params: Use proper parameter types, not unknown\n\
+    \n2. BLOCK-SCOPED VARIABLE ERRORS:\n   Variables used before declaration due to\
+    \ useCallback refactoring.\n   - Move variable declarations before usage\n   -\
+    \ Or restructure the code to avoid circular references\n\n3. TYPE ASSIGNMENT ERRORS:\n\
+    \   Incompatible type assignments from Record<string, unknown>.\n   - Replace\
+    \ Record<string, unknown> with specific interfaces\n   - Add proper type assertions\
+    \ where needed\n\n4. MISSING NAMESPACE ERRORS:\n   JSX namespace issues.\n   -\
+    \ Ensure React types are properly imported\n   - Check tsconfig for proper JSX\
+    \ settings\n\nFIX STRATEGIES:\n- Restore `any` ONLY if proper typing is genuinely\
+    \ complex\n- Prefer specific interfaces over unknown\n- Use type guards for runtime\
+    \ type checking\n- Add type assertions with `as Type` syntax\n\nDO NOT:\n- Add\
+    \ eslint-disable comments\n- Break existing functionality\n- Create new lint warnings\n"
   success_criteria:
-  - Lint warnings under 5
-  - TypeScript compilation passes
-  - Build succeeds
+  - npm run typecheck passes with 0 errors
+  - npm run lint still passes with 0 warnings
+  - npm run build succeeds
   - No functionality broken
-  why: '295 lint warnings blocks ALL task validation (max-warnings 5 policy).
+  why: 'The lint cleanup reduced warnings from 295 to 0 but introduced 68 TypeScript
 
-    This technical debt must be cleared to enable feature development.
+    errors. These must be fixed to restore build functionality.
 
     '
 dependencies: null
@@ -42,11 +39,11 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T12:30:00'
-  id: LINT-CLEANUP-ALL
+  created: '2025-12-15T13:00:00'
+  id: TYPESCRIPT-FIX-POST-LINT
   priority: 1
   template: code-modification
-  title: Fix All Lint Warnings (295 total)
+  title: Fix TypeScript Errors from Lint Cleanup
 on_failure:
   escalate:
     include:
@@ -57,16 +54,16 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: lib/dashboard/dashboard-config.ts
-  reason: Has many unused vars
+  path: app/(dashboard)/automations/[id]/page.tsx
+  reason: Has block-scoped variable errors
   required: true
 - extract: []
   path: lib/hooks/usePresence.ts
-  reason: Has any types to fix
+  reason: Has unknown type errors
   required: true
 - extract: []
-  path: app/(dashboard)/automations/[id]/page.tsx
-  reason: Has hook dependency issues
+  path: components/bi/QueryResults.tsx
+  reason: Has multiple type errors
   required: true
 scope:
   constraints: []
@@ -74,15 +71,17 @@ scope:
   do_not_touch:
   - node_modules/**
   - .next/**
-  - '*.config.*'
   modify:
-  - '**/*.ts'
-  - '**/*.tsx'
+  - app/(dashboard)/**/*.tsx
+  - app/[locale]/(dashboard)/**/*.tsx
+  - app/api/**/*.ts
+  - components/**/*.tsx
+  - lib/**/*.ts
 thinking:
   level: think_hard
   triggers:
-  - When deciding if eslint-disable is necessary
-  - When replacing any types
+  - When deciding between any and proper types
+  - When fixing complex type assertions
 validation:
   assertions: []
   post_commit: []
@@ -91,7 +90,7 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 120
-  - command: npm run lint -- --max-warnings 5
+  - command: npm run lint -- --max-warnings 0
     expect: 'exit_code: 0'
     required: true
     timeout: 120

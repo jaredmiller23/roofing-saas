@@ -166,6 +166,13 @@ export function RealtimeToast({
 
   const showAvatar = (type === "user-joined" || type === "user-left") && user
 
+  const handleDismiss = React.useCallback(() => {
+    setIsVisible(false)
+    setTimeout(() => {
+      onDismiss?.()
+    }, 200) // Wait for exit animation
+  }, [onDismiss])
+
   // Auto-dismiss after duration
   React.useEffect(() => {
     if (duration > 0) {
@@ -180,13 +187,6 @@ export function RealtimeToast({
       }
     }
   }, [duration, handleDismiss])
-
-  const handleDismiss = React.useCallback(() => {
-    setIsVisible(false)
-    setTimeout(() => {
-      onDismiss?.()
-    }, 200) // Wait for exit animation
-  }, [onDismiss])
 
   if (!isVisible) {
     return null

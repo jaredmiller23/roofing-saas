@@ -13,7 +13,7 @@ interface DashboardWidget {
   props?: Record<string, unknown>
 }
 
-interface Dashboard {
+export interface Dashboard {
   id: string
   name: string
   description?: string
@@ -86,7 +86,7 @@ export function DashboardEditor({
     }))
 
     if (selectedWidget === widgetId) {
-      setSelectedWidget(null)
+      _setSelectedWidget(null)
     }
   }, [selectedWidget])
 
@@ -214,7 +214,7 @@ export function DashboardEditor({
                   gridColumn: `span ${widget.position.w}`,
                   gridRow: `span ${Math.ceil(widget.position.h / 2)}`,
                 }}
-                onClick={() => setSelectedWidget(widget.id)}
+                onClick={() => _setSelectedWidget(widget.id)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium capitalize">{widget.type}</span>

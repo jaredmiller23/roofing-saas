@@ -126,7 +126,7 @@ export default function ARAssessmentPage() {
       
       const exportData: AREstimateData = {
         session_id: arSession?.id || '',
-        total_damaged_area: analysis.total_affected_area,
+        total_damaged_area: analysis.total_affected_area as number,
         damage_summary: {},
         recommended_line_items: generateLineItems(analysis, measurements, damageMarkers)
       }
@@ -174,10 +174,13 @@ export default function ARAssessmentPage() {
       .filter(m => m.type === 'area')
       .reduce((sum, m) => sum + m.value, 0)
 
-    if (analysis.total_affected_area > 0) {
+    const totalArea = analysis.total_affected_area as number
+    const primaryCause = analysis.primary_cause as string
+
+    if (totalArea > 0) {
       lineItems.push({
-        description: 'Roof repair - damaged area (' + analysis.primary_cause + ')',
-        quantity: Math.ceil(analysis.total_affected_area),
+        description: 'Roof repair - damaged area (' + primaryCause + ')',
+        quantity: Math.ceil(totalArea),
         unit: 'sqft',
         unit_price: 15.00,
         category: 'materials' as const,
@@ -186,7 +189,7 @@ export default function ARAssessmentPage() {
 
       lineItems.push({
         description: 'Labor for roof damage repair',
-        quantity: Math.ceil(analysis.total_affected_area / 50),
+        quantity: Math.ceil(totalArea / 50),
         unit: 'hours',
         unit_price: 65.00,
         category: 'labor' as const
@@ -246,7 +249,7 @@ export default function ARAssessmentPage() {
                 AR Damage Assessment
               </h1>
               {project && (
-                <p className="text-sm text-muted-foreground">{project.name}</p>
+                <p className="text-sm text-muted-foreground">{project.name as string}</p>
               )}
             </div>
           </div>
@@ -278,7 +281,7 @@ export default function ARAssessmentPage() {
             <ARViewport
               projectId={projectId}
               onMeasurementComplete={handleMeasurementComplete}
-              onDamageMarkerAdded={handleDamageMarkerAdded}
+              _onDamageMarkerAdded={handleDamageMarkerAdded}
               className="h-[calc(100%-60px)]"
             />
           </div>

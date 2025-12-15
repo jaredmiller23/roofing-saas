@@ -10,10 +10,16 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(**/*.ts)",
-      "Edit(**/*.ts)",
-      "Write(**/*.tsx)",
-      "Edit(**/*.tsx)"
+      "Write(app/(dashboard)/**/*.tsx)",
+      "Edit(app/(dashboard)/**/*.tsx)",
+      "Write(app/[locale]/(dashboard)/**/*.tsx)",
+      "Edit(app/[locale]/(dashboard)/**/*.tsx)",
+      "Write(app/api/**/*.ts)",
+      "Edit(app/api/**/*.ts)",
+      "Write(components/**/*.tsx)",
+      "Edit(components/**/*.tsx)",
+      "Write(lib/**/*.ts)",
+      "Edit(lib/**/*.ts)"
     ]
   }
 }

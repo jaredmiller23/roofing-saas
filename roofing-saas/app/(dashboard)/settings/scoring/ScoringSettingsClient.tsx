@@ -271,8 +271,12 @@ export function ScoringSettingsClient({ user: _user }: ScoringSettingsClientProp
                       <Label>Max Value</Label>
                       <Input
                         type="number"
-                        value={range.max || ''}
-                        onChange={(e) => updatePropertyValueRange(index, 'max', e.target.value ? parseInt(e.target.value) : null)}
+                        value={range.max?.toString() || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const num = val ? parseInt(val, 10) : 0;
+                          updatePropertyValueRange(index, 'max', isNaN(num) ? 0 : num);
+                        }}
                         placeholder="Unlimited"
                       />
                     </div>
@@ -326,8 +330,12 @@ export function ScoringSettingsClient({ user: _user }: ScoringSettingsClientProp
                       <Label>Max Age (years)</Label>
                       <Input
                         type="number"
-                        value={multiplier.maxAge || ''}
-                        onChange={(e) => updateRoofAgeMultiplier(index, 'maxAge', e.target.value ? parseInt(e.target.value) : null)}
+                        value={multiplier.maxAge?.toString() || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const num = val ? parseInt(val, 10) : 0;
+                          updateRoofAgeMultiplier(index, 'maxAge', isNaN(num) ? 0 : num);
+                        }}
                         placeholder="Unlimited"
                       />
                     </div>

@@ -302,7 +302,7 @@ function PieVisualization({ data, columns }: { data: Record<string, unknown>[], 
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={(entry: { name: string; percent: number }) => `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
+            label={(entry) => `${entry.name}: ${(entry.percent * 100).toFixed(0)}%`}
             outerRadius={80}
             dataKey="value"
           >
@@ -383,7 +383,7 @@ function formatCellValue(value: unknown, type: string, _format?: string): string
     case 'number':
       return typeof value === 'number' ? value.toLocaleString() : String(value)
     case 'date':
-      return new Date(value).toLocaleDateString()
+      return value ? new Date(String(value)).toLocaleDateString() : ''
     default:
       return String(value)
   }

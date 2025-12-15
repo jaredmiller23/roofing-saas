@@ -2,6 +2,7 @@
 
 import { DashboardEditor } from '@/components/dashboard/DashboardEditor'
 import { useRouter } from 'next/navigation'
+import type { Dashboard } from '@/components/dashboard/DashboardEditor'
 
 /**
  * Dashboard Edit Page
@@ -12,7 +13,7 @@ import { useRouter } from 'next/navigation'
 export default function DashboardEditPage() {
   const router = useRouter()
 
-  const handleSave = (dashboard: Record<string, unknown>) => {
+  const handleSave = (dashboard: Dashboard) => {
     // TODO: Save dashboard to database
     console.log('Saving dashboard:', dashboard)
     router.push('/dashboard')

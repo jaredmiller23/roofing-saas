@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ConversionFunnel as FunnelData, DrilldownContext } from '@/lib/analytics/analytics-types'
+import { ConversionFunnel as FunnelData, DrilldownContext, FunnelStage } from '@/lib/analytics/analytics-types'
 import { TrendingDown, TrendingUp, Users, DollarSign, Clock } from 'lucide-react'
 
 interface ConversionFunnelProps {
@@ -46,7 +46,7 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
     return colors[stageName as keyof typeof colors] || 'bg-gray-400'
   }
 
-  const handleStageClick = (stage: { stage: string; prospects: number; conversions: number; conversionRate: number }) => {
+  const handleStageClick = (stage: FunnelStage) => {
     if (onStageClick) {
       onStageClick({
         type: 'stage',
