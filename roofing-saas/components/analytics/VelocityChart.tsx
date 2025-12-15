@@ -270,7 +270,7 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
 
             {data.bottlenecks.includes('prospect' as any) && (
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-blue-500" />
+                <Target className="h-4 w-4 text-primary" />
                 <span>Focus on lead qualification to reduce time in prospect stage</span>
               </div>
             )}

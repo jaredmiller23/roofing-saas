@@ -450,7 +450,7 @@ export function PipelineBoard() {
                   setSelectedStages(STAGES.map(s => s.id))
                   setQuickFilter('all')
                 }}
-                className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 font-medium underline ml-1"
+                className="px-2 py-1 text-xs text-primary hover:text-primary font-medium underline ml-1"
               >
                 Reset
               </button>
