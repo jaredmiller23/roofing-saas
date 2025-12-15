@@ -113,7 +113,7 @@ export function ActivityFeed() {
       case 'goal':
         return 'text-indigo-600 bg-indigo-100'
       default:
-        return 'text-gray-600 bg-gray-100'
+        return 'text-muted-foreground bg-muted'
     }
   }
 

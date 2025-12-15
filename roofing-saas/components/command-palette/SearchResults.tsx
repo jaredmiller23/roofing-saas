@@ -43,7 +43,7 @@ export function SearchResults({ results, selectedIndex, startIndex }: SearchResu
       case 'message':
         return 'text-orange-500'
       default:
-        return 'text-gray-500'
+        return 'text-muted-foreground'
     }
   }
 

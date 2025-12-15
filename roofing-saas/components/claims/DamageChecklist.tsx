@@ -45,7 +45,7 @@ export function DamageChecklist({
                   'p-3 rounded-lg border-2 text-left transition-all',
                   area.selected
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-border'
+                    : 'border-border hover:border-border'
                 )}
               >
                 <div className="flex items-center gap-2">

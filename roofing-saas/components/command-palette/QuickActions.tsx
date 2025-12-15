@@ -46,7 +46,7 @@ export function QuickActions({ actions, selectedIndex, startIndex }: QuickAction
     if (action.id.includes('view') || action.id.includes('open')) {
       return 'text-blue-500'
     }
-    return 'text-gray-500'
+    return 'text-muted-foreground'
   }
 
   return (

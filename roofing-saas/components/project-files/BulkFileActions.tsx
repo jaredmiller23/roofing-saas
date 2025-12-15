@@ -138,7 +138,7 @@ export function BulkFileActions({
       download_zip: {
         icon: <Download className="h-4 w-4" />,
         label: 'Download ZIP',
-        color: 'text-gray-600 hover:text-gray-700'
+        color: 'text-muted-foreground hover:text-foreground'
       }
     }
 

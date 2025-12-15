@@ -76,7 +76,7 @@ const STATUS_INFO: Record<ClaimStatus, { icon: React.ElementType; color: string;
   },
   'closed': {
     icon: CheckCircle,
-    color: 'text-muted-foreground bg-gray-100',
+    color: 'text-muted-foreground bg-muted',
     label: 'Closed',
     description: 'Claim has been completed and closed',
   },
