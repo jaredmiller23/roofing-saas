@@ -141,8 +141,8 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     )
   }
 
-  // Show no data state
-  if (!metrics) {
+  // Show no data state - also check if metrics has expected structure
+  if (!metrics || !metrics.revenue || !metrics.pipeline || !metrics.knocks || !metrics.conversion) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="md:col-span-2 lg:col-span-4">
@@ -157,33 +157,33 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
   const metricCards = [
     {
       title: 'Revenue',
-      value: formatValue(metrics.revenue.value, 'currency'),
-      change: metrics.revenue.change,
-      trend: metrics.revenue.trend,
+      value: formatValue(metrics.revenue?.value ?? 0, 'currency'),
+      change: metrics.revenue?.change ?? 0,
+      trend: metrics.revenue?.trend ?? 'up',
       icon: DollarSign,
       description: 'This month'
     },
     {
       title: 'Pipeline Value',
-      value: formatValue(metrics.pipeline.value, 'currency'),
-      change: metrics.pipeline.change,
-      trend: metrics.pipeline.trend,
+      value: formatValue(metrics.pipeline?.value ?? 0, 'currency'),
+      change: metrics.pipeline?.change ?? 0,
+      trend: metrics.pipeline?.trend ?? 'up',
       icon: Target,
       description: 'Active opportunities'
     },
     {
       title: 'Door Knocks',
-      value: formatValue(metrics.knocks.value, 'number'),
-      change: metrics.knocks.change,
-      trend: metrics.knocks.trend,
+      value: formatValue(metrics.knocks?.value ?? 0, 'number'),
+      change: metrics.knocks?.change ?? 0,
+      trend: metrics.knocks?.trend ?? 'up',
       icon: Phone,
       description: 'This week'
     },
     {
       title: 'Conversion Rate',
-      value: formatValue(metrics.conversion.value, 'percentage'),
-      change: metrics.conversion.change,
-      trend: metrics.conversion.trend,
+      value: formatValue(metrics.conversion?.value ?? 0, 'percentage'),
+      change: metrics.conversion?.change ?? 0,
+      trend: metrics.conversion?.trend ?? 'up',
       icon: Users,
       description: 'Last 30 days'
     }
