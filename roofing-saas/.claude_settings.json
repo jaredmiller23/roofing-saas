@@ -10,14 +10,12 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(lib/types/supabase-presence.ts)",
-      "Edit(lib/types/supabase-presence.ts)",
-      "Write(app/(dashboard)/insights/insights-client.tsx)",
-      "Edit(app/(dashboard)/insights/insights-client.tsx)",
-      "Write(components/automation/WorkflowCanvas.tsx)",
-      "Edit(components/automation/WorkflowCanvas.tsx)",
-      "Write(lib/realtime/channel-manager.ts)",
-      "Edit(lib/realtime/channel-manager.ts)"
+      "Write(components/dashboard/DashboardMetrics.tsx)",
+      "Edit(components/dashboard/DashboardMetrics.tsx)",
+      "Write(components/dashboard/ActivityFeed.tsx)",
+      "Edit(components/dashboard/ActivityFeed.tsx)",
+      "Write(components/dashboard/WeeklyChallengeWidget.tsx)",
+      "Edit(components/dashboard/WeeklyChallengeWidget.tsx)"
     ]
   }
 }

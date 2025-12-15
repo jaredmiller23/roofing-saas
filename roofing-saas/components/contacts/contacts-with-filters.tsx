@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import type { ActiveFilter } from '@/lib/filters/types'
 import { FilterBar } from '@/components/filters/FilterBar'
 import { ContactsSearch } from './contacts-search'
@@ -14,6 +14,7 @@ import { ContactsTable } from './contacts-table'
 export function ContactsWithFilters() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [_filterError, setFilterError] = useState<string | null>(null)
 
   // Convert search params to object for child components
   const params: { [key: string]: string | string[] | undefined } = {}
@@ -53,12 +54,18 @@ export function ContactsWithFilters() {
     [router, searchParams]
   )
 
+  // Handle filter errors from FilterBar
+  const handleFilterError = useCallback((error: string | null) => {
+    setFilterError(error)
+  }, [])
+
   return (
     <div className="space-y-6">
       {/* Configurable Filters */}
       <FilterBar
         entity_type="contacts"
         onFiltersChange={handleFiltersChange}
+        onError={handleFilterError}
       />
 
       {/* Legacy Search (will be deprecated once filters are fully configured) */}

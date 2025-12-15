@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DollarSign,
   Phone,
@@ -29,55 +31,68 @@ interface Activity {
 }
 
 export function ActivityFeed() {
-  // Mock data - in real implementation this would come from API
-  const activities: Activity[] = [
-    {
-      id: '1',
-      type: 'sale',
-      title: 'New Sale Closed',
-      description: 'Signed $12,500 roof replacement contract',
-      user: { name: 'Sarah Johnson', avatar: '/avatars/sarah.jpg' },
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-      value: 12500,
-      badge: '$12.5K'
-    },
-    {
-      id: '2',
-      type: 'achievement',
-      title: 'Weekly Goal Achieved',
-      description: 'Hit 50 door knocks this week',
-      user: { name: 'Mike Chen', avatar: '/avatars/mike.jpg' },
-      timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
-      badge: '🏆'
-    },
-    {
-      id: '3',
-      type: 'knock',
-      title: 'Door Knock Session',
-      description: 'Completed 8 door knocks on Maple Street',
-      user: { name: 'Alex Rodriguez', avatar: '/avatars/alex.jpg' },
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      badge: '8 knocks'
-    },
-    {
-      id: '4',
-      type: 'call',
-      title: 'Follow-up Call',
-      description: 'Scheduled estimate for interested homeowner',
-      user: { name: 'Emily Davis', avatar: '/avatars/emily.jpg' },
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-    },
-    {
-      id: '5',
-      type: 'sale',
-      title: 'New Sale Closed',
-      description: 'Signed $8,200 gutter replacement contract',
-      user: { name: 'David Wilson', avatar: '/avatars/david.jpg' },
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-      value: 8200,
-      badge: '$8.2K'
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchActivities = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    // Create abort controller for timeout
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
+
+    try {
+      const response = await fetch('/api/dashboard/activity', {
+        signal: abortController.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      if (result.success && result.data) {
+        // Transform the data to match our interface
+        const transformedActivities = (result.data.activities || []).map((item: {
+          id: string
+          type: Activity['type']
+          title: string
+          description: string
+          user: { name: string; avatar?: string }
+          timestamp: string
+          value?: number
+          badge?: string
+        }) => ({
+          ...item,
+          timestamp: new Date(item.timestamp)
+        }))
+        setActivities(transformedActivities)
+      } else {
+        setError('Failed to load activity data')
+      }
+    } catch (error) {
+      clearTimeout(timeoutId)
+      console.error('Failed to fetch activity feed:', error)
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        setError('Request timeout - please try again')
+      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+        setError('Server error - please try again')
+      } else {
+        setError('Failed to connect to server')
+      }
+    } finally {
+      setIsLoading(false)
     }
-  ]
+  }
+
+  useEffect(() => {
+    fetchActivities()
+  }, [])
 
   const getIcon = (type: Activity['type']) => {
     switch (type) {
@@ -117,6 +132,62 @@ export function ActivityFeed() {
     }
   }
 
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <Card className="lg:col-span-1">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                <div className="w-8 h-8 bg-muted rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show error state with retry
+  if (error) {
+    return (
+      <Card className="lg:col-span-1">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="text-center">
+              <div className="text-muted-foreground mb-4">{error}</div>
+              <Button
+                onClick={() => fetchActivities()}
+                variant="outline"
+                size="sm"
+              >
+                Retry
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="lg:col-span-1">
       <CardHeader>
@@ -126,50 +197,58 @@ export function ActivityFeed() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {activities.map((activity) => {
-            const Icon = getIcon(activity.type)
-            const colorClass = getActivityColor(activity.type)
+        {activities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Clock className="h-12 w-12 text-muted-foreground mb-2" />
+            <div className="text-muted-foreground">No recent activity</div>
+            <div className="text-sm text-muted-foreground">Activity will appear here as your team works</div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => {
+              const Icon = getIcon(activity.type)
+              const colorClass = getActivityColor(activity.type)
 
-            return (
-              <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
-                <div className={`p-2 rounded-full ${colorClass}`}>
-                  <Icon className="h-4 w-4" />
-                </div>
+              return (
+                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                  <div className={`p-2 rounded-full ${colorClass}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
 
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {activity.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {activity.description}
-                      </p>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {activity.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.description}
+                        </p>
+                      </div>
+                      {activity.badge && (
+                        <Badge variant="secondary" className="text-xs">
+                          {activity.badge}
+                        </Badge>
+                      )}
                     </div>
-                    {activity.badge && (
-                      <Badge variant="secondary" className="text-xs">
-                        {activity.badge}
-                      </Badge>
-                    )}
-                  </div>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Avatar className="h-4 w-4">
-                      <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
-                      <AvatarFallback className="text-xs">
-                        {activity.user.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{activity.user.name}</span>
-                    <span>•</span>
-                    <span>{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Avatar className="h-4 w-4">
+                        <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
+                        <AvatarFallback className="text-xs">
+                          {activity.user.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{activity.user.name}</span>
+                      <span>•</span>
+                      <span>{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

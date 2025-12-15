@@ -1,13 +1,23 @@
 {
-  "task_id": "CLEANUP-001",
+  "task_id": "FIX-001",
   "files_read": [
-    "lib/automation/workflow-types.ts",
-    "lib/realtime/channel-manager.ts",
-    "app/(dashboard)/insights/insights-client.tsx",
-    "lib/types/supabase-presence.ts",
-    "components/automation/WorkflowCanvas.tsx"
+    "lib/dashboard/WeeklyChallengeWidget.tsx",
+    "components/filters/FilterBar.tsx",
+    "lib/dashboard/DashboardMetrics.tsx",
+    "components/ui/button.tsx",
+    "components/contacts/contacts-table.tsx",
+    "components/dashboard/DashboardMetrics.tsx",
+    "components/dashboard/WeeklyChallengeWidget.tsx",
+    "components/dashboard/ActivityFeed.tsx",
+    "lib/dashboard/ActivityFeed.tsx",
+    "components/contacts/contacts-with-filters.tsx"
   ],
-  "files_modified": [],
+  "files_modified": [
+    "components/dashboard/DashboardMetrics.tsx",
+    "components/dashboard/ActivityFeed.tsx",
+    "components/dashboard/WeeklyChallengeWidget.tsx",
+    "components/contacts/contacts-with-filters.tsx"
+  ],
   "validation_passed": true,
   "progress_updated": false,
   "started_at": null,

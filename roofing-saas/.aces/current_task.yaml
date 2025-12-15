@@ -2,42 +2,42 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Remove eslint-disable comments that were added as shortcuts and fix the\n\
-    underlying code issues properly.\n\nFiles with shortcuts to fix:\n\n1. app/(dashboard)/insights/insights-client.tsx\n\
-    \   - Line 41: eslint-disable-next-line react-hooks/exhaustive-deps\n   - Fix:\
-    \ Wrap loadSuggestions and loadQueryHistory in useCallback, add to deps\n\n2.\
-    \ components/automation/WorkflowCanvas.tsx\n   - Line 106: eslint-disable-next-line\
-    \ @typescript-eslint/no-explicit-any\n   - Fix: Create proper ActionConfig interface\
-    \ for workflow action configs\n\n3. lib/realtime/channel-manager.ts\n   - Line\
-    \ 572: eslint-disable-next-line @typescript-eslint/no-explicit-any\n   - Fix:\
-    \ Create SupabasePresencePayload interface for presence callbacks\n\nProper Fixes\
-    \ Required:\n\nFor useEffect dependencies:\n```typescript\nconst loadSuggestions\
-    \ = useCallback(async () => {\n  // existing code\n}, [userRole, tenantId])\n\n\
-    const loadQueryHistory = useCallback(async () => {\n  // existing code\n}, [tenantId,\
-    \ userId])\n\nuseEffect(() => {\n  loadSuggestions()\n  loadQueryHistory()\n},\
-    \ [loadSuggestions, loadQueryHistory])\n```\n\nFor any types - create interfaces:\n\
-    ```typescript\ninterface SupabasePresencePayload {\n  userId: string\n  userName:\
-    \ string\n  userEmail: string\n  userAvatar?: string\n  joinedAt: string\n  metadata?:\
-    \ Record<string, unknown>\n}\n```\n"
+  goal: 'Fix the dashboard loading issue where metrics widgets show skeleton placeholders
+    indefinitely.
+
+    The root cause is that API errors fail silently - the component doesn''t check
+    response.ok before
+
+    parsing JSON, so if the API returns 401/403/500, the component stays in loading
+    state forever.
+
+
+    Changes needed:
+
+    1. DashboardMetrics.tsx: Add response.ok check, timeout handling, user-visible
+    error state with retry
+
+    2. ActivityFeed.tsx: Same fixes - add response.ok check and error state
+
+    3. WeeklyChallengeWidget.tsx: Same fixes - add response.ok check and error state
+
+
+    The error state should show a clear message and a "Retry" button, not just log
+    to console.
+
+    '
   success_criteria:
-  - No eslint-disable comments in the three specified files
-  - useEffect in insights-client.tsx has correct dependencies
-  - Proper TypeScript interfaces replace all `any` types
-  - npm run lint passes with 0 warnings in modified files
-  - npm run typecheck passes
-  why: 'ESLint warnings exist for a reason. Suppressing them without fixing the
+  - DashboardMetrics.tsx checks response.ok before JSON parsing
+  - DashboardMetrics.tsx shows user-visible error with retry button when API fails
+  - DashboardMetrics.tsx has timeout handling (30s max)
+  - ActivityFeed.tsx has same error handling improvements
+  - WeeklyChallengeWidget.tsx has same error handling improvements
+  - No silent failures - all errors visible to users
+  why: 'Smoke tests revealed the dashboard shows skeleton placeholders indefinitely
+    on production.
 
-    underlying issue is technical debt that compounds over time.
-
-
-    - react-hooks/exhaustive-deps prevents stale closure bugs
-
-    - no-explicit-any ensures type safety throughout the codebase
-
-
-    These shortcuts were added to unblock a commit, but the proper fix should
-
-    have been done from the start. This task corrects that mistake.
+    Users see a broken dashboard with no indication of what went wrong. This is a
+    critical UX issue.
 
     '
 dependencies: null
@@ -51,69 +51,69 @@ handoff:
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-15T09:00:00'
-  id: CLEANUP-001
-  priority: 2
+  created: '2025-12-14T15:30:00'
+  id: FIX-001
+  priority: 3
   template: code-modification
-  title: Remove ESLint Shortcuts - Fix Code Properly
+  title: Fix Dashboard Error Handling - Prevent Silent Failures
 on_failure:
   escalate:
     include:
     - error_output
     - files_modified
+    - partial_progress
     to: human
   rollback:
-  - git checkout -- app/(dashboard)/insights/insights-client.tsx
-  - git checkout -- components/automation/WorkflowCanvas.tsx
-  - git checkout -- lib/realtime/channel-manager.ts
+  - git checkout -- components/dashboard/
 read_first:
 - extract: []
-  path: app/(dashboard)/insights/insights-client.tsx
-  reason: Understand the useEffect pattern and what needs useCallback
+  path: components/dashboard/DashboardMetrics.tsx
+  reason: Main component to fix - understand current fetch logic
   required: true
 - extract: []
-  path: lib/realtime/channel-manager.ts
-  reason: Understand Supabase presence callback structure
+  path: components/dashboard/ActivityFeed.tsx
+  reason: Secondary component needing same fix
   required: true
 - extract: []
-  path: components/automation/WorkflowCanvas.tsx
-  reason: Understand workflow action config structure
+  path: components/dashboard/WeeklyChallengeWidget.tsx
+  reason: Third component needing same fix
   required: true
 - extract: []
-  path: lib/automation/workflow-types.ts
-  reason: Existing workflow type definitions
-  required: true
+  path: components/ui/button.tsx
+  reason: Use existing Button component for retry
+  required: false
 scope:
-  constraints: []
-  create:
-  - lib/types/supabase-presence.ts
+  constraints:
+  - Only modify the specified component files
+  - Keep existing functionality intact
+  - Add error handling without breaking happy path
+  - Use existing UI patterns for error states
+  create: []
   do_not_touch:
-  - Any files not listed above
-  - Test files
+  - app/api/**
+  - lib/**
   modify:
-  - app/(dashboard)/insights/insights-client.tsx
-  - components/automation/WorkflowCanvas.tsx
-  - lib/realtime/channel-manager.ts
+  - components/dashboard/DashboardMetrics.tsx
+  - components/dashboard/ActivityFeed.tsx
+  - components/dashboard/WeeklyChallengeWidget.tsx
 thinking:
-  level: think
+  level: think_hard
   triggers:
-  - When designing the presence payload interface
-  - When restructuring useEffect dependencies
+  - Before modifying fetch logic
+  - When designing error state UI
 validation:
   assertions: []
   post_commit: []
   pre_commit:
-  - command: grep -r 'eslint-disable' app/(dashboard)/insights/insights-client.tsx
-      components/automation/WorkflowCanvas.tsx lib/realtime/channel-manager.ts | wc
-      -l
-    expect: 'output: 0'
-    required: true
-    timeout: 60
   - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
-    timeout: 60
-  - command: npm run lint -- --max-warnings 0
+    timeout: 120
+  - command: npm run build
     expect: 'exit_code: 0'
     required: true
+    timeout: 60
+  - command: npm run lint
+    expect: 'exit_code: 0'
+    required: false
     timeout: 60
