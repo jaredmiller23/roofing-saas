@@ -2,7 +2,8 @@ import { getCurrentUser, getUserRole } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
-import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
+// TEMPORARILY DISABLED - causing app freeze, needs investigation
+// import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
 
 /**
  * Dashboard layout - main application layout with sidebar navigation
@@ -27,19 +28,18 @@ export default async function DashboardLayout({
   // Get user role for admin-only features
   const userRole = await getUserRole(user.id)
 
+  // CommandPaletteProvider temporarily disabled - causing infinite re-renders
   return (
-    <CommandPaletteProvider>
-      <div className="min-h-screen bg-background">
-        {/* Sidebar */}
-        <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
+    <div className="min-h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar userEmail={user.email || ''} userRole={userRole || 'user'} />
 
-        {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
-        <main className="lg:ml-64 min-h-screen pb-20">
-          <DashboardLayoutClient>
-            {children}
-          </DashboardLayoutClient>
-        </main>
-      </div>
-    </CommandPaletteProvider>
+      {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
+      <main className="lg:ml-64 min-h-screen pb-20">
+        <DashboardLayoutClient>
+          {children}
+        </DashboardLayoutClient>
+      </main>
+    </div>
   )
 }
