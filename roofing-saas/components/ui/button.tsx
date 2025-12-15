@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -48,26 +48,54 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button"
 
-  // Check if button is icon-only (contains only SVG elements or is empty)
-  const isIconOnly = React.Children.toArray(children).every((child) =>
-    React.isValidElement(child) && typeof child.type === 'function'
-  ) && React.Children.count(children) > 0
+  // Check if button is icon-only (contains only SVG elements or icons, no text)
+  const isIconOnly = React.useMemo(() => {
+    const childrenArray = React.Children.toArray(children)
+    if (childrenArray.length === 0) return true // Empty button is icon-only
 
-  // Warn if icon-only button lacks aria-label
-  if (process.env.NODE_ENV === 'development' && isIconOnly && !ariaLabel && !props['aria-labelledby']) {
-    console.warn('Button: Icon-only buttons should have an aria-label for accessibility')
-  }
+    return childrenArray.every((child) => {
+      if (React.isValidElement(child)) {
+        // Check for SVG elements or icon components (commonly from lucide-react)
+        return child.type === 'svg' ||
+               (typeof child.type === 'function' &&
+                (child.type as any).displayName?.includes('Icon')) ||
+               // Check if it's a Lucide icon component
+               (child.props as any)?.className?.includes('lucide')
+      }
+      // If it's a text node, check if it's empty or whitespace only
+      return typeof child === 'string' && child.trim().length === 0
+    })
+  }, [children])
 
-  // Additional accessibility warning for buttons without sufficient labeling
-  if (process.env.NODE_ENV === 'development' && !ariaLabel && !props['aria-labelledby'] && !children) {
-    console.warn('Button: Empty buttons should have an aria-label for accessibility')
-  }
+  // Comprehensive accessibility warnings for development
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      // Warn if icon-only button lacks aria-label
+      if (isIconOnly && !ariaLabel && !props['aria-labelledby']) {
+        console.warn('Button: Icon-only buttons must have an aria-label or aria-labelledby for accessibility')
+      }
+
+      // Additional warning for buttons without sufficient labeling
+      if (!ariaLabel && !props['aria-labelledby'] && !children) {
+        console.warn('Button: Empty buttons must have an aria-label or aria-labelledby for accessibility')
+      }
+
+      // Warn about disabled state accessibility
+      if (props.disabled && !props['aria-describedby']) {
+        console.warn('Button: Disabled buttons should include aria-describedby to explain why they are disabled')
+      }
+    }
+  }, [isIconOnly, ariaLabel, props, children])
 
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       aria-label={ariaLabel}
+      // Ensure proper button semantics when using asChild with non-button elements
+      role={asChild && !props.role ? "button" : props.role}
+      // Add tabIndex for keyboard navigation when using asChild
+      tabIndex={asChild && props.tabIndex === undefined ? 0 : props.tabIndex}
       {...props}
     >
       {children}

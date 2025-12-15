@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -88,6 +88,28 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
   const isActive = (href: string) => pathname === href
   const isAdmin = userRole === 'admin'
 
+  // Handle escape key to close mobile menu
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMobileOpen) {
+        setIsMobileOpen(false)
+      }
+    }
+
+    if (isMobileOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      // Prevent body scroll when mobile menu is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+    }
+  }, [isMobileOpen])
+
   const handleUserSelect = (user: UserForImpersonation) => {
     setSelectedUser(user)
     setIsDialogOpen(true)
@@ -120,11 +142,17 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+        aria-label={isMobileOpen ? "Close navigation menu" : "Open navigation menu"}
         aria-expanded={isMobileOpen}
         aria-controls="sidebar-navigation"
+        aria-haspopup="true"
+        type="button"
       >
-        {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isMobileOpen ? (
+          <X className="h-6 w-6" aria-hidden="true" />
+        ) : (
+          <Menu className="h-6 w-6" aria-hidden="true" />
+        )}
       </button>
 
       {/* Mobile Backdrop */}
@@ -132,6 +160,14 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsMobileOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setIsMobileOpen(false)
+            }
+          }}
+          role="button"
+          tabIndex={-1}
+          aria-label="Close navigation menu"
         />
       )}
 
@@ -154,7 +190,10 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3" role="navigation" aria-label="Main navigation menu">
+        <nav className="flex-1 overflow-y-auto py-4 px-3" role="navigation" aria-label="Main navigation menu" aria-describedby="nav-description">
+          <div id="nav-description" className="sr-only">
+            Navigate through different sections of the application using the menu items below
+          </div>
           {navSections.map((section, sectionIndex) => (
             <div key={sectionIndex}>
               {/* Section Header */}
