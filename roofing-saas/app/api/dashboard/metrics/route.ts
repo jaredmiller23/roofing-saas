@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
   const mockData = {
     success: true,
     data: {
-      revenue: {
+      metrics: {
+        revenue: {
         value: scope === 'company' ? 245000 : scope === 'team' ? 89000 : 34500,
         change: 12.5,
         trend: 'up' as const,
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
         value: 24.5,
         change: 2.1,
         trend: 'up' as const,
+      },
       },
     },
   }
