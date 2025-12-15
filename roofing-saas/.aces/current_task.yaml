@@ -2,35 +2,35 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: "Enhance the existing storm tracking with predictive intelligence and\nautomated\
-    \ opportunity generation for storm damage work.\n\nFeatures to implement:\n1.\
-    \ Predictive storm path modeling\n2. Automatic lead generation for affected areas\n\
-    3. Storm severity assessment\n4. Customer notification automation\n5. Crew pre-positioning\
-    \ recommendations\n\nStorm Data Sources:\n- NOAA weather API\n- National Weather\
-    \ Service alerts\n- Historical hail damage data\n- Existing customer location\
-    \ data\n\nAutomation Triggers:\n- Severe storm warning \u2192 Alert sales team\n\
-    - Hail event \u2192 Generate affected customer list\n- Storm passes \u2192 Send\
-    \ check-in emails to customers\n- Major event \u2192 Activate storm response mode\n\
-    \nIntelligence Features:\n- Damage probability by location\n- Optimal canvassing\
-    \ routes\n- Historical storm damage patterns\n- Crew capacity planning\n"
+  goal: "Implement advanced pipeline analytics with conversion funnels,\nvelocity\
+    \ tracking, and predictive forecasting.\n\nFeatures to implement:\n1. Visual conversion\
+    \ funnel with drop-off analysis\n2. Pipeline velocity metrics (days in each stage)\n\
+    3. Win/loss analysis with reasons\n4. Revenue forecasting based on pipeline\n\
+    5. Team performance comparisons\n\nKey Metrics:\n- Stage conversion rates\n- Average\
+    \ time in each stage\n- Pipeline velocity trend\n- Win rate by lead source\n-\
+    \ Lost deal reasons distribution\n- Revenue forecast (30/60/90 day)\n\nVisualization\
+    \ Types:\n- Funnel chart (stage progression)\n- Trend lines (velocity over time)\n\
+    - Heatmap (bottleneck identification)\n- Cohort analysis (lead source performance)\n\
+    \nDrill-Down Capabilities:\n- Click funnel stage \u2192 See deals\n- Click metric\
+    \ \u2192 See underlying data\n- Filter by date, rep, source\n"
   success_criteria:
-  - Storm alerts trigger automatic workflows
-  - Affected customer list generates automatically
-  - Damage probability displays on map
-  - Notification templates send on storm events
-  - Historical storm data informs predictions
-  why: 'Research Finding: Basic storm tracking exists but underutilized.
+  - Conversion funnel visualizes correctly
+  - Pipeline velocity calculates accurately
+  - Forecasting uses historical data
+  - Drill-down shows underlying deals
+  - Date range filtering works
+  why: 'Research Finding: Pipeline exists but lacks analytics.
 
-    Opportunity: Roofing is weather-dependent, intelligence creates advantage.
+    Industry Need: Data-driven sales optimization.
 
 
     Business Impact:
 
-    - First-mover advantage after storms
+    - Identify bottlenecks before they hurt revenue
 
-    - 300% increase in storm-related leads
+    - 15% improvement in conversion through optimization
 
-    - Better customer service (proactive outreach)
+    - Better sales forecasting accuracy
 
     '
 dependencies: null
@@ -45,10 +45,10 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T19:00:00'
-  id: SPRINT4-003
-  priority: 2
+  id: SPRINT4-004
+  priority: 3
   template: code-modification
-  title: Storm Intelligence Enhancement
+  title: Advanced Pipeline Analytics
 on_failure:
   escalate:
     include:
@@ -59,41 +59,43 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: app/(dashboard)/storm-tracking/page.tsx
-  reason: Existing storm tracking implementation
+  path: components/pipeline/PipelineBoard.tsx
+  reason: Pipeline structure and data
   required: true
 - extract: []
-  path: components/storm/StormMap.tsx
-  reason: Map component for enhancements
+  path: app/(dashboard)/pipeline/page.tsx
+  reason: Pipeline page for analytics link
   required: true
 - extract: []
-  path: lib/integrations/weather-api.ts
-  reason: Weather API integration
+  path: lib/types/pipeline.ts
+  reason: Pipeline type definitions
   required: false
 scope:
   constraints: []
   create:
-  - lib/storm/storm-intelligence.ts
-  - lib/storm/damage-predictor.ts
-  - lib/storm/storm-types.ts
-  - components/storm/StormAlertPanel.tsx
-  - components/storm/AffectedCustomers.tsx
-  - components/storm/DamageProbability.tsx
-  - components/storm/StormResponseMode.tsx
-  - app/api/storm/predictions/route.ts
-  - app/api/storm/affected-customers/route.ts
-  - app/api/storm/notifications/route.ts
+  - lib/analytics/pipeline-analytics.ts
+  - lib/analytics/forecasting.ts
+  - lib/analytics/analytics-types.ts
+  - components/analytics/ConversionFunnel.tsx
+  - components/analytics/VelocityChart.tsx
+  - components/analytics/WinLossAnalysis.tsx
+  - components/analytics/RevenueForcast.tsx
+  - components/analytics/PipelineInsights.tsx
+  - app/(dashboard)/pipeline/analytics/page.tsx
+  - app/api/analytics/pipeline/route.ts
+  - app/api/analytics/forecast/route.ts
   do_not_touch:
-  - lib/integrations/weather-api.ts
+  - app/api/pipeline/route.ts
+  - components/pipeline/PipelineColumn.tsx
   modify:
-  - app/(dashboard)/storm-tracking/page.tsx
-  - components/storm/StormMap.tsx
+  - app/(dashboard)/pipeline/page.tsx
+  - components/pipeline/PipelineBoard.tsx
 thinking:
-  level: ultrathink
+  level: think_hard
   triggers:
-  - Before designing prediction algorithm
-  - When planning automation workflows
-  - When optimizing real-time data handling
+  - Before designing analytics calculations
+  - When planning forecasting algorithm
+  - When optimizing query performance
 validation:
   assertions: []
   post_commit: []
@@ -106,15 +108,15 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f lib/storm/storm-intelligence.ts
+  - command: test -f lib/analytics/pipeline-analytics.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f components/storm/StormAlertPanel.tsx
+  - command: test -f components/analytics/ConversionFunnel.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: grep -q "StormAlertPanel" app/(dashboard)/storm-tracking/page.tsx
+  - command: test -f app/(dashboard)/pipeline/analytics/page.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
