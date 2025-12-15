@@ -2,70 +2,35 @@ apiVersion: aces/v1
 changes: []
 context:
   background: null
-  goal: 'Implement dark mode theme support with system preference detection
-
-    and manual toggle capability.
-
-
-    Features to implement:
-
-    1. Dark mode color scheme following design system
-
-    2. System preference detection (prefers-color-scheme)
-
-    3. Manual theme toggle in settings
-
-    4. Persist user preference
-
-    5. Smooth theme transition animations
-
-
-    Technical Approach:
-
-    - Use Tailwind CSS dark mode (class strategy)
-
-    - Theme provider with next-themes
-
-    - Update all hardcoded colors to use CSS variables
-
-    - Ensure all components respect theme
-
-
-    Color Mapping:
-
-    - bg-background, bg-card (light/dark variants)
-
-    - text-foreground, text-muted-foreground
-
-    - border-border
-
-    - Ensure proper contrast ratios in both modes
-
-
-    NOTE: This builds on SPRINT2-003 UI Consistency work.
-
-    Many hardcoded colors should already be fixed.
-
-    '
+  goal: "Enhance the existing storm tracking with predictive intelligence and\nautomated\
+    \ opportunity generation for storm damage work.\n\nFeatures to implement:\n1.\
+    \ Predictive storm path modeling\n2. Automatic lead generation for affected areas\n\
+    3. Storm severity assessment\n4. Customer notification automation\n5. Crew pre-positioning\
+    \ recommendations\n\nStorm Data Sources:\n- NOAA weather API\n- National Weather\
+    \ Service alerts\n- Historical hail damage data\n- Existing customer location\
+    \ data\n\nAutomation Triggers:\n- Severe storm warning \u2192 Alert sales team\n\
+    - Hail event \u2192 Generate affected customer list\n- Storm passes \u2192 Send\
+    \ check-in emails to customers\n- Major event \u2192 Activate storm response mode\n\
+    \nIntelligence Features:\n- Damage probability by location\n- Optimal canvassing\
+    \ routes\n- Historical storm damage patterns\n- Crew capacity planning\n"
   success_criteria:
-  - Dark mode toggle works in settings
-  - System preference is detected on first visit
-  - All pages render correctly in dark mode
-  - Charts and graphs respect dark theme
-  - No contrast issues or illegible text
-  - Preference persists across sessions
-  why: 'Research Finding: Dark mode is standard expectation in 2024 SaaS.
+  - Storm alerts trigger automatic workflows
+  - Affected customer list generates automatically
+  - Damage probability displays on map
+  - Notification templates send on storm events
+  - Historical storm data informs predictions
+  why: 'Research Finding: Basic storm tracking exists but underutilized.
 
-    User Impact: Reduced eye strain, modern aesthetic appeal.
+    Opportunity: Roofing is weather-dependent, intelligence creates advantage.
 
 
     Business Impact:
 
-    - Improved user satisfaction
+    - First-mover advantage after storms
 
-    - Reduced eye strain for heavy users
+    - 300% increase in storm-related leads
 
-    - Modern, professional appearance
+    - Better customer service (proactive outreach)
 
     '
 dependencies: null
@@ -80,10 +45,10 @@ kind: TaskSpec
 metadata:
   archon_task_id: null
   created: '2025-12-14T19:00:00'
-  id: SPRINT3-006
-  priority: 3
+  id: SPRINT4-003
+  priority: 2
   template: code-modification
-  title: Dark Mode Theme Support
+  title: Storm Intelligence Enhancement
 on_failure:
   escalate:
     include:
@@ -94,37 +59,41 @@ on_failure:
   - git stash
 read_first:
 - extract: []
-  path: tailwind.config.ts
-  reason: Tailwind dark mode configuration
+  path: app/(dashboard)/storm-tracking/page.tsx
+  reason: Existing storm tracking implementation
   required: true
 - extract: []
-  path: app/layout.tsx
-  reason: Root layout for theme provider
+  path: components/storm/StormMap.tsx
+  reason: Map component for enhancements
   required: true
 - extract: []
-  path: globals.css
-  reason: Global styles and CSS variables
-  required: true
+  path: lib/integrations/weather-api.ts
+  reason: Weather API integration
+  required: false
 scope:
   constraints: []
   create:
-  - components/theme/ThemeProvider.tsx
-  - components/theme/ThemeToggle.tsx
-  - lib/hooks/useTheme.ts
-  - styles/themes/dark.css
+  - lib/storm/storm-intelligence.ts
+  - lib/storm/damage-predictor.ts
+  - lib/storm/storm-types.ts
+  - components/storm/StormAlertPanel.tsx
+  - components/storm/AffectedCustomers.tsx
+  - components/storm/DamageProbability.tsx
+  - components/storm/StormResponseMode.tsx
+  - app/api/storm/predictions/route.ts
+  - app/api/storm/affected-customers/route.ts
+  - app/api/storm/notifications/route.ts
   do_not_touch:
-  - components/ui/button.tsx
-  - components/ui/input.tsx
+  - lib/integrations/weather-api.ts
   modify:
-  - app/layout.tsx
-  - app/(dashboard)/layout.tsx
-  - tailwind.config.ts
-  - components/settings/appearance-settings.tsx
+  - app/(dashboard)/storm-tracking/page.tsx
+  - components/storm/StormMap.tsx
 thinking:
-  level: think
+  level: ultrathink
   triggers:
-  - Before planning CSS variable structure
-  - When auditing components for theme compliance
+  - Before designing prediction algorithm
+  - When planning automation workflows
+  - When optimizing real-time data handling
 validation:
   assertions: []
   post_commit: []
@@ -137,15 +106,15 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f components/theme/ThemeProvider.tsx
+  - command: test -f lib/storm/storm-intelligence.ts
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: test -f components/theme/ThemeToggle.tsx
+  - command: test -f components/storm/StormAlertPanel.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: grep -q "ThemeProvider" app/layout.tsx
+  - command: grep -q "StormAlertPanel" app/(dashboard)/storm-tracking/page.tsx
     expect: 'exit_code: 0'
     required: true
     timeout: 60

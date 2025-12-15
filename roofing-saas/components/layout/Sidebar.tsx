@@ -20,7 +20,8 @@ import {
   FileText,
   MessageSquare,
   PenTool,
-  Mic
+  Mic,
+  Sparkles
 } from 'lucide-react'
 import { signOut } from '@/app/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -47,6 +48,7 @@ const navSections: NavSection[] = [
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/insights', label: 'Business Intelligence', icon: Sparkles },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/voice-assistant', label: 'Voice AI', icon: Mic },
