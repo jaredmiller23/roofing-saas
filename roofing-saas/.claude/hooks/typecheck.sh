@@ -7,8 +7,10 @@
 
 # Skip hook if harness mode detected via:
 # 1. ACES_TASK environment variable
-# 2. .aces/current_task.yaml file exists (harness creates this)
-if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ] || [ -f ".aces/current_task.yaml" ]; then
+# 2. .aces/current_task.yaml file exists (harness creates this in VEST or project)
+# 3. VEST harness marker file
+if [ "$HARNESS_MODE" = "1" ] || [ "$ACES_TASK" != "" ] || \
+   [ -f ".aces/current_task.yaml" ] || [ -f "/Users/ccai/Projects/VEST/.aces/current_task.yaml" ]; then
   echo "⚡ Harness mode - skipping pre-edit typecheck (will validate at end)"
   exit 0
 fi
