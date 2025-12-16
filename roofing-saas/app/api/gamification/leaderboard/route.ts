@@ -67,9 +67,10 @@ export async function GET(request: Request) {
         }
       })
 
-      // Get user names from auth.users
-      const { data: users } = await supabase.auth.admin.listUsers()
-      const userMap = new Map(users.users.map(u => [u.id, u.user_metadata?.full_name || u.email || 'Unknown']))
+      // Get user names from profiles table
+      const { data: users } = await supabase.from('profiles').select('id, full_name, avatar_url')
+      const userMap = new Map(users?.map(u => [u.id, u.full_name || 'Unknown']) || [])
+      const avatarMap = new Map(users?.map(u => [u.id, u.avatar_url]) || [])
 
       // Build leaderboard
       leaderboard = Array.from(countsByUser.entries())
@@ -77,7 +78,7 @@ export async function GET(request: Request) {
           user_id,
           user_name: userMap.get(user_id) || 'Unknown',
           knock_count: count,
-          avatar_url: null
+          avatar_url: avatarMap.get(user_id) || null
         }))
         .sort((a, b) => b.knock_count - a.knock_count)
         .slice(0, limit)
@@ -109,9 +110,10 @@ export async function GET(request: Request) {
         }
       })
 
-      // Get user names from auth.users
-      const { data: users } = await supabase.auth.admin.listUsers()
-      const userMap = new Map(users.users.map(u => [u.id, u.user_metadata?.full_name || u.email || 'Unknown']))
+      // Get user names from profiles table
+      const { data: users } = await supabase.from('profiles').select('id, full_name, avatar_url')
+      const userMap = new Map(users?.map(u => [u.id, u.full_name || 'Unknown']) || [])
+      const avatarMap = new Map(users?.map(u => [u.id, u.avatar_url]) || [])
 
       // Build leaderboard
       leaderboard = Array.from(countsByUser.entries())
@@ -119,7 +121,7 @@ export async function GET(request: Request) {
           user_id,
           user_name: userMap.get(user_id) || 'Unknown',
           sales_count: count,
-          avatar_url: null
+          avatar_url: avatarMap.get(user_id) || null
         }))
         .sort((a, b) => b.sales_count - a.sales_count)
         .slice(0, limit)
