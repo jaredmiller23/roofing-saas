@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Mic, MicOff, PhoneOff, Loader2 } from 'lucide-react'
 import { createVoiceProvider, VoiceProviderType, VoiceProvider, FunctionCallEvent, VoiceFunction } from '@/lib/voice/providers'
+import { ApprovalModal } from '@/components/aria/ApprovalModal'
+import type { ARIAExecutionResult } from '@/lib/aria/types'
 
 interface VoiceSessionProps {
   provider?: VoiceProviderType
@@ -96,6 +98,11 @@ interface ConversationMessage {
   }
 }
 
+interface PendingApproval {
+  result: ARIAExecutionResult
+  callId: string
+}
+
 /**
  * VoiceSession Component
  *
@@ -118,6 +125,10 @@ export function VoiceSession({
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [conversationHistory] = useState<ConversationMessage[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // HITL approval state
+  const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null)
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
 
   // Provider and stream refs
   const voiceProviderRef = useRef<VoiceProvider | null>(null)
@@ -293,7 +304,18 @@ export function VoiceSession({
 
       const result = await response.json()
 
-      // Send result back to provider
+      // Check if result requires human approval
+      if (result.data?.awaitingApproval && result.data?.draft) {
+        console.log('Function result requires approval, showing modal')
+        setPendingApproval({
+          result: result.data,
+          callId,
+        })
+        setShowApprovalModal(true)
+        return // Don't send result back yet, wait for approval
+      }
+
+      // Send normal result back to provider
       if (voiceProviderRef.current) {
         voiceProviderRef.current.sendFunctionResult({
           call_id: callId,
@@ -320,6 +342,46 @@ export function VoiceSession({
       }
     }
   }, [contactId, projectId, sessionId])
+
+  /**
+   * Handle approval modal approval - inform voice AI of success
+   */
+  const handleApprovalApproved = useCallback(() => {
+    if (pendingApproval && voiceProviderRef.current) {
+      console.log('User approved draft, informing voice AI')
+      voiceProviderRef.current.sendFunctionResult({
+        call_id: pendingApproval.callId,
+        result: {
+          success: true,
+          message: `${pendingApproval.result.draft?.type?.toUpperCase()} message sent successfully after user approval.`,
+          data: { approved: true, sent: true },
+        },
+      })
+    }
+    // Clean up approval state
+    setPendingApproval(null)
+    setShowApprovalModal(false)
+  }, [pendingApproval])
+
+  /**
+   * Handle approval modal cancellation - inform voice AI of cancellation
+   */
+  const handleApprovalCancelled = useCallback(() => {
+    if (pendingApproval && voiceProviderRef.current) {
+      console.log('User cancelled draft, informing voice AI')
+      voiceProviderRef.current.sendFunctionResult({
+        call_id: pendingApproval.callId,
+        result: {
+          success: false,
+          message: `User cancelled the ${pendingApproval.result.draft?.type || 'message'} draft. The message was not sent.`,
+          data: { approved: false, sent: false },
+        },
+      })
+    }
+    // Clean up approval state
+    setPendingApproval(null)
+    setShowApprovalModal(false)
+  }, [pendingApproval])
 
   /**
    * Toggle microphone mute
@@ -514,6 +576,16 @@ export function VoiceSession({
             ))}
           </div>
         </div>
+      )}
+
+      {/* HITL Approval Modal */}
+      {pendingApproval?.result.draft && (
+        <ApprovalModal
+          draft={pendingApproval.result.draft}
+          isOpen={showApprovalModal}
+          onClose={handleApprovalCancelled}
+          onApproved={handleApprovalApproved}
+        />
       )}
     </div>
   )

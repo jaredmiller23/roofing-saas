@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/errors'
 import { createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 /**
  * POST /api/voice/session
@@ -31,6 +32,17 @@ export async function POST(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    // Apply rate limiting by user ID
+    const rateLimitResult = await applyRateLimit(
+      request,
+      ariaRateLimit,
+      getClientIdentifier(request, user.id)
+    )
+
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
     }
 
     logger.apiRequest('POST', '/api/voice/session', { tenantId, userId: user.id })
@@ -127,12 +139,22 @@ export async function POST(request: NextRequest) {
       tokenStart: tokenValue?.substring(0, 20) + '...'
     })
 
-    return createdResponse({
+    // Create response with rate limit headers
+    const response = createdResponse({
       session_id: openai_session_id,
       ephemeral_token: tokenValue,
       database_session_id: session.id,
       expires_at: typeof client_secret === 'object' ? client_secret.expires_at : undefined,
     })
+
+    // Add rate limit headers if available
+    if (rateLimitResult && rateLimitResult.headers) {
+      Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+        response.headers.set(key, value)
+      })
+    }
+
+    return response
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Voice session creation error', { error, duration })

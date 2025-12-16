@@ -36,6 +36,13 @@ export const generalRateLimit = new Ratelimit({
   prefix: "@upstash/ratelimit:general",
 })
 
+export const ariaRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 m"), // 30 requests per minute for ARIA and voice
+  analytics: true,
+  prefix: "@upstash/ratelimit:aria",
+})
+
 // Helper function to get client identifier (IP or user ID)
 export function getClientIdentifier(request: Request, userId?: string): string {
   if (userId) {

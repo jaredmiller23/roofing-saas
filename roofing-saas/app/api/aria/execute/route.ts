@@ -20,6 +20,7 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { buildARIAContext, executeARIAFunction } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
+import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 
 interface ExecuteRequest {
   function_name: string
@@ -45,6 +46,17 @@ export async function POST(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    // Apply rate limiting by user ID
+    const rateLimitResult = await applyRateLimit(
+      request,
+      ariaRateLimit,
+      getClientIdentifier(request, user.id)
+    )
+
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
     }
 
     const body: ExecuteRequest = await request.json()
@@ -89,7 +101,17 @@ export async function POST(request: NextRequest) {
       duration,
     })
 
-    return successResponse(result)
+    // Create response with rate limit headers
+    const response = successResponse(result)
+
+    // Add rate limit headers if available
+    if (rateLimitResult && rateLimitResult.headers) {
+      Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+        response.headers.set(key, value)
+      })
+    }
+
+    return response
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('ARIA function execution error', { error, duration })
@@ -101,11 +123,22 @@ export async function POST(request: NextRequest) {
  * GET /api/aria/execute
  * Returns available ARIA functions (for client discovery)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
       throw AuthenticationError('User not authenticated')
+    }
+
+    // Apply rate limiting by user ID
+    const rateLimitResult = await applyRateLimit(
+      request,
+      ariaRateLimit,
+      getClientIdentifier(request, user.id)
+    )
+
+    if (rateLimitResult instanceof Response) {
+      return rateLimitResult // Rate limit exceeded
     }
 
     // Import registry to get available functions
@@ -114,7 +147,7 @@ export async function GET() {
     // Get voice function definitions (safe to expose)
     const functions = ariaFunctionRegistry.getVoiceFunctions()
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: {
         functions,
@@ -122,6 +155,15 @@ export async function GET() {
         categories: ['crm', 'quickbooks', 'actions', 'weather'],
       },
     })
+
+    // Add rate limit headers if available
+    if (rateLimitResult && rateLimitResult.headers) {
+      Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+        response.headers.set(key, value)
+      })
+    }
+
+    return response
   } catch (error) {
     logger.error('Error getting ARIA functions', { error })
     return errorResponse(error as Error)
