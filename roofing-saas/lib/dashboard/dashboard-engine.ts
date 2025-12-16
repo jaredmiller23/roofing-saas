@@ -417,6 +417,21 @@ async function fetchQueryData(
 
 /**
  * Fetch data from external API
+ *
+ * This is an intentional extension point for future functionality, not a bug.
+ * Currently all dashboard widgets use the 'database' data source, which works correctly.
+ *
+ * The error thrown here is by design to prevent silent failures if a widget
+ * incorrectly specifies 'api' as its data source.
+ *
+ * @todo Implement API data source for widgets that fetch from external APIs
+ *       (e.g., weather data, third-party integrations, external metrics)
+ *
+ * @param _widget - The widget configuration
+ * @param _config - Data source configuration (API endpoint, auth, etc.)
+ * @param _context - Optional context values for request parameters
+ * @returns Widget data response with fetched API data
+ * @throws {Error} Always throws "API data source not yet implemented"
  */
 async function fetchAPIData(
   _widget: DashboardWidget,
@@ -429,6 +444,23 @@ async function fetchAPIData(
 
 /**
  * Fetch realtime data
+ *
+ * This is an intentional extension point for future functionality, not a bug.
+ * Currently all dashboard widgets use the 'database' data source, which works correctly.
+ *
+ * The error thrown here is by design to prevent silent failures if a widget
+ * incorrectly specifies 'realtime' as its data source.
+ *
+ * @todo Implement Realtime data source for live-updating widgets via Supabase subscriptions
+ *       (e.g., active job tracker, live notifications, real-time metrics)
+ *       Implementation will use Supabase Realtime channels to subscribe to database changes
+ *       and push updates to widgets without polling.
+ *
+ * @param _widget - The widget configuration
+ * @param _config - Data source configuration (subscription channels, filters)
+ * @param _context - Optional context values for subscription parameters
+ * @returns Widget data response with realtime subscription data
+ * @throws {Error} Always throws "Realtime data source not yet implemented"
  */
 async function fetchRealtimeData(
   _widget: DashboardWidget,
@@ -441,6 +473,24 @@ async function fetchRealtimeData(
 
 /**
  * Fetch computed data
+ *
+ * This is an intentional extension point for future functionality, not a bug.
+ * Currently all dashboard widgets use the 'database' data source, which works correctly.
+ *
+ * The error thrown here is by design to prevent silent failures if a widget
+ * incorrectly specifies 'computed' as its data source.
+ *
+ * @todo Implement Computed data source for widgets requiring complex aggregations
+ *       or calculations that go beyond simple database queries
+ *       (e.g., trend analysis, forecasting, complex KPI calculations, multi-source aggregations)
+ *       Implementation will handle expensive computations that may benefit from caching
+ *       or background processing.
+ *
+ * @param _widget - The widget configuration
+ * @param _config - Data source configuration (computation type, parameters, cache settings)
+ * @param _context - Optional context values for computation inputs
+ * @returns Widget data response with computed results
+ * @throws {Error} Always throws "Computed data source not yet implemented"
  */
 async function fetchComputedData(
   _widget: DashboardWidget,
