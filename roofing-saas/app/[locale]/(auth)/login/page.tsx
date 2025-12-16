@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { MFAChallenge } from '@/components/auth/MFAChallenge'
 
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [showMFA, setShowMFA] = useState(false)
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
   const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -51,7 +53,7 @@ export default function LoginPage() {
         }
 
         // Successful login without MFA or MFA already verified
-        router.push('/dashboard')
+        router.push(`/${locale}/dashboard`)
         router.refresh()
       }
     } catch {
@@ -62,7 +64,7 @@ export default function LoginPage() {
 
   const handleMFAVerified = () => {
     setShowMFA(false)
-    router.push('/dashboard')
+    router.push(`/${locale}/dashboard`)
     router.refresh()
   }
 
@@ -96,7 +98,7 @@ export default function LoginPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             Or{' '}
-            <Link href="/register" className="font-medium text-primary hover:text-primary/80">
+            <Link href={`/${locale}/register`} className="font-medium text-primary hover:text-primary/80">
               create a new account
             </Link>
           </p>
@@ -146,7 +148,7 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <Link href="/reset-password" className="font-medium text-primary hover:text-primary/80">
+              <Link href={`/${locale}/reset-password`} className="font-medium text-primary hover:text-primary/80">
                 Forgot your password?
               </Link>
             </div>

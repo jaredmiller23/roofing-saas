@@ -35,18 +35,14 @@ export async function middleware(request: NextRequest) {
   const method = request.method
 
   // Handle i18n routing first (locale detection, redirects)
-  // Skip for API routes, static assets, auth routes, root landing page,
-  // and paths that already have a locale prefix
-  // These routes exist outside the [locale] directory structure
-  const authRoutes = ['/login', '/register', '/reset-password', '/auth']
-  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+  // Skip for API routes, static assets, root landing page
+  // Auth routes are now under [locale] so they need i18n middleware
   const isRootPath = pathname === '/'
   const hasLocalePrefix = locales.some(locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`)
 
   // Only run i18n middleware for paths that need locale prefix added
   if (!pathname.startsWith('/api/') &&
       !pathname.startsWith('/_next/') &&
-      !isAuthRoute &&
       !isRootPath &&
       !hasLocalePrefix) {
     const intlResponse = intlMiddleware(request)
@@ -119,7 +115,6 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Public routes that don't require authentication
-  // Note: These are checked without locale prefix since i18n routing happens first
   const publicRoutes = [
     '/', // Marketing landing page
     '/login',
@@ -150,11 +145,11 @@ export async function middleware(request: NextRequest) {
 
   // Protect authenticated routes
   if (!user && !isPublicRoute) {
-    // No user, redirect to login page
-    // Use explicit URL construction to avoid locale prefix bleeding through
-    // Extract origin from request.url to avoid any nextUrl modifications
+    // No user, redirect to login page with locale prefix
+    // Extract current locale from path or use default
+    const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
     const origin = new URL(request.url).origin
-    return NextResponse.redirect(new URL('/login', origin))
+    return NextResponse.redirect(new URL(`/${locale}/login`, origin))
   }
 
   // If user is logged in and tries to access auth pages, redirect to dashboard

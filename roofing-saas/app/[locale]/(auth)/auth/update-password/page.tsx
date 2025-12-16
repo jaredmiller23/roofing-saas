@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
@@ -10,6 +10,8 @@ export default function UpdatePasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
   const supabase = createClient()
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -41,7 +43,7 @@ export default function UpdatePasswordPage() {
       }
 
       // Success - redirect to login
-      router.push('/login?message=Password updated successfully')
+      router.push(`/${locale}/login?message=Password updated successfully`)
     } catch {
       setError('An unexpected error occurred')
       setLoading(false)
