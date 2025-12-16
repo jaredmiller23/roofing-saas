@@ -28,10 +28,11 @@ import { IMPERSONATION_COOKIE_NAME } from '@/lib/impersonation/types'
 export async function createClient() {
   const cookieStore = await cookies()
 
-  const client = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  // Trim env vars to handle potential trailing newlines (common copy-paste issue)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
+
+  const client = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll()
@@ -106,10 +107,11 @@ export async function createClient() {
 export async function createAdminClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
+  // Trim env vars to handle potential trailing newlines
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || ''
+
+  return createServerClient(supabaseUrl, serviceRoleKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll()

@@ -46,8 +46,9 @@ import { createBrowserClient } from '@supabase/ssr'
  * ```
  */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  // Trim env vars to handle potential trailing newlines (common copy-paste issue)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
+
+  return createBrowserClient(supabaseUrl, supabaseKey)
 }
