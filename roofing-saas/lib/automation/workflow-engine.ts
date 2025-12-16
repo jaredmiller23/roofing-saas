@@ -36,7 +36,16 @@ export class WorkflowEngine {
    */
   private async loadActiveWorkflows(): Promise<void> {
     try {
+      // Only load workflows in browser environment
+      if (typeof window === 'undefined') {
+        return
+      }
+
       const response = await fetch('/api/automations?status=active')
+      if (!response.ok) {
+        throw new Error(`Failed to fetch workflows: ${response.status}`)
+      }
+
       const { workflows } = await response.json()
 
       for (const workflow of workflows) {
@@ -373,7 +382,7 @@ export class WorkflowEngine {
 export const workflowEngine = new WorkflowEngine()
 
 // Auto-initialize on module load
-if (typeof window === 'undefined') {
-  // Server-side initialization
+if (typeof window !== 'undefined') {
+  // Client-side initialization only
   workflowEngine.initialize().catch(console.error)
 }

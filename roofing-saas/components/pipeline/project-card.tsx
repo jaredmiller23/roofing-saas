@@ -1,29 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { useDraggable } from '@dnd-kit/core'
-import { Project } from '@/lib/types/api'
+import { Project, PipelineStage } from '@/lib/types/api'
 import Link from 'next/link'
-import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw } from 'lucide-react'
+import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import type { PipelineStage } from '@/lib/types/api'
 
 interface ProjectCardProps {
   project: Project
   isDragging?: boolean
+  onMoveProject?: (projectId: string, newStage: PipelineStage) => void
+  isDragDisabled?: boolean
 }
 
 // Active sales stages where Mark Lost button should appear
 const ACTIVE_SALES_STAGES: PipelineStage[] = ['prospect', 'qualified', 'quote_sent', 'negotiation']
 
-export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
+// Define stage order for navigation
+const STAGE_ORDER: PipelineStage[] = ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won', 'production', 'complete', 'lost']
+
+export function ProjectCard({ project, isDragging = false, onMoveProject, isDragDisabled = false }: ProjectCardProps) {
   const router = useRouter()
   const [startingProduction, setStartingProduction] = useState(false)
   const [markingLost, setMarkingLost] = useState(false)
   const [reactivating, setReactivating] = useState(false)
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: project.id,
-  })
 
   const handleStartProduction = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -123,11 +123,28 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
     }
   }
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined
+  // Get possible stage movements
+  const currentStageIndex = STAGE_ORDER.indexOf(project.pipeline_stage)
+  const canMovePrevious = currentStageIndex > 0 && STAGE_ORDER[currentStageIndex - 1] !== 'lost'
+  const canMoveNext = currentStageIndex >= 0 && currentStageIndex < STAGE_ORDER.length - 1 && STAGE_ORDER[currentStageIndex + 1] !== 'lost'
+  const previousStage = canMovePrevious ? STAGE_ORDER[currentStageIndex - 1] : null
+  const nextStage = canMoveNext ? STAGE_ORDER[currentStageIndex + 1] : null
+
+  const handleMoveToPrevious = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (previousStage && onMoveProject) {
+      onMoveProject(project.id, previousStage)
+    }
+  }
+
+  const handleMoveToNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    if (nextStage && onMoveProject) {
+      onMoveProject(project.id, nextStage)
+    }
+  }
 
   const formatCurrency = (value?: number | null) => {
     if (!value) return null
@@ -193,7 +210,7 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
   }
 
   const contactName = project.contact
-    ? `${project.contact.first_name} ${project.contact.last_name}`
+    ? `${project.contact.first_name || ''} ${project.contact.last_name || ''}`.trim() || 'Unnamed Contact'
     : 'No contact'
 
   const contactPhone = project.contact?.phone
@@ -201,13 +218,9 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
       className={`
-        bg-card rounded-lg border border p-4
-        hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing
+        bg-card rounded-lg border p-4
+        hover:shadow-md transition-shadow
         ${isDragging ? 'opacity-50 rotate-3 shadow-lg' : ''}
       `}
     >
@@ -325,6 +338,38 @@ export function ProjectCard({ project, isDragging = false }: ProjectCardProps) {
           {getTimeSince(project.updated_at)}
         </div>
       </div>
+
+      {/* Stage Navigation - Only when drag is disabled and onMoveProject is available */}
+      {isDragDisabled && onMoveProject && (previousStage || nextStage) && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="flex items-center justify-between gap-2">
+            {previousStage ? (
+              <button
+                onClick={handleMoveToPrevious}
+                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground rounded text-xs font-medium transition-colors"
+                title={`Move to ${previousStage}`}
+              >
+                <ChevronLeft className="h-3 w-3" />
+                <span className="capitalize">{previousStage.replace('_', ' ')}</span>
+              </button>
+            ) : (
+              <div className="flex-1" />
+            )}
+            {nextStage ? (
+              <button
+                onClick={handleMoveToNext}
+                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded text-xs font-medium transition-colors"
+                title={`Move to ${nextStage}`}
+              >
+                <span className="capitalize">{nextStage.replace('_', ' ')}</span>
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            ) : (
+              <div className="flex-1" />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Start Production Button - Only for Won stage */}
       {project.pipeline_stage === 'won' && (

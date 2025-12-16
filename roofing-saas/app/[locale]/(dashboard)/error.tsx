@@ -21,6 +21,16 @@ export default function DashboardError({
   reset: () => void
 }) {
   useEffect(() => {
+    // Log error details for debugging
+    console.error('Dashboard Error Boundary caught error:', {
+      message: error.message,
+      stack: error.stack,
+      digest: error.digest,
+      name: error.name,
+      cause: error.cause,
+      fullError: error,
+    })
+
     // Log error to Sentry
     Sentry.captureException(error, {
       level: 'error',

@@ -1,7 +1,6 @@
 'use client'
 
-import { useDroppable } from '@dnd-kit/core'
-import { Project } from '@/lib/types/api'
+import { Project, PipelineStage } from '@/lib/types/api'
 import { ProjectCard } from './project-card'
 
 interface PipelineColumnProps {
@@ -11,17 +10,15 @@ interface PipelineColumnProps {
     color: string
   }
   projects: Project[]
+  onMoveProject?: (projectId: string, newStage: PipelineStage) => void
+  isDragDisabled?: boolean
 }
 
-export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: stage.id,
-  })
-
+export function PipelineColumn({ stage, projects, onMoveProject, isDragDisabled = false }: PipelineColumnProps) {
   return (
     <div className="flex-shrink-0 w-80 flex flex-col">
       {/* Column Header */}
-      <div className="bg-card rounded-t-lg border border px-4 py-3">
+      <div className="bg-card rounded-t-lg border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${stage.color}`} />
@@ -34,21 +31,19 @@ export function PipelineColumn({ stage, projects }: PipelineColumnProps) {
       </div>
 
       {/* Cards Container */}
-      <div
-        ref={setNodeRef}
-        className={`
-          flex-1 bg-muted/30 rounded-b-lg border-x border-b border
-          p-3 overflow-y-auto space-y-3 min-h-[200px]
-          ${isOver ? 'bg-primary/10 border-primary' : ''}
-        `}
-      >
+      <div className="flex-1 bg-muted/30 rounded-b-lg border-x border-b border p-3 overflow-y-auto space-y-3 min-h-[200px]">
         {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard
+            key={project.id}
+            project={project}
+            onMoveProject={onMoveProject}
+            isDragDisabled={isDragDisabled}
+          />
         ))}
 
         {projects.length === 0 && (
           <div className="text-center py-8 text-muted-foreground text-sm">
-            Drop opportunities here
+            {isDragDisabled ? 'No opportunities in this stage' : 'Drop opportunities here'}
           </div>
         )}
       </div>

@@ -3,15 +3,6 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
 import { PipelineColumn } from './pipeline-column'
 import { ProjectCard } from './project-card'
 import { Search, Filter, AlertCircle, X } from 'lucide-react'
@@ -70,7 +61,6 @@ interface ValidationError {
 export function PipelineBoard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
   const [validationError, setValidationError] = useState<ValidationError | null>(null)
@@ -78,14 +68,6 @@ export function PipelineBoard() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const locallyDraggingRef = useRef<Set<string>>(new Set())
   const recentUpdatesRef = useRef<Map<string, number>>(new Map())
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  )
 
   useEffect(() => {
     fetchProjects()
@@ -170,25 +152,9 @@ export function PipelineBoard() {
     },
   })
 
-  function handleDragStart(event: DragStartEvent) {
-    const project = projects.find((p) => p.id === event.active.id)
-    setActiveProject(project || null)
-
-    if (project) {
-      locallyDraggingRef.current.add(project.id)
-    }
-  }
-
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    setActiveProject(null)
-
-    if (!over) return
-
-    const projectId = active.id as string
-    const newStage = over.id as PipelineStage
+  // Function to handle moving projects between stages
+  async function moveProject(projectId: string, newStage: PipelineStage) {
     const project = projects.find((p) => p.id === projectId)
-
     if (!project || project.pipeline_stage === newStage) return
 
     const currentStage = project.pipeline_stage as PipelineStage
@@ -356,7 +322,7 @@ export function PipelineBoard() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Validation Error Banner */}
       {validationError && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
@@ -474,56 +440,48 @@ export function PipelineBoard() {
       </div>
 
       {/* Pipeline Board */}
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
-          {STAGES.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
-            const stageProjects = projectsByStage[stage.id] as Project[]
-            const totalInStage = projectsByStage[`${stage.id}_total`] as number
+      <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
+        {STAGES.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
+          const stageProjects = projectsByStage[stage.id] as Project[]
+          const totalInStage = projectsByStage[`${stage.id}_total`] as number
 
-            const stageValue = getStageValue(stage.id)
+          const stageValue = getStageValue(stage.id)
 
-            return (
-              <div key={stage.id} className="flex flex-col min-w-[300px]">
-                {/* Column Header with Count and Value */}
-                <div className="mb-2 px-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-semibold text-muted-foreground">{stage.name}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      {stageProjects.length}
-                      {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
-                    </span>
-                  </div>
-                  <div className="text-xs font-semibold text-green-700 h-4">
-                    {stageValue > 0 ? formatCurrency(stageValue) : '\u00A0'}
-                  </div>
+          return (
+            <div key={stage.id} className="flex flex-col min-w-[300px]">
+              {/* Column Header with Count and Value */}
+              <div className="mb-2 px-2">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-sm font-semibold text-muted-foreground">{stage.name}</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {stageProjects.length}
+                    {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
+                  </span>
                 </div>
-
-                <PipelineColumn
-                  stage={stage}
-                  projects={stageProjects || []}
-                />
-
-                {/* Show more indicator */}
-                {totalInStage > PROJECTS_PER_COLUMN && (
-                  <div className="mt-2 text-center">
-                    <p className="text-xs text-muted-foreground">
-                      + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
-                    </p>
-                  </div>
-                )}
+                <div className="text-xs font-semibold text-green-700 h-4">
+                  {stageValue > 0 ? formatCurrency(stageValue) : '\u00A0'}
+                </div>
               </div>
-            )
-          })}
-        </div>
 
-        <DragOverlay>
-          {activeProject ? <ProjectCard project={activeProject} isDragging /> : null}
-        </DragOverlay>
-      </DndContext>
+              <PipelineColumn
+                stage={stage}
+                projects={stageProjects || []}
+                onMoveProject={moveProject}
+                isDragDisabled={true}
+              />
+
+              {/* Show more indicator */}
+              {totalInStage > PROJECTS_PER_COLUMN && (
+                <div className="mt-2 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
+                  </p>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
