@@ -56,18 +56,43 @@ export default function StormTrackingPage() {
   const loadStormData = async () => {
     setLoading(true)
     try {
-      // In a real implementation, these would be actual API calls
-      // For now, we'll use demo data
+      // Fetch alerts
+      const alertsRes = await fetch('/api/storm/alerts')
+      const alertsData = await alertsRes.json()
+      if (alertsData.success) {
+        setAlerts(alertsData.alerts || [])
+      }
 
-      // TODO: Replace with actual API calls:
-      // const predictionRes = await fetch('/api/storm/predictions')
-      // const alertsRes = await fetch('/api/storm/alerts')
-      // const customersRes = await fetch('/api/storm/affected-customers')
+      // Fetch response mode configuration
+      const responseModeRes = await fetch('/api/storm/response-mode')
+      const responseModeData = await responseModeRes.json()
+      if (responseModeData.success) {
+        setResponseConfig(responseModeData.config)
+      }
 
-      // Demo data
-      setStormEvents([])
-      setAlerts([])
-      setAffectedCustomers([])
+      // Fetch affected customers (if API exists)
+      try {
+        const customersRes = await fetch('/api/storm/affected-customers')
+        const customersData = await customersRes.json()
+        if (customersData.success) {
+          setAffectedCustomers(customersData.customers || [])
+        }
+      } catch {
+        // API may not exist yet, use empty array
+        setAffectedCustomers([])
+      }
+
+      // Fetch storm events/predictions (if API exists)
+      try {
+        const predictionsRes = await fetch('/api/storm/predictions')
+        const predictionsData = await predictionsRes.json()
+        if (predictionsData.success) {
+          setStormEvents(predictionsData.predictions || [])
+        }
+      } catch {
+        // API may not exist yet, use empty array
+        setStormEvents([])
+      }
     } catch (error) {
       console.error('Failed to load storm data:', error)
     } finally {
@@ -82,50 +107,99 @@ export default function StormTrackingPage() {
   }
 
   const handleAcknowledgeAlert = async (alertId: string) => {
-    // TODO: Implement alert acknowledgment API call
-    console.log('Acknowledging alert:', alertId)
+    try {
+      const res = await fetch(`/api/storm/alerts/${alertId}/acknowledge`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Update local state to reflect acknowledgment
+        setAlerts(alerts.map(a =>
+          a.id === alertId
+            ? { ...a, acknowledgedBy: data.acknowledgedBy }
+            : a
+        ))
+      } else {
+        console.error('Failed to acknowledge alert:', data.error)
+      }
+    } catch (error) {
+      console.error('Error acknowledging alert:', error)
+    }
   }
 
   const handleDismissAlert = async (alertId: string) => {
-    // TODO: Implement alert dismissal API call
-    setAlerts(alerts.filter(a => a.id !== alertId))
+    try {
+      const res = await fetch(`/api/storm/alerts/${alertId}/dismiss`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Remove from local state
+        setAlerts(alerts.filter(a => a.id !== alertId))
+      } else {
+        console.error('Failed to dismiss alert:', data.error)
+      }
+    } catch (error) {
+      console.error('Error dismissing alert:', error)
+    }
   }
 
   const handleActivateResponse = async (settings: Partial<StormResponseConfig['settings']>) => {
-    // TODO: Implement response mode activation API call
-    setResponseConfig({
-      ...responseConfig,
-      mode: 'storm_response',
-      activatedAt: new Date().toISOString(),
-      activatedBy: 'current-user-id', // Replace with actual user ID
-      settings: {
-        ...responseConfig.settings,
-        ...settings,
-      },
-    })
+    try {
+      const res = await fetch('/api/storm/response-mode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'storm_response',
+          settings,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setResponseConfig(data.config)
+      } else {
+        console.error('Failed to activate response mode:', data.error)
+      }
+    } catch (error) {
+      console.error('Error activating response mode:', error)
+    }
   }
 
   const handleDeactivateResponse = async () => {
-    // TODO: Implement response mode deactivation API call
-    setResponseConfig({
-      mode: 'normal',
-      activatedAt: null,
-      activatedBy: null,
-      stormEventId: null,
-      settings: {
-        autoNotifications: false,
-        autoLeadGeneration: false,
-        priorityRouting: false,
-        crewPrePositioning: false,
-        extendedHours: false,
-      },
-      metrics: {
-        leadsGenerated: 0,
-        customersNotified: 0,
-        appointmentsScheduled: 0,
-        estimatedRevenue: 0,
-      },
-    })
+    try {
+      const res = await fetch('/api/storm/response-mode', {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Reset to normal mode
+        setResponseConfig({
+          mode: 'normal',
+          activatedAt: null,
+          activatedBy: null,
+          stormEventId: null,
+          settings: {
+            autoNotifications: false,
+            autoLeadGeneration: false,
+            priorityRouting: false,
+            crewPrePositioning: false,
+            extendedHours: false,
+          },
+          metrics: {
+            leadsGenerated: 0,
+            customersNotified: 0,
+            appointmentsScheduled: 0,
+            estimatedRevenue: 0,
+          },
+        })
+      } else {
+        console.error('Failed to deactivate response mode:', data.error)
+      }
+    } catch (error) {
+      console.error('Error deactivating response mode:', error)
+    }
   }
 
   const handleContactCustomer = async (customerId: string, method: 'phone' | 'email' | 'sms') => {
