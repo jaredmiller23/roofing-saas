@@ -10,7 +10,7 @@ import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { PipelineStage } from '@/lib/types/api'
-import { getAuditContext, auditedUpdate } from '@/lib/audit/audit-middleware'
+import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit-middleware'
 
 export const dynamic = 'force-dynamic'
 
@@ -296,6 +296,69 @@ export async function PATCH(
     return successResponse({ project: updatedProject })
   } catch (error) {
     logger.error('Error in PATCH /api/projects/:id', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
+  }
+}
+
+/**
+ * DELETE /api/projects/[id]
+ * Soft delete a project
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    // Get audit context for logging
+    const auditContext = await getAuditContext(request)
+    if (!auditContext) {
+      throw AuthenticationError('Failed to get audit context')
+    }
+
+    const { id } = await params
+
+    // Delete project with audit logging
+    const result = await auditedDelete(
+      'project',
+      id,
+      async (_beforeValues) => {
+        const supabase = await createClient()
+
+        // Soft delete
+        const { error } = await supabase
+          .from('projects')
+          .update({ is_deleted: true })
+          .eq('id', id)
+          .eq('tenant_id', tenantId)
+
+        if (error) {
+          logger.error('Error deleting project', { error })
+          throw InternalError('Failed to delete project')
+        }
+
+        return { success: true }
+      },
+      auditContext,
+      {
+        operation: 'project_delete',
+        source: 'api',
+        delete_type: 'soft'
+      }
+    )
+
+    return successResponse(result)
+  } catch (error) {
+    logger.error('Error in DELETE /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
