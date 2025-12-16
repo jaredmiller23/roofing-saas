@@ -135,8 +135,46 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Fetch user names for team performance display
+    const { data: tenantUsers } = await supabase
+      .from('tenant_users')
+      .select(`
+        user_id,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
+      .eq('tenant_id', user.user_metadata?.tenant_id)
+
+    // Build user name map
+    const userNames: Record<string, string> = {}
+    if (tenantUsers) {
+      for (const tu of tenantUsers) {
+        const userData = tu.users as {
+          email?: string
+          raw_user_meta_data?: {
+            full_name?: string
+            first_name?: string
+            last_name?: string
+            name?: string
+          }
+        } | null
+        const metadata = userData?.raw_user_meta_data || {}
+
+        // Try to get full name from metadata
+        const fullName = metadata.full_name ||
+                        (metadata.first_name && metadata.last_name ? `${metadata.first_name} ${metadata.last_name}` : '') ||
+                        metadata.name ||
+                        userData?.email?.split('@')[0] ||
+                        'Unknown'
+
+        userNames[tu.user_id] = fullName
+      }
+    }
+
     // Generate comprehensive analytics
-    const analytics = generatePipelineAnalytics(projects, filters)
+    const analytics = generatePipelineAnalytics(projects, filters, userNames)
 
     // Generate revenue forecast separately and merge
     const revenueForecast = generateRevenueForecast(projects, filters)

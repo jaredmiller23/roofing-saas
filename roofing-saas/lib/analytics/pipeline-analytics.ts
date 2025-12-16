@@ -41,17 +41,6 @@ const STAGE_NAMES: Record<PipelineStage, string> = {
   lost: 'Lost'
 }
 
-// Default loss reasons for analysis
-const DEFAULT_LOSS_REASONS = [
-  'Price too high',
-  'Chose competitor',
-  'Project delayed',
-  'Budget constraints',
-  'No response',
-  'Insurance denial',
-  'Other'
-]
-
 /**
  * Calculate conversion funnel metrics
  */
@@ -243,29 +232,11 @@ export function calculateWinLossAnalysis(
     }
   })
 
-  // Loss reasons analysis (mock data since not in schema yet)
-  const lossReasons: LossReason[] = DEFAULT_LOSS_REASONS.map((reason, index) => {
-    // Distribute lost deals across reasons with some randomness for demo
-    const count = Math.floor(lostProjects.length / DEFAULT_LOSS_REASONS.length) +
-                  (index < lostProjects.length % DEFAULT_LOSS_REASONS.length ? 1 : 0)
-    const percentage = lostProjects.length > 0 ? (count / lostProjects.length) * 100 : 0
-    const reasonProjects = lostProjects.slice(
-      index * Math.floor(lostProjects.length / DEFAULT_LOSS_REASONS.length),
-      (index + 1) * Math.floor(lostProjects.length / DEFAULT_LOSS_REASONS.length)
-    )
-
-    const averageValue = reasonProjects.length > 0 ?
-      reasonProjects.reduce((sum, p) => sum + (p.estimated_value || 0), 0) / reasonProjects.length : 0
-    const totalLostValue = reasonProjects.reduce((sum, p) => sum + (p.estimated_value || 0), 0)
-
-    return {
-      reason,
-      count,
-      percentage,
-      averageValue,
-      totalLostValue,
-    }
-  }).filter(lr => lr.count > 0)
+  // Loss reasons analysis
+  // Database reality: win_loss_reasons table is empty, projects have no loss_reason_id
+  // Return empty array with flag indicating no data is available
+  const lossReasons: LossReason[] = []
+  const lossReasonsAvailable = false
 
   // Time analysis
   const averageWonTime = calculateAverageLeadToWin(wonProjects)
@@ -282,6 +253,7 @@ export function calculateWinLossAnalysis(
     averageLostValue,
     leadSourcePerformance,
     lossReasons,
+    lossReasonsAvailable,
     averageWonTime,
     averageLostTime,
   }
@@ -292,7 +264,8 @@ export function calculateWinLossAnalysis(
  */
 export function calculateTeamPerformance(
   projects: Project[],
-  filters: AnalyticsFilters
+  filters: AnalyticsFilters,
+  userNames?: Record<string, string>
 ): TeamMemberPerformance[] {
   const filteredProjects = filterProjects(projects, filters)
 
@@ -338,9 +311,12 @@ export function calculateTeamPerformance(
       return rates
     }, {} as Record<PipelineStage, number>)
 
+    // Get user name from provided map or fall back to email-style ID
+    const userName = userNames?.[userId] || `user-${userId.slice(0, 8)}`
+
     return {
       userId,
-      userName: `User ${userId.slice(-4)}`, // Mock name - would come from user table
+      userName,
       totalDeals: userProjects.length,
       wonDeals: wonProjects.length,
       lostDeals: lostProjects.length,
@@ -360,12 +336,13 @@ export function calculateTeamPerformance(
  */
 export function generatePipelineAnalytics(
   projects: Project[],
-  filters: AnalyticsFilters
+  filters: AnalyticsFilters,
+  userNames?: Record<string, string>
 ): PipelineAnalytics {
   const conversionFunnel = calculateConversionFunnel(projects, filters)
   const velocity = calculatePipelineVelocity(projects, filters)
   const winLossAnalysis = calculateWinLossAnalysis(projects, filters)
-  const teamPerformance = calculateTeamPerformance(projects, filters)
+  const teamPerformance = calculateTeamPerformance(projects, filters, userNames)
 
   // Calculate data quality metrics
   const filteredProjects = filterProjects(projects, filters)
