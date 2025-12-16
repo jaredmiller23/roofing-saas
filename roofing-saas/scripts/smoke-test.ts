@@ -91,7 +91,9 @@ class SmokeTest {
     if (!this.page) return false
     return await this.page.locator('text=Dashboard Error').isVisible({ timeout: 1000 }).catch(() => false)
       || await this.page.locator('text=Something went wrong').isVisible({ timeout: 1000 }).catch(() => false)
-      || await this.page.locator('text=404').isVisible({ timeout: 1000 }).catch(() => false)
+      // More specific 404 check to avoid false positives from phone numbers/IDs containing "404"
+      || await this.page.locator('text="404: This page could not be found"').isVisible({ timeout: 1000 }).catch(() => false)
+      || await this.page.locator('h1:has-text("404")').isVisible({ timeout: 1000 }).catch(() => false)
   }
 
   async login(): Promise<void> {
