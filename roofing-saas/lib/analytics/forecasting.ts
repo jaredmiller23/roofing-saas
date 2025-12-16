@@ -351,8 +351,13 @@ function calculateTrends(
   const dealSizeTrend = previousAvgDealSize > 0 ?
     ((currentAvgDealSize - previousAvgDealSize) / previousAvgDealSize) * 100 : 0
 
-  // Calculate velocity trend (mock for now)
-  const velocityTrend = 0 // Would need more complex calculation
+  // Calculate velocity trend (average days-to-close for won projects)
+  const currentVelocity = calculateAverageVelocity(currentPeriodProjects)
+  const previousVelocity = calculateAverageVelocity(previousPeriodProjects)
+
+  // Note: Lower velocity is better (faster closes), so negative trend = improvement
+  const velocityTrend = previousVelocity > 0 ?
+    ((currentVelocity - previousVelocity) / previousVelocity) * 100 : 0
 
   return {
     pipelineGrowth,
@@ -437,6 +442,28 @@ function calculateAverageDealSize(projects: Project[]): number {
   }, 0)
 
   return totalValue / completedDeals.length
+}
+
+/**
+ * Calculate average velocity (days-to-close) for won projects
+ */
+function calculateAverageVelocity(projects: Project[]): number {
+  const wonProjects = projects.filter(p =>
+    p.pipeline_stage === 'complete' || p.pipeline_stage === 'won'
+  )
+
+  if (wonProjects.length === 0) return 0
+
+  const velocities = wonProjects
+    .map(p => {
+      const startDate = new Date(p.created_at)
+      const closeDate = new Date(p.updated_at)
+      return Math.floor((closeDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    })
+    .filter(days => days >= 0)
+
+  return velocities.length > 0 ?
+    velocities.reduce((sum, days) => sum + days, 0) / velocities.length : 0
 }
 
 /**
