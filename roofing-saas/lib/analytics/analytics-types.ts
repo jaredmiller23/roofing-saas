@@ -86,6 +86,7 @@ export interface WinLossAnalysis {
 
   // Loss reasons
   lossReasons: LossReason[]
+  lossReasonsAvailable: boolean // Whether loss reason data is configured/available
 
   // Time analysis
   averageWonTime: number // Days to close won deals
