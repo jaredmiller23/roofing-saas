@@ -53,5 +53,5 @@ SETTINGS:
 
 | Date | Change | Commit |
 |------|--------|--------|
-| 2025-12-17 | Initial spec captured | TBD |
-| 2025-12-17 | Fixed implementation to match spec | TBD |
+| 2025-12-17 | Initial spec captured | b019c47 |
+| 2025-12-17 | Fixed implementation to match spec | b019c47 |
