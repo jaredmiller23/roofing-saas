@@ -33,7 +33,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Check if KPI is a system KPI (cannot be fully modified)
     const { data: existing } = await supabase
-      .from('kpi_definitions')
+      .from('kpi_snapshots')
       .select('is_system')
       .eq('id', id)
       .eq('org_id', org_id)
@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
 
       const { data, error } = await supabase
-        .from('kpi_definitions')
+        .from('kpi_snapshots')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
         .eq('org_id', org_id)
@@ -82,7 +82,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const validated = validationResult.data
 
     const { data, error } = await supabase
-      .from('kpi_definitions')
+      .from('kpi_snapshots')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
       .eq('org_id', org_id)
@@ -129,7 +129,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     // Cannot delete system KPIs
     const { data: existing } = await supabase
-      .from('kpi_definitions')
+      .from('kpi_snapshots')
       .select('is_system')
       .eq('id', id)
       .eq('org_id', org_id)
@@ -139,7 +139,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       throw AuthorizationError('System KPIs cannot be deleted')
     }
 
-    const { error } = await supabase.from('kpi_definitions').delete().eq('id', id).eq('org_id', org_id)
+    const { error } = await supabase.from('kpi_snapshots').delete().eq('id', id).eq('org_id', org_id)
 
     if (error) {
       logger.error('Failed to delete KPI', { error, org_id, kpi_id: id })

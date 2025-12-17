@@ -52,7 +52,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Update point rule (RLS ensures org_id isolation)
     const { data, error } = await supabase
-      .from('point_rule_configs')
+      .from('point_rules')
       .update({
         ...validated,
         updated_at: new Date().toISOString(),
@@ -112,7 +112,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     // Delete point rule (RLS ensures org_id isolation)
     const { error } = await supabase
-      .from('point_rule_configs')
+      .from('point_rules')
       .delete()
       .eq('id', id)
       .eq('org_id', org_id)

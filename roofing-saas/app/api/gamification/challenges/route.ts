@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     const { data, error } = await supabase
-      .from('challenge_configs')
+      .from('challenges')
       .select('*')
       .eq('org_id', org_id)
       .order('start_date', { ascending: false })
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     const validated = validationResult.data
 
     const { data, error } = await supabase
-      .from('challenge_configs')
+      .from('challenges')
       .insert({ ...validated, org_id, created_by: user.id })
       .select()
       .single()

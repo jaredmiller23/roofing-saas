@@ -41,7 +41,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const validated = validationResult.data
 
     const { data, error } = await supabase
-      .from('challenge_configs')
+      .from('challenges')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
       .eq('org_id', org_id)
@@ -87,7 +87,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     }
 
     const { error } = await supabase
-      .from('challenge_configs')
+      .from('challenges')
       .delete()
       .eq('id', id)
       .eq('org_id', org_id)

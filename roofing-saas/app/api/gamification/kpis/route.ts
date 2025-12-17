@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const isSystem = searchParams.get('system')
 
-    let query = supabase.from('kpi_definitions').select('*').eq('org_id', org_id)
+    let query = supabase.from('kpi_snapshots').select('*').eq('org_id', org_id)
 
     if (isSystem !== null) {
       query = query.eq('is_system', isSystem === 'true')
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     const validated = validationResult.data
 
     const { data, error } = await supabase
-      .from('kpi_definitions')
+      .from('kpi_snapshots')
       .insert({
         ...validated,
         org_id,

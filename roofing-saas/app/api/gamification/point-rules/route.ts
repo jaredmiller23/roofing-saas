@@ -35,7 +35,7 @@ export async function GET() {
 
     // Fetch point rules
     const { data, error } = await supabase
-      .from('point_rule_configs')
+      .from('point_rules')
       .select('*')
       .eq('org_id', org_id)
       .order('category', { ascending: true })
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
     // Insert point rule
     const { data, error } = await supabase
-      .from('point_rule_configs')
+      .from('point_rules')
       .insert({
         ...validated,
         org_id,
