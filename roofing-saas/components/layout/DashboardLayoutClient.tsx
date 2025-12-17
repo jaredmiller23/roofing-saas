@@ -10,9 +10,10 @@ import { AdaptiveLayout } from '@/components/layout/AdaptiveLayout'
 interface DashboardLayoutClientProps {
   children: React.ReactNode
   userRole?: string
+  userEmail?: string
 }
 
-export function DashboardLayoutClient({ children, userRole }: DashboardLayoutClientProps) {
+export function DashboardLayoutClient({ children, userRole, userEmail }: DashboardLayoutClientProps) {
   // Log UI mode initialization for verification
   console.log('DashboardLayoutClient - Initializing with userRole:', userRole)
 
@@ -20,7 +21,10 @@ export function DashboardLayoutClient({ children, userRole }: DashboardLayoutCli
     <UIModeProvider>
       <AIAssistantProvider>
         <ImpersonationBanner />
-        <AdaptiveLayout>
+        <AdaptiveLayout
+          userEmail={userEmail || ''}
+          userRole={userRole || 'user'}
+        >
           {children}
         </AdaptiveLayout>
         <GlobalSearch />
