@@ -1,18 +1,21 @@
 {
-  "task_id": "NAV-REORG-001",
+  "task_id": "ADAPTIVE-UI-P2-4",
   "files_read": [
-    "app/[locale]/(dashboard)/territories/[id]/page.tsx",
-    "app/[locale]/(dashboard)/knocks/page.tsx",
-    "app/[locale]/(dashboard)/territories/page.tsx",
-    "components/layout/Sidebar.tsx",
-    "app/[locale]/(dashboard)/territories/new/page.tsx"
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/Sidebar.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/layout.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/FieldWorkerNav.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/AdaptiveLayout.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/FieldWorkerHome.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/dashboard/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/DashboardLayoutClient.tsx"
   ],
   "files_modified": [
-    "app/[locale]/(dashboard)/territories/[id]/page.tsx",
-    "app/[locale]/(dashboard)/knocks/page.tsx",
-    "app/[locale]/(dashboard)/territories/page.tsx",
-    "components/layout/Sidebar.tsx",
-    "app/[locale]/(dashboard)/territories/new/page.tsx"
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/layout.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/AdaptiveLayout.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/today/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/me/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/call/page.tsx",
+    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/DashboardLayoutClient.tsx"
   ],
   "validation_passed": true,
   "progress_updated": false,

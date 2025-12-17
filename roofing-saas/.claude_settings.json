@@ -10,12 +10,16 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(components/layout/Sidebar.tsx)",
-      "Edit(components/layout/Sidebar.tsx)",
-      "Write(app/[locale]/(dashboard)/knocks/)",
-      "Edit(app/[locale]/(dashboard)/knocks/)",
-      "Write(app/[locale]/(dashboard)/territories/)",
-      "Edit(app/[locale]/(dashboard)/territories/)"
+      "Write(app/[locale]/(dashboard)/field/call/page.tsx)",
+      "Edit(app/[locale]/(dashboard)/field/call/page.tsx)",
+      "Write(app/[locale]/(dashboard)/field/today/page.tsx)",
+      "Edit(app/[locale]/(dashboard)/field/today/page.tsx)",
+      "Write(app/[locale]/(dashboard)/field/me/page.tsx)",
+      "Edit(app/[locale]/(dashboard)/field/me/page.tsx)",
+      "Write(components/layout/AdaptiveLayout.tsx)",
+      "Edit(components/layout/AdaptiveLayout.tsx)",
+      "Write(components/layout/DashboardLayoutClient.tsx)",
+      "Edit(components/layout/DashboardLayoutClient.tsx)"
     ]
   }
 }

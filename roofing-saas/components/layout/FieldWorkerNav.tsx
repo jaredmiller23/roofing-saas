@@ -63,35 +63,37 @@ interface FieldWorkerNavProps {
   userRole?: string
 }
 
+// Navigation structure per owner specification
+// Source of truth: docs/specs/SIDEBAR_NAVIGATION.md
 const navSections: NavSection[] = [
   {
     label: 'SELL',
     items: [
-      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
       { href: '/knocks', label: 'Knock', icon: Map },
-      { href: '/contacts', label: 'Contacts', icon: Users },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
+      { href: '/claims', label: 'Claims', icon: FileText },
+      { href: '/incentives', label: 'Incentives', icon: Trophy },
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
       { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
-      { href: '/projects', label: 'Pipeline', icon: Workflow },
     ]
   },
   {
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/insights', label: 'Business Intelligence', icon: Sparkles },
-      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-      { href: '/claims', label: 'Claims', icon: FileText },
-      { href: '/incentives', label: 'Incentives', icon: Trophy },
+      { href: '/projects', label: 'Pipeline', icon: Workflow },
+      { href: '/insights', label: 'Business Intel', icon: Sparkles },
       { href: '/events', label: 'Events', icon: Calendar },
+      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
     ]
   },
   {
     label: 'COMMUNICATIONS',
     items: [
-      { href: '/campaigns', label: 'Emails', icon: Mail },
+      { href: '/call-logs', label: 'Call Log', icon: Phone },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/call-logs', label: 'Call Logs', icon: Phone },
-      { href: '/signatures', label: 'Signatures', icon: PenTool },
+      { href: '/campaigns', label: 'Emails', icon: Mail },
+      { href: '/contacts', label: 'Contacts', icon: Users },
     ]
   },
   {

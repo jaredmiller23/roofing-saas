@@ -25,7 +25,17 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Monitor
+  Monitor,
+  Map,
+  PenTool,
+  FileText,
+  Trophy,
+  Zap,
+  CloudLightning,
+  Sparkles,
+  Calendar,
+  Phone,
+  Mail
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { useUIMode } from '@/hooks/useUIMode'
@@ -37,20 +47,56 @@ interface NavItem {
   icon: React.ElementType
 }
 
+interface NavSection {
+  label?: string
+  items: NavItem[]
+}
+
 interface ManagerLayoutProps {
   children: ReactNode
   userEmail: string
   userRole?: string
 }
 
-// Focused nav items for manager mode
-const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/projects', label: 'Pipeline', icon: Workflow },
-  { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/contacts', label: 'Team', icon: Users },
-  { href: '/settings', label: 'Settings', icon: Settings },
+// Navigation structure per owner specification
+// Source of truth: docs/specs/SIDEBAR_NAVIGATION.md
+const navSections: NavSection[] = [
+  {
+    label: 'SELL',
+    items: [
+      { href: '/knocks', label: 'Knock', icon: Map },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
+      { href: '/claims', label: 'Claims', icon: FileText },
+      { href: '/incentives', label: 'Incentives', icon: Trophy },
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
+      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
+    ]
+  },
+  {
+    label: 'CORE',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/projects', label: 'Pipeline', icon: Workflow },
+      { href: '/insights', label: 'Business Intel', icon: Sparkles },
+      { href: '/events', label: 'Events', icon: Calendar },
+      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
+    ]
+  },
+  {
+    label: 'COMMUNICATIONS',
+    items: [
+      { href: '/call-logs', label: 'Call Log', icon: Phone },
+      { href: '/messages', label: 'Messages', icon: MessageSquare },
+      { href: '/campaigns', label: 'Emails', icon: Mail },
+      { href: '/contacts', label: 'Contacts', icon: Users },
+    ]
+  },
+  {
+    label: 'SETTINGS',
+    items: [
+      { href: '/settings', label: 'Settings', icon: Settings },
+    ]
+  },
 ]
 
 export function ManagerLayout({ children, userEmail, userRole = 'user' }: ManagerLayoutProps) {
@@ -133,45 +179,64 @@ export function ManagerLayout({ children, userEmail, userRole = 'user' }: Manage
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-2" role="list">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item.href)
+        <nav className="flex-1 overflow-y-auto py-2 px-2" role="list">
+          {navSections.map((section, sectionIndex) => (
+            <div key={sectionIndex}>
+              {/* Section Header - only when expanded */}
+              {section.label && shouldExpand && (
+                <div className="px-3 pt-3 pb-1">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {section.label}
+                  </h3>
+                </div>
+              )}
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg transition-all mb-1",
-                  // Larger touch targets for tablet
-                  "min-h-[48px] px-3",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  active
-                    ? 'bg-primary text-white shadow-lg shadow-primary/50'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white',
-                  !prefersReducedMotion && 'active:scale-[0.98]',
-                  // Center icon when collapsed
-                  !shouldExpand && 'justify-center'
-                )}
-                aria-current={active ? 'page' : undefined}
-                title={!shouldExpand ? item.label : undefined}
-              >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    active ? 'text-white' : 'text-muted-foreground'
-                  )}
-                  aria-hidden="true"
-                />
-                {shouldExpand && (
-                  <span className="text-sm font-medium whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+              {/* Section Items */}
+              {section.items.map((item) => {
+                const Icon = item.icon
+                const active = isActive(item.href)
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg transition-all mb-1",
+                      // Larger touch targets for tablet
+                      "min-h-[44px] px-3",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                      active
+                        ? 'bg-primary text-white shadow-lg shadow-primary/50'
+                        : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white',
+                      !prefersReducedMotion && 'active:scale-[0.98]',
+                      // Center icon when collapsed
+                      !shouldExpand && 'justify-center'
+                    )}
+                    aria-current={active ? 'page' : undefined}
+                    title={!shouldExpand ? item.label : undefined}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 flex-shrink-0",
+                        active ? 'text-white' : 'text-muted-foreground'
+                      )}
+                      aria-hidden="true"
+                    />
+                    {shouldExpand && (
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+
+              {/* Divider after each section except last */}
+              {sectionIndex < navSections.length - 1 && shouldExpand && (
+                <div className="border-t border-sidebar-border my-2 mx-2"></div>
+              )}
+            </div>
+          ))}
         </nav>
 
         {/* Footer section */}

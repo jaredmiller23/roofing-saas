@@ -2,72 +2,87 @@ apiVersion: aces/v1
 changes:
 - action: edit
   anchor: null
-  description: '1. Rename the territories/ folder to knocks/
+  description: "Update AdaptiveLayout to conditionally render based on mode:\n\nimport\
+    \ { FieldWorkerNav } from './FieldWorkerNav'\nimport { FieldWorkerHome } from\
+    \ './FieldWorkerHome'\nimport { Sidebar } from './Sidebar'\n\n// Get current path\
+    \ to determine if on dashboard\nconst pathname = usePathname()\nconst isDashboard\
+    \ = pathname === '/dashboard' || pathname === '/en/dashboard'\n\nif (mode ===\
+    \ 'field') {\n  return (\n    <div className=\"min-h-screen flex flex-col\">\n\
+    \      <FieldWorkerNav userEmail={userEmail} />\n      <main className=\"flex-1\"\
+    >\n        {isDashboard ? <FieldWorkerHome /> : children}\n      </main>\n   \
+    \ </div>\n  )\n}\n\n// Default: full mode with Sidebar\nreturn (\n  <div className=\"\
+    min-h-screen flex\">\n    <Sidebar userEmail={userEmail} />\n    <main className=\"\
+    flex-1\">{children}</main>\n  </div>\n)\n"
+  file: components/layout/AdaptiveLayout.tsx
+  position: null
+  template: null
+- action: create
+  anchor: null
+  description: 'Create simple pages for field quick actions:
 
-    2. Create new territories/page.tsx that redirects to /knocks
 
-    3. Update any [id] or new subdirectories accordingly
+    field/call/page.tsx - renders <QuickCall />
+
+    field/today/page.tsx - renders <TodayView />
+
+    field/me/page.tsx - renders <MyStats />
+
+
+    Each page is a simple wrapper that imports and renders the component.
 
     '
-  file: app/[locale]/(dashboard)/
+  file: app/[locale]/(dashboard)/field/
   position: null
   template: null
 - action: edit
   anchor: null
-  description: "Replace navSections with new 4-group structure:\n\nSELL (6 items):\
-    \ Knock, Signatures, Claims, Incentives, Lead Gen, Storm Intel\nCORE (5 items):\
-    \ Dashboard, Pipeline, Business Intel, Events, Tasks\nCOMMUNICATIONS (2 items):\
-    \ Call Log, Messages\nSETTINGS (1 item): Settings\n\nREMOVE: Voice AI (/voice-assistant)\
-    \ and Campaigns (/campaigns)\nRENAME: Field Activity \u2192 Knock, href /territories\
-    \ \u2192 /knocks\n"
-  file: components/layout/Sidebar.tsx
-  position: null
-  template: null
-- action: edit
-  anchor: null
-  description: Find and replace all /territories links with /knocks
-  file: '**/*.tsx'
+  description: 'Ensure userEmail and userRole are passed down to AdaptiveLayout
+
+    so they can be passed to FieldWorkerNav.
+
+    '
+  file: components/layout/DashboardLayoutClient.tsx
   position: null
   template: null
 context:
-  background: 'The owner requested a nav reorganization to better match the sales
-    workflow.
+  background: 'P2.1-P2.3 created the components:
 
-    "Knock" is roofing industry slang for door-to-door canvassing.
+    - FieldWorkerHome (4 button interface)
 
-    Voice AI and Campaigns are being removed from nav (accessible via other means).
+    - FieldWorkerNav (hamburger + drawer)
+
+    - QuickCall, TodayView, MyStats (quick actions)
+
+
+    Now we need to wire them into AdaptiveLayout so they render when mode=''field''.
 
     '
-  goal: 'Reorganize the sidebar navigation into 4 logical groups (Sell, Core, Communications,
-    Settings)
+  goal: 'Wire up the field worker UI to render based on UI mode. When mode=''field'',
 
-    and rename the /territories route to /knocks.
+    show FieldWorkerHome on dashboard and use FieldWorkerNav instead of Sidebar.
 
     '
   success_criteria:
-  - Route /knocks works and shows the territories/field activity page
-  - Route /territories redirects to /knocks
-  - 'Sidebar shows 4 groups: SELL, CORE, COMMUNICATIONS, SETTINGS'
-  - Nav has 14 items total (Voice AI and Campaigns removed)
-  - All internal links updated from /territories to /knocks
+  - AdaptiveLayout conditionally renders FieldWorkerNav when mode='field'
+  - Dashboard route shows FieldWorkerHome when mode='field'
+  - Other routes in field mode show FieldWorkerNav + page content
+  - mode='full' still shows Sidebar as before
+  - ARIA bar remains visible in all modes
   - TypeScript compiles without errors
   - Lint passes
   - Build succeeds
-  why: 'Current nav has 16 items across 4 arbitrary groups. New structure groups by
-    job-to-be-done:
+  why: 'Without this integration, the field worker components exist but never render.
 
-    - SELL: Revenue-generating activities
-
-    - CORE: Business operations
-
-    - COMMUNICATIONS: Customer touchpoints
-
-    - SETTINGS: Configuration
+    This task completes the field mode experience.
 
     '
 dependencies:
-  blocks: []
-  requires: []
+  blocks:
+  - ADAPTIVE-UI-P2-5
+  requires:
+  - ADAPTIVE-UI-P2-1
+  - ADAPTIVE-UI-P2-2
+  - ADAPTIVE-UI-P2-3
 handoff:
   format: null
   progress_file: .vest/last_run_summary.md
@@ -76,12 +91,12 @@ handoff:
   - task_complete
 kind: TaskSpec
 metadata:
-  archon_task_id: ccedf3c3-c3f5-4cfb-ae15-50a6707b12a6
+  archon_task_id: 5c0f280d-1d3b-4fef-8045-bbd61d2f5155
   created: null
-  id: NAV-REORG-001
+  id: ADAPTIVE-UI-P2-4
   priority: 1
   template: code-modification
-  title: Reorganize sidebar navigation + rename territories to knocks
+  title: Integrate field mode with routing and layout
 on_failure:
   escalate:
     include:
@@ -92,53 +107,59 @@ on_failure:
   - git checkout -- .
 read_first:
 - extract: []
-  path: components/layout/Sidebar.tsx
-  reason: Current nav structure to replace
+  path: components/layout/AdaptiveLayout.tsx
+  reason: Main file to modify for conditional rendering
   required: true
 - extract: []
-  path: app/[locale]/(dashboard)/territories/page.tsx
-  reason: Main page to move to /knocks
+  path: components/layout/DashboardLayoutClient.tsx
+  reason: Understand current layout structure
   required: true
 - extract: []
-  path: app/[locale]/(dashboard)/knocks/page.tsx
-  reason: Current redirect to reverse
+  path: components/layout/FieldWorkerHome.tsx
+  reason: Component to render in field mode
+  required: true
+- extract: []
+  path: components/layout/FieldWorkerNav.tsx
+  reason: Nav component for field mode
   required: true
 scope:
   constraints: []
-  create: []
+  create:
+  - app/[locale]/(dashboard)/field/call/page.tsx
+  - app/[locale]/(dashboard)/field/today/page.tsx
+  - app/[locale]/(dashboard)/field/me/page.tsx
   do_not_touch:
   - components/ai-assistant/**
-  - lib/**
   - app/api/**
+  - lib/ui-mode/**
   modify:
-  - components/layout/Sidebar.tsx
-  - app/[locale]/(dashboard)/knocks/
-  - app/[locale]/(dashboard)/territories/
+  - components/layout/AdaptiveLayout.tsx
+  - components/layout/DashboardLayoutClient.tsx
 thinking:
   level: think
   triggers:
-  - When deciding order of operations
-  - If encountering unexpected file structures
+  - When handling route detection
+  - When deciding component nesting
 validation:
   assertions:
   - contains: []
     context: any
     description: ''
-    file: app/[locale]/(dashboard)/knocks/page.tsx
+    file: components/layout/AdaptiveLayout.tsx
     not_contains: []
     regex_match: []
     required: true
   - contains: []
     context: any
     description: ''
-    file: components/layout/Sidebar.tsx
+    file: components/layout/AdaptiveLayout.tsx
     not_contains: []
     regex_match: []
     required: true
   - contains: []
     context: any
     description: ''
-    file: components/layout/Sidebar.tsx
+    file: app/[locale]/(dashboard)/field/call/page.tsx
     not_contains: []
     regex_match: []
     required: true
