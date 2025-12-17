@@ -4,14 +4,28 @@ import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { AIAssistantProvider } from '@/lib/ai-assistant/context'
 import { AIAssistantBar } from '@/components/ai-assistant/AIAssistantBar'
 import { ImpersonationBanner } from '@/components/impersonation'
+import { UIModeProvider } from '@/lib/ui-mode/context'
+import { AdaptiveLayout } from '@/components/layout/AdaptiveLayout'
 
-export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
+interface DashboardLayoutClientProps {
+  children: React.ReactNode
+  userRole?: string
+}
+
+export function DashboardLayoutClient({ children, userRole }: DashboardLayoutClientProps) {
+  // Log UI mode initialization for verification
+  console.log('DashboardLayoutClient - Initializing with userRole:', userRole)
+
   return (
-    <AIAssistantProvider>
-      <ImpersonationBanner />
-      {children}
-      <GlobalSearch />
-      <AIAssistantBar />
-    </AIAssistantProvider>
+    <UIModeProvider>
+      <AIAssistantProvider>
+        <ImpersonationBanner />
+        <AdaptiveLayout>
+          {children}
+        </AdaptiveLayout>
+        <GlobalSearch />
+        <AIAssistantBar />
+      </AIAssistantProvider>
+    </UIModeProvider>
   )
 }

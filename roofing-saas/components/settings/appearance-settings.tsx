@@ -4,18 +4,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { useTheme } from '@/lib/hooks/useTheme'
-import { Monitor, Moon, Sun } from 'lucide-react'
+import { useUIMode } from '@/hooks/useUIMode'
+import { UI_MODE_CONFIGS } from '@/lib/ui-mode/types'
+import type { UIMode } from '@/lib/ui-mode/types'
+import { Monitor, Moon, Sun, Smartphone, TabletSmartphone, Laptop, Settings2 } from 'lucide-react'
 
 /**
  * Appearance Settings Component
- * 
+ *
  * Allows users to:
  * - Switch between light, dark, and system themes
  * - Preview current theme selection
  * - Understand how system theme detection works
+ * - Select UI mode (auto-detect, field, manager, full)
  */
 export function AppearanceSettings() {
   const { theme, resolvedTheme, mounted } = useTheme()
+  const {
+    mode,
+    config,
+    isAutoDetected,
+    hasUserOverride,
+    setMode,
+    resetToAutoDetected
+  } = useUIMode()
 
   const getThemeDescription = () => {
     if (!mounted) return 'Loading theme preferences...'
@@ -34,7 +46,7 @@ export function AppearanceSettings() {
 
   const getCurrentThemeIcon = () => {
     if (!mounted) return <Monitor className="h-5 w-5" />
-    
+
     switch (theme) {
       case 'light':
         return <Sun className="h-5 w-5" />
@@ -44,6 +56,34 @@ export function AppearanceSettings() {
         return <Monitor className="h-5 w-5" />
       default:
         return <Monitor className="h-5 w-5" />
+    }
+  }
+
+  const getModeDescription = () => {
+    if (isAutoDetected && !hasUserOverride) {
+      return `Auto-detected ${config.name} based on your device`
+    }
+    return `Manually selected ${config.name}`
+  }
+
+  const getModeIcon = (uiMode: UIMode) => {
+    switch (uiMode) {
+      case 'field':
+        return <Smartphone className="h-4 w-4" />
+      case 'manager':
+        return <TabletSmartphone className="h-4 w-4" />
+      case 'full':
+        return <Laptop className="h-4 w-4" />
+      default:
+        return <Settings2 className="h-4 w-4" />
+    }
+  }
+
+  const handleModeChange = (selectedMode: string) => {
+    if (selectedMode === 'auto') {
+      resetToAutoDetected()
+    } else {
+      setMode(selectedMode as UIMode, true)
     }
   }
 
@@ -119,6 +159,108 @@ export function AppearanceSettings() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings2 className="h-5 w-5" />
+            Display Mode
+          </CardTitle>
+          <CardDescription>
+            Choose the interface layout optimized for your role and device. Auto-detect selects the best mode based on your device type.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Current Mode</Label>
+            <p className="text-sm text-muted-foreground">
+              {getModeDescription()}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Mode Selection</Label>
+            <div className="space-y-3">
+              {/* Auto-detect option */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id="mode-auto"
+                  name="display-mode"
+                  value="auto"
+                  checked={isAutoDetected && !hasUserOverride}
+                  onChange={(e) => e.target.checked && handleModeChange('auto')}
+                  className="h-4 w-4 text-primary focus:ring-primary border-border"
+                />
+                <label htmlFor="mode-auto" className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  <Monitor className="h-4 w-4" />
+                  Auto-detect (Recommended)
+                </label>
+              </div>
+              <div className="ml-7 text-xs text-muted-foreground">
+                Automatically selects the best interface based on your device
+              </div>
+
+              {/* Manual mode options */}
+              {(Object.keys(UI_MODE_CONFIGS) as UIMode[]).map((modeKey) => {
+                const modeConfig = UI_MODE_CONFIGS[modeKey]
+                return (
+                  <div key={modeKey}>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
+                        id={`mode-${modeKey}`}
+                        name="display-mode"
+                        value={modeKey}
+                        checked={hasUserOverride && mode === modeKey}
+                        onChange={(e) => e.target.checked && handleModeChange(modeKey)}
+                        className="h-4 w-4 text-primary focus:ring-primary border-border"
+                      />
+                      <label htmlFor={`mode-${modeKey}`} className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                        {getModeIcon(modeKey)}
+                        {modeConfig.name}
+                      </label>
+                    </div>
+                    <div className="ml-7 text-xs text-muted-foreground">
+                      {modeConfig.description}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border p-4 bg-muted/50">
+            <h4 className="text-sm font-medium mb-3">Current Mode Features</h4>
+            <div className="grid gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${config.isMobileOptimized ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className={config.isMobileOptimized ? 'text-foreground' : 'text-muted-foreground'}>
+                  Mobile optimized
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${config.hasFullFeatures ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className={config.hasFullFeatures ? 'text-foreground' : 'text-muted-foreground'}>
+                  Full feature set
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${config.hasAnalytics ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className={config.hasAnalytics ? 'text-foreground' : 'text-muted-foreground'}>
+                  Analytics & reporting
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${config.supportsComplexLayouts ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <span className={config.supportsComplexLayouts ? 'text-foreground' : 'text-muted-foreground'}>
+                  Complex layouts
+                </span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
