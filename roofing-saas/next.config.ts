@@ -45,14 +45,14 @@ const nextConfig: NextConfig = {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval needed for Next.js dev, unsafe-inline for various scripts
-          "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for CSS-in-JS and styled-components
-          "img-src 'self' data: blob: https://wfifizczqvogbcqamnmw.supabase.co", // Supabase storage for images
-          "font-src 'self' data:",
-          "connect-src 'self' https://wfifizczqvogbcqamnmw.supabase.co wss://wfifizczqvogbcqamnmw.supabase.co", // Supabase API and realtime
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com", // Google Maps scripts
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // CSS-in-JS + Google Fonts
+          "img-src 'self' data: blob: https://wfifizczqvogbcqamnmw.supabase.co https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "connect-src 'self' https://wfifizczqvogbcqamnmw.supabase.co wss://wfifizczqvogbcqamnmw.supabase.co https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API
           "worker-src 'self' blob:", // Service workers
           "child-src 'self' blob:", // Web workers and service workers
-          "frame-src 'none'", // No iframes allowed
+          "frame-src https://*.google.com", // Google Maps iframes if needed
           "object-src 'none'", // No plugins
           "base-uri 'self'", // Prevent base tag hijacking
           "form-action 'self'", // Only allow forms to submit to same origin
@@ -85,10 +85,10 @@ const nextConfig: NextConfig = {
         value: [
           'accelerometer=()',
           'camera=()',
-          'geolocation=()',
+          'geolocation=(self)', // Allow geolocation for maps and field tracking
           'gyroscope=()',
           'magnetometer=()',
-          'microphone=()',
+          'microphone=(self)', // Allow microphone for voice features
           'payment=()',
           'usb=()',
         ].join(', '),
