@@ -35,6 +35,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { challengeConfigSchema, type ChallengeConfig, type ChallengeConfigDB } from '@/lib/gamification/types'
+import { TeamMemberPicker } from '../TeamMemberPicker'
 
 interface ChallengeFormDialogProps {
   open: boolean
@@ -57,6 +58,7 @@ export function ChallengeFormDialog({ open, onOpenChange, challenge, onSave }: C
       reward_type: 'points' as const,
       reward_points: 100,
       reward_description: '',
+      participants: [],
       is_active: true,
     },
   })
@@ -74,6 +76,7 @@ export function ChallengeFormDialog({ open, onOpenChange, challenge, onSave }: C
         reward_type: challenge.reward_type || 'points',
         reward_points: challenge.reward_points,
         reward_description: challenge.reward_description || '',
+        participants: challenge.participants || [],
         is_active: challenge.is_active,
       })
     }
@@ -332,6 +335,22 @@ export function ChallengeFormDialog({ open, onOpenChange, challenge, onSave }: C
                   <FormLabel>Prize Description (Optional)</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="e.g., $100 gift card" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="participants"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TeamMemberPicker
+                      selectedUserIds={field.value || []}
+                      onSelectionChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

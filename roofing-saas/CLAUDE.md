@@ -1,30 +1,68 @@
-# Roofing SaaS - Code Standards
+# Roofing SaaS - CRM for Roofing Contractors
 
-**Read this before writing any code.**
+**What**: CRM built specifically for roofing companies
+**First Customer**: Appalachian Storm Restoration (Fahredin's company)
+**Template For**: Future trades SaaS products
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript (strict, no `any`) |
+| UI | React 19 + Shadcn + Tailwind v4 |
+| Database | Supabase (Postgres + Auth) |
+| Forms | React Hook Form + Zod |
+| State | React Context + Server Components |
+
+---
+
+## Commands
+
+```bash
+npm run dev           # Dev server (turbopack)
+npm run build         # Production build
+npm run lint          # ESLint (must pass with ≤5 warnings)
+npm run typecheck     # TypeScript check
+npm run test:e2e      # Playwright tests
+```
+
+---
+
+## Project Structure
+
+```
+app/                    # Next.js App Router
+  (dashboard)/          # Authenticated routes
+  api/                  # API routes
+components/
+  ui/                   # Shadcn components (verify before importing)
+  [feature]/            # Feature components
+lib/
+  types/                # TypeScript interfaces
+  validations/          # Zod schemas
+  utils.ts              # Utilities
+docs/                   # Architecture, PRDs, planning
+```
 
 ---
 
 ## Critical Lint Rules
 
-These rules are **enforced** and will fail builds if violated:
+These are **enforced** and fail builds:
 
-### 1. NO Hardcoded Colors (theme-compliance/no-hardcoded-colors)
-
-**NEVER use Tailwind color classes directly.** Use theme tokens instead.
+### 1. Theme Tokens Only (no-hardcoded-colors)
 
 ```tsx
-// BAD - Will fail lint
-<div className="bg-white text-gray-900 border-gray-300">
-<div className="bg-blue-600 text-blue-800">
-<div className="text-gray-500 bg-gray-50">
+// BAD - Will fail
+<div className="bg-white text-gray-900">
 
-// GOOD - Use theme tokens
-<div className="bg-background text-foreground border-border">
-<div className="bg-primary text-primary-foreground">
-<div className="text-muted-foreground bg-muted">
+// GOOD - Use tokens
+<div className="bg-background text-foreground">
 ```
 
-**Color Token Reference:**
 | Instead of | Use |
 |------------|-----|
 | `bg-white` | `bg-background` or `bg-card` |
@@ -32,180 +70,92 @@ These rules are **enforced** and will fail builds if violated:
 | `bg-blue-600` | `bg-primary` |
 | `text-gray-900` | `text-foreground` |
 | `text-gray-500/600` | `text-muted-foreground` |
-| `text-white` | `text-primary-foreground` |
 | `border-gray-*` | `border-border` |
 
-### 2. NO `any` Type (@typescript-eslint/no-explicit-any)
-
-**Always use proper types.** Never use `any`.
+### 2. No `any` Type
 
 ```tsx
 // BAD
 const data: any = fetchData()
-function process(item: any) {}
 
 // GOOD
 const data: ProjectTemplate = fetchData()
-function process(item: ProjectTemplate) {}
-
-// If truly unknown, use `unknown` and narrow
-const data: unknown = fetchData()
-if (isProjectTemplate(data)) { ... }
 ```
 
-### 3. NO Unused Variables (@typescript-eslint/no-unused-vars)
+### 3. No Unused Imports
 
-**Only import what you use.** Remove unused imports immediately.
+Only import what you use. Prefix unused with `_`.
+
+### 4. React Hooks Dependencies
 
 ```tsx
-// BAD - Unused imports
-import { Button, Card, Badge, Dialog } from '@/components/ui'
-// Only Button is used...
+// BAD - Infinite re-renders
+useEffect(() => { ... }, [context])  // ❌ Object ref
 
-// GOOD - Only import what's needed
-import { Button } from '@/components/ui/button'
+// GOOD - Specific values
+useEffect(() => { ... }, [context.value])  // ✅
 ```
 
-If you need to keep a variable for future use, prefix with underscore:
-```tsx
-const [_unused, setUsed] = useState(false)
-```
-
-### 4. React Hooks Rules
-
-**NEVER put entire context/state objects in dependency arrays:**
-
-```tsx
-// BAD - Causes infinite re-renders (WILL FREEZE THE APP)
-const context = useMyContext()
-useEffect(() => {
-  doSomething(context.value)
-}, [context])  // ❌ context object changes every render
-
-// GOOD - Use specific values
-useEffect(() => {
-  doSomething(context.value)
-}, [context.value])  // ✅ Only re-run when value changes
-
-// GOOD - Disable with specific values listed
-useEffect(() => {
-  doSomething(context.value)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [context.value, context.isOpen])
-```
-
-**useEffect dependencies must be complete** or explicitly disabled:
-
-```tsx
-// BAD - Missing dependencies
-useEffect(() => {
-  loadData()
-}, [])  // loadData is missing
-
-// GOOD - Option A: Include dependencies
-useEffect(() => {
-  loadData()
-}, [loadData])
-
-// GOOD - Option B: Explicit disable with comment
-useEffect(() => {
-  loadData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [])
-```
-
-### 5. Escape Entities in JSX
+### 5. Escape JSX Entities
 
 ```tsx
 // BAD
-<p>Don't use "quotes" directly</p>
+<p>Don't use "quotes"</p>
 
 // GOOD
-<p>Don&apos;t use &ldquo;quotes&rdquo; directly</p>
-```
-
-### 6. Use `const` Over `let`
-
-If a variable is never reassigned, use `const`:
-
-```tsx
-// BAD
-let items = data.filter(x => x.active)
-
-// GOOD
-const items = data.filter(x => x.active)
-```
-
----
-
-## UI Component Patterns
-
-### Available UI Components
-
-Check `/components/ui/` before importing. Common components:
-- `button`, `card`, `badge`, `input`, `label`
-- `dialog`, `alert-dialog`, `dropdown-menu`
-- `table`, `tabs`, `select`, `separator`
-- `skeleton`, `tooltip`, `form`
-
-**Before using a component, verify it exists:**
-```bash
-ls components/ui/
-```
-
-### Form Patterns
-
-Use React Hook Form with Zod:
-```tsx
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-const schema = z.object({
-  name: z.string().min(1, 'Required'),
-})
-
-const { register, handleSubmit } = useForm({
-  resolver: zodResolver(schema)
-})
-```
-
----
-
-## File Structure
-
-```
-app/                    # Next.js App Router pages
-  (dashboard)/          # Authenticated routes
-  api/                  # API routes
-components/
-  ui/                   # Shadcn UI components
-  [feature]/            # Feature-specific components
-lib/
-  types/                # TypeScript interfaces
-  validations/          # Zod schemas
-  utils.ts              # Utility functions
+<p>Don&apos;t use &ldquo;quotes&rdquo;</p>
 ```
 
 ---
 
 ## Before Committing
 
-Run these checks:
 ```bash
-npm run lint          # Must pass with 0 warnings
+npm run lint          # 0 warnings
 npm run typecheck     # Must pass
 npm run build         # Must succeed
 ```
 
 ---
 
-## Summary Checklist
+## VEST Task Execution
 
-Before writing any code, verify:
-- [ ] Using theme tokens, not hardcoded colors
-- [ ] All types are explicit (no `any`)
-- [ ] Only importing what I use
-- [ ] useEffect dependencies are handled
-- [ ] JSX entities are escaped
-- [ ] UI components exist before importing
+This project is managed by **VEST** (autonomous task harness). Complex tasks are executed via spawned Claude sessions.
+
+### Check for Pending Tasks
+```
+/vest-status
+```
+
+### Execute a Task
+```
+/vest-run TASK-ID
+```
+
+### Before Starting Work
+
+1. Check `/vest-status` for assigned tasks
+2. Check `/vest-learnings` for known risky files and patterns
+3. If FilterBar.tsx or similar shows high risk, proceed carefully
+
+### Archon Project ID
+
+**Tennessee Roofing SaaS**: `42f928ef-ac24-4eed-b539-61799e3dc325`
+
+### TaskSpec Location
+
+Task specifications live in `~/Projects/VEST/aces/tasks/`.
+
+---
+
+## Self-Calibration
+
+For Claude failure patterns and calibration:
+@/Users/ccai/CC Mirror/Superpowers/calibration_checklist.md
+
+Global standards (quality, engineering philosophy) inherited from `~/.claude/CLAUDE.md`.
+VEST integration details in `~/.claude/CLAUDE.md` under "VEST Integration".
+
+---
+
+*This project is the template. Patterns established here will inform future trades SaaS.*

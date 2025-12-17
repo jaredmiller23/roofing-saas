@@ -76,6 +76,7 @@ export const challengeConfigSchema = z.object({
   reward_type: z.enum(['points', 'prize', 'both']).optional(),
   reward_points: z.number().int().min(0).default(0),
   reward_description: z.string().optional(),
+  participants: z.array(z.string()).optional(), // Array of user IDs - null/empty means all org members
   is_active: z.boolean().default(true),
 })
 

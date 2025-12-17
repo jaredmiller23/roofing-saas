@@ -1,72 +1,219 @@
 apiVersion: aces/v1
-changes: []
-context:
-  background: null
-  goal: 'Implement Multi-Factor Authentication (MFA) for admin accounts using
+changes:
+- action: edit
+  anchor: null
+  description: 'Add participants field to challengeConfigSchema:
 
-    Supabase TOTP MFA. This addresses a security recommendation from the
+    - participants: z.array(z.string()).optional()
 
-    authentication system analysis.
+
+    Add to ChallengeConfigDB interface:
+
+    - participants: string[] | null
 
     '
+  file: lib/gamification/types.ts
+  position: null
+  template: null
+- action: create
+  anchor: null
+  description: 'Create reusable team member multi-select component:
+
+
+    Props interface:
+
+    - selectedIds: string[]
+
+    - onChange: (ids: string[]) => void
+
+    - placeholder?: string
+
+
+    Features:
+
+    1. Fetch users from profiles table (like UserPicker)
+
+    2. Display user avatar + name in dropdown
+
+    3. Multi-select with checkboxes
+
+    4. "All Team Members" option that clears selection (empty = all)
+
+    5. Show selected count badge
+
+    6. Search/filter functionality
+
+    '
+  file: components/settings/gamification/TeamMemberPicker.tsx
+  position: null
+  template: null
+- action: edit
+  anchor: null
+  description: 'Add TeamMemberPicker to the form:
+
+    1. Add participants field to form defaultValues
+
+    2. Add FormField for participants using TeamMemberPicker
+
+    3. Include participants in submit payload
+
+    4. Reset participants when form resets
+
+    '
+  file: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
+  position: null
+  template: null
+- action: edit
+  anchor: null
+  description: 'Handle participants in POST:
+
+    1. Accept participants array in request body
+
+    2. Store in challenge_configs table (JSONB column)
+
+    3. Validate user IDs exist in profiles
+
+    '
+  file: app/api/gamification/challenges/route.ts
+  position: null
+  template: null
+- action: edit
+  anchor: null
+  description: 'Handle participants in PATCH:
+
+    1. Accept participants array in update payload
+
+    2. Update JSONB column
+
+    '
+  file: app/api/gamification/challenges/[id]/route.ts
+  position: null
+  template: null
+context:
+  background: null
+  goal: Add multi-select team member picker to challenge creation/editing form
   success_criteria:
-  - MFA enrollment flow for admin users
-  - MFA challenge on admin login
-  - Recovery codes generated
-  - Supabase TOTP properly configured
-  why: Security risk - admin accounts lack MFA protection
-dependencies: null
+  - Challenge form includes multi-select for team members
+  - '''All team members'' option available as default'
+  - Challenge progress only tracks selected participants
+  - Existing challenges continue to work (backwards compatible - null = all)
+  why: 'Currently challenges apply to all org members. Fahredin needs to:
+
+    - Create role-specific challenges (e.g., just sales reps, not office staff)
+
+    - Run team competitions (Team A vs Team B)
+
+    - Set individual incentives for specific performers
+
+
+    The challenge creation UI already has KPI, timeline, and start date editing.
+
+    Team member selection is the missing piece.
+
+    '
+dependencies:
+  blocks: []
+  requires: []
 handoff:
   format: null
-  progress_file: .vest/quickwin-005-progress.md
+  progress_file: claude-progress.txt
   update_on:
   - task_start
   - task_complete
-  - failure
 kind: TaskSpec
 metadata:
   archon_task_id: null
-  created: '2025-12-14T00:00:00'
-  id: QUICKWIN-005
-  priority: 1
-  template: api-endpoint
-  title: Enable MFA for Admin Accounts
+  created: '2025-12-16T12:00:00Z'
+  id: ROOFING-FEAT-001
+  priority: 2
+  template: null
+  title: Add team member selection to incentive challenges
 on_failure:
   escalate:
     include:
     - error_output
-    - partial_implementation
+    - files_modified
     to: human
-  rollback: []
+  rollback:
+  - git checkout -- lib/gamification/types.ts components/settings/gamification/
 read_first:
 - extract: []
-  path: lib/auth/index.ts
-  reason: Current auth implementation
+  path: lib/gamification/types.ts
+  reason: Understand ChallengeConfig schema to add participants field
   required: true
 - extract: []
-  path: app/(auth)/login/page.tsx
-  reason: Current login flow
+  path: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
+  reason: Understand current form structure to add member picker
+  required: true
+- extract: []
+  path: components/impersonation/UserPicker.tsx
+  reason: Reference pattern for fetching and selecting users
+  required: true
+- extract: []
+  path: app/api/gamification/challenges/route.ts
+  reason: Understand current API to add participants handling
   required: true
 scope:
-  constraints: []
+  constraints:
+  - Use shadcn/ui components for multi-select
+  - Follow existing component patterns (see UserPicker in impersonation)
+  - Use theme tokens only (no hardcoded colors)
+  - Backwards compatible - null/empty participants = all org members
   create:
-  - components/auth/MFASetup.tsx
-  - components/auth/MFAChallenge.tsx
+  - components/settings/gamification/TeamMemberPicker.tsx
   do_not_touch:
+  - components/settings/gamification/ChallengesTab.tsx
   - supabase/migrations/**
   modify:
-  - app/(dashboard)/settings/**
-  - lib/auth/**
-thinking: null
+  - lib/gamification/types.ts
+  - components/settings/gamification/dialogs/ChallengeFormDialog.tsx
+  - app/api/gamification/challenges/route.ts
+  - app/api/gamification/challenges/[id]/route.ts
+thinking:
+  level: think_hard
+  triggers:
+  - Before designing TeamMemberPicker interface
+  - When integrating with existing form
+  - When handling empty/null participants (backwards compat)
 validation:
-  assertions: []
+  assertions:
+  - contains:
+    - profiles
+    - onChange
+    context: any
+    description: Component must fetch users from profiles
+    file: components/settings/gamification/TeamMemberPicker.tsx
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - TeamMemberPicker
+    - participants
+    context: any
+    description: Form must include TeamMemberPicker
+    file: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
+    not_contains: []
+    regex_match: []
+    required: true
+  - contains:
+    - participants
+    context: any
+    description: Schema must have participants field
+    file: lib/gamification/types.ts
+    not_contains: []
+    regex_match: []
+    required: true
   post_commit: []
   pre_commit:
-  - command: npm run typecheck
+  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && npm run typecheck
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run lint -- --max-warnings 5
+  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && npm run lint
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && npm run build
     expect: 'exit_code: 0'
     required: true
     timeout: 60

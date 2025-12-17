@@ -7,7 +7,6 @@ import { useState, useCallback } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
-import { OrganizationSelector } from '@/components/organizations/OrganizationSelector'
 
 interface ContactFormProps {
   contact?: Contact
@@ -35,7 +34,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     formState: { errors, isSubmitting },
     setError,
     watch,
-    setValue,
+    setValue: _setValue,
   } = useForm<CreateContactInput>({
     resolver: zodResolver(createContactSchema),
     defaultValues: {
@@ -299,19 +298,6 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             />
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Organization
-            </label>
-            <OrganizationSelector
-              value={watch('organization_id') ?? undefined}
-              onChange={(value) => setValue('organization_id' as never, value as never)}
-              error={(errors as Record<string, { message?: string }>).organization_id?.message}
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Link this contact to an existing organization
-            </p>
-          </div>
 
           <div className="md:col-span-2">
             <div className="flex items-center">

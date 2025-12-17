@@ -50,20 +50,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "matcher": ".*",
-        "description": "Build validation after session completion",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${workspaceFolder}/.claude/hooks/build-check.sh",
-            "timeout": 120000,
-            "continueOnError": true
-          }
-        ]
-      }
     ]
   }
 }

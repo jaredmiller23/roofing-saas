@@ -50,10 +50,10 @@ setup('authenticate test user', async ({ page }) => {
 
   console.log('🔘 Clicked login button')
 
-  // Wait for successful login - should redirect to dashboard
+  // Wait for successful login - should redirect to dashboard (with optional locale prefix)
   try {
-    await page.waitForURL('/dashboard', { timeout: 15000 })
-    console.log('✅ Successfully logged in - redirected to /dashboard')
+    await page.waitForURL(/\/(en\/)?dashboard/, { timeout: 15000 })
+    console.log('✅ Successfully logged in - redirected to dashboard')
   } catch (error) {
     // If we didn't get to /dashboard, check where we ended up
     const currentUrl = page.url()
@@ -68,7 +68,7 @@ setup('authenticate test user', async ({ page }) => {
       console.error(`Error message: ${errorMessage}`)
     }
 
-    throw new Error(`Authentication failed - expected /dashboard, got ${currentUrl}`)
+    throw new Error(`Authentication failed - expected /dashboard or /en/dashboard, got ${currentUrl}`)
   }
 
   // Verify we're actually logged in by checking for user-specific elements

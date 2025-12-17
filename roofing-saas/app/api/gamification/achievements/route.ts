@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     // Get all possible achievements
     const { data: allAchievements, error: achievementsError } = await supabase
-      .from('gamification_achievements')
+      .from('achievements')
       .select('*')
       .order('points_required', { ascending: true })
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
     // Get user's unlocked achievements
     const { data: userAchievements, error: userError } = await supabase
-      .from('gamification_user_achievements')
+      .from('user_achievements')
       .select('achievement_id, unlocked_at')
       .eq('user_id', user.id)
 
