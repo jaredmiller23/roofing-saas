@@ -20,7 +20,9 @@ import {
   MessageSquare,
   PenTool,
   Sparkles,
-  CloudLightning
+  CloudLightning,
+  Users,
+  Mail
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -48,6 +50,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
       { href: '/knocks', label: 'Knock', icon: Map },
+      { href: '/contacts', label: 'Contacts', icon: Users },
       { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
     ]
@@ -66,6 +69,7 @@ const navSections: NavSection[] = [
   {
     label: 'COMMUNICATIONS',
     items: [
+      { href: '/campaigns', label: 'Emails', icon: Mail },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/call-logs', label: 'Call Logs', icon: Phone },
       { href: '/signatures', label: 'Signatures', icon: PenTool },
