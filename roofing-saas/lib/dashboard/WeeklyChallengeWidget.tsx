@@ -47,10 +47,11 @@ export function WeeklyChallengeWidget() {
       const data = result.data || result
 
       // Transform data for weekly view
-      const weeklyData = (data.leaderboard || []).map((entry: { user_id: string; user_name: string; user_email: string; points: number; level: number }) => ({
+      // API returns: { rank, user_id, name, avatar_url, role, points, level, isCurrentUser }
+      const weeklyData = (data.leaderboard || []).map((entry: { user_id: string; name: string; points: number; level: number }) => ({
         id: entry.user_id,
-        user_name: entry.user_name,
-        user_email: entry.user_email,
+        user_name: entry.name || 'Unknown',
+        user_email: '', // Not provided by API
         points_this_week: entry.points,
         deals_closed_this_week: Math.floor(entry.points / 100), // Estimate from points
         level: entry.level
@@ -64,10 +65,14 @@ export function WeeklyChallengeWidget() {
       if (error instanceof Error && error.name === 'AbortError') {
         setError('Request timeout - please try again')
       } else if (error instanceof Error && error.message?.includes('Server error:')) {
-        setError('Server error - please try again')
+        // Server returned an error - leaderboard may not be set up yet
+        setError('Leaderboard unavailable')
       } else {
-        setError('Failed to connect to server')
+        setError('Unable to load leaderboard')
       }
+      // Set empty leaders array to show "No participants yet" message instead of error
+      // This provides a better UX when the feature isn't fully configured
+      setLeaders([])
     } finally {
       setLoading(false)
     }
