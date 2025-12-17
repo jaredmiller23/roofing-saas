@@ -76,25 +76,23 @@ export function StandardCalendar({
   )
 
   // Event styling based on type and status
+  // Using CSS custom properties from the theme for consistency
   const eventStyleGetter = useCallback((event: CalendarEvent) => {
-    let backgroundColor = '#3174ad' // default blue
-
-    // Color by event type
-    if (event.event_type === 'inspection') {
-      backgroundColor = '#10b981' // green
-    } else if (event.event_type === 'meeting') {
-      backgroundColor = '#8b5cf6' // purple
-    } else if (event.event_type === 'callback') {
-      backgroundColor = '#f59e0b' // amber
-    } else if (event.event_type === 'appointment') {
-      backgroundColor = '#3b82f6' // blue
-    } else if (event.event_type === 'deadline') {
-      backgroundColor = '#ef4444' // red
+    // Map event types to CSS custom property names
+    // These reference the theme colors defined in globals.css
+    const typeColorMap: Record<string, string> = {
+      'inspection': 'var(--color-cyan)',      // Success/highlights
+      'meeting': 'var(--color-teal)',         // Secondary/calm
+      'callback': 'var(--color-terracotta)',  // Warm accents
+      'appointment': 'var(--primary)',        // Primary brand
+      'deadline': 'var(--destructive)',       // Error/urgent
     }
+
+    let backgroundColor = typeColorMap[event.event_type || ''] || 'var(--primary)'
 
     // Dim if cancelled
     if (event.status === 'cancelled') {
-      backgroundColor = '#9ca3af' // gray
+      backgroundColor = 'var(--muted-foreground)'
     }
 
     return {
@@ -143,26 +141,26 @@ export function StandardCalendar({
         />
       </div>
 
-      {/* Legend */}
+      {/* Legend - using theme CSS variables */}
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded bg-primary" />
           <span className="text-muted-foreground">Appointment</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded bg-[var(--color-cyan)]" />
           <span className="text-muted-foreground">Inspection</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }} />
+          <div className="w-4 h-4 rounded bg-secondary" />
           <span className="text-muted-foreground">Meeting</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
+          <div className="w-4 h-4 rounded bg-[var(--color-terracotta)]" />
           <span className="text-muted-foreground">Callback</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
+          <div className="w-4 h-4 rounded bg-destructive" />
           <span className="text-muted-foreground">Deadline</span>
         </div>
       </div>
