@@ -3,9 +3,60 @@
  *
  * Provides comprehensive device detection for automatic UI mode selection.
  * Handles SSR gracefully and uses multiple signals for accurate detection.
+ *
+ * P4.1 Enhancement: Added context-aware signals
+ * - Time of day detection (morning/afternoon/evening)
+ * - Location context (when permission granted)
+ * - Motion detection (stationary vs moving)
  */
 
 import type { UIMode, UIModeDetectionContext } from './types'
+
+/**
+ * Time of day categories for context-aware UI
+ */
+export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night'
+
+/**
+ * Location permission states
+ */
+export type LocationPermission = 'granted' | 'denied' | 'prompt' | 'unavailable'
+
+/**
+ * Location context for field workers
+ */
+export interface LocationContext {
+  /** Whether location permission is granted */
+  permissionState: LocationPermission
+  /** Whether user is likely at a job site (near a contact address) */
+  isAtJobSite: boolean
+  /** Whether user is likely in transit */
+  isInTransit: boolean
+  /** Whether user is at a known office location */
+  isAtOffice: boolean
+  /** Last known coordinates (if permission granted) */
+  coordinates: { latitude: number; longitude: number } | null
+  /** Accuracy in meters */
+  accuracy: number | null
+  /** Timestamp of last location update */
+  lastUpdated: number | null
+}
+
+/**
+ * Context-aware signals for adaptive UI
+ */
+export interface ContextSignals {
+  /** Current time of day */
+  timeOfDay: TimeOfDay
+  /** Current hour (0-23) */
+  currentHour: number
+  /** Location context (if available) */
+  location: LocationContext
+  /** Whether device appears to be in motion */
+  isInMotion: boolean
+  /** Network connection type (if available) */
+  connectionType: 'wifi' | 'cellular' | 'offline' | 'unknown'
+}
 
 /**
  * Raw device information collected from browser APIs
@@ -29,6 +80,8 @@ export interface DeviceInfo {
   isMobileUserAgent: boolean
   /** Whether device is likely tablet based on user agent */
   isTabletUserAgent: boolean
+  /** Context-aware signals (P4.1) */
+  contextSignals?: ContextSignals
 }
 
 /**
@@ -263,5 +316,218 @@ export function createDetectionContext(deviceInfo?: DeviceInfo): UIModeDetection
     isFieldContext,
     // Note: userRole and department would come from auth context
     // These are intentionally undefined as they should be set by the app
+  }
+}
+
+// =============================================================================
+// P4.1: Context-Aware Detection Functions
+// =============================================================================
+
+/**
+ * Detects the current time of day
+ * Used for context-aware UI suggestions (e.g., show tomorrow's schedule in evening)
+ */
+export function detectTimeOfDay(): TimeOfDay {
+  const hour = new Date().getHours()
+
+  if (hour >= 5 && hour < 12) {
+    return 'morning'     // 5am - 12pm
+  } else if (hour >= 12 && hour < 17) {
+    return 'afternoon'   // 12pm - 5pm
+  } else if (hour >= 17 && hour < 21) {
+    return 'evening'     // 5pm - 9pm
+  } else {
+    return 'night'       // 9pm - 5am
+  }
+}
+
+/**
+ * Detects the network connection type
+ * Used for offline-aware features and data sync decisions
+ */
+export function detectConnectionType(): 'wifi' | 'cellular' | 'offline' | 'unknown' {
+  if (typeof navigator === 'undefined') {
+    return 'unknown'
+  }
+
+  // Check if offline
+  if (!navigator.onLine) {
+    return 'offline'
+  }
+
+  // Use Network Information API if available
+  const connection = (navigator as Navigator & {
+    connection?: { effectiveType?: string; type?: string }
+  }).connection
+
+  if (connection) {
+    // Check connection type
+    if (connection.type === 'wifi') {
+      return 'wifi'
+    }
+    if (connection.type === 'cellular' || connection.effectiveType?.includes('g')) {
+      return 'cellular'
+    }
+  }
+
+  return 'unknown'
+}
+
+/**
+ * Creates default location context when location is unavailable or denied
+ */
+export function createDefaultLocationContext(): LocationContext {
+  return {
+    permissionState: 'unavailable',
+    isAtJobSite: false,
+    isInTransit: false,
+    isAtOffice: false,
+    coordinates: null,
+    accuracy: null,
+    lastUpdated: null,
+  }
+}
+
+/**
+ * Checks location permission state without triggering a prompt
+ * Returns the current permission state
+ */
+export async function checkLocationPermission(): Promise<LocationPermission> {
+  if (typeof navigator === 'undefined' || !('permissions' in navigator)) {
+    return 'unavailable'
+  }
+
+  if (!('geolocation' in navigator)) {
+    return 'unavailable'
+  }
+
+  try {
+    const result = await navigator.permissions.query({ name: 'geolocation' })
+    return result.state as LocationPermission
+  } catch {
+    // Permissions API not fully supported
+    return 'prompt'
+  }
+}
+
+/**
+ * Gets current location with battery-conscious settings
+ * Uses low accuracy by default to conserve battery
+ *
+ * @param highAccuracy - Set true for high accuracy (uses more battery)
+ * @param timeoutMs - Timeout in milliseconds (default 10s)
+ */
+export function getCurrentLocation(
+  highAccuracy = false,
+  timeoutMs = 10000
+): Promise<GeolocationPosition | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      resolve(null)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position),
+      () => resolve(null), // Silently fail on error
+      {
+        enableHighAccuracy: highAccuracy,
+        timeout: timeoutMs,
+        maximumAge: 60000, // Accept cached position up to 1 minute old
+      }
+    )
+  })
+}
+
+/**
+ * Detects context signals for adaptive UI
+ * This is an async function that gathers all available context
+ *
+ * @param includeLocation - Whether to attempt location detection (requires permission)
+ */
+export async function detectContextSignals(includeLocation = false): Promise<ContextSignals> {
+  const timeOfDay = detectTimeOfDay()
+  const currentHour = new Date().getHours()
+  const connectionType = detectConnectionType()
+
+  // Default location context
+  let location = createDefaultLocationContext()
+
+  // Only attempt location if requested and permission might be available
+  if (includeLocation) {
+    const permissionState = await checkLocationPermission()
+    location.permissionState = permissionState
+
+    if (permissionState === 'granted') {
+      const position = await getCurrentLocation()
+      if (position) {
+        location = {
+          permissionState: 'granted',
+          isAtJobSite: false, // Would need job site coordinates to determine
+          isInTransit: false, // Would need motion data to determine
+          isAtOffice: false,  // Would need office coordinates to determine
+          coordinates: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          },
+          accuracy: position.coords.accuracy,
+          lastUpdated: Date.now(),
+        }
+      }
+    }
+  }
+
+  return {
+    timeOfDay,
+    currentHour,
+    location,
+    isInMotion: false, // Would need DeviceMotion API or location history
+    connectionType,
+  }
+}
+
+/**
+ * Gets device info with context signals (enhanced version)
+ * Use this when you need context-aware detection
+ *
+ * @param includeLocation - Whether to include location (async, requires permission)
+ */
+export async function getDeviceInfoWithContext(includeLocation = false): Promise<DeviceInfo> {
+  const deviceInfo = getDeviceInfo()
+  const contextSignals = await detectContextSignals(includeLocation)
+
+  return {
+    ...deviceInfo,
+    contextSignals,
+  }
+}
+
+/**
+ * Suggests UI adjustments based on context signals
+ * Returns hints for the UI layer about what to show/hide
+ */
+export function getContextualUIHints(signals: ContextSignals): {
+  showTomorrowsSchedule: boolean
+  suggestFieldMode: boolean
+  showOfflineIndicator: boolean
+  prioritizeQuickActions: boolean
+} {
+  return {
+    // Show tomorrow's schedule prominently in evening
+    showTomorrowsSchedule: signals.timeOfDay === 'evening' || signals.timeOfDay === 'night',
+
+    // Suggest field mode if on cellular or at job site
+    suggestFieldMode:
+      signals.connectionType === 'cellular' ||
+      signals.location.isAtJobSite ||
+      signals.location.isInTransit,
+
+    // Show offline indicator when offline
+    showOfflineIndicator: signals.connectionType === 'offline',
+
+    // Prioritize quick actions in morning (start of day) or on mobile network
+    prioritizeQuickActions:
+      signals.timeOfDay === 'morning' ||
+      signals.connectionType === 'cellular',
   }
 }
