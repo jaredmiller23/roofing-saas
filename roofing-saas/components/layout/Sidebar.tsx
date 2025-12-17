@@ -16,11 +16,9 @@ import {
   Menu,
   X,
   LogOut,
-  Megaphone,
   FileText,
   MessageSquare,
   PenTool,
-  Mic,
   Sparkles,
   CloudLightning
 } from 'lucide-react'
@@ -46,37 +44,35 @@ interface SidebarProps {
 
 const navSections: NavSection[] = [
   {
+    label: 'SELL',
+    items: [
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
+      { href: '/knocks', label: 'Knock', icon: Map },
+      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
+      { href: '/projects', label: 'Pipeline', icon: Workflow },
+    ]
+  },
+  {
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/insights', label: 'Business Intelligence', icon: Sparkles },
-      { href: '/projects', label: 'Pipeline', icon: Workflow },
-      { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/voice-assistant', label: 'Voice AI', icon: Mic },
-      { href: '/signatures', label: 'Signatures', icon: PenTool },
-      { href: '/claims', label: 'Claims', icon: FileText },
-      { href: '/call-logs', label: 'Call Logs', icon: Phone },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-      { href: '/territories', label: 'Field Activity', icon: Map },
-    ]
-  },
-  {
-    label: 'GROWTH',
-    items: [
-      { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
-      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
-      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
-    ]
-  },
-  {
-    label: 'TEAM',
-    items: [
+      { href: '/claims', label: 'Claims', icon: FileText },
       { href: '/incentives', label: 'Incentives', icon: Trophy },
       { href: '/events', label: 'Events', icon: Calendar },
     ]
   },
   {
-    // No label for system section - just divider
+    label: 'COMMUNICATIONS',
+    items: [
+      { href: '/messages', label: 'Messages', icon: MessageSquare },
+      { href: '/call-logs', label: 'Call Logs', icon: Phone },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
+    ]
+  },
+  {
+    label: 'SETTINGS',
     items: [
       { href: '/settings', label: 'Settings', icon: Settings },
     ]

@@ -1,11 +1,18 @@
 {
-  "task_id": "CICD-001",
+  "task_id": "NAV-REORG-001",
   "files_read": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/package.json",
-    "/Users/ccai/Roofing SaaS/roofing-saas/.github/workflows/ci.yml"
+    "app/[locale]/(dashboard)/territories/[id]/page.tsx",
+    "app/[locale]/(dashboard)/knocks/page.tsx",
+    "app/[locale]/(dashboard)/territories/page.tsx",
+    "components/layout/Sidebar.tsx",
+    "app/[locale]/(dashboard)/territories/new/page.tsx"
   ],
   "files_modified": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/.github/workflows/ci.yml"
+    "app/[locale]/(dashboard)/territories/[id]/page.tsx",
+    "app/[locale]/(dashboard)/knocks/page.tsx",
+    "app/[locale]/(dashboard)/territories/page.tsx",
+    "components/layout/Sidebar.tsx",
+    "app/[locale]/(dashboard)/territories/new/page.tsx"
   ],
   "validation_passed": true,
   "progress_updated": false,

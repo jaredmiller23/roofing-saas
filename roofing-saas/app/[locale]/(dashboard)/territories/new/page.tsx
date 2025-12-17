@@ -25,11 +25,11 @@ export default function NewTerritoryPage() {
   }
 
   const handleSuccess = () => {
-    router.push('/territories')
+    router.push('/knocks')
   }
 
   const handleCancel = () => {
-    router.push('/territories')
+    router.push('/knocks')
   }
 
   return (
@@ -45,10 +45,10 @@ export default function NewTerritoryPage() {
           </div>
 
           <Link
-            href="/territories"
+            href="/knocks"
             className="text-muted-foreground hover:text-foreground font-medium"
           >
-            ← Back to Territories
+            ← Back to Field Activity
           </Link>
         </div>
 

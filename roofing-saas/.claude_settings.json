@@ -10,8 +10,12 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(.github/workflows/ci.yml)",
-      "Edit(.github/workflows/ci.yml)"
+      "Write(components/layout/Sidebar.tsx)",
+      "Edit(components/layout/Sidebar.tsx)",
+      "Write(app/[locale]/(dashboard)/knocks/)",
+      "Edit(app/[locale]/(dashboard)/knocks/)",
+      "Write(app/[locale]/(dashboard)/territories/)",
+      "Edit(app/[locale]/(dashboard)/territories/)"
     ]
   }
 }

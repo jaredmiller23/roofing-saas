@@ -78,7 +78,7 @@ export default function TerritoryDetailPage() {
         throw new Error('Failed to delete territory')
       }
 
-      router.push('/territories')
+      router.push('/knocks')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to delete territory')
       setDeleteConfirm(false)
@@ -111,10 +111,10 @@ export default function TerritoryDetailPage() {
             <p className="text-red-800">{error || 'Territory not found'}</p>
           </div>
           <Link
-            href="/territories"
+            href="/knocks"
             className="inline-block mt-4 text-primary hover:text-primary/80"
           >
-            ← Back to Territories
+            ← Back to Field Activity
           </Link>
         </div>
       </div>
@@ -135,10 +135,10 @@ export default function TerritoryDetailPage() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/territories"
+              href="/knocks"
               className="text-muted-foreground hover:text-foreground font-medium"
             >
-              ← Back to Territories
+              ← Back to Field Activity
             </Link>
           </div>
         </div>
