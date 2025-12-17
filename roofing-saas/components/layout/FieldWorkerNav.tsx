@@ -1,6 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+/**
+ * FieldWorkerNav Component
+ *
+ * Mobile-first navigation with hamburger menu for field workers.
+ * Replaces the full sidebar with a compact top bar and slide-out drawer.
+ *
+ * P2.5 Polish: Added smooth transitions, staggered nav item animations,
+ * enhanced touch feedback, and reduced motion support.
+ */
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -33,6 +43,7 @@ import {
 } from '@/components/ui/sheet'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
+import { cn } from '@/lib/utils'
 
 interface NavLink {
   href: string
@@ -91,11 +102,42 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
   const [selectedUser, setSelectedUser] = useState<UserForImpersonation | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [navItemsVisible, setNavItemsVisible] = useState(false)
   const pathname = usePathname()
   const { setMode } = useUIMode()
 
+  // Check for reduced motion preference
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mediaQuery.addEventListener('change', handler)
+
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  // Animate nav items when drawer opens
+  useEffect(() => {
+    if (isDrawerOpen) {
+      const timer = setTimeout(() => setNavItemsVisible(true), 100)
+      return () => clearTimeout(timer)
+    } else {
+      setNavItemsVisible(false)
+    }
+  }, [isDrawerOpen])
+
   const isActive = (href: string) => pathname === href
   const isAdmin = userRole === 'admin'
+
+  // Calculate stagger delay for nav items
+  const getNavItemDelay = (sectionIndex: number, itemIndex: number) => {
+    if (prefersReducedMotion) return '0ms'
+    const totalIndex = navSections.slice(0, sectionIndex).reduce((acc, s) => acc + s.items.length, 0) + itemIndex
+    return `${totalIndex * 30}ms`
+  }
 
   const handleUserSelect = (user: UserForImpersonation) => {
     setSelectedUser(user)
@@ -144,14 +186,24 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
               <button
-                className="p-2 hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className={cn(
+                  "p-2 rounded-lg transition-all duration-200",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  !prefersReducedMotion && "active:scale-95"
+                )}
                 aria-label="Open navigation menu"
+                aria-expanded={isDrawerOpen}
+                aria-controls="field-nav-drawer"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className={cn(
+                  "h-6 w-6 transition-transform duration-200",
+                  isDrawerOpen && !prefersReducedMotion && "rotate-90"
+                )} />
               </button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-80 p-0">
+            <SheetContent side="left" className="w-80 p-0" id="field-nav-drawer">
               <div className="flex flex-col h-full">
                 {/* Header */}
                 <SheetHeader className="border-b bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground p-6">
@@ -163,13 +215,19 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                 </SheetHeader>
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-4 px-3 bg-gradient-to-b from-sidebar to-slate">
+                <nav
+                  className="flex-1 overflow-y-auto py-4 px-3 bg-gradient-to-b from-sidebar to-slate"
+                  aria-label="Main navigation"
+                >
                   {navSections.map((section, sectionIndex) => (
-                    <div key={sectionIndex}>
+                    <div key={sectionIndex} role="group" aria-labelledby={section.label ? `nav-section-${sectionIndex}` : undefined}>
                       {/* Section Header */}
                       {section.label && (
                         <div className="px-4 pt-4 pb-2">
-                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <h3
+                            id={`nav-section-${sectionIndex}`}
+                            className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                          >
                             {section.label}
                           </h3>
                         </div>
@@ -177,7 +235,7 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
 
                       {/* Section Items */}
                       <div className="space-y-1 mb-4">
-                        {section.items.map((link) => {
+                        {section.items.map((link, itemIndex) => {
                           const Icon = link.icon
                           const active = isActive(link.href)
 
@@ -186,14 +244,34 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                               key={link.href}
                               href={link.href}
                               onClick={() => setIsDrawerOpen(false)}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                              style={{
+                                transitionDelay: navItemsVisible ? '0ms' : getNavItemDelay(sectionIndex, itemIndex),
+                              }}
+                              className={cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-lg",
+                                "transition-all duration-200 ease-out",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                // Entry animation
+                                navItemsVisible || prefersReducedMotion
+                                  ? 'opacity-100 translate-x-0'
+                                  : 'opacity-0 -translate-x-2',
+                                // Active/hover states
                                 active
                                   ? 'bg-primary text-white shadow-lg shadow-primary/50'
-                                  : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white'
-                              }`}
+                                  : 'text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-white',
+                                // Touch feedback
+                                !prefersReducedMotion && 'active:scale-[0.98]'
+                              )}
                               aria-current={active ? 'page' : undefined}
                             >
-                              <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-muted-foreground'}`} aria-hidden="true" />
+                              <Icon
+                                className={cn(
+                                  "h-5 w-5 transition-transform duration-150",
+                                  active ? 'text-white' : 'text-muted-foreground',
+                                  !prefersReducedMotion && 'group-hover:scale-110'
+                                )}
+                                aria-hidden="true"
+                              />
                               <span className="text-sm font-medium">{link.label}</span>
                             </Link>
                           )
@@ -231,8 +309,14 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                   {/* Switch to Full View */}
                   <button
                     onClick={handleSwitchToFullView}
-                    className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    aria-label="Switch to full view"
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2 rounded-lg",
+                      "text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground",
+                      "transition-all duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                      !prefersReducedMotion && "active:scale-[0.98]"
+                    )}
+                    aria-label="Switch to full desktop view"
                   >
                     <Monitor className="h-4 w-4" aria-hidden="true" />
                     <span className="text-sm font-medium">Switch to Full View</span>
@@ -242,7 +326,13 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                   <form action={signOut} className="w-full">
                     <button
                       type="submit"
-                      className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-2 rounded-lg",
+                        "text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground",
+                        "transition-all duration-200",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        !prefersReducedMotion && "active:scale-[0.98]"
+                      )}
                       aria-label="Sign out of your account"
                     >
                       <LogOut className="h-4 w-4" aria-hidden="true" />
