@@ -457,7 +457,16 @@
 
 /* Current day highlight */
 .rbc-today {
-  background-color: rgba(255, 130, 67, 0.1) !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+/* Ensure day backgrounds are consistent */
+.rbc-row-bg {
+  background-color: var(--card);
+}
+
+.rbc-row-content {
+  background-color: transparent;
 }
 
 /* Days from other months */
@@ -612,8 +621,29 @@
 
 /* Selection */
 .rbc-slot-selection {
-  background-color: rgba(255, 130, 67, 0.2);
+  background-color: hsl(var(--primary) / 0.2);
   border: 1px solid var(--primary);
+}
+
+/* Ensure all cell backgrounds are themed */
+.rbc-day-slot .rbc-event {
+  background-color: var(--primary);
+  border: none;
+}
+
+.rbc-month-row .rbc-row-segment {
+  background-color: transparent;
+}
+
+/* Fix any residual backgrounds */
+.rbc-row,
+.rbc-row-segment,
+.rbc-row-bg .rbc-day-bg {
+  background-color: var(--card);
+}
+
+.rbc-row-bg .rbc-day-bg.rbc-off-range-bg {
+  background-color: var(--muted);
 }
 
 /* Overlay */
