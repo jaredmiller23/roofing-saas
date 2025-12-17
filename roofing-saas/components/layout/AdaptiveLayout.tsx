@@ -5,7 +5,11 @@
  *
  * Conditionally renders different layouts based on the current UI mode.
  * - Field mode: Shows FieldWorkerNav + FieldWorkerHome on dashboard route
- * - Full/Manager modes: Pass through children (existing Sidebar handles nav)
+ * - Manager mode: Shows ManagerLayout with collapsible sidebar
+ * - Full mode: Pass through children (existing Sidebar handles nav)
+ *
+ * Note: The default Sidebar is rendered in layout.tsx. For field and manager modes,
+ * we use CSS to hide/override it and render our own navigation.
  */
 
 import { ReactNode } from 'react'
@@ -13,6 +17,7 @@ import { usePathname } from 'next/navigation'
 import { useUIModeContext } from '@/lib/ui-mode/context'
 import { FieldWorkerNav } from '@/components/layout/FieldWorkerNav'
 import { FieldWorkerHome } from '@/components/layout/FieldWorkerHome'
+import { ManagerLayout } from '@/components/layout/ManagerLayout'
 
 interface AdaptiveLayoutProps {
   children: ReactNode
@@ -31,6 +36,7 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   const isOnDashboard = pathname.endsWith('/dashboard')
 
   // Field mode: Show field-specific UI with full-screen layout
+  // Uses negative margin to hide the default sidebar
   if (mode === 'field') {
     return (
       <div className="lg:-ml-64 w-screen min-h-screen bg-background">
@@ -42,7 +48,19 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     )
   }
 
-  // Full/Manager modes: Pass through children (Sidebar handles navigation)
+  // Manager mode: Show collapsible sidebar optimized for tablets
+  // Uses negative margin to hide the default sidebar, then renders ManagerLayout
+  if (mode === 'manager') {
+    return (
+      <div className="lg:-ml-64 w-screen min-h-screen">
+        <ManagerLayout userEmail={userEmail} userRole={userRole}>
+          {children}
+        </ManagerLayout>
+      </div>
+    )
+  }
+
+  // Full mode: Pass through children (default Sidebar handles navigation)
   return (
     <>
       {children}
