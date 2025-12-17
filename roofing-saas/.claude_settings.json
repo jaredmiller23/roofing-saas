@@ -10,16 +10,8 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(components/settings/gamification/TeamMemberPicker.tsx)",
-      "Edit(components/settings/gamification/TeamMemberPicker.tsx)",
-      "Write(lib/gamification/types.ts)",
-      "Edit(lib/gamification/types.ts)",
-      "Write(components/settings/gamification/dialogs/ChallengeFormDialog.tsx)",
-      "Edit(components/settings/gamification/dialogs/ChallengeFormDialog.tsx)",
-      "Write(app/api/gamification/challenges/route.ts)",
-      "Edit(app/api/gamification/challenges/route.ts)",
-      "Write(app/api/gamification/challenges/[id]/route.ts)",
-      "Edit(app/api/gamification/challenges/[id]/route.ts)"
+      "Write(.github/workflows/ci.yml)",
+      "Edit(.github/workflows/ci.yml)"
     ]
   }
 }

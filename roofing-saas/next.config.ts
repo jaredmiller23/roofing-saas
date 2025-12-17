@@ -38,12 +38,74 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Production optimization headers
+  // Production optimization and security headers
   async headers() {
+    const securityHeaders = [
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval needed for Next.js dev, unsafe-inline for various scripts
+          "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for CSS-in-JS and styled-components
+          "img-src 'self' data: blob: https://wfifizczqvogbcqamnmw.supabase.co", // Supabase storage for images
+          "font-src 'self' data:",
+          "connect-src 'self' https://wfifizczqvogbcqamnmw.supabase.co wss://wfifizczqvogbcqamnmw.supabase.co", // Supabase API and realtime
+          "worker-src 'self' blob:", // Service workers
+          "child-src 'self' blob:", // Web workers and service workers
+          "frame-src 'none'", // No iframes allowed
+          "object-src 'none'", // No plugins
+          "base-uri 'self'", // Prevent base tag hijacking
+          "form-action 'self'", // Only allow forms to submit to same origin
+          "frame-ancestors 'none'", // Prevent being framed (same as X-Frame-Options: DENY)
+          "upgrade-insecure-requests", // Upgrade HTTP to HTTPS
+        ].join('; '),
+      },
+      {
+        key: 'X-Frame-Options',
+        value: 'DENY',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      {
+        key: 'X-XSS-Protection',
+        value: '1; mode=block',
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains; preload',
+      },
+      {
+        key: 'Permissions-Policy',
+        value: [
+          'accelerometer=()',
+          'camera=()',
+          'geolocation=()',
+          'gyroscope=()',
+          'magnetometer=()',
+          'microphone=()',
+          'payment=()',
+          'usb=()',
+        ].join(', '),
+      },
+    ];
+
     return [
+      // Apply security headers to all routes
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+      // Asset caching headers (with security headers)
       {
         source: '/:all*(svg|jpg|jpeg|png|gif|ico|webp)',
         headers: [
+          ...securityHeaders,
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
@@ -53,15 +115,18 @@ const nextConfig: NextConfig = {
       {
         source: '/_next/static/:path*',
         headers: [
+          ...securityHeaders,
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
         ],
       },
+      // API routes (with security headers but different caching)
       {
         source: '/api/:path*',
         headers: [
+          ...securityHeaders,
           {
             key: 'Cache-Control',
             value: 'no-store, must-revalidate',

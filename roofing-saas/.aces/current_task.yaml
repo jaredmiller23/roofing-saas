@@ -1,215 +1,100 @@
 apiVersion: aces/v1
-changes:
-- action: edit
-  anchor: null
-  description: 'Add participants field to challengeConfigSchema:
-
-    - participants: z.array(z.string()).optional()
-
-
-    Add to ChallengeConfigDB interface:
-
-    - participants: string[] | null
-
-    '
-  file: lib/gamification/types.ts
-  position: null
-  template: null
-- action: create
-  anchor: null
-  description: 'Create reusable team member multi-select component:
-
-
-    Props interface:
-
-    - selectedIds: string[]
-
-    - onChange: (ids: string[]) => void
-
-    - placeholder?: string
-
-
-    Features:
-
-    1. Fetch users from profiles table (like UserPicker)
-
-    2. Display user avatar + name in dropdown
-
-    3. Multi-select with checkboxes
-
-    4. "All Team Members" option that clears selection (empty = all)
-
-    5. Show selected count badge
-
-    6. Search/filter functionality
-
-    '
-  file: components/settings/gamification/TeamMemberPicker.tsx
-  position: null
-  template: null
-- action: edit
-  anchor: null
-  description: 'Add TeamMemberPicker to the form:
-
-    1. Add participants field to form defaultValues
-
-    2. Add FormField for participants using TeamMemberPicker
-
-    3. Include participants in submit payload
-
-    4. Reset participants when form resets
-
-    '
-  file: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
-  position: null
-  template: null
-- action: edit
-  anchor: null
-  description: 'Handle participants in POST:
-
-    1. Accept participants array in request body
-
-    2. Store in challenge_configs table (JSONB column)
-
-    3. Validate user IDs exist in profiles
-
-    '
-  file: app/api/gamification/challenges/route.ts
-  position: null
-  template: null
-- action: edit
-  anchor: null
-  description: 'Handle participants in PATCH:
-
-    1. Accept participants array in update payload
-
-    2. Update JSONB column
-
-    '
-  file: app/api/gamification/challenges/[id]/route.ts
-  position: null
-  template: null
+changes: []
 context:
-  background: null
-  goal: Add multi-select team member picker to challenge creation/editing form
+  background: 'Tech stack:
+
+    - Next.js 15 with App Router
+
+    - Node.js (check package.json for version)
+
+    - npm for package management
+
+    - TypeScript
+
+    - ESLint with custom rules
+
+    '
+  goal: Create GitHub Actions CI/CD workflow for automated testing
   success_criteria:
-  - Challenge form includes multi-select for team members
-  - '''All team members'' option available as default'
-  - Challenge progress only tracks selected participants
-  - Existing challenges continue to work (backwards compatible - null = all)
-  why: 'Currently challenges apply to all org members. Fahredin needs to:
+  - GitHub Actions workflow file exists at .github/workflows/ci.yml
+  - Workflow runs on PR and push to main
+  - 'Workflow includes: lint, typecheck, build'
+  - Workflow includes npm audit for security
+  - Build passes with new workflow file
+  why: 'Currently only local pre-commit hooks exist. No automated testing on:
 
-    - Create role-specific challenges (e.g., just sales reps, not office staff)
+    - Pull requests
 
-    - Run team competitions (Team A vs Team B)
+    - Main branch pushes
 
-    - Set individual incentives for specific performers
+    - Scheduled security audits
 
 
-    The challenge creation UI already has KPI, timeline, and start date editing.
-
-    Team member selection is the missing piece.
+    This creates risk of broken code being merged and security issues going undetected.
 
     '
 dependencies:
   blocks: []
   requires: []
-handoff:
-  format: null
-  progress_file: claude-progress.txt
-  update_on:
-  - task_start
-  - task_complete
+handoff: null
 kind: TaskSpec
 metadata:
-  archon_task_id: null
-  created: '2025-12-16T12:00:00Z'
-  id: ROOFING-FEAT-001
+  archon_task_id: e69f1b56-7649-48bb-929b-1a1a70cb1dc6
+  created: null
+  id: CICD-001
   priority: 2
   template: null
-  title: Add team member selection to incentive challenges
+  title: '[P2] Create CI/CD Workflow'
 on_failure:
   escalate:
     include:
     - error_output
-    - files_modified
     to: human
   rollback:
-  - git checkout -- lib/gamification/types.ts components/settings/gamification/
+  - rm -f .github/workflows/ci.yml
 read_first:
 - extract: []
-  path: lib/gamification/types.ts
-  reason: Understand ChallengeConfig schema to add participants field
+  path: package.json
+  reason: Understand available scripts and Node version
   required: true
 - extract: []
-  path: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
-  reason: Understand current form structure to add member picker
-  required: true
-- extract: []
-  path: components/impersonation/UserPicker.tsx
-  reason: Reference pattern for fetching and selecting users
-  required: true
-- extract: []
-  path: app/api/gamification/challenges/route.ts
-  reason: Understand current API to add participants handling
-  required: true
+  path: .nvmrc
+  reason: Check for specific Node version requirement
+  required: false
 scope:
   constraints:
-  - Use shadcn/ui components for multi-select
-  - Follow existing component patterns (see UserPicker in impersonation)
-  - Use theme tokens only (no hardcoded colors)
-  - Backwards compatible - null/empty participants = all org members
+  - Use GitHub Actions syntax
+  - Use npm, not yarn or pnpm
+  - Include caching for node_modules
+  - Fail fast on errors
   create:
-  - components/settings/gamification/TeamMemberPicker.tsx
+  - .github/workflows/ci.yml
   do_not_touch:
-  - components/settings/gamification/ChallengesTab.tsx
-  - supabase/migrations/**
-  modify:
-  - lib/gamification/types.ts
-  - components/settings/gamification/dialogs/ChallengeFormDialog.tsx
-  - app/api/gamification/challenges/route.ts
-  - app/api/gamification/challenges/[id]/route.ts
+  - app/**
+  - lib/**
+  - components/**
+  - supabase/**
+  - next.config.ts
+  modify: []
 thinking:
-  level: think_hard
+  level: think
   triggers:
-  - Before designing TeamMemberPicker interface
-  - When integrating with existing form
-  - When handling empty/null participants (backwards compat)
+  - When designing workflow structure
+  - When configuring caching
 validation:
-  assertions:
-  - contains:
-    - profiles
-    - onChange
-    context: any
-    description: Component must fetch users from profiles
-    file: components/settings/gamification/TeamMemberPicker.tsx
-    not_contains: []
-    regex_match: []
-    required: true
-  - contains:
-    - TeamMemberPicker
-    - participants
-    context: any
-    description: Form must include TeamMemberPicker
-    file: components/settings/gamification/dialogs/ChallengeFormDialog.tsx
-    not_contains: []
-    regex_match: []
-    required: true
-  - contains:
-    - participants
-    context: any
-    description: Schema must have participants field
-    file: lib/gamification/types.ts
-    not_contains: []
-    regex_match: []
-    required: true
+  assertions: []
   post_commit: []
   pre_commit:
-  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && npm run typecheck
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && npm run lint
+  - command: cd /Users/ccai/Roofing\ SaaS/roofing-saas && test -f .github/workflows/ci.yml
+      && echo 'exists'
     expect: 'exit_code: 0'
     required: true
     timeout: 60

@@ -24,7 +24,7 @@ import {
   Sparkles,
   CloudLightning
 } from 'lucide-react'
-import { signOut } from '@/app/(dashboard)/actions'
+import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
 

@@ -366,12 +366,12 @@ test.describe('UI Crawler - Full Application Test', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('should test organizations and surveys', async ({ page }) => {
-    setupConsoleTracking(page, 'Organizations')
-    console.log('Testing: Organizations and Surveys')
+  test('should test surveys', async ({ page }) => {
+    setupConsoleTracking(page, 'Surveys')
+    console.log('Testing: Surveys')
 
-    await page.goto('/organizations')
-    await page.waitForLoadState('networkidle')
+    // Note: Organizations was merged into contacts (migration 20251119000600)
+    // The /organizations page no longer exists
 
     await page.goto('/surveys')
     await page.waitForLoadState('networkidle')
