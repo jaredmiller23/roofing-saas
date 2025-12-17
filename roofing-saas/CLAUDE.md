@@ -118,33 +118,40 @@ npm run build         # Must succeed
 
 ---
 
-## VEST Task Execution
+## Source of Truth
 
-This project is managed by **VEST** (autonomous task harness). Complex tasks are executed via spawned Claude sessions.
+**This project follows the global source of truth hierarchy (see `~/.claude/CLAUDE.md`):**
 
-### Check for Pending Tasks
-```
-/vest-status
-```
+1. **Git** = Ground truth (commits prove work happened)
+2. **Archon** = Record of truth (must match Git)
+3. **VEST** = Execution layer (must match Archon & Git)
 
-### Execute a Task
-```
-/vest-run TASK-ID
-```
+### Archon Project
+
+| Field | Value |
+|-------|-------|
+| Project ID | `42f928ef-ac24-4eed-b539-61799e3dc325` |
+| API | `http://localhost:8181/api/` |
+| Health Check | `curl -s http://localhost:8181/health` |
 
 ### Before Starting Work
 
-1. Check `/vest-status` for assigned tasks
-2. Check `/vest-learnings` for known risky files and patterns
-3. If FilterBar.tsx or similar shows high risk, proceed carefully
+1. **Verify Archon is up** (HTTP health check, not MCP)
+2. **Check Git state** (`git status`, `git log`)
+3. **Cross-reference** - if Archon says "done" but Git has no commit, Archon is wrong
+4. If Archon is down, STOP and alert the user
 
-### Archon Project ID
+### VEST Task Execution
 
-**Tennessee Roofing SaaS**: `42f928ef-ac24-4eed-b539-61799e3dc325`
+VEST spawns fresh Claude sessions for complex tasks. **VEST is NOT the source of truth** - it executes tasks defined in Archon.
 
-### TaskSpec Location
+| Command | Purpose |
+|---------|---------|
+| `/vest-status` | Show pending tasks |
+| `/vest-run TASK-ID` | Execute a task |
+| `/vest-learnings` | Check known risky files |
 
-Task specifications live in `~/Projects/VEST/aces/tasks/`.
+TaskSpec location: `~/Projects/VEST/aces/tasks/`
 
 ---
 
