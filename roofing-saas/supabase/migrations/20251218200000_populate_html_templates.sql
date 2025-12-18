@@ -1,12 +1,15 @@
 -- Migration to populate html_content column with signature templates
 -- This migration adds HTML content for document templates
 
--- First, let's add some sample templates for each category
--- These correspond to the HTML files in /docs/signature-templates/
+-- First, ensure the tenants exist (idempotent)
+INSERT INTO tenants (id, name, subdomain)
+VALUES
+  ('00000000-0000-0000-0000-000000000000', 'Appalachian Storm Restoration', 'asr'),
+  ('478d279b-5b8a-4040-a805-75d595d59702', 'Clarity AI Development', 'clarityai')
+ON CONFLICT (id) DO NOTHING;
 
--- Insert residential contract template
+-- Insert residential contract template for ASR
 INSERT INTO document_templates (
-  id,
   tenant_id,
   name,
   description,
@@ -16,11 +19,9 @@ INSERT INTO document_templates (
   requires_customer_signature,
   requires_company_signature,
   expiration_days,
-  is_active,
-  is_default
+  is_active
 ) VALUES (
-  'residential-contract-template',
-  '00000000-0000-0000-0000-000000000000', -- This will need to be updated per tenant
+  '00000000-0000-0000-0000-000000000000',
   'Residential Roofing Contract',
   'Standard residential roofing contract with terms and conditions',
   'contract',
@@ -140,68 +141,22 @@ INSERT INTO document_templates (
 </body>
 </html>',
   '[
-    {
-      "id": "customer-signature",
-      "type": "signature",
-      "label": "Customer Signature",
-      "page": 1,
-      "x": 10,
-      "y": 75,
-      "width": 35,
-      "height": 8,
-      "required": true,
-      "assignedTo": "customer"
-    },
-    {
-      "id": "customer-date",
-      "type": "date",
-      "label": "Date",
-      "page": 1,
-      "x": 50,
-      "y": 75,
-      "width": 15,
-      "height": 5,
-      "required": true,
-      "assignedTo": "customer"
-    },
-    {
-      "id": "company-signature",
-      "type": "signature",
-      "label": "Company Signature",
-      "page": 1,
-      "x": 10,
-      "y": 85,
-      "width": 35,
-      "height": 8,
-      "required": true,
-      "assignedTo": "company"
-    },
-    {
-      "id": "company-date",
-      "type": "date",
-      "label": "Date",
-      "page": 1,
-      "x": 50,
-      "y": 85,
-      "width": 15,
-      "height": 5,
-      "required": true,
-      "assignedTo": "company"
-    }
+    {"id": "customer-signature", "type": "signature", "label": "Customer Signature", "page": 1, "x": 10, "y": 75, "width": 35, "height": 8, "required": true, "assignedTo": "customer"},
+    {"id": "customer-date", "type": "date", "label": "Date", "page": 1, "x": 50, "y": 75, "width": 15, "height": 5, "required": true, "assignedTo": "customer"},
+    {"id": "company-signature", "type": "signature", "label": "Company Signature", "page": 1, "x": 10, "y": 85, "width": 35, "height": 8, "required": true, "assignedTo": "company"},
+    {"id": "company-date", "type": "date", "label": "Date", "page": 1, "x": 50, "y": 85, "width": 15, "height": 5, "required": true, "assignedTo": "company"}
   ]'::jsonb,
   true,
   true,
   30,
-  true,
   true
-) ON CONFLICT (id) DO UPDATE SET
+) ON CONFLICT (tenant_id, name) DO UPDATE SET
   html_content = EXCLUDED.html_content,
   signature_fields = EXCLUDED.signature_fields,
   updated_at = now();
 
--- Insert Change Order template
+-- Insert Change Order template for ASR
 INSERT INTO document_templates (
-  id,
   tenant_id,
   name,
   description,
@@ -213,7 +168,6 @@ INSERT INTO document_templates (
   expiration_days,
   is_active
 ) VALUES (
-  'change-order-template',
   '00000000-0000-0000-0000-000000000000',
   'Change Order',
   'Project change order for scope modifications',
@@ -261,43 +215,20 @@ INSERT INTO document_templates (
 </body>
 </html>',
   '[
-    {
-      "id": "customer-signature-co",
-      "type": "signature",
-      "label": "Customer Signature",
-      "page": 1,
-      "x": 10,
-      "y": 70,
-      "width": 35,
-      "height": 8,
-      "required": true,
-      "assignedTo": "customer"
-    },
-    {
-      "id": "company-signature-co",
-      "type": "signature",
-      "label": "Company Signature",
-      "page": 1,
-      "x": 10,
-      "y": 80,
-      "width": 35,
-      "height": 8,
-      "required": true,
-      "assignedTo": "company"
-    }
+    {"id": "customer-signature-co", "type": "signature", "label": "Customer Signature", "page": 1, "x": 10, "y": 70, "width": 35, "height": 8, "required": true, "assignedTo": "customer"},
+    {"id": "company-signature-co", "type": "signature", "label": "Company Signature", "page": 1, "x": 10, "y": 80, "width": 35, "height": 8, "required": true, "assignedTo": "company"}
   ]'::jsonb,
   true,
   true,
   30,
   true
-) ON CONFLICT (id) DO UPDATE SET
+) ON CONFLICT (tenant_id, name) DO UPDATE SET
   html_content = EXCLUDED.html_content,
   signature_fields = EXCLUDED.signature_fields,
   updated_at = now();
 
--- Insert Warranty template
+-- Insert Warranty template for ASR
 INSERT INTO document_templates (
-  id,
   tenant_id,
   name,
   description,
@@ -309,7 +240,6 @@ INSERT INTO document_templates (
   expiration_days,
   is_active
 ) VALUES (
-  'warranty-template',
   '00000000-0000-0000-0000-000000000000',
   'Roofing Warranty',
   'Warranty document for roofing work',
@@ -355,50 +285,35 @@ INSERT INTO document_templates (
 </body>
 </html>',
   '[
-    {
-      "id": "warranty-customer-signature",
-      "type": "signature",
-      "label": "Customer Signature",
-      "page": 1,
-      "x": 10,
-      "y": 75,
-      "width": 35,
-      "height": 8,
-      "required": true,
-      "assignedTo": "customer"
-    }
+    {"id": "warranty-customer-signature", "type": "signature", "label": "Customer Signature", "page": 1, "x": 10, "y": 75, "width": 35, "height": 8, "required": true, "assignedTo": "customer"}
   ]'::jsonb,
   true,
   false,
   365,
   true
-) ON CONFLICT (id) DO UPDATE SET
+) ON CONFLICT (tenant_id, name) DO UPDATE SET
   html_content = EXCLUDED.html_content,
   signature_fields = EXCLUDED.signature_fields,
   updated_at = now();
 
--- Update function to set tenant_id for existing tenants
--- This would need to be run for each tenant
-CREATE OR REPLACE FUNCTION assign_templates_to_tenants()
-RETURNS void AS $$
-DECLARE
-    tenant_record RECORD;
-BEGIN
-    -- Loop through all tenants and assign templates
-    FOR tenant_record IN SELECT id FROM tenants LOOP
-        -- Update templates with actual tenant_id
-        UPDATE document_templates
-        SET tenant_id = tenant_record.id
-        WHERE tenant_id = '00000000-0000-0000-0000-000000000000'
-          AND id IN ('residential-contract-template', 'change-order-template', 'warranty-template');
-    END LOOP;
-END;
-$$ LANGUAGE plpgsql;
-
--- Call the function to assign templates to all existing tenants
-SELECT assign_templates_to_tenants();
-
--- Drop the function as it's no longer needed
-DROP FUNCTION assign_templates_to_tenants();
+-- Copy templates to Clarity AI Development tenant (for testing)
+INSERT INTO document_templates (tenant_id, name, description, category, html_content, signature_fields, requires_customer_signature, requires_company_signature, expiration_days, is_active)
+SELECT
+  '478d279b-5b8a-4040-a805-75d595d59702'::uuid,
+  name,
+  description,
+  category,
+  html_content,
+  signature_fields,
+  requires_customer_signature,
+  requires_company_signature,
+  expiration_days,
+  is_active
+FROM document_templates
+WHERE tenant_id = '00000000-0000-0000-0000-000000000000'
+ON CONFLICT (tenant_id, name) DO UPDATE SET
+  html_content = EXCLUDED.html_content,
+  signature_fields = EXCLUDED.signature_fields,
+  updated_at = now();
 
 COMMENT ON COLUMN document_templates.html_content IS 'HTML template content with {{placeholder}} syntax for dynamic data injection';

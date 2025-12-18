@@ -20,40 +20,55 @@ CREATE TABLE IF NOT EXISTS document_templates (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create indexes
-CREATE INDEX idx_document_templates_tenant_id ON document_templates(tenant_id);
-CREATE INDEX idx_document_templates_category ON document_templates(category);
-CREATE INDEX idx_document_templates_is_active ON document_templates(is_active);
+-- Unique constraint for tenant-level template names (enables UPSERT)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'document_templates_tenant_name_unique'
+  ) THEN
+    ALTER TABLE document_templates ADD CONSTRAINT document_templates_tenant_name_unique UNIQUE (tenant_id, name);
+  END IF;
+END $$;
+
+-- Create indexes (IF NOT EXISTS for idempotency)
+CREATE INDEX IF NOT EXISTS idx_document_templates_tenant_id ON document_templates(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_document_templates_category ON document_templates(category);
+CREATE INDEX IF NOT EXISTS idx_document_templates_is_active ON document_templates(is_active);
 
 -- Enable RLS
 ALTER TABLE document_templates ENABLE ROW LEVEL SECURITY;
 
--- RLS policies
+-- RLS policies (DROP IF EXISTS for idempotency, then create)
+DROP POLICY IF EXISTS "Users can view their tenant templates" ON document_templates;
 CREATE POLICY "Users can view their tenant templates"
   ON document_templates FOR SELECT
   USING (tenant_id IN (
     SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Users can create templates for their tenant" ON document_templates;
 CREATE POLICY "Users can create templates for their tenant"
   ON document_templates FOR INSERT
   WITH CHECK (tenant_id IN (
     SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Users can update their tenant templates" ON document_templates;
 CREATE POLICY "Users can update their tenant templates"
   ON document_templates FOR UPDATE
   USING (tenant_id IN (
     SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Users can delete their tenant templates" ON document_templates;
 CREATE POLICY "Users can delete their tenant templates"
   ON document_templates FOR DELETE
   USING (tenant_id IN (
     SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
   ));
 
--- Trigger to update updated_at
+-- Trigger to update updated_at (DROP IF EXISTS for idempotency)
+DROP TRIGGER IF EXISTS update_document_templates_updated_at ON document_templates;
 CREATE TRIGGER update_document_templates_updated_at
   BEFORE UPDATE ON document_templates
   FOR EACH ROW
