@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment of Benefits (AOB)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ASSIGNMENT OF BENEFITS (AOB)</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Property Owner Information</h3>
+        <p><strong>Property Owner Name:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Insurance Information</h3>
+        <p><strong>Insurance Company:</strong> {{insurance_company}}</p>
+        <p><strong>Policy Number:</strong> {{policy_number}}</p>
+        <p><strong>Claim Number:</strong> {{claim_number}}</p>
+        <p><strong>Date of Loss:</strong> {{loss_date}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Assignment of Benefits Agreement</h3>
+        <p>I, {{customer_name}}, the undersigned property owner of the above-referenced property, hereby assign to {{company_name}} all rights, benefits, proceeds, and causes of action under my insurance policy related to the roofing work described as: {{project_description}}.</p>
+
+        <p><strong>This assignment includes:</strong></p>
+        <ul>
+            <li>The right to file, pursue, and settle insurance claims on my behalf</li>
+            <li>The right to receive insurance proceeds directly from the insurance company</li>
+            <li>The right to communicate with my insurance company regarding this claim</li>
+            <li>The right to endorse and deposit insurance settlement checks</li>
+        </ul>
+
+        <p><strong>I understand that:</strong></p>
+        <ul>
+            <li>This assignment is effective immediately upon signing</li>
+            <li>{{company_name}} will be the point of contact with my insurance company</li>
+            <li>I retain the right to revoke this assignment with written notice</li>
+            <li>I am responsible for my insurance deductible</li>
+            <li>This assignment applies only to the specific claim and work described above</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Acknowledgment and Signature</h3>
+        <p>I acknowledge that I have read, understood, and agree to the terms of this Assignment of Benefits. I confirm that I am the owner of the property or have the authority to execute this assignment.</p>
+
+        <p><strong>Property Owner Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 30px;"><strong>Witness Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Witness Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This document has legal implications. Tennessee law governs the interpretation and enforcement of this assignment. You have the right to cancel this assignment within three (3) business days of signing by providing written notice to {{company_name}}. This assignment is subject to review and approval by your insurance company. All work is contingent upon insurance approval and payment.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Document prepared on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.
+    </footer>
+</body>
+</html>

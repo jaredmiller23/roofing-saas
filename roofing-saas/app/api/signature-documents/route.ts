@@ -9,6 +9,9 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
+import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
+import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
+import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { z } from 'zod'
 
 // Zod schema for signature field placements
@@ -199,6 +202,88 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // If template_id is provided, check if template has HTML content
+    let generatedPdfUrl = file_url
+    let finalSignatureFields = signature_fields
+
+    if (template_id) {
+      const { data: template, error: templateError } = await supabase
+        .from('document_templates')
+        .select('html_content, signature_fields, requires_customer_signature, requires_company_signature')
+        .eq('id', template_id)
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .single()
+
+      if (!templateError && template?.html_content) {
+        logger.info('Generating PDF from HTML template', { template_id })
+
+        try {
+          // Fetch contact and project data for template merging
+          let contactData = null
+          let projectData = null
+
+          if (contact_id) {
+            const { data: contact } = await supabase
+              .from('contacts')
+              .select('*')
+              .eq('id', contact_id)
+              .eq('tenant_id', tenantId)
+              .single()
+            contactData = contact
+          }
+
+          if (project_id) {
+            const { data: project } = await supabase
+              .from('projects')
+              .select('*')
+              .eq('id', project_id)
+              .eq('tenant_id', tenantId)
+              .single()
+            projectData = project
+          }
+
+          // Merge template with data
+          const htmlContent = mergeTemplateWithContactAndProject(
+            template.html_content,
+            contactData,
+            projectData,
+            {
+              document_title: title,
+              document_type,
+            }
+          )
+
+          // Generate PDF
+          const pdfBuffer = await generateProfessionalPDF(htmlContent)
+
+          // Upload generated PDF
+          const fileName = `generated-${template_id}-${Date.now()}.pdf`
+          const pdfBlob = new Uint8Array(pdfBuffer)
+          const uploadResult = await uploadSignaturePdf(
+            new File([pdfBlob], fileName, { type: 'application/pdf' }),
+            user.id
+          )
+
+          if (uploadResult.success && uploadResult.data) {
+            generatedPdfUrl = uploadResult.data.url
+            logger.info('PDF generated and uploaded successfully', {
+              template_id,
+              pdf_url: generatedPdfUrl
+            })
+          }
+
+          // Use template signature fields if not provided
+          if (!signature_fields?.length && template.signature_fields?.length) {
+            finalSignatureFields = template.signature_fields as z.infer<typeof signatureFieldsSchema>
+          }
+        } catch (error) {
+          logger.error('Error generating PDF from template', { error, template_id })
+          // Continue with document creation even if PDF generation fails
+        }
+      }
+    }
+
     const { data: document, error } = await supabase
       .from('signature_documents')
       .insert({
@@ -209,8 +294,8 @@ export async function POST(request: NextRequest) {
         project_id,
         contact_id,
         template_id,
-        file_url,
-        signature_fields,
+        file_url: generatedPdfUrl,
+        signature_fields: finalSignatureFields,
         requires_customer_signature,
         requires_company_signature,
         expires_at,

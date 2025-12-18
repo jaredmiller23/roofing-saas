@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residential Roofing Contract</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .cost-table th, .cost-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .cost-table th {
+            background-color: #f5f5f5;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f0f8ff;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RESIDENTIAL ROOFING CONTRACT</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Contract Information</h3>
+        <p><strong>Project Name:</strong> {{project_name}}</p>
+        <p><strong>Contract Date:</strong> {{current_date}}</p>
+        <p><strong>Estimated Start Date:</strong> _______________</p>
+        <p><strong>Estimated Completion Date:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Customer Information</h3>
+        <p><strong>Customer Name:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Scope of Work</h3>
+        <p><strong>Project Description:</strong> {{project_description}}</p>
+
+        <p><strong>Work to be performed includes:</strong></p>
+        <ul>
+            <li>Complete tear-off of existing roofing materials (if applicable)</li>
+            <li>Inspection of roof decking and replacement of damaged areas</li>
+            <li>Installation of ice and water shield in valleys and eaves</li>
+            <li>Installation of underlayment as per manufacturer specifications</li>
+            <li>Installation of new roofing materials as specified</li>
+            <li>Installation of ridge vents, pipe boots, and other penetration flashings</li>
+            <li>Installation of gutters and downspouts (if included)</li>
+            <li>Cleanup and disposal of all debris</li>
+        </ul>
+
+        <p><strong>Materials:</strong> All materials shall be new and of good quality, installed according to manufacturer specifications and local building codes. Material warranties will be passed through to the customer.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Contract Amount and Payment Terms</h3>
+        <table class="cost-table">
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+            </tr>
+            <tr>
+                <td>Total Contract Amount</td>
+                <td>{{contract_amount}}</td>
+            </tr>
+            <tr>
+                <td>Insurance Deductible (if applicable)</td>
+                <td>$___________</td>
+            </tr>
+            <tr class="total-row">
+                <td>Customer Responsibility</td>
+                <td>$___________</td>
+            </tr>
+        </table>
+
+        <p><strong>Payment Schedule:</strong></p>
+        <ul>
+            <li>Deposit: $__________ upon contract signing</li>
+            <li>Progress Payment: $__________ upon material delivery</li>
+            <li>Final Payment: $__________ upon project completion and customer satisfaction</li>
+        </ul>
+
+        <p><strong>Payment Methods:</strong> Cash, check, or credit card accepted. Make checks payable to {{company_name}}.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Terms and Conditions</h3>
+        <p><strong>Permits:</strong> {{company_name}} will obtain all necessary permits. Permit costs are included in the contract price.</p>
+
+        <p><strong>Weather Delays:</strong> Work may be delayed due to weather conditions. Such delays will not affect the contract price but may extend the completion date.</p>
+
+        <p><strong>Change Orders:</strong> Any changes to the original scope of work must be agreed upon in writing with pricing adjustments before implementation.</p>
+
+        <p><strong>Insurance:</strong> {{company_name}} carries general liability insurance and workers' compensation coverage. Certificate of insurance available upon request.</p>
+
+        <p><strong>Cleanup:</strong> The work area will be left clean and free of debris. Customer is responsible for protecting landscaping and personal property.</p>
+
+        <p><strong>Access:</strong> Customer agrees to provide reasonable access to the work area and to keep pets secured during work hours.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Warranty</h3>
+        <p><strong>Workmanship Warranty:</strong> {{company_name}} warrants all workmanship for a period of _____ years from completion date.</p>
+
+        <p><strong>Material Warranty:</strong> Material warranties are provided by manufacturers and will be transferred to customer upon completion.</p>
+
+        <p><strong>Warranty Exclusions:</strong> Warranty does not cover damage from acts of nature, normal wear and tear, or damage caused by others.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Right of Rescission</h3>
+        <p>Tennessee law provides that you have the right to cancel this contract within three (3) business days of signing if this contract was solicited at your residence. To cancel, you must provide written notice to {{company_name}} at the address listed above.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Signatures</h3>
+        <p>By signing below, both parties agree to the terms and conditions outlined in this contract.</p>
+
+        <p><strong>Customer Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Customer Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 30px;"><strong>{{company_name}} Representative:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Company Representative</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This contract is governed by Tennessee law. Any disputes will be resolved through binding arbitration. Customer acknowledges receipt of a copy of this contract. Work will commence upon receipt of signed contract and initial deposit. {{company_name}} is licensed and insured in the state of Tennessee (License #{{license_number}}).
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Document prepared on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.
+    </footer>
+</body>
+</html>

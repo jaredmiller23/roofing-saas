@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Order Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .cost-table th, .cost-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        .cost-table th {
+            background-color: #f5f5f5;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f0f8ff;
+        }
+        .change-highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CHANGE ORDER</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Change Order Information</h3>
+        <p><strong>Change Order #:</strong> _______________</p>
+        <p><strong>Date:</strong> {{current_date}}</p>
+        <p><strong>Original Contract Date:</strong> _______________</p>
+        <p><strong>Project Name:</strong> {{project_name}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Customer Information</h3>
+        <p><strong>Customer Name:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Original Contract Summary</h3>
+        <p><strong>Original Project Description:</strong> {{project_description}}</p>
+        <p><strong>Original Contract Amount:</strong> {{contract_amount}}</p>
+        <p><strong>Original Completion Date:</strong> _______________</p>
+    </div>
+
+    <div class="change-highlight">
+        <h3>Description of Changes</h3>
+        <p><strong>Reason for Change:</strong></p>
+        <ul>
+            <li>☐ Additional work requested by customer</li>
+            <li>☐ Unforeseen conditions discovered during construction</li>
+            <li>☐ Material specification change</li>
+            <li>☐ Code requirement change</li>
+            <li>☐ Insurance company requirement</li>
+            <li>☐ Other: _________________________</li>
+        </ul>
+
+        <p><strong>Detailed Description of Changes:</strong></p>
+        <div style="border: 1px solid #333; min-height: 100px; padding: 10px; margin: 10px 0;">
+            <!-- This space for detailed description of changes -->
+        </div>
+
+        <p><strong>Additional Materials Required:</strong></p>
+        <div style="border: 1px solid #333; min-height: 60px; padding: 10px; margin: 10px 0;">
+            <!-- This space for additional materials list -->
+        </div>
+
+        <p><strong>Additional Labor Required:</strong></p>
+        <div style="border: 1px solid #333; min-height: 60px; padding: 10px; margin: 10px 0;">
+            <!-- This space for additional labor description -->
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Cost Analysis</h3>
+        <table class="cost-table">
+            <tr>
+                <th>Item Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Amount</th>
+            </tr>
+            <tr>
+                <td>Additional Materials</td>
+                <td>_______</td>
+                <td>$_______</td>
+                <td>$_______</td>
+            </tr>
+            <tr>
+                <td>Additional Labor</td>
+                <td>_______</td>
+                <td>$_______</td>
+                <td>$_______</td>
+            </tr>
+            <tr>
+                <td>Equipment/Permits</td>
+                <td>_______</td>
+                <td>$_______</td>
+                <td>$_______</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="3">Total Change Order Amount</td>
+                <td>$_______</td>
+            </tr>
+        </table>
+
+        <p><strong>Impact on Project:</strong></p>
+        <ul>
+            <li><strong>Cost Impact:</strong> ☐ Increase ☐ Decrease ☐ No Change</li>
+            <li><strong>Schedule Impact:</strong> ☐ Extend completion ☐ No impact</li>
+            <li><strong>Additional Days (if any):</strong> _____ days</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Revised Contract Summary</h3>
+        <table class="cost-table">
+            <tr>
+                <td>Original Contract Amount</td>
+                <td>{{contract_amount}}</td>
+            </tr>
+            <tr>
+                <td>Change Order Amount</td>
+                <td>$_______</td>
+            </tr>
+            <tr class="total-row">
+                <td>New Contract Total</td>
+                <td>$_______</td>
+            </tr>
+        </table>
+
+        <p><strong>Original Completion Date:</strong> _______________</p>
+        <p><strong>Revised Completion Date:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Payment Terms for Change Order</h3>
+        <p><strong>Payment Schedule:</strong></p>
+        <ul>
+            <li>☐ Full payment due upon completion of change order work</li>
+            <li>☐ 50% due upon approval, 50% upon completion</li>
+            <li>☐ Incorporated into existing payment schedule</li>
+            <li>☐ Other: _________________________</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Approvals and Signatures</h3>
+        <p>This change order modifies the original contract dated _______________. All other terms and conditions of the original contract remain in effect except as modified herein.</p>
+
+        <p><strong>Customer Approval:</strong></p>
+        <p>I approve the above change order and agree to the additional cost and time requirements.</p>
+
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Customer Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 30px;"><strong>{{company_name}} Representative:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Company Representative</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This change order becomes part of the original contract upon execution by both parties. Work described in this change order will not commence until this document is fully executed and any required payment is received. Changes to the work scope, schedule, or cost must be documented through additional change orders. This document is governed by Tennessee law.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Document prepared on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.
+    </footer>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Federal Trade Commission Disclosure</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .ftc-notice {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .required-disclosure {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .cancellation-rights {
+            background-color: #f8d7da;
+            border: 2px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FEDERAL TRADE COMMISSION DISCLOSURE</h1>
+        <h2>Truth in Advertising & Consumer Rights Notice</h2>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Consumer Information</h3>
+        <p><strong>Consumer Name:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+        <p><strong>Date of Solicitation:</strong> {{current_date}}</p>
+        <p><strong>Contract Amount:</strong> {{contract_amount}}</p>
+    </div>
+
+    <div class="ftc-notice">
+        <h3>🇺🇸 Federal Trade Commission Required Disclosure</h3>
+        <p><strong>This disclosure is required by federal law under the Federal Trade Commission Act and related consumer protection regulations.</strong></p>
+
+        <p>The Federal Trade Commission requires that all consumers receive accurate information about:</p>
+        <ul>
+            <li>Your rights as a consumer</li>
+            <li>Contract terms and conditions</li>
+            <li>Cancellation and refund policies</li>
+            <li>Company licensing and insurance</li>
+            <li>Material representations and warranties</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Truth in Advertising Compliance</h3>
+        <p><strong>{{company_name}} certifies that all advertising and marketing representations are:</strong></p>
+        <ul>
+            <li>✓ Truthful and not misleading</li>
+            <li>✓ Supported by evidence and documentation</li>
+            <li>✓ Clear about material terms and conditions</li>
+            <li>✓ Free from deceptive pricing or "bait and switch" tactics</li>
+            <li>✓ Compliant with FTC advertising guidelines</li>
+        </ul>
+
+        <p><strong>We confirm that:</strong></p>
+        <ul>
+            <li>All price quotes include clearly disclosed terms</li>
+            <li>Any limitations or conditions have been explained</li>
+            <li>Material warranties and guarantees are accurately represented</li>
+            <li>Company credentials and licensing are current and verified</li>
+            <li>No false or unsubstantiated claims have been made</li>
+        </ul>
+    </div>
+
+    <div class="required-disclosure">
+        <h3>⚠️ Required Material Disclosures</h3>
+
+        <p><strong>Licensing and Insurance:</strong></p>
+        <ul>
+            <li>{{company_name}} is licensed in Tennessee (License #{{license_number}})</li>
+            <li>General liability insurance coverage: $_____________ (Certificate available upon request)</li>
+            <li>Workers' compensation coverage: Current (Certificate available upon request)</li>
+        </ul>
+
+        <p><strong>Payment Terms:</strong></p>
+        <ul>
+            <li>Total contract amount: {{contract_amount}}</li>
+            <li>Deposit required: $_____________ (____% of contract)</li>
+            <li>Payment schedule clearly outlined in contract</li>
+            <li>No payment required until contract is signed and work commences</li>
+        </ul>
+
+        <p><strong>Timeline and Completion:</strong></p>
+        <ul>
+            <li>Estimated start date: _____________</li>
+            <li>Estimated completion: _____________</li>
+            <li>Weather and permit delays may affect timeline</li>
+            <li>Customer will be notified of any significant delays</li>
+        </ul>
+
+        <p><strong>Warranty Information:</strong></p>
+        <ul>
+            <li>Workmanship warranty: _____ years</li>
+            <li>Material warranties: Per manufacturer specifications</li>
+            <li>Warranty terms are clearly defined in separate warranty documentation</li>
+        </ul>
+    </div>
+
+    <div class="cancellation-rights">
+        <h3>🚪 Federal Consumer Cancellation Rights</h3>
+
+        <p><strong>RIGHT OF CANCELLATION:</strong> Under federal law and Tennessee state law, you have the right to cancel this contract if it was solicited at your residence.</p>
+
+        <p><strong>Cancellation Period:</strong> You have until midnight of the third business day after signing this contract to cancel.</p>
+
+        <p><strong>How to Cancel:</strong></p>
+        <ol>
+            <li>Send written notice to {{company_name}} at {{company_address}}</li>
+            <li>Email cancellation to: cancellation@goappsr.com</li>
+            <li>Call {{company_phone}} and request cancellation in writing</li>
+            <li>Hand-deliver written cancellation notice</li>
+        </ol>
+
+        <p><strong>Cancellation Effects:</strong></p>
+        <ul>
+            <li>All money paid will be returned within 10 days</li>
+            <li>Any goods delivered will be picked up at no cost to you</li>
+            <li>You are not obligated to return goods until pickup is arranged</li>
+            <li>If you cancel, any security interest in your home is automatically void</li>
+        </ul>
+
+        <p><strong>Sample Cancellation Notice:</strong></p>
+        <div style="border: 1px solid #333; padding: 15px; margin: 15px 0; background: white;">
+            <p><em>Date: _____________</em></p>
+            <p><em>To: {{company_name}}</em></p>
+            <p><em>I hereby cancel the contract signed on _____________ for roofing services at {{property_address}}.</em></p>
+            <p><em>Signature: _________________________</em></p>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Additional Federal Protections</h3>
+
+        <p><strong>FTC Cooling-Off Rule (16 CFR 429):</strong> This rule gives you three days to cancel purchases of $25 or more made at your home, workplace, or facilities rented by the seller for temporary use, such as hotel or motel rooms, convention centers, fairgrounds, and restaurants.</p>
+
+        <p><strong>Unfair or Deceptive Practices:</strong> Federal law prohibits unfair or deceptive practices in commerce. If you believe you have been subjected to such practices, you may file a complaint with:</p>
+        <ul>
+            <li>Federal Trade Commission: www.ftc.gov/complaint</li>
+            <li>Tennessee Attorney General Consumer Protection Division</li>
+            <li>Better Business Bureau</li>
+        </ul>
+
+        <p><strong>Fee Disclosure (Effective May 2025):</strong> Under new FTC rules effective May 12, 2025, all fees must be clearly disclosed upfront. No hidden fees or "junk fees" are permitted.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Contact Information for Complaints</h3>
+
+        <p><strong>Federal Trade Commission:</strong></p>
+        <p>Website: www.ftc.gov/complaint<br>
+        Phone: 1-877-FTC-HELP (1-877-382-4357)<br>
+        Mail: Federal Trade Commission, 600 Pennsylvania Ave, NW, Washington, DC 20580</p>
+
+        <p><strong>Tennessee Attorney General:</strong></p>
+        <p>Consumer Protection Division<br>
+        Phone: 615-741-1671<br>
+        Website: www.tn.gov/attorneygeneral/consumer</p>
+
+        <p><strong>Better Business Bureau:</strong></p>
+        <p>Website: www.bbb.org<br>
+        Phone: Check local BBB office</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Consumer Acknowledgment</h3>
+        <p>I acknowledge that:</p>
+        <ul>
+            <li>I have received and read this FTC disclosure</li>
+            <li>All material terms have been explained to me</li>
+            <li>I understand my cancellation rights</li>
+            <li>I have been provided contact information for filing complaints</li>
+            <li>I understand this is a door-to-door sale (if applicable)</li>
+            <li>No work will begin until after the 3-day cancellation period expires</li>
+        </ul>
+
+        <p><strong>Consumer Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Consumer Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="form-section">
+        <h3>Company Acknowledgment</h3>
+        <p>{{company_name}} certifies compliance with all FTC regulations and Tennessee consumer protection laws.</p>
+
+        <p><strong>Company Representative:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Company Representative</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 20px;"><strong>Print Name:</strong> _______________</p>
+        <p><strong>Title:</strong> _______________</p>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT FEDERAL NOTICE:</strong> This disclosure is required by federal law under the FTC Act and related consumer protection regulations. Failure to provide this disclosure or comply with federal consumer protection laws may result in penalties and enforcement action by the Federal Trade Commission. This disclosure does not limit any additional state or local consumer protections that may apply. Keep this document with your contract and other important papers.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        FTC Disclosure provided on {{current_date}} by {{company_name}}<br>
+        This document complies with Federal Trade Commission requirements and Tennessee state law.<br>
+        <strong>Retain this disclosure for your records</strong>
+    </footer>
+</body>
+</html>

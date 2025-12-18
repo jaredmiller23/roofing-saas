@@ -78,6 +78,7 @@ interface SignatureTemplate {
   requires_company_signature: boolean
   expiration_days: number
   pdf_template_url: string | null
+  html_content: string | null
   signature_fields: SignatureField[]
   created_at: string
   updated_at: string
@@ -126,12 +127,12 @@ interface FormData {
   signatureFields: SignatureFieldPlacement[]
 }
 
-const STEPS = [
+const getSteps = (hasHtmlTemplate: boolean) => [
   { number: 1, title: 'Template Selection', icon: LayoutTemplate },
   { number: 2, title: 'Document Info', icon: FileText },
-  { number: 3, title: 'Upload PDF', icon: Upload },
-  { number: 4, title: 'Place Fields', icon: PenTool },
-  { number: 5, title: 'Review & Create', icon: Eye },
+  ...(hasHtmlTemplate ? [] : [{ number: 3, title: 'Upload PDF', icon: Upload }]),
+  { number: hasHtmlTemplate ? 3 : 4, title: 'Place Fields', icon: PenTool },
+  { number: hasHtmlTemplate ? 4 : 5, title: 'Review & Create', icon: Eye },
 ]
 
 export default function NewSignatureDocumentPage() {
@@ -166,6 +167,12 @@ export default function NewSignatureDocumentPage() {
     pdfUrl: '',
     signatureFields: [],
   })
+
+  // Track if selected template has HTML content
+  const selectedTemplate = templates.find(t => t.id === formData.selectedTemplateId)
+  const hasHtmlTemplate = !!selectedTemplate?.html_content
+  const STEPS = getSteps(hasHtmlTemplate)
+  const maxSteps = STEPS.length
 
   // Data lists
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -290,20 +297,38 @@ export default function NewSignatureDocumentPage() {
 
   // Step validation
   const validateStep = (stepNumber: number): boolean => {
+    // const fieldsStep = hasHtmlTemplate ? 3 : 4
+    // const reviewStep = hasHtmlTemplate ? 4 : 5
+
     switch (stepNumber) {
       case 1:
         return true // Template selection is optional
       case 2:
         return !!formData.title.trim()
       case 3:
-        return true // PDF is optional
+        if (hasHtmlTemplate) {
+          // This is the fields step for HTML templates
+          const hasSignatureField = formData.signatureFields.some(
+            f => f.type === 'signature' || f.type === 'initials'
+          )
+          return hasSignatureField
+        } else {
+          // This is PDF upload step for non-HTML templates
+          return true // PDF is optional
+        }
       case 4:
-        // Require at least one signature or initials field
-        const hasSignatureField = formData.signatureFields.some(
-          f => f.type === 'signature' || f.type === 'initials'
-        )
-        return hasSignatureField
+        if (hasHtmlTemplate) {
+          // This is the review step for HTML templates
+          return validateStep(2) && validateStep(3)
+        } else {
+          // This is the fields step for non-HTML templates
+          const hasSignatureField = formData.signatureFields.some(
+            f => f.type === 'signature' || f.type === 'initials'
+          )
+          return hasSignatureField
+        }
       case 5:
+        // This is only the review step for non-HTML templates
         return validateStep(2) && validateStep(4)
       default:
         return true
@@ -313,15 +338,29 @@ export default function NewSignatureDocumentPage() {
   const canProceed = validateStep(step)
 
   const handleNext = () => {
-    if (step < 5 && canProceed) {
-      setStep(step + 1)
+    if (step < maxSteps && canProceed) {
+      let nextStep = step + 1
+
+      // Skip PDF upload step if template has HTML content
+      if (hasHtmlTemplate && step === 2) {
+        nextStep = 3 // Go directly to fields step
+      }
+
+      setStep(nextStep)
       setError(null)
     }
   }
 
   const handleBack = () => {
     if (step > 1) {
-      setStep(step - 1)
+      let prevStep = step - 1
+
+      // Skip PDF upload step if template has HTML content
+      if (hasHtmlTemplate && step === 3) {
+        prevStep = 2 // Go back to document info step
+      }
+
+      setStep(prevStep)
       setError(null)
     }
   }
@@ -420,12 +459,13 @@ export default function NewSignatureDocumentPage() {
     if (pdfUrl && pdfUrl !== formData.pdfUrl) {
       updateFormData('pdfUrl', pdfUrl)
     }
-    setStep(5)
+    // Go to review step: 4 for HTML templates, 5 for others
+    setStep(hasHtmlTemplate ? 4 : 5)
   }
 
   // Submit the document
   const handleSubmit = async () => {
-    if (!validateStep(5)) {
+    if (!validateStep(step)) {
       setError('Please complete all required fields')
       return
     }
@@ -540,7 +580,7 @@ export default function NewSignatureDocumentPage() {
               </div>
             ))}
           </div>
-          <Progress value={(step / 5) * 100} className="h-1" />
+          <Progress value={(step / maxSteps) * 100} className="h-1" />
         </div>
       </div>
 
@@ -619,7 +659,8 @@ export default function NewSignatureDocumentPage() {
                             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                               <span>{template.signature_fields?.length || 0} fields</span>
                               <span>Expires in {template.expiration_days} days</span>
-                              {template.pdf_template_url && <span>Has PDF</span>}
+                              {template.html_content && <span className="text-green-600 font-medium">Auto-generates PDF</span>}
+                              {template.pdf_template_url && !template.html_content && <span>Has PDF</span>}
                             </div>
                           </div>
                         </div>
@@ -778,8 +819,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 3: Upload PDF */}
-        {step === 3 && (
+        {/* Step 3: Upload PDF (only shown if no HTML template) */}
+        {step === 3 && !hasHtmlTemplate && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Upload Document (Optional)</h2>
@@ -860,10 +901,10 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 4: Place Fields */}
-        {step === 4 && (
+        {/* Fields Step: Step 3 for HTML templates, Step 4 for others */}
+        {((hasHtmlTemplate && step === 3) || (!hasHtmlTemplate && step === 4)) && (
           <div>
-            {!validateStep(4) && (
+            {!validateStep(step) && (
               <Alert className="mb-4 border-orange-200 bg-orange-50">
                 <AlertDescription className="text-orange-900">
                   Please add at least one signature or initials field before proceeding.
@@ -879,8 +920,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 5: Review & Create */}
-        {step === 5 && (
+        {/* Review Step: Step 4 for HTML templates, Step 5 for others */}
+        {((hasHtmlTemplate && step === 4) || (!hasHtmlTemplate && step === 5)) && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6 space-y-6">
               <h2 className="text-lg font-semibold text-foreground">Review Your Document</h2>
@@ -1008,13 +1049,13 @@ export default function NewSignatureDocumentPage() {
               Cancel
             </Button>
 
-            {step < 5 ? (
+            {step < maxSteps ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed}
                 className="bg-primary hover:bg-primary/90"
               >
-                {step === 4 ? 'Review' : 'Next'}
+                {(hasHtmlTemplate && step === 3) || (!hasHtmlTemplate && step === 4) ? 'Review' : 'Next'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (

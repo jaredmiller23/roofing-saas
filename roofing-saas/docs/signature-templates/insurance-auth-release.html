@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Authorization and Release</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .authorization-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>INSURANCE AUTHORIZATION AND RELEASE</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Property Owner Information</h3>
+        <p><strong>Property Owner Name:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Insurance Information</h3>
+        <p><strong>Insurance Company:</strong> {{insurance_company}}</p>
+        <p><strong>Policy Number:</strong> {{policy_number}}</p>
+        <p><strong>Claim Number:</strong> {{claim_number}}</p>
+        <p><strong>Date of Loss:</strong> {{loss_date}}</p>
+        <p><strong>Adjuster Name:</strong> _______________</p>
+        <p><strong>Adjuster Phone:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Project Information</h3>
+        <p><strong>Project Name:</strong> {{project_name}}</p>
+        <p><strong>Project Description:</strong> {{project_description}}</p>
+        <p><strong>Estimated Project Cost:</strong> {{contract_amount}}</p>
+        <p><strong>Date of Authorization:</strong> {{current_date}}</p>
+    </div>
+
+    <div class="authorization-section">
+        <h3>Insurance Authorization</h3>
+        <p>I, {{customer_name}}, hereby authorize {{company_name}} to:</p>
+
+        <p><strong>1. Communication Authorization:</strong></p>
+        <ul>
+            <li>Communicate directly with my insurance company regarding this claim</li>
+            <li>Discuss the scope of damage and necessary repairs</li>
+            <li>Provide estimates, documentation, and progress reports</li>
+            <li>Attend meetings with insurance representatives on my behalf</li>
+            <li>Receive copies of inspection reports and claim documentation</li>
+        </ul>
+
+        <p><strong>2. Work Authorization:</strong></p>
+        <ul>
+            <li>Perform emergency repairs to prevent further damage</li>
+            <li>Complete temporary repairs as approved by insurance</li>
+            <li>Proceed with permanent repairs upon insurance approval</li>
+            <li>Work with the insurance adjuster to finalize scope and pricing</li>
+        </ul>
+
+        <p><strong>3. Documentation Authorization:</strong></p>
+        <ul>
+            <li>Access my insurance policy information relevant to this claim</li>
+            <li>Photograph and document damage for insurance purposes</li>
+            <li>Obtain necessary permits in my name</li>
+            <li>Submit required documentation to insurance company</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Payment Authorization</h3>
+        <p><strong>I authorize the following payment arrangements:</strong></p>
+
+        <p>☐ <strong>Insurance Direct Pay:</strong> Insurance company to pay {{company_name}} directly for approved work</p>
+        <p>☐ <strong>Joint Check:</strong> Insurance checks made payable to both property owner and {{company_name}}</p>
+        <p>☐ <strong>Property Owner Pay:</strong> Property owner to receive insurance payments and pay {{company_name}}</p>
+
+        <p><strong>Deductible Responsibility:</strong></p>
+        <p>I understand that I am responsible for paying my insurance deductible of $_____________ according to the following schedule:</p>
+        <p>☐ Due upon contract signing</p>
+        <p>☐ Due upon completion of work</p>
+        <p>☐ Due upon insurance settlement</p>
+        <p>☐ Other: _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Release and Hold Harmless</h3>
+        <p><strong>I acknowledge and agree that:</strong></p>
+        <ul>
+            <li>{{company_name}} is authorized to act on my behalf only for the specific claim and work described above</li>
+            <li>I remain responsible for all policy deductibles and any amounts not covered by insurance</li>
+            <li>{{company_name}} makes no guarantee regarding insurance coverage or claim approval</li>
+            <li>I hold {{company_name}} harmless from any disputes with my insurance company regarding coverage</li>
+            <li>This authorization does not constitute an Assignment of Benefits (separate AOB may be required)</li>
+            <li>Work will only proceed upon proper insurance authorization and approval</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Limitations and Conditions</h3>
+        <p><strong>This authorization is subject to the following conditions:</strong></p>
+        <ul>
+            <li>Authorization applies only to the specific claim and property described above</li>
+            <li>All work must be approved by insurance company before proceeding</li>
+            <li>Changes to scope of work require written approval from property owner</li>
+            <li>Property owner retains right to revoke this authorization with written notice</li>
+            <li>{{company_name}} will provide regular updates on claim progress</li>
+            <li>All applicable warranties and guarantees remain in effect</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Emergency Repair Authorization</h3>
+        <p><strong>In case of emergency requiring immediate attention:</strong></p>
+        <p>☐ I authorize {{company_name}} to perform emergency repairs up to $_____________ without prior approval</p>
+        <p>☐ I require approval for all repairs regardless of amount</p>
+
+        <p><strong>Emergency Contact Information:</strong></p>
+        <p><strong>Primary Contact:</strong> {{customer_phone}}</p>
+        <p><strong>Secondary Contact:</strong> _______________</p>
+        <p><strong>Alternate Contact:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Signatures</h3>
+        <p>By signing below, I authorize {{company_name}} to act on my behalf regarding the insurance claim and work described above.</p>
+
+        <p><strong>Property Owner Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Property Owner Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 30px;"><strong>{{company_name}} Representative:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Company Representative</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="form-section">
+        <h3>Witness</h3>
+        <p><strong>Witness Signature:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Witness Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This authorization allows {{company_name}} to communicate with your insurance company and perform approved work. It does not guarantee insurance coverage or claim approval. You remain responsible for your policy deductible and any amounts not covered by insurance. This authorization can be revoked at any time with written notice. Tennessee law governs this authorization. Keep a copy for your records.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Document prepared on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.
+    </footer>
+</body>
+</html>

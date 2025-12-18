@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conditional Lien Waiver and Release</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .signature-box {
+            border: 1px solid #333;
+            height: 60px;
+            margin: 10px 0;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        .date-box {
+            border: 1px solid #333;
+            height: 30px;
+            width: 150px;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CONDITIONAL WAIVER AND RELEASE OF LIEN UPON PROGRESS PAYMENT</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="warning-box">
+        <h3>⚠️ IMPORTANT NOTICE TO PROPERTY OWNER</h3>
+        <p><strong>This document waives rights unconditionally and states that you have been paid for giving up those rights. This document is enforceable against you if you sign it, even if you have not been paid. If you have not been paid, use a conditional release form.</strong></p>
+    </div>
+
+    <div class="form-section">
+        <h3>Project Information</h3>
+        <p><strong>Project Name:</strong> {{project_name}}</p>
+        <p><strong>Property Owner:</strong> {{customer_name}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+        <p><strong>Project Description:</strong> {{project_description}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Payment Information</h3>
+        <p><strong>Progress Payment Amount:</strong> $_______________</p>
+        <p><strong>Payment Period Through:</strong> _______________</p>
+        <p><strong>Check Number (if applicable):</strong> _______________</p>
+        <p><strong>Check Date:</strong> _______________</p>
+        <p><strong>Bank/Payor:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Conditional Waiver and Release Statement</h3>
+        <p>Upon receipt of payment in the amount of $_____________ for work performed on the above-described property through _______________ (date), {{company_name}} hereby conditionally waives and releases any lien rights or claim of lien rights that it may have against the above-described property for labor, materials, equipment, or services furnished through the above specified date.</p>
+
+        <p><strong>This waiver and release is conditional upon:</strong></p>
+        <ul>
+            <li>Actual receipt and clearance of the payment specified above</li>
+            <li>The payment check clearing the bank and funds being available</li>
+            <li>No stop payment or other action to prevent payment</li>
+        </ul>
+
+        <p><strong>This waiver and release does NOT cover:</strong></p>
+        <ul>
+            <li>Work performed after the date specified above</li>
+            <li>Materials delivered after the date specified above</li>
+            <li>Any amounts due but not included in this payment</li>
+            <li>Any other obligations under the contract not directly related to lien rights</li>
+            <li>Rights under the contractual warranty provisions</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Reserved Rights</h3>
+        <p>{{company_name}} reserves the right to:</p>
+        <ul>
+            <li>File a lien for any work performed after the date specified above</li>
+            <li>File a lien for any unpaid amounts not covered by this payment</li>
+            <li>Pursue collection of any amounts not covered by this waiver</li>
+            <li>Enforce all contractual rights not specifically waived herein</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Effectiveness</h3>
+        <p><strong>This waiver and release shall become effective only upon:</strong></p>
+        <ol>
+            <li>Execution by {{company_name}}</li>
+            <li>Actual receipt of the specified payment</li>
+            <li>Clearance of payment through banking channels</li>
+        </ol>
+
+        <p>If payment is not received or does not clear within 10 days of signing this document, this waiver and release shall be null and void, and all lien rights are preserved.</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Signature</h3>
+        <p>By signing below, {{company_name}} conditionally waives and releases lien rights as described above, subject to actual receipt and clearance of the specified payment.</p>
+
+        <p><strong>{{company_name}} Representative:</strong></p>
+        <div class="signature-box"></div>
+        <div class="date-box"></div>
+        <br><small>Authorized Representative Signature</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>Date</small>
+
+        <p style="margin-top: 20px;"><strong>Print Name:</strong> _______________</p>
+        <p><strong>Title:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Notarization</h3>
+        <p><strong>State of Tennessee</strong></p>
+        <p><strong>County of _______________</strong></p>
+
+        <p>On this _____ day of _________, 20_____, before me personally appeared _________________________, who proved to me on the basis of satisfactory evidence to be the person whose name is subscribed to the within instrument and acknowledged to me that he/she executed the same in his/her authorized capacity, and that by his/her signature on the instrument the person, or the entity upon behalf of which the person acted, executed the instrument.</p>
+
+        <p>I certify under PENALTY OF PERJURY under the laws of the State of Tennessee that the foregoing paragraph is true and correct.</p>
+
+        <p><strong>Notary Public Signature:</strong></p>
+        <div class="signature-box"></div>
+        <p><strong>My commission expires:</strong> _______________</p>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This conditional lien waiver and release is governed by Tennessee law. It becomes effective only upon actual receipt and clearance of payment. If payment is not received or fails to clear, all lien rights are preserved. This document should be reviewed by legal counsel before signing. Tennessee mechanics' lien laws provide specific rights and deadlines that may be affected by this waiver.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Document prepared on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.
+    </footer>
+</body>
+</html>

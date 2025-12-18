@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roofing Warranty Certificate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-info {
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+        .warranty-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .warranty-table th, .warranty-table td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: left;
+        }
+        .warranty-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .warranty-highlight {
+            background-color: #e8f5e8;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            margin: 20px 0;
+        }
+        .exclusion-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .contact-section {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border: 1px solid #cce7ff;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .disclaimer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ROOFING WARRANTY CERTIFICATE</h1>
+        <div class="company-info">
+            <strong>{{company_name}}</strong><br>
+            {{company_address}}<br>
+            Phone: {{company_phone}}<br>
+            Website: {{company_website}}<br>
+            License #: {{license_number}}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Warranty Information</h3>
+        <p><strong>Warranty Certificate #:</strong> WC-_______________</p>
+        <p><strong>Issue Date:</strong> {{current_date}}</p>
+        <p><strong>Project Completion Date:</strong> _______________</p>
+        <p><strong>Warranty Effective Date:</strong> _______________</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Property and Owner Information</h3>
+        <p><strong>Property Owner:</strong> {{customer_name}}</p>
+        <p><strong>Email:</strong> {{customer_email}}</p>
+        <p><strong>Phone:</strong> {{customer_phone}}</p>
+        <p><strong>Property Address:</strong> {{property_address}}, {{property_city}}, {{property_state}} {{property_zip}}</p>
+    </div>
+
+    <div class="form-section">
+        <h3>Project Details</h3>
+        <p><strong>Project Name:</strong> {{project_name}}</p>
+        <p><strong>Work Performed:</strong> {{project_description}}</p>
+        <p><strong>Contract Amount:</strong> {{contract_amount}}</p>
+        <p><strong>Contract Date:</strong> _______________</p>
+        <p><strong>Primary Materials Used:</strong> _______________</p>
+        <p><strong>Material Manufacturer:</strong> _______________</p>
+    </div>
+
+    <div class="warranty-highlight">
+        <h3>🛡️ Warranty Coverage Summary</h3>
+        <table class="warranty-table">
+            <tr>
+                <th>Warranty Type</th>
+                <th>Coverage Period</th>
+                <th>What's Covered</th>
+            </tr>
+            <tr>
+                <td><strong>Workmanship Warranty</strong></td>
+                <td>_____ years</td>
+                <td>All installation and labor defects</td>
+            </tr>
+            <tr>
+                <td><strong>Material Warranty</strong></td>
+                <td>_____ years</td>
+                <td>Manufacturing defects in roofing materials</td>
+            </tr>
+            <tr>
+                <td><strong>System Warranty</strong></td>
+                <td>_____ years</td>
+                <td>Complete roofing system performance</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="form-section">
+        <h3>Workmanship Warranty Details</h3>
+        <p>{{company_name}} warrants that all workmanship performed under this contract is free from defects in materials and workmanship for a period of _____ years from the completion date.</p>
+
+        <p><strong>Workmanship warranty covers:</strong></p>
+        <ul>
+            <li>Proper installation of all roofing materials according to manufacturer specifications</li>
+            <li>Proper flashing installation around chimneys, vents, and other penetrations</li>
+            <li>Correct installation of gutters and downspouts (if included)</li>
+            <li>Adequate ventilation installation (if included)</li>
+            <li>Proper fastening and sealing of all components</li>
+            <li>Compliance with local building codes and best practices</li>
+        </ul>
+
+        <p><strong>If workmanship defects are found:</strong></p>
+        <ul>
+            <li>{{company_name}} will repair or replace defective work at no cost</li>
+            <li>Labor and materials for warranty repairs are included</li>
+            <li>Repairs will be completed in a timely manner upon notification</li>
+            <li>Warranty period for repaired areas extends for additional _____ years</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Material Warranty</h3>
+        <p><strong>Material warranties are provided by the manufacturer and include:</strong></p>
+        <ul>
+            <li><strong>Shingles/Roofing Material:</strong> _____ year manufacturer warranty</li>
+            <li><strong>Underlayment:</strong> _____ year manufacturer warranty</li>
+            <li><strong>Flashing Materials:</strong> _____ year manufacturer warranty</li>
+            <li><strong>Gutters (if applicable):</strong> _____ year manufacturer warranty</li>
+            <li><strong>Other Components:</strong> Per manufacturer specifications</li>
+        </ul>
+
+        <p><strong>Material warranty claims:</strong></p>
+        <ul>
+            <li>Must be reported to {{company_name}} for proper claim processing</li>
+            <li>{{company_name}} will coordinate with manufacturers for warranty claims</li>
+            <li>Replacement materials and installation labor are typically covered</li>
+            <li>Specific terms governed by individual manufacturer warranties</li>
+        </ul>
+    </div>
+
+    <div class="exclusion-box">
+        <h3>⚠️ Warranty Exclusions</h3>
+        <p><strong>This warranty does NOT cover damage caused by:</strong></p>
+        <ul>
+            <li>Acts of God (hurricanes, tornadoes, hail, lightning, earthquakes)</li>
+            <li>Normal wear and tear over time</li>
+            <li>Damage from falling objects (trees, branches, debris)</li>
+            <li>Ice dams or snow loads exceeding design specifications</li>
+            <li>Damage from third parties or subsequent contractors</li>
+            <li>Modifications or repairs by others</li>
+            <li>Failure to maintain gutters and proper drainage</li>
+            <li>Building settlement or structural movement</li>
+            <li>Vandalism, fire, or other criminal acts</li>
+            <li>Damage from foot traffic or improper use</li>
+            <li>Failures due to inadequate building ventilation</li>
+        </ul>
+
+        <p><strong>Warranty is void if:</strong></p>
+        <ul>
+            <li>Modifications are made without written consent from {{company_name}}</li>
+            <li>Repairs are attempted by unauthorized persons</li>
+            <li>Property ownership is transferred without warranty transfer notice</li>
+            <li>Required maintenance is not performed</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Warranty Claim Process</h3>
+        <p><strong>To file a warranty claim:</strong></p>
+        <ol>
+            <li><strong>Contact {{company_name}}:</strong> Call {{company_phone}} or email with detailed description of issue</li>
+            <li><strong>Provide Information:</strong> Warranty certificate number, property address, and nature of problem</li>
+            <li><strong>Schedule Inspection:</strong> {{company_name}} will schedule inspection within _____ business days</li>
+            <li><strong>Evaluation:</strong> Determine if issue is covered under warranty terms</li>
+            <li><strong>Repair Authorization:</strong> Approve and schedule necessary repairs</li>
+            <li><strong>Completion:</strong> Complete repairs and provide updated warranty documentation</li>
+        </ol>
+
+        <p><strong>Response Times:</strong></p>
+        <ul>
+            <li><strong>Emergency Leaks:</strong> Within 24 hours</li>
+            <li><strong>Non-Emergency Issues:</strong> Within _____ business days</li>
+            <li><strong>Inspection Scheduling:</strong> Within _____ business days of contact</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Maintenance Requirements</h3>
+        <p><strong>To maintain warranty coverage, property owner must:</strong></p>
+        <ul>
+            <li>Keep gutters clean and free of debris</li>
+            <li>Remove snow loads exceeding _____ inches</li>
+            <li>Perform annual visual inspections</li>
+            <li>Report issues promptly to prevent further damage</li>
+            <li>Allow reasonable access for warranty inspections</li>
+            <li>Maintain adequate attic ventilation</li>
+            <li>Avoid walking on roof except in emergencies</li>
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h3>Warranty Transfer</h3>
+        <p><strong>This warranty may be transferred to new property owners:</strong></p>
+        <ul>
+            <li>Transfer must be requested in writing within 30 days of sale</li>
+            <li>Transfer fee of $_____ applies</li>
+            <li>New owner must agree to all warranty terms and conditions</li>
+            <li>{{company_name}} must approve transfer and issue new certificate</li>
+            <li>Remaining warranty period transfers to new owner</li>
+        </ul>
+    </div>
+
+    <div class="contact-section">
+        <h3>📞 Warranty Service Contact Information</h3>
+        <p><strong>For all warranty-related issues:</strong></p>
+        <p><strong>{{company_name}}</strong><br>
+        {{company_address}}<br>
+        <strong>Phone:</strong> {{company_phone}}<br>
+        <strong>Email:</strong> warranty@goappsr.com<br>
+        <strong>Website:</strong> {{company_website}}<br>
+        <strong>Emergency After Hours:</strong> {{company_phone}}</p>
+
+        <p><strong>Please have this warranty certificate number ready when calling:</strong><br>
+        <strong>WC-_______________</strong></p>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT NOTICE:</strong> This warranty is in addition to any manufacturer warranties and does not limit your rights under Tennessee consumer protection laws. Keep this certificate in a safe place with your permanent property records. This warranty is governed by Tennessee law. Any disputes will be resolved in accordance with Tennessee state law and jurisdiction.
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+        Warranty certificate issued on {{current_date}} by {{company_name}}<br>
+        This document is attorney-reviewed and compliant with Tennessee state requirements.<br>
+        <strong>Keep this certificate for your permanent records</strong>
+    </footer>
+</body>
+</html>
