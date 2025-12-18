@@ -211,8 +211,17 @@ export default function TerritoryMapDirect({
   if (typeof google === 'undefined') {
     return (
       <div className={`relative ${className}`} style={{ height }}>
-        <div className="flex items-center justify-center h-full bg-muted rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center justify-center h-full bg-destructive/10 rounded-lg border border-destructive">
+          <p className="text-destructive font-medium mb-2">Google Maps Failed to Load</p>
+          <p className="text-destructive/80 text-sm text-center max-w-md px-4">
+            The map service is unavailable. This may be due to API key restrictions or network issues.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-destructive text-destructive-foreground rounded-md text-sm hover:bg-destructive/90"
+          >
+            Reload Page
+          </button>
         </div>
       </div>
     )

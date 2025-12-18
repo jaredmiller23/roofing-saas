@@ -1,84 +1,108 @@
 apiVersion: aces/v1
-changes: []
+changes:
+- action: create
+  anchor: null
+  description: Seed file with 11 industry-standard templates
+  file: supabase/seeds/signature-templates.sql
+  position: null
+  template: null
 context:
-  background: 'Bug: Signatures tab shows "failed to fetch sig docs" error when visiting
-    /signatures page.
+  background: 'Templates needed (Full Suite):
 
 
-    Needs investigation:
+    Insurance Restoration:
 
-    - Check the signatures page component for the fetch call
+    1. Authorization of Insured (AOB/Contingency Agreement) - CRITICAL
 
-    - Trace the API endpoint being called
+    2. Insurance Work Completion Certificate
 
-    - Check for RLS policy issues in Supabase
-
-    - Verify error handling in the API route
+    3. Authorization to Release Insurance Information
 
 
-    TaskSpec ready at: aces/tasks/SIG-001-fix-signatures-fetch.yaml'
-  goal: 'Bug: Signatures tab shows "failed to fetch sig docs" error when visiting
-    /signatures page'
+    Core Roofing:
+
+    4. Residential Roofing Contract
+
+    5. Change Order
+
+    6. Conditional Lien Release (Progress Payment)
+
+    7. Unconditional Lien Release (Final Payment)
+
+    8. Limited Workmanship Warranty
+
+    9. Completion Certificate / Customer Approval
+
+
+    Inspection:
+
+    10. Pre-Roofing Inspection Form
+
+    11. Roof Inspection Report
+
+
+    Research industry-standard language for each document.
+
+    The document_templates table exists with these columns:
+
+    id, tenant_id, created_by, name, description, category,
+
+    html_content, pdf_template_url, signature_fields (JSONB),
+
+    is_active, requires_customer_signature, requires_company_signature,
+
+    expiration_days
+
+    '
+  goal: Create 11 industry-standard signature templates for roofing contractors
   success_criteria:
-  - Bug is fixed and no longer reproducible
-  - No regressions introduced
-  - Test added to prevent regression
-  - TypeScript compilation succeeds
-  - Linting passes with no warnings
-  - Build process completes successfully
-  why: 'Needs investigation:
+  - 11 templates created in seed file
+  - Each template has name, description, category, signature_fields, requires_customer_signature,
+    requires_company_signature, expiration_days
+  - Templates follow legal and industry standards for roofing
+  - Seed file can be executed against Supabase
+  - Templates appear in UI after seeding
+  why: 'The signatures feature has no starter templates. Roofing contractors need
 
-    - Check the signatures page component for the fetch call
+    industry-standard documents to be productive immediately. This is especially
 
-    - Trace the API endpoint being called
+    important for Appalachian Storm Restoration (insurance restoration focus).
 
-    - Check for RLS policy issues in Supabase
-
-    - Verify error handling in the API route
-
-
-    TaskSpec ready at: aces/tasks/SIG-001-fix-signatures-fetch.yaml'
+    '
 dependencies: null
 handoff: null
 kind: TaskSpec
 metadata:
-  archon_task_id: 907fd2a1-9cfe-46cd-9774-306b5b8d30ba
-  created: '2025-12-17T23:18:21.515492'
-  id: 907FD2A1-FIXSIGNA001
+  archon_task_id: 2994b00a-adfb-4d6b-b185-2d384d6d13e0
+  created: '2025-12-18T03:20:00'
+  id: SIG-002-TEMPLATES
   priority: 5
-  template: bug-fix
-  title: 'Fix signatures tab error: failed to fetch sig docs'
+  template: feature
+  title: Create Full Suite signature templates
 on_failure: null
 read_first:
 - extract: []
-  path: README.md
-  reason: Understanding project structure and conventions
+  path: supabase/migrations/*signature*
+  reason: Understanding signature tables schema
   required: true
 - extract: []
-  path: '**/*.test.ts'
-  reason: Understanding existing test coverage
-  required: false
+  path: components/signatures/FieldPalette.tsx
+  reason: Understanding available field types
+  required: true
 scope:
   constraints:
-  - Follow existing code patterns
-  - Maintain TypeScript compliance
-  - Do not break existing functionality
+  - Use realistic legally-appropriate language for contracts
+  - signature_fields should include reasonable default field placements
+  - Templates should be tenant-agnostic (can work for any tenant)
+  - Use category values from contract, estimate, change_order, waiver, other
   create:
-  - '**/*.test.ts'
-  - '**/*.test.tsx'
+  - supabase/seeds/signature-templates.sql
   do_not_touch:
+  - supabase/migrations/**
   - package.json
-  - package-lock.json
-  - yarn.lock
   - .git/**
   - node_modules/**
-  - dist/**
-  - build/**
-  modify:
-  - '**/*.ts'
-  - '**/*.tsx'
-  - '**/*.js'
-  - '**/*.jsx'
+  modify: []
 thinking: null
 validation:
   assertions: []
@@ -92,7 +116,3 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run test
-    expect: 'exit_code: 0'
-    required: true
-    timeout: 300

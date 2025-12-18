@@ -105,6 +105,12 @@ export function TerritoryMap(props: TerritoryMapProps) {
     // Race between loader and timeout
     Promise.race([loader.load(), timeoutPromise])
       .then(() => {
+        // Verify Google Maps is actually available after load
+        if (typeof google === 'undefined' || !google.maps) {
+          console.error('[TerritoryMapWrapper] Google Maps script loaded but google.maps not available')
+          setLoadError('Google Maps loaded but failed to initialize. Check API key restrictions.')
+          return
+        }
         console.log('[TerritoryMapWrapper] Google Maps API loaded successfully')
         loadSucceeded = true
         setIsLoaded(true)
