@@ -487,6 +487,7 @@ export default function NewSignatureDocumentPage() {
           document_type: formData.documentType,
           project_id: formData.projectId || null,
           contact_id: formData.contactId || null,
+          template_id: formData.selectedTemplateId || null,
           file_url: formData.pdfUrl || null,
           signature_fields: formData.signatureFields,
           requires_customer_signature: formData.requiresCustomerSignature,

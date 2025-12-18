@@ -1,5 +1,9 @@
-import puppeteer, { Browser, PDFOptions } from 'puppeteer'
+import chromium from '@sparticuz/chromium-min'
+import puppeteer from 'puppeteer-core'
+import { Browser, PDFOptions } from 'puppeteer-core'
 import { logger } from '@/lib/logger'
+
+const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'
 
 interface GenerateOptions {
   format?: 'A4' | 'Letter'
@@ -15,36 +19,16 @@ interface GenerateOptions {
   footerTemplate?: string
 }
 
-let browser: Browser | null = null
-
 /**
- * Get or create a shared browser instance
+ * Get a fresh browser instance for serverless compatibility
  */
 async function getBrowser(): Promise<Browser> {
-  if (!browser) {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-      ],
-    })
-
-    // Handle process exit to cleanup browser
-    process.on('exit', async () => {
-      if (browser) {
-        await browser.close()
-        browser = null
-      }
-    })
-  }
-  return browser
+  return puppeteer.launch({
+    args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+    headless: chromium.headless
+  })
 }
 
 /**
@@ -88,8 +72,8 @@ export async function generatePDFFromHTML(
     // Generate PDF
     const pdf = await page.pdf(pdfOptions)
 
-    // Close the page to free memory
-    await page.close()
+    // Close the browser after each use in serverless
+    await browser.close()
 
     const duration = Date.now() - startTime
     logger.info('PDF generated from HTML', {
@@ -135,13 +119,11 @@ export async function generatePDFFromTemplate(
 
 /**
  * Cleanup browser instance
- * Useful for tests or graceful shutdown
+ * This function is no longer needed in serverless environment
+ * but kept for backward compatibility
  */
 export async function closeBrowser(): Promise<void> {
-  if (browser) {
-    await browser.close()
-    browser = null
-  }
+  // No-op in serverless environment where each request gets fresh browser
 }
 
 /**
