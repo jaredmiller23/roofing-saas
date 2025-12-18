@@ -1,0 +1,200 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 4879B16E-RESEARCH001
+  title: 'RESEARCH: Roofing industry documents - TN/Federal compliance + HTML templates'
+  created: 2025-12-18 19:11:07.648342
+  priority: 5
+  archon_task_id: 4879b16e-b7ae-4022-af11-1cf2c0b932a4
+  template: research-analysis
+context:
+  goal: Research and create HTML template content for signature documents
+  why: 'SCOPE:
+
+    1. Research most common roofing industry documents (AOB, contracts, change orders,
+    lien waivers, completion certs, etc.)
+
+    2. Research Tennessee state requirements for roofing contractor documents
+
+    3. Research federal requirements (FTC disclosures, etc.)
+
+    4. Find compliant template examples online
+
+    5. Create HTML templates with {{placeholders}} for dynamic data
+
+    6. Customize for Appalachian Storm Restoration
+
+
+    COMPANY DETAILS:
+
+    - Name: Appalachian Storm Restoration
+
+    - Address: 1714 TN-93, Fall Branch, TN 37656
+
+    - Phone: 423-897-9965
+
+    - Website: https://www.goappsr.com
+
+    - License: Use {{license_number}} placeholder
+
+
+    PLACEHOLDERS TO USE:
+
+    {{customer_name}}, {{customer_email}}, {{customer_phone}}
+
+    {{property_address}}, {{property_city}}, {{property_state}}, {{property_zip}}
+
+    {{company_name}}, {{company_address}}, {{company_phone}}, {{company_website}}
+
+    {{project_name}}, {{project_description}}, {{contract_amount}}
+
+    {{policy_number}}, {{insurance_company}}, {{loss_date}}, {{claim_number}}
+
+    {{current_date}}, {{license_number}}
+
+
+    DELIVERABLE:
+
+    Create /docs/signature-templates/ folder with HTML files for each document type:
+
+    - aob.html (Assignment of Benefits)
+
+    - residential-contract.html
+
+    - change-order.html
+
+    - conditional-lien-release.html
+
+    - unconditional-lien-release.html
+
+    - completion-certificate.html
+
+    - insurance-auth-release.html
+
+    - warranty.html
+
+    - And any other standard documents identified
+
+
+    NOTE: All content will be reviewed by an attorney. Focus on industry-standard
+    language and TN compliance.'
+  success_criteria:
+  - Analysis completed and documented
+  - Findings clearly presented
+  - Recommendations provided
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: 'Research and create HTML template content for signature documents.
+
+
+    SCOPE:
+
+    1. Research most common roofing industry documents (AOB, contracts, change orders,
+    lien waivers, completion certs, etc.)
+
+    2. Research Tennessee state requirements for roofing contractor documents
+
+    3. Research federal requirements (FTC disclosures, etc.)
+
+    4. Find compliant template examples online
+
+    5. Create HTML templates with {{placeholders}} for dynamic data
+
+    6. Customize for Appalachian Storm Restoration
+
+
+    COMPANY DETAILS:
+
+    - Name: Appalachian Storm Restoration
+
+    - Address: 1714 TN-93, Fall Branch, TN 37656
+
+    - Phone: 423-897-9965
+
+    - Website: https://www.goappsr.com
+
+    - License: Use {{license_number}} placeholder
+
+
+    PLACEHOLDERS TO USE:
+
+    {{customer_name}}, {{customer_email}}, {{customer_phone}}
+
+    {{property_address}}, {{property_city}}, {{property_state}}, {{property_zip}}
+
+    {{company_name}}, {{company_address}}, {{company_phone}}, {{company_website}}
+
+    {{project_name}}, {{project_description}}, {{contract_amount}}
+
+    {{policy_number}}, {{insurance_company}}, {{loss_date}}, {{claim_number}}
+
+    {{current_date}}, {{license_number}}
+
+
+    DELIVERABLE:
+
+    Create /docs/signature-templates/ folder with HTML files for each document type:
+
+    - aob.html (Assignment of Benefits)
+
+    - residential-contract.html
+
+    - change-order.html
+
+    - conditional-lien-release.html
+
+    - unconditional-lien-release.html
+
+    - completion-certificate.html
+
+    - insurance-auth-release.html
+
+    - warranty.html
+
+    - And any other standard documents identified
+
+
+    NOTE: All content will be reviewed by an attorney. Focus on industry-standard
+    language and TN compliance.'
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  - '**/*.css'
+  - '**/*.scss'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  post_commit: []
+  assertions: []

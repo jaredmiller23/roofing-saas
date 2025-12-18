@@ -1,10 +1,7 @@
-import chromium from '@sparticuz/chromium-min'
+import chromium from '@sparticuz/chromium'
 import puppeteer from 'puppeteer-core'
 import type { Browser, PDFOptions } from 'puppeteer-core'
 import { logger } from '@/lib/logger'
-
-// Chromium binary URL - must match @sparticuz/chromium-min package version (v129.0.0)
-const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'
 
 // Detect if running in serverless environment (Vercel, AWS Lambda, etc.)
 const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
@@ -25,22 +22,22 @@ interface GenerateOptions {
 
 /**
  * Get a browser instance configured for the current environment
- * - In serverless (Vercel): Uses @sparticuz/chromium-min with remote binary
+ * - In serverless (Vercel): Uses @sparticuz/chromium with bundled binary
  * - In local dev: Uses local Chrome/Chromium installation
  */
 async function getBrowser(): Promise<Browser> {
   if (isServerless) {
-    // Serverless mode: Use @sparticuz/chromium-min
+    // Serverless mode: Use @sparticuz/chromium (full package with bundled binary)
     // CRITICAL: Disable graphics mode for serverless (no GPU available)
     chromium.setGraphicsMode = false
 
     logger.info('Launching browser in serverless mode', {
-      chromiumUrl: CHROMIUM_PACK_URL,
       argsCount: chromium.args.length
     })
 
     try {
-      const execPath = await chromium.executablePath(CHROMIUM_PACK_URL)
+      // Full @sparticuz/chromium package includes the binary - no URL needed
+      const execPath = await chromium.executablePath()
       logger.info('Chromium executable path resolved', { path: execPath })
 
       const browser = await puppeteer.launch({
@@ -97,7 +94,7 @@ async function getBrowser(): Promise<Browser> {
       return puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+        executablePath: await chromium.executablePath(),
         headless: chromium.headless,
       })
     }

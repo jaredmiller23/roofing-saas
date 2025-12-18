@@ -6,8 +6,8 @@
 
 import { chromium } from 'playwright'
 
-const DEMO_EMAIL = 'demo@roofingsaas.com'
-const DEMO_PASSWORD = 'Demo2025!'
+const DEMO_EMAIL = 'claude-test@roofingsaas.com'
+const DEMO_PASSWORD = 'ClaudeTest2025!Secure'
 // Use production by default, can be overridden with --local flag
 const BASE_URL = process.argv.includes('--local') ? 'http://localhost:3000' : 'https://roofing-saas.vercel.app'
 
@@ -47,7 +47,7 @@ async function debugPage(targetPath: string) {
 
     console.log(`2. Navigating to ${targetPath}...`)
     await page.goto(`${BASE_URL}${targetPath}`)
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(5000) // Wait longer for API calls
     console.log(`   Current URL: ${page.url()}`)
 
     // Check for error boundary
@@ -71,6 +71,10 @@ async function debugPage(targetPath: string) {
     // Also check page title for error indicators
     const title = await page.title().catch(() => '')
     console.log(`Page title: ${title}`)
+
+    console.log('\n=== SIGNATURE-RELATED LOGS ===')
+    logs.filter(l => l.includes('[Signatures]')).forEach(l => console.log(l))
+    console.log('=== END SIGNATURE LOGS ===')
 
     console.log('\n=== CAPTURED ERRORS ===')
     errors.forEach(e => console.log(e))

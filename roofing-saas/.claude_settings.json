@@ -10,8 +10,18 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(supabase/seeds/signature-templates.sql)",
-      "Edit(supabase/seeds/signature-templates.sql)"
+      "Write(**/*.test.ts)",
+      "Edit(**/*.test.ts)",
+      "Write(**/*.test.tsx)",
+      "Edit(**/*.test.tsx)",
+      "Write(**/*.ts)",
+      "Edit(**/*.ts)",
+      "Write(**/*.tsx)",
+      "Edit(**/*.tsx)",
+      "Write(**/*.js)",
+      "Edit(**/*.js)",
+      "Write(**/*.jsx)",
+      "Edit(**/*.jsx)"
     ]
   }
 }

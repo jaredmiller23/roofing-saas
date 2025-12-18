@@ -1,0 +1,102 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 73CDD7CC-BUGFIXKN001
+  title: 'BUG-FIX: Knock page shows Locating... instead of error when geolocation
+    permission denied'
+  created: 2025-12-18 17:23:30.755363
+  priority: 5
+  archon_task_id: 73cdd7cc-79ae-4da5-b456-2a9ebd0a00cb
+  template: bug-fix
+context:
+  goal: '## Problem
+
+    On /knocks page, when geolocation permission is denied, the UI shows "Locating..."
+    forever instead of showing the error message with a Retry button'
+  why: "## Console Evidence\nMultiple `[useUserLocation] Permission denied` errors\
+    \ appear, but UI shows \"Locating...\" not the error state. ## Root Cause (VERIFIED)\n\
+    In `app/[locale]/(dashboard)/knocks/page.tsx` lines 296-333, the UI condition\
+    \ order is wrong:\n1. `isTracking && userLocation` \u2192 Live Location\n2. `isTracking`\
+    \ \u2192 Locating... \u2190 CATCHES ERROR CASE\n3. `locationError` \u2192 Error\
+    \ + Retry\n4. else \u2192 Location unavailable\n\nWhen permission is denied:\n\
+    - `handleError()` sets `error` state\n- `isTracking` stays `true` (intentionally,\
+    \ to allow retry)\n- Condition 2 matches, showing \"Locating...\" forever\n\n\
+    ## Fix Required\nReorder the conditions in `mapViewJSX` so `locationError` is\
+    \ checked BEFORE `isTracking`:\n1. `isTracking && userLocation` \u2192 Live Location\n\
+    2. `locationError` \u2192 Error + Retry \u2190 MOVE UP\n3. `isTracking` \u2192\
+    \ Locating... 4. else \u2192 Location unavailable\n\n## Files to Modify\n- app/[locale]/(dashboard)/knocks/page.tsx\
+    \ (lines 296-333)\n\n## Acceptance Criteria\n- When permission is denied, user\
+    \ sees error message + Retry button\n- Retry button works to re-request location\n\
+    - When permission is granted, location works normally"
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: "## Problem\nOn /knocks page, when geolocation permission is denied,\
+    \ the UI shows \"Locating...\" forever instead of showing the error message with\
+    \ a Retry button.\n\n## Console Evidence\nMultiple `[useUserLocation] Permission\
+    \ denied` errors appear, but UI shows \"Locating...\" not the error state.\n\n\
+    ## Root Cause (VERIFIED)\nIn `app/[locale]/(dashboard)/knocks/page.tsx` lines\
+    \ 296-333, the UI condition order is wrong:\n1. `isTracking && userLocation` \u2192\
+    \ Live Location\n2. `isTracking` \u2192 Locating... \u2190 CATCHES ERROR CASE\n\
+    3. `locationError` \u2192 Error + Retry\n4. else \u2192 Location unavailable\n\
+    \nWhen permission is denied:\n- `handleError()` sets `error` state\n- `isTracking`\
+    \ stays `true` (intentionally, to allow retry)\n- Condition 2 matches, showing\
+    \ \"Locating...\" forever\n\n## Fix Required\nReorder the conditions in `mapViewJSX`\
+    \ so `locationError` is checked BEFORE `isTracking`:\n1. `isTracking && userLocation`\
+    \ \u2192 Live Location\n2. `locationError` \u2192 Error + Retry \u2190 MOVE UP\n\
+    3. `isTracking` \u2192 Locating...\n4. else \u2192 Location unavailable\n\n##\
+    \ Files to Modify\n- app/[locale]/(dashboard)/knocks/page.tsx (lines 296-333)\n\
+    \n## Acceptance Criteria\n- When permission is denied, user sees error message\
+    \ + Retry button\n- Retry button works to re-request location\n- When permission\
+    \ is granted, location works normally"
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

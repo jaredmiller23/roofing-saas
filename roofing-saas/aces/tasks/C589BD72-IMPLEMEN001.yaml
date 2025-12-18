@@ -1,0 +1,100 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: C589BD72-IMPLEMEN001
+  title: 'IMPLEMENT: PDF generation from HTML templates + signature flow integration'
+  created: 2025-12-18 19:22:43.958190
+  priority: 5
+  archon_task_id: c589bd72-a792-4bcb-acb1-ebd8c95215f4
+  template: database-migration
+context:
+  goal: Implement HTML-to-PDF generation pipeline and integrate with signature document
+    creation
+  why: "PREREQUISITE: Task 4879b16e must be completed first (provides HTML templates\
+    \ in /docs/signature-templates/)\n\nSCOPE:\n1. Add HTML-to-PDF generation capability\n\
+    \   - Evaluate: react-pdf vs html2pdf vs pdfme\n   - Implement chosen solution\n\
+    \   - Ensure professional PDF output quality\n\n2. Create placeholder merge function\n\
+    \   - Input: HTML template + contact/project data\n   - Output: HTML with all\
+    \ {{placeholders}} replaced\n   - Handle missing data gracefully (empty string\
+    \ or placeholder text)\n\n3. Update document_templates table\n   - Populate html_content\
+    \ column with templates from /docs/signature-templates/\n   - Migration script\
+    \ or direct database update\n\n4. Modify signature document creation flow (signatures/new/page.tsx)\n\
+    \   - When template selected: load html_content\n   - Merge with selected contact/project\
+    \ data\n   - Generate PDF from merged HTML\n   - Display PDF for signature field\
+    \ placement\n   - Remove/hide PDF upload step when template has html_content\n\
+    \n5. Add admin capability to edit template content\n   - Rich text editor for\
+    \ html_content (or simple textarea for MVP)\n   - Preview generated PDF\n\n6.\
+    \ Test end-to-end:\n   - Select template -> Select contact -> See populated PDF\
+    \ -> Place signatures -> Create document\n\nFILES TO MODIFY:\n- app/[locale]/(dashboard)/signatures/new/page.tsx\n\
+    - app/api/signature-documents/route.ts\n- lib/pdf/ (new - PDF generation utilities)\n\
+    - lib/templates/ (new - merge/placeholder logic)\n\nSUCCESS CRITERIA:\n- User\
+    \ selects template, document auto-populates with contact data\n- No PDF upload\
+    \ required when using template\n- Generated PDF looks professional\n- All existing\
+    \ signature functionality preserved"
+  success_criteria:
+  - Implementation matches requirements
+  - Code follows project standards
+  - All tests pass
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: "Implement HTML-to-PDF generation pipeline and integrate with signature\
+    \ document creation.\n\nPREREQUISITE: Task 4879b16e must be completed first (provides\
+    \ HTML templates in /docs/signature-templates/)\n\nSCOPE:\n1. Add HTML-to-PDF\
+    \ generation capability\n   - Evaluate: react-pdf vs html2pdf vs pdfme\n   - Implement\
+    \ chosen solution\n   - Ensure professional PDF output quality\n\n2. Create placeholder\
+    \ merge function\n   - Input: HTML template + contact/project data\n   - Output:\
+    \ HTML with all {{placeholders}} replaced\n   - Handle missing data gracefully\
+    \ (empty string or placeholder text)\n\n3. Update document_templates table\n \
+    \  - Populate html_content column with templates from /docs/signature-templates/\n\
+    \   - Migration script or direct database update\n\n4. Modify signature document\
+    \ creation flow (signatures/new/page.tsx)\n   - When template selected: load html_content\n\
+    \   - Merge with selected contact/project data\n   - Generate PDF from merged\
+    \ HTML\n   - Display PDF for signature field placement\n   - Remove/hide PDF upload\
+    \ step when template has html_content\n\n5. Add admin capability to edit template\
+    \ content\n   - Rich text editor for html_content (or simple textarea for MVP)\n\
+    \   - Preview generated PDF\n\n6. Test end-to-end:\n   - Select template -> Select\
+    \ contact -> See populated PDF -> Place signatures -> Create document\n\nFILES\
+    \ TO MODIFY:\n- app/[locale]/(dashboard)/signatures/new/page.tsx\n- app/api/signature-documents/route.ts\n\
+    - lib/pdf/ (new - PDF generation utilities)\n- lib/templates/ (new - merge/placeholder\
+    \ logic)\n\nSUCCESS CRITERIA:\n- User selects template, document auto-populates\
+    \ with contact data\n- No PDF upload required when using template\n- Generated\
+    \ PDF looks professional\n- All existing signature functionality preserved"
+scope:
+  modify:
+  - migrations/**/*.sql
+  - src/db/**/*.ts
+  create:
+  - migrations/**/*.sql
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  - src/components/**
+  - src/pages/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  post_commit: []
+  assertions: []

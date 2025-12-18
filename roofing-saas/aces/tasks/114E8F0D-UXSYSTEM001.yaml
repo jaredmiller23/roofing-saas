@@ -1,0 +1,81 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 114E8F0D-UXSYSTEM001
+  title: 'UX: System-aware geolocation error instructions on Knock page'
+  created: 2025-12-18 18:26:37.626799
+  priority: 5
+  archon_task_id: 114e8f0d-e462-4732-8f48-3e197822929f
+  template: bug-fix
+context:
+  goal: When geolocation fails, provide specific instructions based on detected OS
+    and browser
+  why: 'Detect via navigator.userAgent: (1) macOS+Safari: Check System Settings >
+    Privacy & Security > Location Services > Safari, (2) macOS+Chrome: Check System
+    Settings > Privacy & Security > Location Services > Chrome, then chrome://settings/content/location,
+    (3) Windows+Chrome: chrome://settings/content/location, (4) iOS Safari: Settings
+    > Privacy > Location Services > Safari, (5) Android Chrome: Settings > Apps >
+    Chrome > Permissions > Location. Show appropriate instructions in the error UI
+    instead of generic message.'
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: 'When geolocation fails, provide specific instructions based on detected
+    OS and browser. Detect via navigator.userAgent: (1) macOS+Safari: Check System
+    Settings > Privacy & Security > Location Services > Safari, (2) macOS+Chrome:
+    Check System Settings > Privacy & Security > Location Services > Chrome, then
+    chrome://settings/content/location, (3) Windows+Chrome: chrome://settings/content/location,
+    (4) iOS Safari: Settings > Privacy > Location Services > Safari, (5) Android Chrome:
+    Settings > Apps > Chrome > Permissions > Location. Show appropriate instructions
+    in the error UI instead of generic message.'
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

@@ -1,0 +1,158 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 2C4EFFED-BUGFIXPA001
+  title: 'BUG-FIX: Password reset email contains localhost URL instead of production
+    URL'
+  created: 2025-12-18 19:39:23.198060
+  priority: 5
+  archon_task_id: 2c4effed-aafb-42fe-b555-01814ab0a0f3
+  template: bug-fix
+context:
+  goal: Password reset workflow is broken in production
+  why: 'STEPS TO REPRODUCE:
+
+    1. Go to login page
+
+    2. Click "Forgot Password"
+
+    3. Enter email address
+
+    4. Click reset password
+
+    5. Check email - reset link points to localhost instead of production URL
+
+
+    EXPECTED:
+
+    Reset link should be: https://roofing-saas.vercel.app/reset-password?token=...
+    ACTUAL:
+
+    Reset link is: http://localhost:3000/reset-password?token=... ROOT CAUSE INVESTIGATION:
+
+    - Check Supabase Auth settings for site URL configuration
+
+    - Check environment variables (NEXT_PUBLIC_SITE_URL or similar)
+
+    - Check Supabase dashboard > Authentication > URL Configuration
+
+    - May need to set SITE_URL in Supabase project settings
+
+
+    FILES TO CHECK:
+
+    - .env.local / .env.production
+
+    - Supabase dashboard settings
+
+    - Any auth-related configuration
+
+
+    FIX:
+
+    Ensure production URL is configured in Supabase Auth settings and/or environment
+    variables.'
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: 'Password reset workflow is broken in production.
+
+
+    STEPS TO REPRODUCE:
+
+    1. Go to login page
+
+    2. Click "Forgot Password"
+
+    3. Enter email address
+
+    4. Click reset password
+
+    5. Check email - reset link points to localhost instead of production URL
+
+
+    EXPECTED:
+
+    Reset link should be: https://roofing-saas.vercel.app/reset-password?token=...
+
+
+    ACTUAL:
+
+    Reset link is: http://localhost:3000/reset-password?token=...
+
+
+    ROOT CAUSE INVESTIGATION:
+
+    - Check Supabase Auth settings for site URL configuration
+
+    - Check environment variables (NEXT_PUBLIC_SITE_URL or similar)
+
+    - Check Supabase dashboard > Authentication > URL Configuration
+
+    - May need to set SITE_URL in Supabase project settings
+
+
+    FILES TO CHECK:
+
+    - .env.local / .env.production
+
+    - Supabase dashboard settings
+
+    - Any auth-related configuration
+
+
+    FIX:
+
+    Ensure production URL is configured in Supabase Auth settings and/or environment
+    variables.'
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

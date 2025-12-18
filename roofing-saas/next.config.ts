@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
 
   // Required for Puppeteer/Chromium serverless deployment on Vercel
   // These packages use native binaries that must be excluded from bundling
-  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
 
   // Note: In Next.js 16, ESLint is handled separately via CLI
   // Run: npx eslint . --fix

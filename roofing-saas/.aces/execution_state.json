@@ -1,30 +1,13 @@
 {
-  "task_id": "SIG-002-TEMPLATES",
+  "task_id": "77387BFB-REFACTOR001",
   "files_read": [
-    "app/[locale]/(dashboard)/signatures/new/page.tsx",
-    "lib/storage/signature-pdfs.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signatures/documents/route.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signature-documents/[id]/route.ts",
-    "components/signatures/SendSignatureDialog.tsx",
-    ".aces/current_task.yaml",
-    "app/api/signature-documents/[id]/resend/route.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/supabase/migrations/20251211000000_add_missing_foreign_key_indexes.sql",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signatures/documents/[id]/route.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/supabase/migrations/20251217230200_fix_signature_documents_missing_columns.sql",
-    ".next/types/validator.ts",
-    "app/api/signatures/documents/route.ts",
-    "components/ui/tabs.tsx",
-    "app/layout.tsx",
-    ".aces/execution_state.json",
-    "supabase/migrations/20251218032000_drop_debug_auth_uid_function.sql",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/api/signature-templates/route.ts",
-    "/Users/ccai/Roofing SaaS/roofing-saas/supabase/migrations/20251004000100_tenant_customization_system.sql",
-    "/Users/ccai/Roofing SaaS/roofing-saas/supabase/migrations/20251218020000_add_debug_auth_uid_function.sql",
-    "/Users/ccai/Roofing SaaS/roofing-saas/supabase/migrations/20251213180000_add_signature_fields_column.sql",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/signatures/FieldPalette.tsx",
-    "app/[locale]/(dashboard)/signatures/[id]/page.tsx"
+    "lib/pdf/html-to-pdf.ts",
+    "package.json",
+    "README.md"
   ],
-  "files_modified": [],
+  "files_modified": [
+    "lib/pdf/html-to-pdf.ts"
+  ],
   "validation_passed": true,
   "progress_updated": false,
   "started_at": null,

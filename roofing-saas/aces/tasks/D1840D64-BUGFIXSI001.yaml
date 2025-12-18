@@ -1,0 +1,206 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: D1840D64-BUGFIXSI001
+  title: 'BUG-FIX: Signatures new page - Footer navigation (Next button) not visible'
+  created: 2025-12-18 17:31:21.178263
+  priority: 5
+  archon_task_id: d1840d64-04c2-4953-a5a0-0752f27f9b91
+  template: bug-fix
+context:
+  goal: '## Problem
+
+    On /signatures/new page, step 2 (Document Info), after filling all fields, there
+    is no Next button visible to proceed to step 3 (Upload PDF)'
+  why: 'User is stuck. ## Console Evidence
+
+    No errors. API calls successful:
+
+    - Projects: 553 loaded
+
+    - Contacts: 488 loaded
+
+    - Templates: 11 loaded
+
+
+    ## Technical Details
+
+    The footer with navigation buttons IS in the code (lines 977-1027):
+
+    ```tsx
+
+    <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-card border-t border-border
+    z-10">
+
+    ```
+
+
+    Validation should pass:
+
+    - `validateStep(2)` returns `!!formData.title.trim()`
+
+    - Title is filled, so should be true
+
+
+    Dashboard layout has:
+
+    - Sidebar: `lg:ml-64`
+
+    - Main content: `lg:ml-64 min-h-screen pb-20`
+
+
+    ## Investigation Needed
+
+    1. Check if z-index conflict with another element
+
+    2. Check if CSS is being overridden
+
+    3. Check if footer is rendering but invisible
+
+    4. Test in browser DevTools to see if element exists in DOM
+
+
+    ## Files to Check
+
+    - app/[locale]/(dashboard)/signatures/new/page.tsx (lines 977-1027)
+
+    - app/[locale]/(dashboard)/layout.tsx
+
+    - components/layout/DashboardLayoutClient.tsx
+
+    - Any global CSS that might affect fixed positioning
+
+
+    ## Acceptance Criteria
+
+    - Footer navigation (Back/Next buttons) is visible on all steps
+
+    - Next button advances to next step when clicked
+
+    - Works on both desktop and mobile viewports'
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: '## Problem
+
+    On /signatures/new page, step 2 (Document Info), after filling all fields, there
+    is no Next button visible to proceed to step 3 (Upload PDF). User is stuck.
+
+
+    ## Console Evidence
+
+    No errors. API calls successful:
+
+    - Projects: 553 loaded
+
+    - Contacts: 488 loaded
+
+    - Templates: 11 loaded
+
+
+    ## Technical Details
+
+    The footer with navigation buttons IS in the code (lines 977-1027):
+
+    ```tsx
+
+    <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-card border-t border-border
+    z-10">
+
+    ```
+
+
+    Validation should pass:
+
+    - `validateStep(2)` returns `!!formData.title.trim()`
+
+    - Title is filled, so should be true
+
+
+    Dashboard layout has:
+
+    - Sidebar: `lg:ml-64`
+
+    - Main content: `lg:ml-64 min-h-screen pb-20`
+
+
+    ## Investigation Needed
+
+    1. Check if z-index conflict with another element
+
+    2. Check if CSS is being overridden
+
+    3. Check if footer is rendering but invisible
+
+    4. Test in browser DevTools to see if element exists in DOM
+
+
+    ## Files to Check
+
+    - app/[locale]/(dashboard)/signatures/new/page.tsx (lines 977-1027)
+
+    - app/[locale]/(dashboard)/layout.tsx
+
+    - components/layout/DashboardLayoutClient.tsx
+
+    - Any global CSS that might affect fixed positioning
+
+
+    ## Acceptance Criteria
+
+    - Footer navigation (Back/Next buttons) is visible on all steps
+
+    - Next button advances to next step when clicked
+
+    - Works on both desktop and mobile viewports'
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

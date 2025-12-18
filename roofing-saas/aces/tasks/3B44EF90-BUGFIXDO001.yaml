@@ -1,0 +1,70 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 3B44EF90-BUGFIXDO001
+  title: 'BUG-FIX: Document type enum mismatch (contracts vs contract)'
+  created: 2025-12-18 18:21:44.878551
+  priority: 5
+  archon_task_id: 3b44ef90-25f7-4fd4-82dc-e631007e0569
+  template: bug-fix
+context:
+  goal: Template categories use PLURAL (contracts, estimates, waivers) but document_type
+    validation expects SINGULAR (contract, estimate, waiver)
+  why: Fix in signatures/new/page.tsx line 360.
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: Template categories use PLURAL (contracts, estimates, waivers) but document_type
+    validation expects SINGULAR (contract, estimate, waiver). Fix in signatures/new/page.tsx
+    line 360.
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

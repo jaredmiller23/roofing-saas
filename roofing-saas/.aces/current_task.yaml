@@ -1,108 +1,143 @@
 apiVersion: aces/v1
-changes:
-- action: create
-  anchor: null
-  description: Seed file with 11 industry-standard templates
-  file: supabase/seeds/signature-templates.sql
-  position: null
-  template: null
+changes: []
 context:
-  background: 'Templates needed (Full Suite):
+  background: "## Problem\n\nThe current PDF generation code uses full puppeteer package\
+    \ which cannot run on Vercel serverless:\n- Bundled Chromium exceeds function\
+    \ size limits\n- Browser persistence pattern does not work in serverless\n- No\
+    \ remote Chromium fetching configured\n\n## Current State\n\nFile: lib/pdf/html-to-pdf.ts\n\
+    \nUses:\n- import puppeteer from 'puppeteer' (full package ~100MB+)\n- let browser:\
+    \ Browser | null = null (persistence pattern)\n- puppeteer.launch() without serverless\
+    \ args\n\n## Required Changes\n\n### 1. Install new packages\n\nnpm install @sparticuz/chromium-min@^129.0.0\
+    \ puppeteer-core@^23.5.0\n\n### 2. Refactor lib/pdf/html-to-pdf.ts\n\nReplace\
+    \ the entire getBrowser function and imports with this serverless-compatible pattern:\n\
+    \nimport chromium from '@sparticuz/chromium-min'\nimport puppeteer from 'puppeteer-core'\n\
+    \nconst CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'\n\
+    \nasync function getBrowser() {\n  return puppeteer.launch({\n    args: [...chromium.args,\
+    \ '--hide-scrollbars', '--disable-web-security'],\n    defaultViewport: chromium.defaultViewport,\n\
+    \    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),\n    headless:\
+    \ chromium.headless,\n    ignoreHTTPSErrors: true\n  })\n}\n\n### 3. Remove browser\
+    \ caching\n\nRemove the let browser: Browser | null = null line and the process.on('exit')\
+    \ handler. Each invocation should create a fresh browser.\n\n### 4. Update generatePDFFromHTML\
+    \ function\n\nChange from:\n  const browser = await getBrowser()\n  ...\n  await\
+    \ page.close()\n\nTo:\n  const browser = await getBrowser()\n  ...\n  await browser.close()\
+    \  // Close browser after each use in serverless\n\n## Acceptance Criteria\n\n\
+    1. Package @sparticuz/chromium-min is in dependencies\n2. Package puppeteer-core\
+    \ is in dependencies\n3. lib/pdf/html-to-pdf.ts uses the serverless pattern\n\
+    4. No browser caching (fresh browser per request)\n5. Build passes (npm run build)\n\
+    6. TypeScript check passes (npm run typecheck)\n7. Lint passes (npm run lint)\n\
+    \n## Important Notes\n\n- The old puppeteer package can remain for local dev (no\
+    \ need to remove)\n- Do NOT change any other files\n- Do NOT change the function\
+    \ signatures\n- Do NOT add environment detection (the serverless pattern works\
+    \ locally too)\n- Test by running: npm run build"
+  goal: '## Problem
 
 
-    Insurance Restoration:
+    The current PDF generation code uses full puppeteer package which cannot run on
+    Vercel serverless:
 
-    1. Authorization of Insured (AOB/Contingency Agreement) - CRITICAL
+    - Bundled Chromium exceeds function size limits
 
-    2. Insurance Work Completion Certificate
+    - Browser persistence pattern does not work in serverless
 
-    3. Authorization to Release Insurance Information
-
-
-    Core Roofing:
-
-    4. Residential Roofing Contract
-
-    5. Change Order
-
-    6. Conditional Lien Release (Progress Payment)
-
-    7. Unconditional Lien Release (Final Payment)
-
-    8. Limited Workmanship Warranty
-
-    9. Completion Certificate / Customer Approval
+    - No remote Chromium fetching configured
 
 
-    Inspection:
-
-    10. Pre-Roofing Inspection Form
-
-    11. Roof Inspection Report
+    ## Current State
 
 
-    Research industry-standard language for each document.
+    File: lib/pdf/html-to-pdf.ts
 
-    The document_templates table exists with these columns:
 
-    id, tenant_id, created_by, name, description, category,
+    Uses:
 
-    html_content, pdf_template_url, signature_fields (JSONB),
+    - import puppeteer from ''puppeteer'' (full package ~100MB+)
 
-    is_active, requires_customer_signature, requires_company_signature,
+    - let browser: Browser | null = null (persistence pattern)
 
-    expiration_days
+    - puppeteer.launch() without serverless args
 
-    '
-  goal: Create 11 industry-standard signature templates for roofing contractors
+
+    ## Required Changes
+
+
+    ### 1'
   success_criteria:
-  - 11 templates created in seed file
-  - Each template has name, description, category, signature_fields, requires_customer_signature,
-    requires_company_signature, expiration_days
-  - Templates follow legal and industry standards for roofing
-  - Seed file can be executed against Supabase
-  - Templates appear in UI after seeding
-  why: 'The signatures feature has no starter templates. Roofing contractors need
-
-    industry-standard documents to be productive immediately. This is especially
-
-    important for Appalachian Storm Restoration (insurance restoration focus).
-
-    '
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  why: "Install new packages\n\nnpm install @sparticuz/chromium-min@^129.0.0 puppeteer-core@^23.5.0\n\
+    \n### 2. Refactor lib/pdf/html-to-pdf.ts\n\nReplace the entire getBrowser function\
+    \ and imports with this serverless-compatible pattern:\n\nimport chromium from\
+    \ '@sparticuz/chromium-min'\nimport puppeteer from 'puppeteer-core'\n\nconst CHROMIUM_PACK_URL\
+    \ = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'\n\
+    \nasync function getBrowser() {\n  return puppeteer.launch({\n    args: [...chromium.args,\
+    \ '--hide-scrollbars', '--disable-web-security'],\n    defaultViewport: chromium.defaultViewport,\n\
+    \    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),\n    headless:\
+    \ chromium.headless,\n    ignoreHTTPSErrors: true\n  })\n}\n\n### 3. Remove browser\
+    \ caching\n\nRemove the let browser: Browser | null = null line and the process.on('exit')\
+    \ handler. Each invocation should create a fresh browser. ### 4. Update generatePDFFromHTML\
+    \ function\n\nChange from:\n  const browser = await getBrowser()\n  ... await\
+    \ page.close()\n\nTo:\n  const browser = await getBrowser()\n  ... await browser.close()\
+    \  // Close browser after each use in serverless\n\n## Acceptance Criteria\n\n\
+    1. Package @sparticuz/chromium-min is in dependencies\n2. Package puppeteer-core\
+    \ is in dependencies\n3. lib/pdf/html-to-pdf.ts uses the serverless pattern\n\
+    4. No browser caching (fresh browser per request)\n5. Build passes (npm run build)\n\
+    6. TypeScript check passes (npm run typecheck)\n7. Lint passes (npm run lint)\n\
+    \n## Important Notes\n\n- The old puppeteer package can remain for local dev (no\
+    \ need to remove)\n- Do NOT change any other files\n- Do NOT change the function\
+    \ signatures\n- Do NOT add environment detection (the serverless pattern works\
+    \ locally too)\n- Test by running: npm run build"
 dependencies: null
 handoff: null
 kind: TaskSpec
 metadata:
-  archon_task_id: 2994b00a-adfb-4d6b-b185-2d384d6d13e0
-  created: '2025-12-18T03:20:00'
-  id: SIG-002-TEMPLATES
+  archon_task_id: 77387bfb-a8a2-4056-b678-0098cef35ae9
+  created: '2025-12-18T22:39:15.712538'
+  id: 77387BFB-REFACTOR001
   priority: 5
-  template: feature
-  title: Create Full Suite signature templates
+  template: bug-fix
+  title: Refactor PDF generation for Vercel serverless compatibility
 on_failure: null
 read_first:
 - extract: []
-  path: supabase/migrations/*signature*
-  reason: Understanding signature tables schema
+  path: README.md
+  reason: Understanding project structure and conventions
   required: true
 - extract: []
-  path: components/signatures/FieldPalette.tsx
-  reason: Understanding available field types
-  required: true
+  path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
 scope:
   constraints:
-  - Use realistic legally-appropriate language for contracts
-  - signature_fields should include reasonable default field placements
-  - Templates should be tenant-agnostic (can work for any tenant)
-  - Use category values from contract, estimate, change_order, waiver, other
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
   create:
-  - supabase/seeds/signature-templates.sql
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
   do_not_touch:
-  - supabase/migrations/**
   - package.json
+  - package-lock.json
+  - yarn.lock
   - .git/**
   - node_modules/**
-  modify: []
+  - dist/**
+  - build/**
+  - /Users/ccai/Projects/VEST/**
+  - /Users/ccai/Projects/VEST/vest/**
+  - /Users/ccai/Projects/VEST/run_aces.py
+  - /Users/ccai/Projects/VEST/variants/**
+  - /Users/ccai/Projects/VEST/harness/**
+  - /Users/ccai/Projects/VEST/SPEC.md
+  - /Users/ccai/Projects/VEST/PROTOCOL.md
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
 thinking: null
 validation:
   assertions: []
@@ -116,3 +151,7 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
