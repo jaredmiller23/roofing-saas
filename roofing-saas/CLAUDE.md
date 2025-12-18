@@ -6,6 +6,40 @@
 
 ---
 
+## Session Handoff (2025-12-18)
+
+### What Was Done This Session
+
+Two bugs fixed and deployed:
+
+1. **Projects dropdown empty on Signatures page** (`fb718d0`)
+   - Root cause: `.neq()` on JSONB path excludes NULL values
+   - Fix: Changed to `.or()` filter in `/api/projects/route.ts` line 106-107
+
+2. **Map geolocation stuck on "Locating..."** (`e2d0af3`)
+   - Root cause: `watchPosition()` hung indefinitely without timeout
+   - Fix: Added logging, hard timeout, retry button in `hooks/useUserLocation.ts`
+
+### Current State
+
+| Source | Status |
+|--------|--------|
+| Git | Commits pushed to main, deployed via Vercel |
+| Archon | Tasks `1de878e3` and `4d30db32` marked done |
+| VEST | Specs `BUG-008`, `BUG-009` in `completed/` |
+
+### Process Lesson Learned
+
+**The user explicitly asked for VEST orchestration.** Previous Claude bypassed VEST after one failure and did the work directly. This violated the workflow protocol. When VEST fails, fix the task spec and re-run - don't bypass the system.
+
+### Pending Verification
+
+User should test in production:
+- `/signatures/new` - Projects dropdown should populate (553 projects)
+- `/knock` - Console shows `[useUserLocation]` logs, location works or shows clear error with Retry button
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
