@@ -6,11 +6,16 @@ import { Loader } from '@googlemaps/js-api-loader'
 
 // Singleton Google Maps Loader to prevent recreation on every render
 let googleMapsLoader: Loader | null = null
+let loadAttempted = false
+let loadSucceeded = false
 
 function getGoogleMapsLoader() {
   if (!googleMapsLoader) {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+    console.log('[TerritoryMapWrapper] Creating loader with API key:', apiKey ? `${apiKey.slice(0, 10)}...` : 'MISSING')
+
     googleMapsLoader = new Loader({
-      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      apiKey,
       version: 'weekly',
       libraries: ['drawing', 'geometry']
     })
@@ -67,36 +72,75 @@ export function TerritoryMap(props: TerritoryMapProps) {
     // Check if Google Maps is already loaded
     if (typeof google !== 'undefined' && google.maps) {
       console.log('[TerritoryMapWrapper] Google Maps already loaded')
+      loadSucceeded = true
       setIsLoaded(true)
       return
     }
 
-    // Load Google Maps API using singleton loader
+    // If we already tried and failed, show error immediately
+    if (loadAttempted && !loadSucceeded) {
+      console.log('[TerritoryMapWrapper] Previous load attempt failed')
+      setLoadError('Google Maps failed to load. Please refresh the page.')
+      return
+    }
+
+    // If we already tried and succeeded, check again
+    if (loadAttempted && loadSucceeded) {
+      if (typeof google !== 'undefined' && google.maps) {
+        setIsLoaded(true)
+        return
+      }
+    }
+
+    loadAttempted = true
+
+    // Load Google Maps API using singleton loader with timeout
     const loader = getGoogleMapsLoader()
 
-    loader.load()
+    // Create a timeout promise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Google Maps load timeout after 15 seconds')), 15000)
+    })
+
+    // Race between loader and timeout
+    Promise.race([loader.load(), timeoutPromise])
       .then(() => {
-        console.log('[TerritoryMapWrapper] Google Maps API loaded')
+        console.log('[TerritoryMapWrapper] Google Maps API loaded successfully')
+        loadSucceeded = true
         setIsLoaded(true)
       })
       .catch((error) => {
         console.error('[TerritoryMapWrapper] Error loading Google Maps API:', error)
-        setLoadError('Failed to load Google Maps')
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        setLoadError(`Failed to load Google Maps: ${errorMessage}`)
       })
   }, [])
 
-  if (!isMounted || !isLoaded) {
+  if (loadError) {
     return (
-      <div className={`flex items-center justify-center ${props.height ? `h-[${props.height}]` : 'h-[500px]'} bg-muted rounded-lg ${props.className || ''}`}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div
+        className={`flex flex-col items-center justify-center bg-destructive/10 rounded-lg border border-destructive ${props.className || ''}`}
+        style={{ height: props.height || '500px' }}
+      >
+        <p className="text-destructive font-medium">{loadError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-3 px-4 py-2 bg-destructive text-destructive-foreground rounded-md text-sm hover:bg-destructive/90"
+        >
+          Reload Page
+        </button>
       </div>
     )
   }
 
-  if (loadError) {
+  if (!isMounted || !isLoaded) {
     return (
-      <div className={`flex items-center justify-center ${props.height ? `h-[${props.height}]` : 'h-[500px]'} bg-red-50 rounded-lg border border-red-200 ${props.className || ''}`}>
-        <p className="text-red-800">{loadError}</p>
+      <div
+        className={`flex flex-col items-center justify-center bg-muted rounded-lg ${props.className || ''}`}
+        style={{ height: props.height || '500px' }}
+      >
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
+        <p className="text-muted-foreground text-sm">Loading map...</p>
       </div>
     )
   }
