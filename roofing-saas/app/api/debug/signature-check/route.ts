@@ -49,13 +49,34 @@ export async function GET(request: NextRequest) {
     // Step 4: Get the document with admin client (bypasses RLS)
     const { data: docAdmin, error: docAdminError } = await admin
       .from('signature_documents')
-      .select('id, tenant_id, status, is_deleted, title, created_at')
+      .select('id, tenant_id, status, is_deleted, title, created_at, project_id, contact_id')
       .eq('id', documentId)
       .single()
 
     debug.step4_documentAdmin = {
       data: docAdmin,
       error: docAdminError?.message || null
+    }
+
+    // Step 4b: Check if project exists (if project_id is set)
+    if (docAdmin?.project_id) {
+      const { data: projectData, error: projectError } = await admin
+        .from('projects')
+        .select('id, name, tenant_id')
+        .eq('id', docAdmin.project_id)
+        .single()
+      debug.step4b_project = { data: projectData, error: projectError?.message || null }
+    }
+
+    // Step 4c: Check if contact exists (if contact_id is set)
+    if (docAdmin?.contact_id) {
+      const { data: contactData, error: contactError } = await admin
+        .from('contacts')
+        .select('id, first_name, last_name, tenant_id')
+        .eq('id', docAdmin.contact_id)
+        .single()
+      debug.step4c_contact = { data: contactData, error: contactError?.message || null
+      }
     }
 
     // Step 5: Check if tenants match
@@ -67,7 +88,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Step 6: Try query with regular client (WITH RLS)
+    // Step 6: Try query with regular client (WITH RLS) - simple
     const supabase = await createClient()
     const { data: docRLS, error: docRLSError } = await supabase
       .from('signature_documents')
@@ -79,6 +100,28 @@ export async function GET(request: NextRequest) {
       data: docRLS,
       error: docRLSError?.message || null,
       code: docRLSError?.code || null
+    }
+
+    // Step 6b: Try the EXACT query from the actual route (WITH JOINS)
+    const { data: docFullQuery, error: docFullQueryError } = await supabase
+      .from('signature_documents')
+      .select(`
+        *,
+        project:projects(id, name, address),
+        contact:contacts(id, first_name, last_name, email, phone),
+        signatures(*)
+      `)
+      .eq('id', documentId)
+      .eq('tenant_id', jsTenantId)
+      .or('is_deleted.eq.false,is_deleted.is.null')
+      .single()
+
+    debug.step6b_fullQueryWithJoins = {
+      hasData: !!docFullQuery,
+      error: docFullQueryError?.message || null,
+      code: docFullQueryError?.code || null,
+      hint: docFullQueryError?.hint || null,
+      details: docFullQueryError?.details || null
     }
 
     // Step 7: Check what auth.uid() returns via RPC
