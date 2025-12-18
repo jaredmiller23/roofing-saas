@@ -50,6 +50,9 @@ export async function requireAuth(): Promise<User> {
 /**
  * Get user's tenant ID from tenant_users table
  * Returns null if user is not associated with a tenant
+ *
+ * NOTE: If user is in multiple tenants, returns the first active one.
+ * For users needing to switch tenants, a tenant switcher UI is required.
  */
 export async function getUserTenantId(userId: string): Promise<string | null> {
   const supabase = await createClient()
@@ -58,17 +61,20 @@ export async function getUserTenantId(userId: string): Promise<string | null> {
     .from('tenant_users')
     .select('tenant_id')
     .eq('user_id', userId)
-    .single()
+    .eq('status', 'active')
+    .order('joined_at', { ascending: true })
+    .limit(1)
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     return null
   }
 
-  return data.tenant_id
+  return data[0].tenant_id
 }
 
 /**
  * Check if user has a specific role in their tenant
+ * NOTE: Checks the first active tenant membership if user is in multiple tenants
  */
 export async function hasRole(userId: string, role: string): Promise<boolean> {
   const supabase = await createClient()
@@ -77,13 +83,15 @@ export async function hasRole(userId: string, role: string): Promise<boolean> {
     .from('tenant_users')
     .select('role')
     .eq('user_id', userId)
-    .single()
+    .eq('status', 'active')
+    .order('joined_at', { ascending: true })
+    .limit(1)
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     return false
   }
 
-  return data.role === role
+  return data[0].role === role
 }
 
 /**
@@ -96,6 +104,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
 /**
  * Get user's role in their tenant
  * Returns null if user is not associated with a tenant
+ * NOTE: Returns role from first active tenant if user is in multiple tenants
  */
 export async function getUserRole(userId: string): Promise<string | null> {
   const supabase = await createClient()
@@ -104,13 +113,15 @@ export async function getUserRole(userId: string): Promise<string | null> {
     .from('tenant_users')
     .select('role')
     .eq('user_id', userId)
-    .single()
+    .eq('status', 'active')
+    .order('joined_at', { ascending: true })
+    .limit(1)
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     return null
   }
 
-  return data.role
+  return data[0].role
 }
 
 export type UserStatus = 'active' | 'deactivated' | 'suspended' | 'pending'
@@ -118,6 +129,7 @@ export type UserStatus = 'active' | 'deactivated' | 'suspended' | 'pending'
 /**
  * Get user's status in their tenant
  * Returns null if user is not associated with a tenant
+ * NOTE: Returns status from first tenant (by join date) if user is in multiple tenants
  */
 export async function getUserStatus(userId: string): Promise<UserStatus | null> {
   const supabase = await createClient()
@@ -126,13 +138,14 @@ export async function getUserStatus(userId: string): Promise<UserStatus | null> 
     .from('tenant_users')
     .select('status')
     .eq('user_id', userId)
-    .single()
+    .order('joined_at', { ascending: true })
+    .limit(1)
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     return null
   }
 
-  return (data.status as UserStatus) || 'active'
+  return (data[0].status as UserStatus) || 'active'
 }
 
 /**
