@@ -297,6 +297,40 @@ This includes:
 
 ---
 
+## Recently Fixed Issues (2025-12-18)
+
+### ✅ FIXED: Projects Dropdown Empty on Signatures Page
+**Archon Task**: `1de878e3-c93c-4997-942c-59a6fffcf258`
+**Fixed in commit**: `fb718d0`
+
+**Root Cause**: The `.neq('custom_fields->>proline_pipeline', 'OLD RECRUITING')` filter
+in `/api/projects/route.ts` was excluding ALL projects because `.neq()` on JSONB paths
+excludes NULL values in PostgreSQL. All 553 projects had `proline_pipeline = NULL`.
+
+**Fix**: Changed to `.or()` filter that preserves NULLs:
+```typescript
+query = query.or('custom_fields->>proline_pipeline.is.null,custom_fields->>proline_pipeline.neq.OLD RECRUITING')
+```
+
+---
+
+### ✅ FIXED: Map Geolocation Not Working on Knock Page
+**Archon Task**: `4d30db32-efdc-479a-9e9b-0cc219ba949b`
+**Fixed in commit**: `e2d0af3`
+
+**Root Cause**: `navigator.geolocation.watchPosition()` was called but never fired
+callbacks (stuck in pending permission state). No timeout mechanism, no error handling
+for when geolocation hangs indefinitely.
+
+**Fix**:
+1. Added console logging for all geolocation states
+2. Use `getCurrentPosition()` first with 5s timeout for faster initial response
+3. Added 10-second hard timeout that shows clear error message
+4. Added retry button when location fails
+5. Better error messages for permission denied, unavailable, timeout
+
+---
+
 ## Self-Calibration
 
 For Claude failure patterns and calibration:
