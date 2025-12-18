@@ -308,11 +308,6 @@ export default function KnocksPage() {
                 <Crosshair className="h-4 w-4 text-green-600" />
               </button>
             </div>
-          ) : isTracking ? (
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
-              Locating...
-            </div>
           ) : locationError ? (
             <div className="flex items-center gap-2 text-sm text-orange-600">
               <div className="w-2 h-2 bg-orange-600 rounded-full" />
@@ -324,6 +319,11 @@ export default function KnocksPage() {
               >
                 Retry
               </button>
+            </div>
+          ) : isTracking ? (
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
+              Locating...
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

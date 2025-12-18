@@ -8,7 +8,7 @@ const { chromium } = require('@playwright/test');
     context = await browser.newContext({
       storageState: 'playwright/.auth/user.json'
     });
-  } catch (e) {
+  } catch (_e) {
     console.log('No auth state, using fresh context');
     context = await browser.newContext();
   }

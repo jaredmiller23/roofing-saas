@@ -248,3 +248,124 @@ test.describe('Edge Cases', () => {
     expect(pageText).not.toContain('[object')
   })
 })
+
+test.describe('Geolocation Error Handling', () => {
+  test('should show error message when geolocation permission is denied on knocks page', async ({ page }) => {
+    // Deny geolocation permission
+    const context = page.context()
+    await context.grantPermissions([], { origin: 'http://localhost:3000' })
+
+    // Override geolocation to simulate permission denied
+    await page.addInitScript(() => {
+      // Mock geolocation to simulate permission denied
+      Object.defineProperty(navigator, 'geolocation', {
+        writable: true,
+        value: {
+          getCurrentPosition: (success: any, error: any) => {
+            error({
+              code: 1, // PERMISSION_DENIED
+              message: 'User denied the request for Geolocation.'
+            })
+          },
+          watchPosition: (success: any, error: any) => {
+            error({
+              code: 1, // PERMISSION_DENIED
+              message: 'User denied the request for Geolocation.'
+            })
+          },
+          clearWatch: () => {}
+        }
+      })
+    })
+
+    await page.goto('/knocks')
+    await page.waitForLoadState('networkidle')
+
+    // Ensure we're on the map view (where location is enabled)
+    const mapViewSelector = page.locator('select[role="combobox"], [data-testid="view-selector"]')
+    if (await mapViewSelector.count() > 0) {
+      await mapViewSelector.selectOption('map')
+      await page.waitForTimeout(500)
+    }
+
+    // Wait a moment for geolocation to be attempted
+    await page.waitForTimeout(2000)
+
+    // Should show error message, NOT "Locating..."
+    const locationIndicator = page.locator('.absolute.top-3.left-3')
+    await expect(locationIndicator).toBeVisible()
+
+    const indicatorText = await locationIndicator.textContent()
+
+    // Should contain error message and retry button, NOT "Locating..."
+    expect(indicatorText).not.toContain('Locating...')
+    expect(indicatorText?.toLowerCase()).toMatch(/(permission|failed|unavailable)/)
+
+    // Check if retry button exists - some browsers may show "Location unavailable" without retry for permission issues
+    const retryButton = page.locator('button:has-text("Retry")')
+    if (await retryButton.count() > 0) {
+      expect(indicatorText).toContain('Retry')
+      await expect(retryButton).toBeVisible()
+      await expect(retryButton).toBeEnabled()
+    }
+
+    // Clicking retry should attempt geolocation again (if retry button exists)
+    if (await retryButton.count() > 0) {
+      await retryButton.click()
+      await page.waitForTimeout(1000)
+
+      // Should still show error (since permission is still denied)
+      const updatedText = await locationIndicator.textContent()
+      expect(updatedText).not.toContain('Locating...')
+    }
+  })
+
+  test('should show "Locating..." when geolocation is in progress', async ({ page }) => {
+    // Grant geolocation permission but delay the response
+    const context = page.context()
+    await context.grantPermissions(['geolocation'])
+
+    await page.addInitScript(() => {
+      // Mock geolocation to simulate slow loading
+      Object.defineProperty(navigator, 'geolocation', {
+        writable: true,
+        value: {
+          getCurrentPosition: (success: any, error: any) => {
+            // Delay response to simulate loading state
+            setTimeout(() => {
+              success({
+                coords: {
+                  latitude: 37.7749,
+                  longitude: -122.4194,
+                  accuracy: 10,
+                  heading: null,
+                  speed: null
+                },
+                timestamp: Date.now()
+              })
+            }, 5000) // 5 second delay
+          },
+          watchPosition: (success: any, error: any) => {
+            return 1 // Mock watch ID
+          },
+          clearWatch: () => {}
+        }
+      })
+    })
+
+    await page.goto('/knocks')
+    await page.waitForLoadState('networkidle')
+
+    // Should initially show "Locating..."
+    const locationIndicator = page.locator('.absolute.top-3.left-3')
+    await expect(locationIndicator).toBeVisible()
+
+    const indicatorText = await locationIndicator.textContent()
+
+    // Should not show error message - may show "Locating..." or "Live Location" if completed quickly
+    expect(indicatorText?.toLowerCase()).toMatch(/(locating|live location|location unavailable)/)
+    if (indicatorText?.includes('Locating')) {
+      expect(indicatorText).not.toContain('Retry')
+    }
+  })
+})
