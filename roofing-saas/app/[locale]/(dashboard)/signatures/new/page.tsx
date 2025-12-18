@@ -213,30 +213,60 @@ export default function NewSignatureDocumentPage() {
         fetch('/api/projects?limit=1000'),
       ])
 
+      // Log response status for debugging
+      console.log('[Signatures] Contacts API status:', contactsRes.status)
+      console.log('[Signatures] Projects API status:', projectsRes.status)
+
       const contactsResult = await contactsRes.json()
       const projectsResult = await projectsRes.json()
+
+      // Log full responses for debugging
+      console.log('[Signatures] Contacts response:', contactsResult)
+      console.log('[Signatures] Projects response:', projectsResult)
+
+      // Check for API errors and surface them
+      if (!contactsRes.ok || !contactsResult.success) {
+        console.error('[Signatures] Contacts API error:', contactsResult.error)
+        setError(`Failed to load contacts: ${contactsResult.error?.message || 'Unknown error'}`)
+      }
+      if (!projectsRes.ok || !projectsResult.success) {
+        console.error('[Signatures] Projects API error:', projectsResult.error)
+        setError(`Failed to load projects: ${projectsResult.error?.message || 'Unknown error'}`)
+      }
 
       const contactsData = contactsResult.data || contactsResult
       const projectsData = projectsResult.data || projectsResult
 
+      console.log('[Signatures] Setting contacts:', contactsData.contacts?.length || 0)
+      console.log('[Signatures] Setting projects:', projectsData.projects?.length || 0)
+
       setContacts(contactsData.contacts || [])
       setProjects(projectsData.projects || [])
     } catch (err) {
-      console.error('Error loading data:', err)
+      console.error('[Signatures] Error loading data:', err)
+      setError(`Failed to load data: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 
   const loadTemplates = async () => {
     try {
       const res = await fetch('/api/signature-templates?active_only=true')
-      const result = await res.json()
+      console.log('[Signatures] Templates API status:', res.status)
 
-      if (res.ok) {
+      const result = await res.json()
+      console.log('[Signatures] Templates response:', result)
+
+      if (res.ok && result.success) {
         const data = result.data || result
+        console.log('[Signatures] Setting templates:', data.templates?.length || 0)
         setTemplates(data.templates || [])
+      } else {
+        console.error('[Signatures] Templates API error:', result.error)
+        setError(`Failed to load templates: ${result.error?.message || 'Unknown error'}`)
       }
     } catch (err) {
-      console.error('Error loading templates:', err)
+      console.error('[Signatures] Error loading templates:', err)
+      setError(`Failed to load templates: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 
