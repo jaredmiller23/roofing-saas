@@ -76,7 +76,18 @@ export async function GET(
 
     if (error || !document) {
       logger.warn('Signature document not found', { id, tenantId, error: error?.message })
-      throw NotFoundError('Signature document')
+      // TEMP DEBUG: Return detailed info to diagnose issue
+      return Response.json({
+        error: 'Signature document not found',
+        debug: {
+          requestedId: id,
+          userTenantId: tenantId,
+          userId: user.id,
+          userEmail: user.email,
+          supabaseError: error?.message || null,
+          supabaseErrorCode: error?.code || null
+        }
+      }, { status: 404 })
     }
 
     const duration = Date.now() - startTime
