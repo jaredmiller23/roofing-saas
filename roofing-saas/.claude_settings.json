@@ -10,16 +10,18 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(app/[locale]/(dashboard)/field/call/page.tsx)",
-      "Edit(app/[locale]/(dashboard)/field/call/page.tsx)",
-      "Write(app/[locale]/(dashboard)/field/today/page.tsx)",
-      "Edit(app/[locale]/(dashboard)/field/today/page.tsx)",
-      "Write(app/[locale]/(dashboard)/field/me/page.tsx)",
-      "Edit(app/[locale]/(dashboard)/field/me/page.tsx)",
-      "Write(components/layout/AdaptiveLayout.tsx)",
-      "Edit(components/layout/AdaptiveLayout.tsx)",
-      "Write(components/layout/DashboardLayoutClient.tsx)",
-      "Edit(components/layout/DashboardLayoutClient.tsx)"
+      "Write(**/*.test.ts)",
+      "Edit(**/*.test.ts)",
+      "Write(**/*.test.tsx)",
+      "Edit(**/*.test.tsx)",
+      "Write(**/*.ts)",
+      "Edit(**/*.ts)",
+      "Write(**/*.tsx)",
+      "Edit(**/*.tsx)",
+      "Write(**/*.js)",
+      "Edit(**/*.js)",
+      "Write(**/*.jsx)",
+      "Edit(**/*.jsx)"
     ]
   }
 }

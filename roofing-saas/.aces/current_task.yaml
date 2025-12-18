@@ -1,180 +1,98 @@
 apiVersion: aces/v1
-changes:
-- action: edit
-  anchor: null
-  description: "Update AdaptiveLayout to conditionally render based on mode:\n\nimport\
-    \ { FieldWorkerNav } from './FieldWorkerNav'\nimport { FieldWorkerHome } from\
-    \ './FieldWorkerHome'\nimport { Sidebar } from './Sidebar'\n\n// Get current path\
-    \ to determine if on dashboard\nconst pathname = usePathname()\nconst isDashboard\
-    \ = pathname === '/dashboard' || pathname === '/en/dashboard'\n\nif (mode ===\
-    \ 'field') {\n  return (\n    <div className=\"min-h-screen flex flex-col\">\n\
-    \      <FieldWorkerNav userEmail={userEmail} />\n      <main className=\"flex-1\"\
-    >\n        {isDashboard ? <FieldWorkerHome /> : children}\n      </main>\n   \
-    \ </div>\n  )\n}\n\n// Default: full mode with Sidebar\nreturn (\n  <div className=\"\
-    min-h-screen flex\">\n    <Sidebar userEmail={userEmail} />\n    <main className=\"\
-    flex-1\">{children}</main>\n  </div>\n)\n"
-  file: components/layout/AdaptiveLayout.tsx
-  position: null
-  template: null
-- action: create
-  anchor: null
-  description: 'Create simple pages for field quick actions:
-
-
-    field/call/page.tsx - renders <QuickCall />
-
-    field/today/page.tsx - renders <TodayView />
-
-    field/me/page.tsx - renders <MyStats />
-
-
-    Each page is a simple wrapper that imports and renders the component.
-
-    '
-  file: app/[locale]/(dashboard)/field/
-  position: null
-  template: null
-- action: edit
-  anchor: null
-  description: 'Ensure userEmail and userRole are passed down to AdaptiveLayout
-
-    so they can be passed to FieldWorkerNav.
-
-    '
-  file: components/layout/DashboardLayoutClient.tsx
-  position: null
-  template: null
+changes: []
 context:
-  background: 'P2.1-P2.3 created the components:
-
-    - FieldWorkerHome (4 button interface)
-
-    - FieldWorkerNav (hamburger + drawer)
-
-    - QuickCall, TodayView, MyStats (quick actions)
+  background: 'Bug: Signatures tab shows "failed to fetch sig docs" error when visiting
+    /signatures page.
 
 
-    Now we need to wire them into AdaptiveLayout so they render when mode=''field''.
+    Needs investigation:
 
-    '
-  goal: 'Wire up the field worker UI to render based on UI mode. When mode=''field'',
+    - Check the signatures page component for the fetch call
 
-    show FieldWorkerHome on dashboard and use FieldWorkerNav instead of Sidebar.
+    - Trace the API endpoint being called
 
-    '
+    - Check for RLS policy issues in Supabase
+
+    - Verify error handling in the API route
+
+
+    TaskSpec ready at: aces/tasks/SIG-001-fix-signatures-fetch.yaml'
+  goal: 'Bug: Signatures tab shows "failed to fetch sig docs" error when visiting
+    /signatures page'
   success_criteria:
-  - AdaptiveLayout conditionally renders FieldWorkerNav when mode='field'
-  - Dashboard route shows FieldWorkerHome when mode='field'
-  - Other routes in field mode show FieldWorkerNav + page content
-  - mode='full' still shows Sidebar as before
-  - ARIA bar remains visible in all modes
-  - TypeScript compiles without errors
-  - Lint passes
-  - Build succeeds
-  why: 'Without this integration, the field worker components exist but never render.
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  why: 'Needs investigation:
 
-    This task completes the field mode experience.
+    - Check the signatures page component for the fetch call
 
-    '
-dependencies:
-  blocks:
-  - ADAPTIVE-UI-P2-5
-  requires:
-  - ADAPTIVE-UI-P2-1
-  - ADAPTIVE-UI-P2-2
-  - ADAPTIVE-UI-P2-3
-handoff:
-  format: null
-  progress_file: .vest/last_run_summary.md
-  update_on:
-  - task_start
-  - task_complete
+    - Trace the API endpoint being called
+
+    - Check for RLS policy issues in Supabase
+
+    - Verify error handling in the API route
+
+
+    TaskSpec ready at: aces/tasks/SIG-001-fix-signatures-fetch.yaml'
+dependencies: null
+handoff: null
 kind: TaskSpec
 metadata:
-  archon_task_id: 5c0f280d-1d3b-4fef-8045-bbd61d2f5155
-  created: null
-  id: ADAPTIVE-UI-P2-4
-  priority: 1
-  template: code-modification
-  title: Integrate field mode with routing and layout
-on_failure:
-  escalate:
-    include:
-    - error_output
-    - files_modified
-    to: human
-  rollback:
-  - git checkout -- .
+  archon_task_id: 907fd2a1-9cfe-46cd-9774-306b5b8d30ba
+  created: '2025-12-17T23:18:21.515492'
+  id: 907FD2A1-FIXSIGNA001
+  priority: 5
+  template: bug-fix
+  title: 'Fix signatures tab error: failed to fetch sig docs'
+on_failure: null
 read_first:
 - extract: []
-  path: components/layout/AdaptiveLayout.tsx
-  reason: Main file to modify for conditional rendering
+  path: README.md
+  reason: Understanding project structure and conventions
   required: true
 - extract: []
-  path: components/layout/DashboardLayoutClient.tsx
-  reason: Understand current layout structure
-  required: true
-- extract: []
-  path: components/layout/FieldWorkerHome.tsx
-  reason: Component to render in field mode
-  required: true
-- extract: []
-  path: components/layout/FieldWorkerNav.tsx
-  reason: Nav component for field mode
-  required: true
+  path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
 scope:
-  constraints: []
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
   create:
-  - app/[locale]/(dashboard)/field/call/page.tsx
-  - app/[locale]/(dashboard)/field/today/page.tsx
-  - app/[locale]/(dashboard)/field/me/page.tsx
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
   do_not_touch:
-  - components/ai-assistant/**
-  - app/api/**
-  - lib/ui-mode/**
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
   modify:
-  - components/layout/AdaptiveLayout.tsx
-  - components/layout/DashboardLayoutClient.tsx
-thinking:
-  level: think
-  triggers:
-  - When handling route detection
-  - When deciding component nesting
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+thinking: null
 validation:
-  assertions:
-  - contains: []
-    context: any
-    description: ''
-    file: components/layout/AdaptiveLayout.tsx
-    not_contains: []
-    regex_match: []
-    required: true
-  - contains: []
-    context: any
-    description: ''
-    file: components/layout/AdaptiveLayout.tsx
-    not_contains: []
-    regex_match: []
-    required: true
-  - contains: []
-    context: any
-    description: ''
-    file: app/[locale]/(dashboard)/field/call/page.tsx
-    not_contains: []
-    regex_match: []
-    required: true
+  assertions: []
   post_commit: []
   pre_commit:
-  - command: cd "/Users/ccai/Roofing SaaS/roofing-saas" && npm run typecheck
+  - command: npm run typecheck
     expect: 'exit_code: 0'
     required: true
     timeout: 120
-  - command: cd "/Users/ccai/Roofing SaaS/roofing-saas" && npm run lint -- --max-warnings
-      5
+  - command: npm run lint -- --max-warnings 5
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: cd "/Users/ccai/Roofing SaaS/roofing-saas" && npm run build
+  - command: npm run test
     expect: 'exit_code: 0'
     required: true
-    timeout: 180
+    timeout: 300

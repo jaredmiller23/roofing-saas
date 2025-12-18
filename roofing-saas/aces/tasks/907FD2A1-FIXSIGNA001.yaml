@@ -1,0 +1,88 @@
+apiVersion: aces/v1
+kind: TaskSpec
+metadata:
+  id: 907FD2A1-FIXSIGNA001
+  title: 'Fix signatures tab error: failed to fetch sig docs'
+  created: 2025-12-17 22:57:35.677304
+  priority: 5
+  archon_task_id: 907fd2a1-9cfe-46cd-9774-306b5b8d30ba
+  template: bug-fix
+context:
+  goal: 'Bug: When clicking into the Signatures tab (/signatures), an error is displayed:
+    "failed to fetch sig docs"'
+  why: 'Needs investigation:
+
+    - Check API endpoint for signature documents
+
+    - Verify Supabase RLS policies
+
+    - Check for missing error handling
+
+    - Verify the fetch URL and auth headers'
+  success_criteria:
+  - Bug is fixed and no longer reproducible
+  - No regressions introduced
+  - Test added to prevent regression
+  - TypeScript compilation succeeds
+  - Linting passes with no warnings
+  - Build process completes successfully
+  background: 'Bug: When clicking into the Signatures tab (/signatures), an error
+    is displayed: "failed to fetch sig docs".
+
+
+    Needs investigation:
+
+    - Check API endpoint for signature documents
+
+    - Verify Supabase RLS policies
+
+    - Check for missing error handling
+
+    - Verify the fetch URL and auth headers'
+scope:
+  modify:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/*.js'
+  - '**/*.jsx'
+  create:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  do_not_touch:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - .git/**
+  - node_modules/**
+  - dist/**
+  - build/**
+  constraints:
+  - Follow existing code patterns
+  - Maintain TypeScript compliance
+  - Do not break existing functionality
+read_first:
+- path: README.md
+  reason: Understanding project structure and conventions
+  required: true
+  extract: []
+- path: '**/*.test.ts'
+  reason: Understanding existing test coverage
+  required: false
+  extract: []
+changes: []
+validation:
+  pre_commit:
+  - command: npm run typecheck
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 120
+  - command: npm run lint -- --max-warnings 5
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 60
+  - command: npm run test
+    expect: 'exit_code: 0'
+    required: true
+    timeout: 300
+  post_commit: []
+  assertions: []

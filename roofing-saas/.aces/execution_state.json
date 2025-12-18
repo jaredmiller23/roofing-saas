@@ -1,25 +1,27 @@
 {
-  "task_id": "ADAPTIVE-UI-P2-4",
+  "task_id": "907FD2A1-FIXSIGNA001",
   "files_read": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/Sidebar.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/layout.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/FieldWorkerNav.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/AdaptiveLayout.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/FieldWorkerHome.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/dashboard/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/DashboardLayoutClient.tsx"
+    "README.md",
+    "e2e/e-signature.spec.ts",
+    "supabase/migrations/20251213190643_signature_decline_column.sql",
+    "supabase/migrations/archive/20251001_comprehensive_rls_policies.sql",
+    "supabase/migrations/20241214120000_signature_pdfs_bucket.sql",
+    "app/[locale]/(dashboard)/signatures/page.tsx",
+    "app/api/signature-documents/route.ts",
+    "supabase/migrations/20251004000700_performance_indexes.sql",
+    "e2e/auth.setup.ts",
+    "supabase/migrations/20251213180000_add_signature_fields_column.sql"
   ],
   "files_modified": [
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/layout.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/AdaptiveLayout.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/today/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/me/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/app/[locale]/(dashboard)/field/call/page.tsx",
-    "/Users/ccai/Roofing SaaS/roofing-saas/components/layout/DashboardLayoutClient.tsx"
+    "supabase/migrations/20251217230400_fix_signatures_missing_columns.sql",
+    "supabase/migrations/20251217230000_create_signature_documents_table.sql",
+    "supabase/migrations/20251217230200_fix_signature_documents_missing_columns.sql",
+    "supabase/migrations/20251217230300_create_signatures_table.sql",
+    "supabase/migrations/20251217230100_create_signatures_table.sql",
+    "e2e/signatures-api-regression.spec.ts"
   ],
   "validation_passed": true,
   "progress_updated": false,
   "started_at": null,
-  "completed_at": null,
-  "archon_updated": true
+  "completed_at": null
 }

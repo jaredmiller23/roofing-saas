@@ -27,16 +27,7 @@ export async function GET(
     }
 
     const tenantId = await getUserTenantId(user.id)
-
-    // DEBUG: Log tenant lookup
-    console.log('[SIGNATURE-DEBUG] Tenant lookup:', {
-      userId: user.id,
-      resolvedTenantId: tenantId,
-      userEmail: user.email
-    })
-
     if (!tenantId) {
-      console.log('[SIGNATURE-DEBUG] No tenant found for user!')
       throw AuthorizationError('User is not associated with a tenant')
     }
 
@@ -46,48 +37,22 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // DEBUG: Log what we're querying with
-    console.log('[SIGNATURE-DEBUG] Fetching document:', {
-      documentId: id,
-      userTenantId: tenantId,
-      userId: user.id
-    })
-
     const { data: document, error } = await supabase
       .from('signature_documents')
       .select(`
         *,
-        project:projects(id, name, address),
+        project:projects(id, name),
         contact:contacts(id, first_name, last_name, email, phone),
         signatures(*)
       `)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .or('is_deleted.eq.false,is_deleted.is.null')
+      .eq('is_deleted', false)
       .single()
-
-    // DEBUG: Log query results
-    console.log('[SIGNATURE-DEBUG] Query result:', {
-      hasDocument: !!document,
-      error: error?.message || null,
-      errorCode: error?.code || null,
-      errorDetails: error?.details || null
-    })
 
     if (error || !document) {
       logger.warn('Signature document not found', { id, tenantId, error: error?.message })
-      // TEMP DEBUG: Return detailed info to diagnose issue
-      return Response.json({
-        error: 'Signature document not found',
-        debug: {
-          requestedId: id,
-          userTenantId: tenantId,
-          userId: user.id,
-          userEmail: user.email,
-          supabaseError: error?.message || null,
-          supabaseErrorCode: error?.code || null
-        }
-      }, { status: 404 })
+      throw NotFoundError('Signature document')
     }
 
     const duration = Date.now() - startTime

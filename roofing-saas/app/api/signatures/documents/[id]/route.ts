@@ -40,7 +40,7 @@ export async function GET(
       .from('signature_documents')
       .select(`
         *,
-        project:projects(id, name, address),
+        project:projects(id, name),
         contact:contacts(id, first_name, last_name, email, phone),
         signatures(*)
       `)
