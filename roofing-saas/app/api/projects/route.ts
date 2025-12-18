@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Exclude OLD RECRUITING pipeline (HR data, not sales)
-    query = query.neq('custom_fields->>proline_pipeline', 'OLD RECRUITING')
+    // Note: .neq() excludes NULLs, so use .or() to preserve projects without pipeline set
+    query = query.or('custom_fields->>proline_pipeline.is.null,custom_fields->>proline_pipeline.neq.OLD RECRUITING')
 
     // Pagination
     const from = (page - 1) * limit
