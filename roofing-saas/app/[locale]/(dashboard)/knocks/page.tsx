@@ -76,7 +76,7 @@ export default function KnocksPage() {
   const [activeView, setActiveView] = useState<'map' | 'kpis' | 'territories'>('map')
 
   // User location tracking - only enabled when map view is active
-  const { location: userLocation, error: locationError, isTracking } = useUserLocation({
+  const { location: userLocation, error: locationError, isTracking, retry: retryLocation } = useUserLocation({
     enabled: activeView === 'map'
   })
 
@@ -316,7 +316,14 @@ export default function KnocksPage() {
           ) : locationError ? (
             <div className="flex items-center gap-2 text-sm text-orange-600">
               <div className="w-2 h-2 bg-orange-600 rounded-full" />
-              {locationError}
+              <span className="max-w-[200px] truncate">{locationError}</span>
+              <button
+                onClick={retryLocation}
+                className="px-2 py-0.5 text-xs bg-orange-100 hover:bg-orange-200 rounded"
+                title="Retry location"
+              >
+                Retry
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -340,7 +347,7 @@ export default function KnocksPage() {
     // Note: 'map' is intentionally excluded from deps to avoid infinite loop
     // (map updates via onMapReady callback would trigger re-render infinitely)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks, isTracking, locationError])
+  ), [selectedTerritory, territoriesArray, pinDropEnabled, fetchKnocks, isTracking, locationError, retryLocation])
 
   return (
     <div className="p-4 md:p-8">
