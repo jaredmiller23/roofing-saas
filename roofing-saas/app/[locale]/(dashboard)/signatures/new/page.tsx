@@ -164,15 +164,41 @@ export default function NewSignatureDocumentPage() {
     loadTemplates()
   }, [])
 
-  // Handle templateId URL parameter
+  // Handle templateId URL parameter - fetch and apply template data
   useEffect(() => {
     const templateId = searchParams.get('templateId')
-    if (templateId) {
-      setFormData(prev => ({ ...prev, selectedTemplateId: templateId }))
-      // Skip template selection step if template is pre-selected
-      setStep(2)
+    if (templateId && templates.length > 0) {
+      const template = templates.find(t => t.id === templateId)
+      if (template) {
+        // Apply template data to form
+        setFormData(prev => ({
+          ...prev,
+          selectedTemplateId: template.id,
+          title: template.name,
+          description: template.description || '',
+          expirationDays: template.expiration_days,
+          requiresCustomerSignature: template.requires_customer_signature,
+          requiresCompanySignature: template.requires_company_signature,
+          documentType: template.category || 'contract',
+          pdfUrl: template.pdf_template_url || '',
+          signatureFields: template.signature_fields?.map(f => ({
+            id: f.id,
+            type: f.type as FieldType,
+            label: f.label || f.type,
+            page: f.page,
+            x: f.x,
+            y: f.y,
+            width: f.width,
+            height: f.height,
+            required: f.required || false,
+            assignedTo: f.assignedTo as 'customer' | 'company' | 'any',
+          })) || [],
+        }))
+        // Skip template selection step
+        setStep(2)
+      }
     }
-  }, [searchParams])
+  }, [searchParams, templates])
 
   const getUserId = async () => {
     const supabase = createClient()
@@ -436,7 +462,7 @@ export default function NewSignatureDocumentPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Create Signature Document</h1>
-              <p className="text-muted-foreground text-sm">Step {step} of 4</p>
+              <p className="text-muted-foreground text-sm">Step {step} of 5</p>
             </div>
           </div>
 
