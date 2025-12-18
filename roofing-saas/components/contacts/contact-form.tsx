@@ -7,6 +7,8 @@ import { useState, useCallback } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface ContactFormProps {
   contact?: Contact
@@ -193,14 +195,6 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     }
   }
 
-  // Helper to get input class with error styling
-  const getInputClass = (fieldName: keyof CreateContactInput) => {
-    const baseClass = 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2'
-    return errors[fieldName]
-      ? `${baseClass} border-red-500 focus:ring-red-500`
-      : `${baseClass} border-input focus:ring-primary`
-  }
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {errors.root && (
@@ -217,11 +211,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="first_name" className="block text-sm font-medium text-muted-foreground mb-1">
               First Name <span className="text-red-500">*</span>
             </label>
-            <input
+            <Input
               type="text"
               id="first_name"
               {...register('first_name')}
-              className={getInputClass('first_name')}
+              aria-invalid={errors.first_name ? 'true' : undefined}
+              className="h-10"
             />
             {errors.first_name && (
               <p className="mt-1 text-sm text-red-500">{errors.first_name.message}</p>
@@ -232,11 +227,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="last_name" className="block text-sm font-medium text-muted-foreground mb-1">
               Last Name <span className="text-red-500">*</span>
             </label>
-            <input
+            <Input
               type="text"
               id="last_name"
               {...register('last_name')}
-              className={getInputClass('last_name')}
+              aria-invalid={errors.last_name ? 'true' : undefined}
+              className="h-10"
             />
             {errors.last_name && (
               <p className="mt-1 text-sm text-red-500">{errors.last_name.message}</p>
@@ -250,7 +246,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                 <span className="ml-2 text-xs text-primary">Checking for duplicates...</span>
               )}
             </label>
-            <input
+            <Input
               type="email"
               id="email"
               {...register('email')}
@@ -259,7 +255,8 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                   checkDuplicates('email')
                 }
               }}
-              className={getInputClass('email')}
+              aria-invalid={errors.email ? 'true' : undefined}
+              className="h-10"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
@@ -273,7 +270,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                 <span className="ml-2 text-xs text-primary">Checking for duplicates...</span>
               )}
             </label>
-            <input
+            <Input
               type="tel"
               id="phone"
               {...register('phone')}
@@ -282,7 +279,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                   checkDuplicates('phone')
                 }
               }}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -290,11 +287,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="mobile_phone" className="block text-sm font-medium text-muted-foreground mb-1">
               Mobile Phone
             </label>
-            <input
+            <Input
               type="tel"
               id="mobile_phone"
               {...register('mobile_phone')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -317,12 +314,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="company" className="block text-sm font-medium text-muted-foreground mb-1">
               Company Name
             </label>
-            <input
+            <Input
               type="text"
               id="company"
               {...register('company')}
               placeholder={isOrganization ? "Company name" : "Employer (optional)"}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
             <p className="mt-1 text-xs text-muted-foreground">
               {isOrganization
@@ -335,12 +332,13 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="website" className="block text-sm font-medium text-muted-foreground mb-1">
               Website
             </label>
-            <input
+            <Input
               type="url"
               id="website"
               {...register('website')}
               placeholder="https://example.com"
-              className={getInputClass('website')}
+              aria-invalid={errors.website ? 'true' : undefined}
+              className="h-10"
             />
             {errors.website && (
               <p className="mt-1 text-sm text-red-500">{errors.website.message}</p>
@@ -418,12 +416,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="source" className="block text-sm font-medium text-muted-foreground mb-1">
               Source
             </label>
-            <input
+            <Input
               type="text"
               id="source"
               {...register('source')}
               placeholder="e.g., Door knocking, Referral, Website"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
         </div>
@@ -437,11 +435,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="address_street" className="block text-sm font-medium text-muted-foreground mb-1">
               Street Address
             </label>
-            <input
+            <Input
               type="text"
               id="address_street"
               {...register('address_street')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -449,11 +447,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="address_city" className="block text-sm font-medium text-muted-foreground mb-1">
               City
             </label>
-            <input
+            <Input
               type="text"
               id="address_city"
               {...register('address_city')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -461,13 +459,13 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="address_state" className="block text-sm font-medium text-muted-foreground mb-1">
               State
             </label>
-            <input
+            <Input
               type="text"
               id="address_state"
               {...register('address_state')}
               maxLength={2}
               placeholder="TN"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -475,11 +473,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="address_zip" className="block text-sm font-medium text-muted-foreground mb-1">
               ZIP Code
             </label>
-            <input
+            <Input
               type="text"
               id="address_zip"
               {...register('address_zip')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
         </div>
@@ -493,12 +491,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="property_type" className="block text-sm font-medium text-muted-foreground mb-1">
               Property Type
             </label>
-            <input
+            <Input
               type="text"
               id="property_type"
               {...register('property_type')}
               placeholder="e.g., Single Family, Condo"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -506,12 +504,12 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="roof_type" className="block text-sm font-medium text-muted-foreground mb-1">
               Roof Type
             </label>
-            <input
+            <Input
               type="text"
               id="roof_type"
               {...register('roof_type')}
               placeholder="e.g., Asphalt Shingle, Metal"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -519,11 +517,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="roof_age" className="block text-sm font-medium text-muted-foreground mb-1">
               Roof Age (years)
             </label>
-            <input
+            <Input
               type="number"
               id="roof_age"
               {...register('roof_age', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -531,11 +529,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="square_footage" className="block text-sm font-medium text-muted-foreground mb-1">
               Square Footage
             </label>
-            <input
+            <Input
               type="number"
               id="square_footage"
               {...register('square_footage', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -543,11 +541,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="stories" className="block text-sm font-medium text-muted-foreground mb-1">
               Stories
             </label>
-            <input
+            <Input
               type="number"
               id="stories"
               {...register('stories', { valueAsNumber: true })}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
         </div>
@@ -561,11 +559,11 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="insurance_carrier" className="block text-sm font-medium text-muted-foreground mb-1">
               Insurance Carrier
             </label>
-            <input
+            <Input
               type="text"
               id="insurance_carrier"
               {...register('insurance_carrier')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
 
@@ -573,33 +571,32 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
             <label htmlFor="policy_number" className="block text-sm font-medium text-muted-foreground mb-1">
               Policy Number
             </label>
-            <input
+            <Input
               type="text"
               id="policy_number"
               {...register('policy_number')}
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-10"
             />
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4 pt-4 border-t">
-        <button
+      <div className="flex gap-4 pt-4 border-t border-border">
+        <Button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Saving...' : mode === 'edit' ? 'Update Contact' : 'Create Contact'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={() => router.back()}
           disabled={isSubmitting}
-          className="px-6 py-2 border border-input text-muted-foreground rounded-md hover:bg-accent disabled:opacity-50"
         >
           Cancel
-        </button>
+        </Button>
       </div>
 
       {/* Duplicate Warning Dialog */}
