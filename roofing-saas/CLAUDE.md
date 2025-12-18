@@ -284,6 +284,17 @@ This is a **multi-tenant SaaS application**. Data is isolated per tenant. Unders
 - Assuming all users see the same data
 - Forgetting to include tenant_id in queries
 
+### Full Documentation
+
+**For complete multi-tenancy documentation, see: `docs/MULTI_TENANCY.md`**
+
+This includes:
+- Complete user/tenant mapping
+- Data flow diagrams
+- Debugging checklist
+- How `getUserTenantId()` works
+- Adding new tables with tenant isolation
+
 ---
 
 ## Self-Calibration
