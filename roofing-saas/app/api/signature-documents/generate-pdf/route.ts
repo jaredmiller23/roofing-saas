@@ -13,6 +13,10 @@ import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
 import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
 import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 
+// PDF generation requires longer timeout on Vercel
+// Puppeteer/Chromium can take 10-30 seconds to initialize and generate
+export const maxDuration = 60
+
 /**
  * POST /api/signature-documents/generate-pdf
  * Generate PDF from HTML template with data

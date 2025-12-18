@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
   // Note: This only affects development mode, production is unaffected
   reactStrictMode: false,
 
+  // Required for Puppeteer/Chromium serverless deployment on Vercel
+  // These packages use native binaries that must be excluded from bundling
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
+
   // Note: In Next.js 16, ESLint is handled separately via CLI
   // Run: npx eslint . --fix
   typescript: {

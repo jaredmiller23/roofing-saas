@@ -1,9 +1,36 @@
 import chromium from '@sparticuz/chromium-min'
 import puppeteer from 'puppeteer-core'
-import { Browser, PDFOptions } from 'puppeteer-core'
+import type { Browser, PDFOptions } from 'puppeteer-core'
 import { logger } from '@/lib/logger'
 
+// Chromium binary URL - must match @sparticuz/chromium-min package version (v129.0.0)
 const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'
+
+// Detect if running in serverless environment (Vercel, AWS Lambda, etc.)
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+
+// Comprehensive Chrome args for serverless environments
+// These are critical for running in constrained/containerized environments
+const SERVERLESS_CHROME_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-gpu',
+  '--disable-accelerated-2d-canvas',
+  '--disable-web-security',
+  '--hide-scrollbars',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
+  '--disable-extensions',
+  '--disable-sync',
+  '--disable-translate',
+  '--disable-default-apps',
+  '--no-first-run',
+  '--no-zygote',
+  '--single-process', // Critical for serverless - reduces memory
+  '--font-render-hinting=none',
+]
 
 interface GenerateOptions {
   format?: 'A4' | 'Letter'
@@ -20,15 +47,76 @@ interface GenerateOptions {
 }
 
 /**
- * Get a fresh browser instance for serverless compatibility
+ * Get a browser instance configured for the current environment
+ * - In serverless (Vercel): Uses @sparticuz/chromium-min with remote binary
+ * - In local dev: Uses local Chrome/Chromium installation
  */
 async function getBrowser(): Promise<Browser> {
-  return puppeteer.launch({
-    args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
-    headless: chromium.headless
-  })
+  if (isServerless) {
+    // Serverless mode: Use @sparticuz/chromium-min
+    // Configure chromium for headless operation
+    chromium.setHeadlessMode = true
+    chromium.setGraphicsMode = false
+
+    logger.info('Launching browser in serverless mode', {
+      chromiumUrl: CHROMIUM_PACK_URL,
+      args: SERVERLESS_CHROME_ARGS.length
+    })
+
+    return puppeteer.launch({
+      args: [...chromium.args, ...SERVERLESS_CHROME_ARGS],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+      headless: true,
+    })
+  } else {
+    // Local development: Try to find a local Chrome installation
+    logger.info('Launching browser in local mode')
+
+    // Try common Chrome paths on different OS
+    const possiblePaths = [
+      // macOS
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      // Linux
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      // Windows (via WSL or Windows paths)
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    ]
+
+    let executablePath: string | undefined
+    for (const path of possiblePaths) {
+      try {
+        const fs = await import('fs')
+        if (fs.existsSync(path)) {
+          executablePath = path
+          break
+        }
+      } catch {
+        // Ignore errors, try next path
+      }
+    }
+
+    if (!executablePath) {
+      logger.warn('No local Chrome found, falling back to serverless chromium')
+      // Fallback to serverless chromium even in local
+      return puppeteer.launch({
+        args: [...chromium.args, ...SERVERLESS_CHROME_ARGS],
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
+        headless: true,
+      })
+    }
+
+    return puppeteer.launch({
+      executablePath,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+      headless: true,
+    })
+  }
 }
 
 /**

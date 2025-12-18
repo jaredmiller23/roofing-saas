@@ -14,6 +14,10 @@ import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
 import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { z } from 'zod'
 
+// PDF generation requires longer timeout on Vercel
+// Puppeteer/Chromium can take 10-30 seconds to initialize and generate
+export const maxDuration = 60
+
 // Zod schema for signature field placements
 const signatureFieldSchema = z.object({
   id: z.string(),
