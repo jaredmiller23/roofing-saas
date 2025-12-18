@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getAppBaseUrl } from '@/lib/utils'
 import Link from 'next/link'
 
 export default function RegisterPage() {
@@ -40,7 +41,7 @@ export default function RegisterPage() {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${getAppBaseUrl()}/auth/callback`,
         },
       })
 
