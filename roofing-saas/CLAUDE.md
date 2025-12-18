@@ -31,6 +31,79 @@ npm run test:e2e      # Playwright tests
 
 ---
 
+## Operations & Testing (FOR CLAUDE)
+
+**Read this before doing ANY deployment verification or testing.**
+
+### Environments
+
+| Environment | URL |
+|-------------|-----|
+| **Production** | https://roofing-saas.vercel.app |
+| **Local** | http://localhost:3000 |
+
+### Test Account
+
+For automated testing and verification:
+
+| Field | Value |
+|-------|-------|
+| Email | `claude-test@roofingsaas.com` |
+| Password | In `.env.test` (`TEST_USER_PASSWORD`) |
+| User ID | `5dc43384-1509-4da8-a795-71060988140a` |
+| Tenant | Clarity AI Development (sandbox) |
+
+### Verification Commands
+
+```bash
+# Verify production deployment is working
+npm run ops:verify
+
+# Verify local development
+npm run ops:verify:local
+
+# Get auth token for manual API testing
+npm run ops:auth
+```
+
+### What `ops:verify` Checks
+
+1. App is reachable
+2. Login works with test account
+3. Critical pages load (Dashboard, Contacts, Signatures, Projects)
+4. API endpoints respond correctly
+
+### After Pushing Code
+
+**Always run verification:**
+```bash
+git push origin main
+# Wait ~60 seconds for Vercel deployment
+npm run ops:verify
+```
+
+### Manual API Testing
+
+```bash
+# Get a token
+npm run ops:auth
+
+# Use the token
+curl -H "Authorization: Bearer <token>" \
+     https://roofing-saas.vercel.app/api/contacts
+```
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `scripts/ops/config.ts` | Environment URLs, Supabase config |
+| `scripts/ops/auth.ts` | Get auth tokens programmatically |
+| `scripts/ops/verify.ts` | Full deployment verification |
+| `.env.test` | Test credentials (gitignored) |
+
+---
+
 ## Project Structure
 
 ```
@@ -152,6 +225,64 @@ VEST spawns fresh Claude sessions for complex tasks. **VEST is NOT the source of
 | `/vest-learnings` | Check known risky files |
 
 TaskSpec location: `~/Projects/VEST/aces/tasks/`
+
+---
+
+## Multi-Tenancy (CRITICAL - READ BEFORE ANY WORK)
+
+This is a **multi-tenant SaaS application**. Data is isolated per tenant. Understanding this is MANDATORY before touching any code.
+
+### Tenant Structure
+
+| Tenant ID | Name | Purpose |
+|-----------|------|---------|
+| `00000000-0000-0000-0000-000000000000` | **Appalachian Storm Restoration** | PRODUCTION - Real business, real customers |
+| `478d279b-5b8a-4040-a805-75d595d59702` | **Clarity AI Development** | SANDBOX - Safe testing environment |
+
+### Users
+
+**Appalachian Storm Restoration (Production):**
+| Email | Role | Notes |
+|-------|------|-------|
+| fahredin@goappsr.com | owner | Business owner - Fahredin Nushi |
+| ted@goappsr.com | manager | Operations manager |
+| austin@goappsr.com | admin | Admin staff |
+| jaredmiller23@yahoo.com | admin | Jared Miller (has access to BOTH tenants) |
+
+**Clarity AI Development (Sandbox):**
+| Email | Role | Notes |
+|-------|------|-------|
+| jaredmiller23@yahoo.com | owner | Primary dev account |
+| claude-test@roofingsaas.com | admin | Automated testing (password: `ClaudeTest2025!Secure`) |
+
+### How Multi-Tenancy Works
+
+1. **Every table has `tenant_id`** - Data is isolated per tenant
+2. **RLS policies enforce isolation** - Database-level protection
+3. **API routes filter by tenant** - `getUserTenantId(userId)` determines context
+4. **You CANNOT see other tenants' data** - This is by design
+
+### Before Creating Seed Data or Test Data
+
+**ALWAYS specify the correct tenant_id:**
+- Use `478d279b-5b8a-4040-a805-75d595d59702` for dev/test data
+- Use `00000000-0000-0000-0000-000000000000` for production data (Appalachian Storm)
+- NEVER use placeholder UUIDs that don't exist
+
+**If you seed to the wrong tenant, the data will be invisible to users in other tenants.**
+
+### Testing Strategy
+
+1. **Use claude-test@roofingsaas.com** for automated testing (Clarity AI Development tenant)
+2. **Use jaredmiller23@yahoo.com** for manual testing (has access to both tenants)
+3. **NEVER test destructive operations in Appalachian Storm tenant** - that's production data
+
+### Common Mistakes to Avoid
+
+- Creating data with wrong tenant_id (data becomes invisible)
+- Testing with production tenant users
+- Assuming all users see the same data
+- Forgetting to include tenant_id in queries
 
 ---
 
