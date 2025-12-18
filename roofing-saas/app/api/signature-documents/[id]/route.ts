@@ -27,7 +27,16 @@ export async function GET(
     }
 
     const tenantId = await getUserTenantId(user.id)
+
+    // DEBUG: Log tenant lookup
+    console.log('[SIGNATURE-DEBUG] Tenant lookup:', {
+      userId: user.id,
+      resolvedTenantId: tenantId,
+      userEmail: user.email
+    })
+
     if (!tenantId) {
+      console.log('[SIGNATURE-DEBUG] No tenant found for user!')
       throw AuthorizationError('User is not associated with a tenant')
     }
 
@@ -36,6 +45,13 @@ export async function GET(
     logger.apiRequest('GET', `/api/signature-documents/${id}`, { tenantId, id })
 
     const supabase = await createClient()
+
+    // DEBUG: Log what we're querying with
+    console.log('[SIGNATURE-DEBUG] Fetching document:', {
+      documentId: id,
+      userTenantId: tenantId,
+      userId: user.id
+    })
 
     const { data: document, error } = await supabase
       .from('signature_documents')
@@ -47,11 +63,19 @@ export async function GET(
       `)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .single()
 
+    // DEBUG: Log query results
+    console.log('[SIGNATURE-DEBUG] Query result:', {
+      hasDocument: !!document,
+      error: error?.message || null,
+      errorCode: error?.code || null,
+      errorDetails: error?.details || null
+    })
+
     if (error || !document) {
-      logger.warn('Signature document not found', { id, tenantId })
+      logger.warn('Signature document not found', { id, tenantId, error: error?.message })
       throw NotFoundError('Signature document')
     }
 
@@ -112,7 +136,7 @@ export async function PATCH(
       .select('id')
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .single()
 
     if (!existing) {
@@ -124,7 +148,7 @@ export async function PATCH(
       .update(updates)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .select()
       .single()
 
@@ -177,7 +201,7 @@ export async function DELETE(
       .select('id')
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .single()
 
     if (!existing) {
@@ -189,6 +213,7 @@ export async function DELETE(
       .delete()
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .or('is_deleted.eq.false,is_deleted.is.null')
 
     if (error) {
       logger.error('Supabase error deleting signature document', { error })
