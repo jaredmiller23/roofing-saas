@@ -219,9 +219,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Security headers */}
-        <meta httpEquiv="Content-Security-Policy"
-              content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' wss: https://*.supabase.co wss://*.supabase.co;" />
+        {/* Security headers are handled via HTTP headers in next.config.ts */}
         
         {/* Structured Data */}
         <script
