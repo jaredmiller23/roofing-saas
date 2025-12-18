@@ -94,6 +94,20 @@ const FIELD_TYPE_COLORS: Record<string, { bg: string; border: string; text: stri
   email: { bg: 'bg-pink-500/20', border: 'border-pink-500', text: 'text-pink-700' },
 }
 
+// Helper function to map template categories (plural) to document types (singular)
+const mapCategoryToDocumentType = (category: string | null): string => {
+  if (!category) return 'contract'
+
+  const categoryMapping: Record<string, string> = {
+    'contracts': 'contract',
+    'estimates': 'estimate',
+    'waivers': 'waiver',
+    'change_orders': 'change_order'
+  }
+
+  return categoryMapping[category.toLowerCase()] || 'contract'
+}
+
 interface FormData {
   // Step 1 - Basic Info
   title: string
@@ -179,7 +193,7 @@ export default function NewSignatureDocumentPage() {
           expirationDays: template.expiration_days,
           requiresCustomerSignature: template.requires_customer_signature,
           requiresCompanySignature: template.requires_company_signature,
-          documentType: template.category || 'contract',
+          documentType: mapCategoryToDocumentType(template.category),
           pdfUrl: template.pdf_template_url || '',
           signatureFields: template.signature_fields?.map(f => ({
             id: f.id,
@@ -357,7 +371,7 @@ export default function NewSignatureDocumentPage() {
     updateFormData('expirationDays', template.expiration_days)
     updateFormData('requiresCustomerSignature', template.requires_customer_signature)
     updateFormData('requiresCompanySignature', template.requires_company_signature)
-    updateFormData('documentType', template.category || 'contract')
+    updateFormData('documentType', mapCategoryToDocumentType(template.category))
 
     if (template.pdf_template_url) {
       updateFormData('pdfUrl', template.pdf_template_url)

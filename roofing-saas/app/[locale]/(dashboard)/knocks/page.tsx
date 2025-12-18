@@ -76,7 +76,13 @@ export default function KnocksPage() {
   const [activeView, setActiveView] = useState<'map' | 'kpis' | 'territories'>('map')
 
   // User location tracking - only enabled when map view is active
-  const { location: userLocation, error: locationError, isTracking, retry: retryLocation } = useUserLocation({
+  const {
+    location: userLocation,
+    error: locationError,
+    errorInstructions: locationErrorInstructions,
+    isTracking,
+    retry: retryLocation
+  } = useUserLocation({
     enabled: activeView === 'map'
   })
 
@@ -292,7 +298,7 @@ export default function KnocksPage() {
         />
 
         {/* Location status indicator */}
-        <div className="absolute top-3 left-3 bg-card rounded-lg shadow-lg px-3 py-2 z-10 border border-border">
+        <div className="absolute top-3 left-3 bg-card rounded-lg shadow-lg px-3 py-2 z-10 border border-border min-w-max">
           {isTracking && userLocation ? (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
@@ -309,16 +315,28 @@ export default function KnocksPage() {
               </button>
             </div>
           ) : locationError ? (
-            <div className="flex items-center gap-2 text-sm text-orange-600">
-              <div className="w-2 h-2 bg-orange-600 rounded-full" />
-              <span className="max-w-[200px] truncate">{locationError}</span>
-              <button
-                onClick={retryLocation}
-                className="px-2 py-0.5 text-xs bg-orange-100 hover:bg-orange-200 rounded"
-                title="Retry location"
-              >
-                Retry
-              </button>
+            <div className="flex flex-col gap-2 text-sm text-orange-600 max-w-[320px]">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-600 rounded-full" />
+                <span className="font-medium">{locationError}</span>
+                <button
+                  onClick={retryLocation}
+                  className="px-2 py-0.5 text-xs bg-orange-100 hover:bg-orange-200 rounded shrink-0"
+                  title="Retry location"
+                >
+                  Retry
+                </button>
+              </div>
+              {locationErrorInstructions && locationErrorInstructions.length > 0 && (
+                <div className="text-xs text-orange-800 bg-orange-50 rounded p-2 border border-orange-200">
+                  <div className="font-medium mb-1">How to fix this:</div>
+                  <ol className="list-decimal list-inside space-y-1">
+                    {locationErrorInstructions.map((instruction, index) => (
+                      <li key={index}>{instruction}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </div>
           ) : isTracking ? (
             <div className="flex items-center gap-2 text-sm text-green-600">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { getGeolocationInstructions, getSystemDescription, detectBrowserAndOS } from '@/lib/utils/browser-detection'
 
 interface UserLocation {
   latitude: number
@@ -21,6 +22,8 @@ interface UseUserLocationOptions {
 interface UseUserLocationReturn {
   location: UserLocation | null
   error: string | null
+  errorInstructions: string[] | null
+  systemInfo: string | null
   isTracking: boolean
   startTracking: () => void
   stopTracking: () => void
@@ -46,6 +49,8 @@ export function useUserLocation(options: UseUserLocationOptions = {}): UseUserLo
 
   const [location, setLocation] = useState<UserLocation | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [errorInstructions, setErrorInstructions] = useState<string[] | null>(null)
+  const [systemInfo, setSystemInfo] = useState<string | null>(null)
   const [isTracking, setIsTracking] = useState(false)
   const watchIdRef = useRef<number | null>(null)
   const hardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -76,25 +81,45 @@ export function useUserLocation(options: UseUserLocationOptions = {}): UseUserLo
       timestamp: position.timestamp
     })
     setError(null)
+    setErrorInstructions(null)
+    setSystemInfo(null)
   }, [])
 
   const handleError = useCallback((err: GeolocationPositionError) => {
+    const browserInfo = detectBrowserAndOS()
+    const systemDescription = getSystemDescription(browserInfo)
     let errorMsg = 'Failed to get location'
+    let instructions: string[] = []
+
     switch (err.code) {
       case err.PERMISSION_DENIED:
-        errorMsg = 'Location permission denied. Please enable in browser settings.'
+        errorMsg = `Location access denied on ${systemDescription}`
+        instructions = getGeolocationInstructions(browserInfo)
         console.error('[useUserLocation] Permission denied')
         break
       case err.POSITION_UNAVAILABLE:
-        errorMsg = 'Location unavailable. Please check device settings.'
+        errorMsg = `Location unavailable on ${systemDescription}`
+        instructions = [
+          'Check that Location Services are enabled on your device',
+          'Try moving to an area with better GPS signal',
+          'If indoors, try moving closer to a window'
+        ]
         console.error('[useUserLocation] Position unavailable')
         break
       case err.TIMEOUT:
         errorMsg = 'Location request timed out. Please try again.'
+        instructions = [
+          'Try refreshing the page and allowing location access when prompted',
+          'Check your internet connection',
+          'If the problem persists, check your location settings'
+        ]
         console.warn('[useUserLocation] Geolocation timeout')
         break
     }
+
     setError(errorMsg)
+    setErrorInstructions(instructions)
+    setSystemInfo(systemDescription)
 
     // Clear hard timeout since we got an error
     if (hardTimeoutRef.current) {
@@ -120,13 +145,19 @@ export function useUserLocation(options: UseUserLocationOptions = {}): UseUserLo
     console.log('[useUserLocation] Starting location tracking...')
     setIsTracking(true)
     setError(null)
+    setErrorInstructions(null)
+    setSystemInfo(null)
     hasReceivedLocationRef.current = false
 
     // Set a hard timeout - if we don't get ANY response in 10s, show error
     hardTimeoutRef.current = setTimeout(() => {
       if (!hasReceivedLocationRef.current) {
         console.warn('[useUserLocation] Hard timeout - no location after 10s')
-        setError('Unable to determine location. Check that Location Services are enabled.')
+        const browserInfo = detectBrowserAndOS()
+        const systemDescription = getSystemDescription(browserInfo)
+        setError(`Unable to determine location on ${systemDescription}`)
+        setErrorInstructions(getGeolocationInstructions(browserInfo))
+        setSystemInfo(systemDescription)
       }
     }, 10000)
 
@@ -182,6 +213,8 @@ export function useUserLocation(options: UseUserLocationOptions = {}): UseUserLo
     console.log('[useUserLocation] Retrying location...')
     stopTracking()
     setError(null)
+    setErrorInstructions(null)
+    setSystemInfo(null)
     setLocation(null)
     // Small delay to ensure cleanup completes
     setTimeout(() => {
@@ -202,5 +235,5 @@ export function useUserLocation(options: UseUserLocationOptions = {}): UseUserLo
     }
   }, [enabled, startTracking, stopTracking])
 
-  return { location, error, isTracking, startTracking, stopTracking, retry }
+  return { location, error, errorInstructions, systemInfo, isTracking, startTracking, stopTracking, retry }
 }
