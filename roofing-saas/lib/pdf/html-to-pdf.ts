@@ -9,29 +9,6 @@ const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/downlo
 // Detect if running in serverless environment (Vercel, AWS Lambda, etc.)
 const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
 
-// Comprehensive Chrome args for serverless environments
-// These are critical for running in constrained/containerized environments
-const SERVERLESS_CHROME_ARGS = [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  '--disable-dev-shm-usage',
-  '--disable-gpu',
-  '--disable-accelerated-2d-canvas',
-  '--disable-web-security',
-  '--hide-scrollbars',
-  '--disable-background-timer-throttling',
-  '--disable-backgrounding-occluded-windows',
-  '--disable-renderer-backgrounding',
-  '--disable-extensions',
-  '--disable-sync',
-  '--disable-translate',
-  '--disable-default-apps',
-  '--no-first-run',
-  '--no-zygote',
-  '--single-process', // Critical for serverless - reduces memory
-  '--font-render-hinting=none',
-]
-
 interface GenerateOptions {
   format?: 'A4' | 'Letter'
   margin?: {
@@ -54,21 +31,34 @@ interface GenerateOptions {
 async function getBrowser(): Promise<Browser> {
   if (isServerless) {
     // Serverless mode: Use @sparticuz/chromium-min
-    // Configure chromium for headless operation
-    chromium.setHeadlessMode = true
+    // CRITICAL: Disable graphics mode for serverless (no GPU available)
     chromium.setGraphicsMode = false
 
     logger.info('Launching browser in serverless mode', {
       chromiumUrl: CHROMIUM_PACK_URL,
-      args: SERVERLESS_CHROME_ARGS.length
+      argsCount: chromium.args.length
     })
 
-    return puppeteer.launch({
-      args: [...chromium.args, ...SERVERLESS_CHROME_ARGS],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
-      headless: true,
-    })
+    try {
+      const execPath = await chromium.executablePath(CHROMIUM_PACK_URL)
+      logger.info('Chromium executable path resolved', { path: execPath })
+
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: execPath,
+        headless: chromium.headless,
+      })
+
+      logger.info('Browser launched successfully in serverless mode')
+      return browser
+    } catch (error) {
+      logger.error('Failed to launch browser in serverless mode', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      throw error
+    }
   } else {
     // Local development: Try to find a local Chrome installation
     logger.info('Launching browser in local mode')
@@ -103,11 +93,12 @@ async function getBrowser(): Promise<Browser> {
     if (!executablePath) {
       logger.warn('No local Chrome found, falling back to serverless chromium')
       // Fallback to serverless chromium even in local
+      chromium.setGraphicsMode = false
       return puppeteer.launch({
-        args: [...chromium.args, ...SERVERLESS_CHROME_ARGS],
+        args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
-        headless: true,
+        headless: chromium.headless,
       })
     }
 
