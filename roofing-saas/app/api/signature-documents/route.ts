@@ -11,7 +11,7 @@ import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
 import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
 import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
-import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
+import { uploadSignaturePdfFromServer } from '@/lib/storage/signature-pdfs-server'
 import { z } from 'zod'
 
 // PDF generation requires longer timeout on Vercel
@@ -261,12 +261,12 @@ export async function POST(request: NextRequest) {
           // Generate PDF
           const pdfBuffer = await generateProfessionalPDF(htmlContent)
 
-          // Upload generated PDF
+          // Upload generated PDF using server-side function
           const fileName = `generated-${template_id}-${Date.now()}.pdf`
-          const pdfBlob = new Uint8Array(pdfBuffer)
-          const uploadResult = await uploadSignaturePdf(
-            new File([pdfBlob], fileName, { type: 'application/pdf' }),
-            user.id
+          const uploadResult = await uploadSignaturePdfFromServer(
+            pdfBuffer,
+            user.id,
+            fileName
           )
 
           if (uploadResult.success && uploadResult.data) {

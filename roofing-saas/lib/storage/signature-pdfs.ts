@@ -1,6 +1,9 @@
 /**
  * Supabase Storage Helper for Signature PDFs
  * Handles PDF uploads for e-signature documents
+ *
+ * Client-side functions use @/lib/supabase/client (for user uploads in browser)
+ * Server-side functions use @/lib/supabase/server (for API route uploads)
  */
 
 import { createClient } from '@/lib/supabase/client'
