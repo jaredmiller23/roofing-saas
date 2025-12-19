@@ -209,6 +209,7 @@ export async function POST(request: NextRequest) {
     // If template_id is provided, check if template has HTML content
     let generatedPdfUrl = file_url
     let finalSignatureFields = signature_fields
+    let pdfGenerationError: string | null = null
 
     if (template_id) {
       const { data: template, error: templateError } = await supabase
@@ -282,7 +283,17 @@ export async function POST(request: NextRequest) {
             finalSignatureFields = template.signature_fields as z.infer<typeof signatureFieldsSchema>
           }
         } catch (error) {
-          logger.error('Error generating PDF from template', { error, template_id })
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          const errorStack = error instanceof Error ? error.stack : undefined
+          logger.error('Error generating PDF from template', {
+            error: errorMessage,
+            stack: errorStack,
+            template_id
+          })
+          // Store error for debugging (visible in response)
+          console.error('[PDF_GEN_ERROR]', errorMessage, errorStack)
+          // Capture error for API response so we can debug
+          pdfGenerationError = errorMessage
           // Continue with document creation even if PDF generation fails
         }
       }
@@ -317,7 +328,13 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/signature-documents', 201, duration)
 
-    return successResponse({ document }, 201)
+    // Include PDF generation error in response for debugging
+    const response: { document: typeof document; pdf_generation_error?: string } = { document }
+    if (pdfGenerationError) {
+      response.pdf_generation_error = pdfGenerationError
+    }
+
+    return successResponse(response, 201)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error creating signature document', { error, duration })
