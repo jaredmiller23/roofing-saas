@@ -662,3 +662,27 @@
   color: var(--foreground);
   font-weight: 600;
 }
+
+/* Instagram Navigation Mode Overrides */
+/* When ig-nav-active class is on body, hide conflicting elements */
+
+/* Hide the default sidebar mobile hamburger menu */
+body.ig-nav-active [data-sidebar-mobile-trigger] {
+  display: none !important;
+}
+
+/* Hide the sidebar mobile backdrop as well */
+body.ig-nav-active aside[id="sidebar-navigation"] {
+  transform: translateX(-100%) !important;
+}
+
+/* Hide the AI Assistant Bar - Instagram mode has voice in bottom nav */
+body.ig-nav-active > main .fixed.bottom-0.z-40,
+body.ig-nav-active > main .fixed.bottom-4.z-40 {
+  display: none !important;
+}
+
+/* Ensure content doesn't have extra bottom padding in IG mode */
+body.ig-nav-active main {
+  padding-bottom: 0 !important;
+}

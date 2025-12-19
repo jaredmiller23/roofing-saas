@@ -20,8 +20,8 @@
  * we use CSS to hide/override it and render our own navigation.
  */
 
-import { ReactNode } from 'react'
-import { usePathname } from 'next/navigation'
+import { ReactNode, useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useUIModeContext } from '@/lib/ui-mode/context'
 import { useUIPreferences } from '@/lib/hooks/useUIPreferences'
 import { FieldWorkerNav } from '@/components/layout/FieldWorkerNav'
@@ -39,6 +39,32 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   const { mode, config } = useUIModeContext()
   const { preferences, mounted } = useUIPreferences()
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Determine if we're in Instagram navigation mode
+  const isInstagramMode = mode === 'field' && preferences.nav_style === 'instagram'
+
+  // Hide the default sidebar's mobile hamburger when in Instagram mode
+  useEffect(() => {
+    if (isInstagramMode) {
+      // Add a class to body to hide the sidebar hamburger via CSS
+      document.body.classList.add('ig-nav-active')
+    } else {
+      document.body.classList.remove('ig-nav-active')
+    }
+    return () => {
+      document.body.classList.remove('ig-nav-active')
+    }
+  }, [isInstagramMode])
+
+  // Navigation handlers for IG mode top bar
+  const handleNotificationClick = () => {
+    router.push('/notifications')
+  }
+
+  const handleSettingsClick = () => {
+    router.push('/settings')
+  }
 
   // Log current mode and navigation style for verification (as requested in success criteria)
   console.log('AdaptiveLayout - Current UI Mode:', mode, 'Config:', config, 'NavStyle:', preferences.nav_style)
@@ -62,12 +88,14 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     const layoutContent = preferences.nav_style === 'instagram' ? (
       <FieldWorkerLayoutIG
         topBarProps={{
-          showNotificationBadge: true, // Show notification badge in IG mode
-          notificationCount: 0, // Can be passed from parent or fetched from API
+          showNotificationBadge: true,
+          notificationCount: 0,
+          onNotificationClick: handleNotificationClick,
+          onSettingsClick: handleSettingsClick,
         }}
-        showStories={true} // Enable stories in IG mode
-        showBottomNav={true} // Enable bottom navigation
-        className="transition-opacity duration-300 ease-in-out" // Smooth transition
+        showStories={false} // Disable stories for now - can enable later
+        showBottomNav={true}
+        className="transition-opacity duration-300 ease-in-out"
       >
         {isOnDashboard ? <FieldWorkerHome /> : children}
       </FieldWorkerLayoutIG>
