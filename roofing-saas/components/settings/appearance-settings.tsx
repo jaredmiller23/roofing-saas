@@ -5,9 +5,11 @@ import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { useTheme } from '@/lib/hooks/useTheme'
 import { useUIMode } from '@/hooks/useUIMode'
+import { useUIPreferences, getNavStyleDisplayName, getNavStyleDescription } from '@/lib/hooks/useUIPreferences'
 import { UI_MODE_CONFIGS } from '@/lib/ui-mode/types'
 import type { UIMode } from '@/lib/ui-mode/types'
-import { Monitor, Moon, Sun, Smartphone, TabletSmartphone, Laptop, Settings2 } from 'lucide-react'
+import type { NavStyle } from '@/lib/db/ui-preferences'
+import { Monitor, Moon, Sun, Smartphone, TabletSmartphone, Laptop, Settings2, Navigation, Instagram, Layout } from 'lucide-react'
 
 /**
  * Appearance Settings Component
@@ -16,7 +18,9 @@ import { Monitor, Moon, Sun, Smartphone, TabletSmartphone, Laptop, Settings2 } f
  * - Switch between light, dark, and system themes
  * - Preview current theme selection
  * - Understand how system theme detection works
+ * - Choose navigation style (traditional or Instagram-style)
  * - Select UI mode (auto-detect, field, manager, full)
+ * - View navigation behavior explanations
  */
 export function AppearanceSettings() {
   const { theme, resolvedTheme, mounted } = useTheme()
@@ -28,6 +32,7 @@ export function AppearanceSettings() {
     setMode,
     resetToAutoDetected
   } = useUIMode()
+  const { preferences, loading: preferencesLoading, setNavStyle } = useUIPreferences()
 
   const getThemeDescription = () => {
     if (!mounted) return 'Loading theme preferences...'
@@ -84,6 +89,26 @@ export function AppearanceSettings() {
       resetToAutoDetected()
     } else {
       setMode(selectedMode as UIMode, true)
+    }
+  }
+
+  const getNavStyleIcon = (navStyle: NavStyle) => {
+    switch (navStyle) {
+      case 'traditional':
+        return <Layout className="h-4 w-4" />
+      case 'instagram':
+        return <Instagram className="h-4 w-4" />
+      default:
+        return <Navigation className="h-4 w-4" />
+    }
+  }
+
+  const handleNavStyleChange = async (navStyle: NavStyle) => {
+    try {
+      await setNavStyle(navStyle)
+    } catch (error) {
+      console.error('Failed to update navigation style:', error)
+      // Error is already handled by the hook with optimistic updates
     }
   }
 
@@ -159,6 +184,106 @@ export function AppearanceSettings() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Navigation className="h-5 w-5" />
+            Navigation Style
+          </CardTitle>
+          <CardDescription>
+            Choose your preferred navigation layout. This affects how menus and navigation elements are displayed throughout the application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Current Navigation Style */}
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Current Style</Label>
+            <p className="text-sm text-muted-foreground">
+              {preferencesLoading ? 'Loading navigation preferences...' : `${getNavStyleDisplayName(preferences.nav_style)} - ${getNavStyleDescription(preferences.nav_style)}`}
+            </p>
+          </div>
+
+          {/* Navigation Style Options */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Style Selection</Label>
+            <div className="space-y-3">
+              {/* Traditional Navigation */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id="nav-traditional"
+                  name="navigation-style"
+                  value="traditional"
+                  checked={preferences.nav_style === 'traditional'}
+                  onChange={(e) => e.target.checked && handleNavStyleChange('traditional')}
+                  className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  disabled={preferencesLoading}
+                />
+                <label htmlFor="nav-traditional" className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  {getNavStyleIcon('traditional')}
+                  Traditional
+                </label>
+              </div>
+              <div className="ml-7 text-xs text-muted-foreground">
+                Classic navigation with sidebar and top bar, optimized for desktop and larger screens
+              </div>
+
+              {/* Instagram-style Navigation */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id="nav-instagram"
+                  name="navigation-style"
+                  value="instagram"
+                  checked={preferences.nav_style === 'instagram'}
+                  onChange={(e) => e.target.checked && handleNavStyleChange('instagram')}
+                  className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  disabled={preferencesLoading}
+                />
+                <label htmlFor="nav-instagram" className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  {getNavStyleIcon('instagram')}
+                  Instagram Style
+                </label>
+              </div>
+              <div className="ml-7 text-xs text-muted-foreground">
+                Modern mobile-first layout with bottom navigation, stories, and Instagram-inspired design
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Style Preview */}
+          <div className="rounded-lg border p-4 bg-muted/50">
+            <h4 className="text-sm font-medium mb-3">Style Features</h4>
+            <div className="grid gap-3">
+              <div className="flex items-center gap-3">
+                {getNavStyleIcon('traditional')}
+                <div>
+                  <p className="text-sm font-medium">Traditional</p>
+                  <p className="text-xs text-muted-foreground">Sidebar navigation, hamburger menu on mobile, classic desktop layout</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {getNavStyleIcon('instagram')}
+                <div>
+                  <p className="text-sm font-medium">Instagram Style</p>
+                  <p className="text-xs text-muted-foreground">Bottom navigation tabs, story row, Instagram-inspired UI elements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Responsive Note */}
+          <div className="rounded-lg border p-4 bg-secondary/20 dark:bg-secondary/10">
+            <h4 className="text-sm font-medium mb-2 text-secondary-foreground">Navigation Behavior</h4>
+            <div className="space-y-1 text-xs text-secondary-foreground/80">
+              <p>• <strong>Field Mode:</strong> Navigation style applies to mobile layouts and field worker interfaces</p>
+              <p>• <strong>Manager/Full Mode:</strong> Traditional navigation is used regardless of style preference</p>
+              <p>• <strong>Mobile Devices:</strong> Instagram style provides optimized touch navigation and mobile experience</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
