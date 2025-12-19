@@ -6,6 +6,7 @@
 
 export { FieldWorkerTopBarIG } from './FieldWorkerTopBarIG'
 export { FieldWorkerBottomNav } from './FieldWorkerBottomNav'
+export { FieldWorkerLayoutIG } from './FieldWorkerLayoutIG'
 export { FieldWorkerNav } from './FieldWorkerNav'
 export { DashboardLayoutClient } from './DashboardLayoutClient'
 export { FieldWorkerHome } from './FieldWorkerHome'
