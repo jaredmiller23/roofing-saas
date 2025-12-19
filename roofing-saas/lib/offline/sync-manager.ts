@@ -4,9 +4,9 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
-import { 
-  getUnsyncedRecords, 
-  markRecordSynced, 
+import {
+  getUnsyncedRecords,
+  markRecordSynced,
   incrementRetryCount,
   addConflict,
   getUnresolvedConflicts,
@@ -14,16 +14,18 @@ import {
   updateSyncMetadata,
   getSyncMetadata,
   clearExpiredCache,
-  cacheData 
+  cacheData
 } from './indexed-db';
-import { 
-  OfflineRecord, 
-  ConflictResolution, 
-  SyncStatus, 
-  SyncOptions, 
+import {
+  OfflineRecord,
+  ConflictResolution,
+  SyncStatus,
+  SyncOptions,
   OfflineEventType,
-  OfflineEvent 
+  OfflineEvent
 } from './offline-types';
+import { processSignatureQueue } from './signature-queue';
+import { clearExpiredDocumentCache } from './signature-cache';
 import { logger } from '@/lib/logger';
 
 class SyncManager {
@@ -211,6 +213,38 @@ class SyncManager {
         await this.autoResolveConflicts();
       }
 
+      // Process offline signature queue
+      let signatureStats = { success: 0, failed: 0, skipped: 0 };
+      try {
+        signatureStats = await processSignatureQueue();
+
+        // Emit events for signature sync results
+        if (signatureStats.success > 0) {
+          this.emitEvent('signature_synced', {
+            count: signatureStats.success
+          });
+        }
+        if (signatureStats.failed > 0) {
+          this.emitEvent('signature_sync_failed', {
+            count: signatureStats.failed
+          });
+        }
+
+        logger.info('Signature queue processed', signatureStats);
+      } catch (sigError) {
+        logger.error('Failed to process signature queue', { error: sigError });
+      }
+
+      // Clear expired signature document cache
+      try {
+        const clearedDocs = await clearExpiredDocumentCache();
+        if (clearedDocs > 0) {
+          logger.info(`Cleared ${clearedDocs} expired signature document cache entries`);
+        }
+      } catch (cacheError) {
+        logger.error('Failed to clear expired signature cache', { error: cacheError });
+      }
+
       // Update sync status
       this.syncStatus.last_sync = Date.now();
       this.syncStatus.pending_changes = (await getUnsyncedRecords()).length;
@@ -222,13 +256,15 @@ class SyncManager {
       logger.info('Sync completed', {
         success: successCount,
         failed: failCount,
-        remaining: this.syncStatus.pending_changes
+        remaining: this.syncStatus.pending_changes,
+        signatures: signatureStats
       });
 
       this.emitEvent('sync_completed', {
         success: successCount,
         failed: failCount,
-        remaining: this.syncStatus.pending_changes
+        remaining: this.syncStatus.pending_changes,
+        signatures: signatureStats
       });
 
     } catch (error) {

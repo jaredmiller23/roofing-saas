@@ -43,8 +43,14 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  Ban
+  Ban,
+  WifiOff,
+  CloudOff
 } from 'lucide-react'
+
+// Offline support
+import { cacheSignatureDocument, getCachedSignatureDocument } from '@/lib/offline/signature-cache'
+import { queueOfflineSignature } from '@/lib/offline/signature-queue'
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -206,6 +212,11 @@ export default function SignDocumentPage() {
   const [isSubmittingDecline, setIsSubmittingDecline] = useState(false)
   const [declined, setDeclined] = useState(false)
 
+  // Offline state
+  const [isOnline, setIsOnline] = useState(true)
+  const [isOfflineMode, setIsOfflineMode] = useState(false)
+  const [offlineSubmitMessage, setOfflineSubmitMessage] = useState<string | null>(null)
+
   // Field refs for scrolling
   const fieldRefs = useRef<Map<string, React.RefObject<HTMLDivElement | null>>>(new Map())
 
@@ -213,9 +224,53 @@ export default function SignDocumentPage() {
   const handleZoomIn = () => setPdfScale(prev => Math.min(prev + 0.25, 3))
   const handleZoomOut = () => setPdfScale(prev => Math.max(prev - 0.25, 0.5))
 
+  // Network detection for offline support
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      setIsOnline(navigator.onLine)
+    }
+
+    // Set initial state
+    updateOnlineStatus()
+
+    // Listen for network changes
+    window.addEventListener('online', updateOnlineStatus)
+    window.addEventListener('offline', updateOnlineStatus)
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus)
+      window.removeEventListener('offline', updateOnlineStatus)
+    }
+  }, [])
+
   const loadDocument = useCallback(async () => {
     try {
       setIsLoading(true)
+      setIsOfflineMode(false)
+
+      // If offline, try to load from cache first
+      if (!navigator.onLine) {
+        const cached = await getCachedSignatureDocument(documentId)
+        if (cached) {
+          setDocument(cached.document_data as SignatureDocument)
+          setIsOfflineMode(true)
+
+          // Initialize field refs
+          if (cached.document_data.signature_fields) {
+            cached.document_data.signature_fields.forEach((field: SignatureFieldPlacement) => {
+              if (!fieldRefs.current.has(field.id)) {
+                fieldRefs.current.set(field.id, { current: null })
+              }
+            })
+          }
+          return
+        }
+        // No cache available offline
+        setError('This document is not available offline. Please connect to the internet.')
+        return
+      }
+
+      // Online - fetch from API
       const res = await fetch(`/api/signature-documents/${documentId}/sign`)
       const data = await res.json()
 
@@ -233,7 +288,29 @@ export default function SignDocumentPage() {
           }
         })
       }
+
+      // Cache the document for future offline access (fire and forget)
+      cacheSignatureDocument(documentId).catch((err) => {
+        console.warn('[Offline] Failed to cache document:', err)
+      })
     } catch (err) {
+      // If fetch failed and we're now offline, try cache
+      if (!navigator.onLine) {
+        const cached = await getCachedSignatureDocument(documentId)
+        if (cached) {
+          setDocument(cached.document_data as SignatureDocument)
+          setIsOfflineMode(true)
+
+          if (cached.document_data.signature_fields) {
+            cached.document_data.signature_fields.forEach((field: SignatureFieldPlacement) => {
+              if (!fieldRefs.current.has(field.id)) {
+                fieldRefs.current.set(field.id, { current: null })
+              }
+            })
+          }
+          return
+        }
+      }
       setError(err instanceof Error ? err.message : 'Failed to load document')
     } finally {
       setIsLoading(false)
@@ -370,6 +447,25 @@ export default function SignDocumentPage() {
     try {
       setError(null)
 
+      // If offline, queue the signature for later sync
+      if (isOfflineMode || !isOnline) {
+        await queueOfflineSignature({
+          document_id: documentId,
+          signer_name: signerName,
+          signer_email: signerEmail,
+          signer_type: signerType,
+          signature_data: 'field-based-signature',
+          signature_method: 'draw',
+          completed_fields: Array.from(completedFields),
+          captured_at: Date.now(),
+        })
+
+        setOfflineSubmitMessage('Your signature has been captured and will be submitted automatically when you reconnect to the internet.')
+        setSuccess(true)
+        return
+      }
+
+      // Online - submit directly
       const res = await fetch(`/api/signature-documents/${documentId}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -391,6 +487,28 @@ export default function SignDocumentPage() {
 
       setSuccess(true)
     } catch (err) {
+      // If submission failed due to network, queue offline
+      if (!navigator.onLine) {
+        try {
+          await queueOfflineSignature({
+            document_id: documentId,
+            signer_name: signerName,
+            signer_email: signerEmail,
+            signer_type: signerType,
+            signature_data: 'field-based-signature',
+            signature_method: 'draw',
+            completed_fields: Array.from(completedFields),
+            captured_at: Date.now(),
+          })
+
+          setOfflineSubmitMessage('Connection lost. Your signature has been saved and will be submitted when you reconnect.')
+          setSuccess(true)
+          return
+        } catch (_queueErr) {
+          setError('Failed to save signature offline. Please try again.')
+          return
+        }
+      }
       setError(err instanceof Error ? err.message : 'Failed to submit signature')
     }
   }
@@ -496,6 +614,40 @@ export default function SignDocumentPage() {
   }
 
   if (success) {
+    // Offline success screen
+    if (offlineSubmitMessage) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
+            <div className="mb-6">
+              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                <CloudOff className="h-8 w-8 text-yellow-600" />
+              </div>
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+              Signature Captured
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              {offlineSubmitMessage}
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 text-yellow-800 text-sm">
+                <WifiOff className="h-4 w-4 shrink-0" />
+                <span>Your signature is saved locally and will sync automatically.</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => router.push('/')}
+              className="w-full min-h-[44px]"
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    // Online success screen
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
@@ -634,6 +786,17 @@ export default function SignDocumentPage() {
   return (
     <div className="min-h-screen bg-background py-4 md:py-8 px-2 md:px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Offline Mode Indicator */}
+        {isOfflineMode && (
+          <Alert className="mb-4 md:mb-6 bg-yellow-50 border-yellow-200">
+            <WifiOff className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <strong>Offline Mode:</strong> You&apos;re viewing a cached version of this document.
+              Your signature will be saved locally and submitted when you reconnect.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Header - Simplified on mobile */}
         <div className="bg-card rounded-lg shadow-sm border border-border p-4 md:p-6 mb-4 md:mb-6">
           <div className="flex items-start gap-3 md:gap-4">

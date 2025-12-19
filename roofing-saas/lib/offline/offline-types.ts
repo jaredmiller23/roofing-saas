@@ -59,7 +59,7 @@ export interface SyncOptions {
 
 export interface OfflineFormData {
   id: string;
-  form_type: 'inspection' | 'estimate' | 'contact' | 'project';
+  form_type: 'inspection' | 'estimate' | 'contact' | 'project' | 'signature';
   data: Record<string, unknown>;
   photos: OfflinePhoto[];
   timestamp: number;
@@ -124,7 +124,10 @@ export type OfflineEventType =
   | 'conflict_detected'
   | 'conflict_resolved'
   | 'network_changed'
-  | 'cache_updated';
+  | 'cache_updated'
+  | 'signature_queued'
+  | 'signature_synced'
+  | 'signature_sync_failed';
 
 export interface OfflineEvent {
   type: OfflineEventType;
