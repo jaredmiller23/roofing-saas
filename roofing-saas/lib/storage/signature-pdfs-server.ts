@@ -2,11 +2,27 @@
  * Server-side Supabase Storage Helper for Signature PDFs
  * Used in API routes for uploading generated PDFs
  *
- * This uses the admin client (service role) which bypasses RLS
- * and doesn't require request cookies
+ * This uses a direct service role client which bypasses RLS
+ * and doesn't require request cookies - works in any server context
  */
 
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+
+/**
+ * Create a Supabase client with service role for server-side operations
+ * This client bypasses RLS and doesn't need cookies
+ */
+function createStorageClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || ''
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    }
+  })
+}
 
 const BUCKET_NAME = 'signature-pdfs'
 
@@ -42,7 +58,7 @@ export async function uploadSignaturePdfFromServer(
   filename: string = 'generated.pdf'
 ): Promise<PdfUploadResult> {
   try {
-    const supabase = await createAdminClient()
+    const supabase = createStorageClient()
 
     // Generate unique filename
     const filePath = generatePdfFilename(userId, filename)
