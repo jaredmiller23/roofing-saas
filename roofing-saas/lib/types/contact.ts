@@ -24,7 +24,9 @@ export type ContactPriority = 'low' | 'normal' | 'high' | 'urgent'
 export type ContactCategory =
   | 'homeowner'
   | 'adjuster'
+  | 'insurance_agent'
   | 'sub_contractor'
+  | 'supplier'
   | 'real_estate_agent'
   | 'developer'
   | 'property_manager'
@@ -186,7 +188,9 @@ export function formatCategory(category: ContactCategory): string {
   const labels: Record<ContactCategory, string> = {
     homeowner: 'Homeowner',
     adjuster: 'Adjuster',
+    insurance_agent: 'Insurance Agent',
     sub_contractor: 'Sub Contractor',
+    supplier: 'Supplier',
     real_estate_agent: 'Real Estate Agent',
     developer: 'Developer',
     property_manager: 'Property Manager',
@@ -233,8 +237,10 @@ export function getContactCategoryOptions(): Array<{
 }> {
   return [
     { value: 'homeowner', label: 'Homeowner' },
-    { value: 'adjuster', label: 'Adjuster (Insurance)' },
+    { value: 'adjuster', label: 'Adjuster' },
+    { value: 'insurance_agent', label: 'Insurance Agent' },
     { value: 'sub_contractor', label: 'Sub Contractor' },
+    { value: 'supplier', label: 'Supplier' },
     { value: 'real_estate_agent', label: 'Real Estate Agent' },
     { value: 'developer', label: 'Developer' },
     { value: 'property_manager', label: 'Property Manager' },

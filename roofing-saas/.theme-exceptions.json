@@ -219,7 +219,13 @@
     "app/(dashboard)/**/*button*.tsx:*:text-white",
     "app/(dashboard)/**/*dialog*.tsx:*:text-white",
     "app/(dashboard)/settings/profile/page.tsx:*:text-white",
-    "components/signatures/*:*:text-white"
+    "components/signatures/*:*:text-white",
+    "components/dashboard/WeatherWidget.tsx:*:text-blue-500",
+    "components/dashboard/WeatherWidget.tsx:*:text-blue-300",
+    "components/dashboard/WeatherWidget.tsx:*:text-purple-500",
+    "components/jobs/JobWeatherCard.tsx:*:text-blue-500",
+    "components/jobs/JobWeatherCard.tsx:*:text-blue-300",
+    "components/jobs/JobWeatherCard.tsx:*:text-purple-500"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",
@@ -227,7 +233,8 @@
     "star-ratings": "Yellow stars are a universal pattern that should remain consistent.",
     "gamification": "Achievement badges and point systems use semantic colors for instant recognition.",
     "gamification-settings": "Tab navigation and templates use color-coding (blue=points, purple=achievements, orange=challenges, pink=rewards, green=KPIs) for visual categorization and template identification.",
-    "pipeline-settings": "Visual pipeline stage cards use dynamic user-chosen background colors; text-white ensures contrast on any background color."
+    "pipeline-settings": "Visual pipeline stage cards use dynamic user-chosen background colors; text-white ensures contrast on any background color.",
+    "weather-icons": "Weather components use semantic colors for conditions: text-blue-500 for rain/water, text-blue-300 for snow, text-purple-500 for thunderstorms. These are universal weather iconography patterns."
   },
   "enforcementRules": {
     "errors": [

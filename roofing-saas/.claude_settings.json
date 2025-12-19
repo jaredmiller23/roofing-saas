@@ -10,18 +10,16 @@
       "Glob(./**)",
       "Grep(./**)",
       "Bash(*)",
-      "Write(**/*.test.ts)",
-      "Edit(**/*.test.ts)",
+      "Write(src/components/**/*.tsx)",
+      "Edit(src/components/**/*.tsx)",
+      "Write(src/components/**/*.ts)",
+      "Edit(src/components/**/*.ts)",
       "Write(**/*.test.tsx)",
       "Edit(**/*.test.tsx)",
-      "Write(**/*.ts)",
-      "Edit(**/*.ts)",
-      "Write(**/*.tsx)",
-      "Edit(**/*.tsx)",
-      "Write(**/*.js)",
-      "Edit(**/*.js)",
-      "Write(**/*.jsx)",
-      "Edit(**/*.jsx)"
+      "Write(src/components/**/*.tsx)",
+      "Edit(src/components/**/*.tsx)",
+      "Write(src/components/**/*.ts)",
+      "Edit(src/components/**/*.ts)"
     ]
   }
 }

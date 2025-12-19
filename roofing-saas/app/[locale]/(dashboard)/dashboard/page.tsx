@@ -7,6 +7,7 @@ import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboar
 import { PointsDisplay } from '@/components/gamification/PointsDisplay'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
+import { WeatherWidget } from '@/components/dashboard/WeatherWidget'
 
 // Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
@@ -59,8 +60,9 @@ export default function DashboardPage() {
         {/* Comprehensive KPI Dashboard */}
         <DashboardMetrics scope={scope} />
 
-        {/* Weekly Challenge */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Weather & Gamification */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <WeatherWidget />
           <WeeklyChallengeWidget />
           <PointsDisplay />
           <ActivityFeed />

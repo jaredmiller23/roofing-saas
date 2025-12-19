@@ -18,7 +18,9 @@ export const createContactSchema = z.object({
   contact_category: z.enum([
     'homeowner',
     'adjuster',
+    'insurance_agent',
     'sub_contractor',
+    'supplier',
     'real_estate_agent',
     'developer',
     'property_manager',
@@ -81,7 +83,9 @@ export const contactFiltersSchema = z.object({
   contact_category: z.enum([
     'homeowner',
     'adjuster',
+    'insurance_agent',
     'sub_contractor',
+    'supplier',
     'real_estate_agent',
     'developer',
     'property_manager',

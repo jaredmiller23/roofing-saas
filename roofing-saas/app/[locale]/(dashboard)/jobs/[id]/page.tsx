@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Briefcase, Calendar, DollarSign, FileText } from 'lucide-react'
+import { JobWeatherCard } from '@/components/jobs/JobWeatherCard'
 
 /**
  * View job details page
@@ -183,6 +184,13 @@ export default async function JobDetailPage({
                 {job.actual_duration_hours ? `${job.actual_duration_hours} hours` : 'N/A'}
               </p>
             </div>
+
+            {job.scheduled_date && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">Weather Forecast</label>
+                <JobWeatherCard scheduledDate={job.scheduled_date} />
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,105 +1,87 @@
 apiVersion: aces/v1
 changes: []
 context:
-  background: "## Problem\n\nThe current PDF generation code uses full puppeteer package\
-    \ which cannot run on Vercel serverless:\n- Bundled Chromium exceeds function\
-    \ size limits\n- Browser persistence pattern does not work in serverless\n- No\
-    \ remote Chromium fetching configured\n\n## Current State\n\nFile: lib/pdf/html-to-pdf.ts\n\
-    \nUses:\n- import puppeteer from 'puppeteer' (full package ~100MB+)\n- let browser:\
-    \ Browser | null = null (persistence pattern)\n- puppeteer.launch() without serverless\
-    \ args\n\n## Required Changes\n\n### 1. Install new packages\n\nnpm install @sparticuz/chromium-min@^129.0.0\
-    \ puppeteer-core@^23.5.0\n\n### 2. Refactor lib/pdf/html-to-pdf.ts\n\nReplace\
-    \ the entire getBrowser function and imports with this serverless-compatible pattern:\n\
-    \nimport chromium from '@sparticuz/chromium-min'\nimport puppeteer from 'puppeteer-core'\n\
-    \nconst CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'\n\
-    \nasync function getBrowser() {\n  return puppeteer.launch({\n    args: [...chromium.args,\
-    \ '--hide-scrollbars', '--disable-web-security'],\n    defaultViewport: chromium.defaultViewport,\n\
-    \    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),\n    headless:\
-    \ chromium.headless,\n    ignoreHTTPSErrors: true\n  })\n}\n\n### 3. Remove browser\
-    \ caching\n\nRemove the let browser: Browser | null = null line and the process.on('exit')\
-    \ handler. Each invocation should create a fresh browser.\n\n### 4. Update generatePDFFromHTML\
-    \ function\n\nChange from:\n  const browser = await getBrowser()\n  ...\n  await\
-    \ page.close()\n\nTo:\n  const browser = await getBrowser()\n  ...\n  await browser.close()\
-    \  // Close browser after each use in serverless\n\n## Acceptance Criteria\n\n\
-    1. Package @sparticuz/chromium-min is in dependencies\n2. Package puppeteer-core\
-    \ is in dependencies\n3. lib/pdf/html-to-pdf.ts uses the serverless pattern\n\
-    4. No browser caching (fresh browser per request)\n5. Build passes (npm run build)\n\
-    6. TypeScript check passes (npm run typecheck)\n7. Lint passes (npm run lint)\n\
-    \n## Important Notes\n\n- The old puppeteer package can remain for local dev (no\
-    \ need to remove)\n- Do NOT change any other files\n- Do NOT change the function\
-    \ signatures\n- Do NOT add environment detection (the serverless pattern works\
-    \ locally too)\n- Test by running: npm run build"
-  goal: '## Problem
+  background: 'Add UI for users to switch navigation styles and comprehensive testing.
 
 
-    The current PDF generation code uses full puppeteer package which cannot run on
-    Vercel serverless:
+    Settings UI:
 
-    - Bundled Chromium exceeds function size limits
+    1. Add to Settings page or preferences modal
 
-    - Browser persistence pattern does not work in serverless
+    2. Radio/toggle: Traditional | Instagram-style
 
-    - No remote Chromium fetching configured
-
-
-    ## Current State
+    3. Preview or description of each
 
 
-    File: lib/pdf/html-to-pdf.ts
+    Testing:
+
+    1. Unit tests for new components
+
+    2. Integration test for style switching
+
+    3. Mobile viewport testing
+
+    4. Accessibility audit (WCAG AA)
 
 
-    Uses:
+    Files:
 
-    - import puppeteer from ''puppeteer'' (full package ~100MB+)
+    - app/(app)/settings/page.tsx or similar
 
-    - let browser: Browser | null = null (persistence pattern)
-
-    - puppeteer.launch() without serverless args
+    - tests/unit/components/layout/*.test.tsx
 
 
-    ## Required Changes
+    **From VEST Learnings:**
 
+    - TIP: ''eslint:no-unused-vars'' is common. Consider running: eslint --fix
 
-    ### 1'
+    - TIP: ''unused-variable'' is common. Consider running: eslint --fix'
+  goal: Add UI for users to switch navigation styles and comprehensive testing
   success_criteria:
-  - Bug is fixed and no longer reproducible
-  - No regressions introduced
-  - Test added to prevent regression
+  - Component renders correctly
+  - All props and states work as expected
+  - Component follows design system
   - TypeScript compilation succeeds
   - Linting passes with no warnings
   - Build process completes successfully
-  why: "Install new packages\n\nnpm install @sparticuz/chromium-min@^129.0.0 puppeteer-core@^23.5.0\n\
-    \n### 2. Refactor lib/pdf/html-to-pdf.ts\n\nReplace the entire getBrowser function\
-    \ and imports with this serverless-compatible pattern:\n\nimport chromium from\
-    \ '@sparticuz/chromium-min'\nimport puppeteer from 'puppeteer-core'\n\nconst CHROMIUM_PACK_URL\
-    \ = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'\n\
-    \nasync function getBrowser() {\n  return puppeteer.launch({\n    args: [...chromium.args,\
-    \ '--hide-scrollbars', '--disable-web-security'],\n    defaultViewport: chromium.defaultViewport,\n\
-    \    executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),\n    headless:\
-    \ chromium.headless,\n    ignoreHTTPSErrors: true\n  })\n}\n\n### 3. Remove browser\
-    \ caching\n\nRemove the let browser: Browser | null = null line and the process.on('exit')\
-    \ handler. Each invocation should create a fresh browser. ### 4. Update generatePDFFromHTML\
-    \ function\n\nChange from:\n  const browser = await getBrowser()\n  ... await\
-    \ page.close()\n\nTo:\n  const browser = await getBrowser()\n  ... await browser.close()\
-    \  // Close browser after each use in serverless\n\n## Acceptance Criteria\n\n\
-    1. Package @sparticuz/chromium-min is in dependencies\n2. Package puppeteer-core\
-    \ is in dependencies\n3. lib/pdf/html-to-pdf.ts uses the serverless pattern\n\
-    4. No browser caching (fresh browser per request)\n5. Build passes (npm run build)\n\
-    6. TypeScript check passes (npm run typecheck)\n7. Lint passes (npm run lint)\n\
-    \n## Important Notes\n\n- The old puppeteer package can remain for local dev (no\
-    \ need to remove)\n- Do NOT change any other files\n- Do NOT change the function\
-    \ signatures\n- Do NOT add environment detection (the serverless pattern works\
-    \ locally too)\n- Test by running: npm run build"
+  - '[LEARNING] Pattern ''eslint:no-unused-vars'' occurs frequently - consider: eslint
+    --fix'
+  - '[LEARNING] Pattern ''unused-variable'' occurs frequently - consider: eslint --fix'
+  why: 'Settings UI:
+
+    1. Add to Settings page or preferences modal
+
+    2. Radio/toggle: Traditional | Instagram-style
+
+    3. Preview or description of each
+
+
+    Testing:
+
+    1. Unit tests for new components
+
+    2. Integration test for style switching
+
+    3. Mobile viewport testing
+
+    4. Accessibility audit (WCAG AA)
+
+
+    Files:
+
+    - app/(app)/settings/page.tsx or similar
+
+    - tests/unit/components/layout/*.test.tsx'
 dependencies: null
 handoff: null
 kind: TaskSpec
 metadata:
-  archon_task_id: 77387bfb-a8a2-4056-b678-0098cef35ae9
-  created: '2025-12-18T22:39:15.712538'
-  id: 77387BFB-REFACTOR001
-  priority: 5
-  template: bug-fix
-  title: Refactor PDF generation for Vercel serverless compatibility
+  archon_task_id: 1fd146de-f675-48b8-acbc-cf1ee1d09847
+  created: '2025-12-19T19:39:53.270365'
+  id: 1FD146DE-IGNAV008001
+  priority: 2
+  template: react-component
+  title: 'IG-NAV-008: Add navStyle toggle to settings + testing'
 on_failure: null
 read_first:
 - extract: []
@@ -107,16 +89,22 @@ read_first:
   reason: Understanding project structure and conventions
   required: true
 - extract: []
-  path: '**/*.test.ts'
-  reason: Understanding existing test coverage
+  path: tsconfig.json
+  reason: Understanding TypeScript configuration
+  required: false
+- extract: []
+  path: src/components/index.ts
+  reason: Understanding component architecture
   required: false
 scope:
+  auto_rollback: false
   constraints:
   - Follow existing code patterns
   - Maintain TypeScript compliance
   - Do not break existing functionality
   create:
-  - '**/*.test.ts'
+  - src/components/**/*.tsx
+  - src/components/**/*.ts
   - '**/*.test.tsx'
   do_not_touch:
   - package.json
@@ -134,10 +122,8 @@ scope:
   - /Users/ccai/Projects/VEST/SPEC.md
   - /Users/ccai/Projects/VEST/PROTOCOL.md
   modify:
-  - '**/*.ts'
-  - '**/*.tsx'
-  - '**/*.js'
-  - '**/*.jsx'
+  - src/components/**/*.tsx
+  - src/components/**/*.ts
 thinking: null
 validation:
   assertions: []
@@ -151,7 +137,7 @@ validation:
     expect: 'exit_code: 0'
     required: true
     timeout: 60
-  - command: npm run test
+  - command: npm run build
     expect: 'exit_code: 0'
     required: true
-    timeout: 300
+    timeout: 180
