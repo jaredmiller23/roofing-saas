@@ -1,10 +1,14 @@
-import chromium from '@sparticuz/chromium'
+import chromium from '@sparticuz/chromium-min'
 import puppeteer from 'puppeteer-core'
 import type { Browser, PDFOptions } from 'puppeteer-core'
 import { logger } from '@/lib/logger'
 
 // Detect if running in serverless environment (Vercel, AWS Lambda, etc.)
 const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+
+// Remote Chromium binary URL for serverless environments
+// Using GitHub releases which works reliably without hosting our own
+const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.x64.tar'
 
 interface GenerateOptions {
   format?: 'A4' | 'Letter'
@@ -27,17 +31,17 @@ interface GenerateOptions {
  */
 async function getBrowser(): Promise<Browser> {
   if (isServerless) {
-    // Serverless mode: Use @sparticuz/chromium (full package with bundled binary)
-    // CRITICAL: Disable graphics mode for serverless (no GPU available)
-    chromium.setGraphicsMode = false
+    // Serverless mode: Use @sparticuz/chromium-min with remote Chromium binary
+    // This avoids libnss3.so issues on Vercel Node 22
 
-    logger.info('Launching browser in serverless mode', {
-      argsCount: chromium.args.length
+    logger.info('Launching browser in serverless mode with remote Chromium', {
+      packUrl: CHROMIUM_PACK_URL
     })
 
     try {
-      // Full @sparticuz/chromium package includes the binary - no URL needed
-      const execPath = await chromium.executablePath()
+      // chromium-min fetches the binary from the remote URL on first cold start
+      // Subsequent warm starts use the cached binary in /tmp
+      const execPath = await chromium.executablePath(CHROMIUM_PACK_URL)
       logger.info('Chromium executable path resolved', { path: execPath })
 
       const browser = await puppeteer.launch({
@@ -88,13 +92,12 @@ async function getBrowser(): Promise<Browser> {
     }
 
     if (!executablePath) {
-      logger.warn('No local Chrome found, falling back to serverless chromium')
-      // Fallback to serverless chromium even in local
-      chromium.setGraphicsMode = false
+      logger.warn('No local Chrome found, falling back to remote chromium')
+      // Fallback to remote chromium even in local
       return puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
+        executablePath: await chromium.executablePath(CHROMIUM_PACK_URL),
         headless: chromium.headless,
       })
     }
