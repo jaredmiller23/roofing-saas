@@ -300,3 +300,112 @@ export function createDeclineNotificationEmail(data: SignatureDeclinedData): str
   const body = getDeclineNotificationBody(data)
   return createEmailHTML(body, getDeclineNotificationSubject(data))
 }
+
+/**
+ * Document Signed Email Template
+ *
+ * Sent to document owner (and optionally other signers) when document is fully signed
+ */
+
+export interface SignedNotificationData {
+  ownerName: string
+  documentTitle: string
+  projectName?: string
+  signers: Array<{
+    signer_name: string
+    signer_email: string
+    signer_type: string
+    created_at: string
+  }>
+  documentUrl: string
+  downloadUrl: string
+  signedAt: string
+}
+
+/**
+ * Get the subject line for signed notification
+ */
+export function getSignedNotificationSubject(data: SignedNotificationData): string {
+  return `Document Signed: "${data.documentTitle}"`
+}
+
+/**
+ * Get the email body content for signed notification
+ */
+function getSignedNotificationBody(data: SignedNotificationData): string {
+  const {
+    ownerName,
+    documentTitle,
+    projectName,
+    signers,
+    documentUrl,
+    downloadUrl,
+    signedAt
+  } = data
+
+  const projectLine = projectName ? `<p style="margin: 4px 0;"><strong>Project:</strong> ${projectName}</p>` : ''
+
+  const signersHtml = signers.map(s =>
+    `<tr>
+      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${s.signer_name}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${s.signer_email}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${s.signer_type}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${new Date(s.created_at).toLocaleString()}</td>
+    </tr>`
+  ).join('')
+
+  return `
+    <div class="header" style="border-bottom-color: #22c55e;">
+      <h1 style="margin: 0; color: #16a34a;">Document Signed Successfully!</h1>
+    </div>
+
+    <p>Hi ${ownerName},</p>
+
+    <p>Great news! The following document has been fully signed by all required parties:</p>
+
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #22c55e;">
+      <h3 style="margin: 0 0 12px 0; color: #166534;">Document Details</h3>
+      <p style="margin: 4px 0;"><strong>Document:</strong> ${documentTitle}</p>
+      ${projectLine}
+      <p style="margin: 4px 0;"><strong>Completed on:</strong> ${signedAt}</p>
+    </div>
+
+    <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 24px 0;">
+      <h3 style="margin: 0 0 12px 0; color: #374151;">Signers</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #e5e7eb;">
+            <th style="padding: 8px; text-align: left;">Name</th>
+            <th style="padding: 8px; text-align: left;">Email</th>
+            <th style="padding: 8px; text-align: left;">Role</th>
+            <th style="padding: 8px; text-align: left;">Signed</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${signersHtml}
+        </tbody>
+      </table>
+    </div>
+
+    <p style="text-align: center;">
+      <a href="${downloadUrl}" class="button" style="display: inline-block; padding: 14px 28px; background-color: #22c55e; color: white; border-radius: 6px; text-decoration: none; font-weight: 500; margin-right: 8px;">
+        Download Signed PDF
+      </a>
+      <a href="${documentUrl}" style="display: inline-block; padding: 14px 28px; background-color: #3b82f6; color: white; border-radius: 6px; text-decoration: none; font-weight: 500;">
+        View Document
+      </a>
+    </p>
+
+    <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+      The signed document has been saved and is available for download at any time from your dashboard.
+    </p>
+  `
+}
+
+/**
+ * Generate the complete HTML email for a signed notification
+ */
+export function createSignedNotificationEmail(data: SignedNotificationData): string {
+  const body = getSignedNotificationBody(data)
+  return createEmailHTML(body, getSignedNotificationSubject(data))
+}

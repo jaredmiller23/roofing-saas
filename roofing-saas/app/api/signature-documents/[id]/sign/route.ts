@@ -8,7 +8,12 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend/email'
-import { createDeclineNotificationEmail, getDeclineNotificationSubject } from '@/lib/email/signature-reminder-templates'
+import {
+  createDeclineNotificationEmail,
+  getDeclineNotificationSubject,
+  createSignedNotificationEmail,
+  getSignedNotificationSubject
+} from '@/lib/email/signature-reminder-templates'
 
 /**
  * POST /api/signature-documents/[id]/sign
@@ -48,7 +53,8 @@ export async function POST(
       signature_data,
       signature_method = 'draw',
       verification_code,
-      decline_reason
+      decline_reason,
+      completed_fields = []
     } = body
 
     // Handle decline action
@@ -227,6 +233,14 @@ export async function POST(
       throw ValidationError('Document has expired')
     }
 
+    // Transform completed_fields to include timestamps
+    const completedFieldsWithTimestamps = Array.isArray(completed_fields)
+      ? completed_fields.map((fieldId: string) => ({
+          field_id: fieldId,
+          completed_at: new Date().toISOString()
+        }))
+      : []
+
     // Create signature record
     const { data: signature, error: signError } = await supabase
       .from('signatures')
@@ -239,7 +253,8 @@ export async function POST(
         signature_data,
         signature_method,
         user_agent: userAgent,
-        verification_code
+        verification_code,
+        completed_fields: completedFieldsWithTimestamps
       })
       .select()
       .single()
@@ -285,6 +300,81 @@ export async function POST(
       }
 
       logger.info('Signature document completed', { documentId: id })
+
+      // Send signed notification email to document owner
+      try {
+        const { data: owner } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', document.created_by)
+          .single()
+
+        if (owner?.email) {
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+          // Get all signatures for the document
+          const { data: allSignatures } = await supabase
+            .from('signatures')
+            .select('signer_name, signer_email, signer_type, created_at')
+            .eq('document_id', id)
+
+          const emailData = {
+            ownerName: owner.full_name || 'there',
+            documentTitle: document.title,
+            projectName: document.project?.name,
+            signers: allSignatures || [],
+            documentUrl: `${baseUrl}/signatures/${id}`,
+            downloadUrl: `${baseUrl}/api/signature-documents/${id}/download`,
+            signedAt: new Date().toLocaleString()
+          }
+
+          const emailHtml = createSignedNotificationEmail(emailData)
+          const subject = getSignedNotificationSubject(emailData)
+
+          await sendEmail({
+            to: owner.email,
+            subject,
+            html: emailHtml
+          })
+
+          logger.info('Signed notification email sent', {
+            documentId: id,
+            to: owner.email
+          })
+
+          // Notify other signers if notify_signers_on_complete is enabled
+          if (document.notify_signers_on_complete !== false && allSignatures) {
+            const otherSignerEmails = allSignatures
+              .filter(s => s.signer_email && s.signer_email !== owner.email)
+              .map(s => s.signer_email)
+
+            for (const signerEmail of otherSignerEmails) {
+              try {
+                await sendEmail({
+                  to: signerEmail,
+                  subject,
+                  html: emailHtml
+                })
+                logger.info('Signed notification email sent to signer', {
+                  documentId: id,
+                  to: signerEmail
+                })
+              } catch (signerEmailError) {
+                logger.error('Failed to send signed notification to signer', {
+                  error: signerEmailError,
+                  to: signerEmail
+                })
+              }
+            }
+          }
+        }
+      } catch (emailError) {
+        // Log but don't fail the signing if email fails
+        logger.error('Failed to send signed notification email', {
+          error: emailError,
+          documentId: id
+        })
+      }
     } else {
       // Just mark as viewed if not fully signed yet
       await supabase
