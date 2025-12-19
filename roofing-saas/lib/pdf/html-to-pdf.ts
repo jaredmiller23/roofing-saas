@@ -8,7 +8,7 @@ const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_N
 
 // Remote Chromium binary URL for serverless environments
 // Using GitHub releases which works reliably without hosting our own
-const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.x64.tar'
+const CHROMIUM_PACK_URL = 'https://github.com/Sparticuz/chromium/releases/download/v129.0.0/chromium-v129.0.0-pack.tar'
 
 interface GenerateOptions {
   format?: 'A4' | 'Letter'
