@@ -9,14 +9,15 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
-import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
-import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
-import { uploadSignaturePdfFromServer } from '@/lib/storage/signature-pdfs-server'
+// PDF generation moved to post-signing (uses pdf-lib, no Chromium needed)
+// These imports are no longer needed at document creation time:
+// import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
+// import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
+// import { uploadSignaturePdfFromServer } from '@/lib/storage/signature-pdfs-server'
 import { z } from 'zod'
 
-// PDF generation requires longer timeout on Vercel
-// Puppeteer/Chromium can take 10-30 seconds to initialize and generate
-export const maxDuration = 60
+// No longer need extended timeout - PDF generation moved to post-signing
+// export const maxDuration = 60
 
 // Zod schema for signature field placements
 const signatureFieldSchema = z.object({
@@ -206,10 +207,8 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // If template_id is provided, check if template has HTML content
-    let generatedPdfUrl = file_url
+    // If template_id is provided, use its signature fields
     let finalSignatureFields = signature_fields
-    let pdfGenerationError: string | null = null
 
     if (template_id) {
       const { data: template, error: templateError } = await supabase
@@ -220,82 +219,18 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true)
         .single()
 
-      if (!templateError && template?.html_content) {
-        logger.info('Generating PDF from HTML template', { template_id })
+      if (!templateError && template) {
+        logger.info('Using template for document', { template_id })
 
-        try {
-          // Fetch contact and project data for template merging
-          let contactData = null
-          let projectData = null
-
-          if (contact_id) {
-            const { data: contact } = await supabase
-              .from('contacts')
-              .select('*')
-              .eq('id', contact_id)
-              .eq('tenant_id', tenantId)
-              .single()
-            contactData = contact
-          }
-
-          if (project_id) {
-            const { data: project } = await supabase
-              .from('projects')
-              .select('*')
-              .eq('id', project_id)
-              .eq('tenant_id', tenantId)
-              .single()
-            projectData = project
-          }
-
-          // Merge template with data
-          const htmlContent = mergeTemplateWithContactAndProject(
-            template.html_content,
-            contactData,
-            projectData,
-            {
-              document_title: title,
-              document_type,
-            }
-          )
-
-          // Generate PDF
-          const pdfBuffer = await generateProfessionalPDF(htmlContent)
-
-          // Upload generated PDF using server-side function
-          const fileName = `generated-${template_id}-${Date.now()}.pdf`
-          const uploadResult = await uploadSignaturePdfFromServer(
-            pdfBuffer,
-            user.id,
-            fileName
-          )
-
-          if (uploadResult.success && uploadResult.data) {
-            generatedPdfUrl = uploadResult.data.url
-            logger.info('PDF generated and uploaded successfully', {
-              template_id,
-              pdf_url: generatedPdfUrl
-            })
-          }
-
-          // Use template signature fields if not provided
-          if (!signature_fields?.length && template.signature_fields?.length) {
-            finalSignatureFields = template.signature_fields as z.infer<typeof signatureFieldsSchema>
-          }
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error)
-          const errorStack = error instanceof Error ? error.stack : undefined
-          logger.error('Error generating PDF from template', {
-            error: errorMessage,
-            stack: errorStack,
-            template_id
-          })
-          // Store error for debugging (visible in response)
-          console.error('[PDF_GEN_ERROR]', errorMessage, errorStack)
-          // Capture error for API response so we can debug
-          pdfGenerationError = errorMessage
-          // Continue with document creation even if PDF generation fails
+        // Use template signature fields if not provided
+        if (!signature_fields?.length && template.signature_fields?.length) {
+          finalSignatureFields = template.signature_fields as z.infer<typeof signatureFieldsSchema>
         }
+
+        // Note: PDF generation is deferred until after signing
+        // The signing page renders the template directly (no PDF needed until signed)
+        // This avoids Chromium/Puppeteer timeout issues on serverless
+        logger.info('Template applied, PDF will be generated after signing', { template_id })
       }
     }
 
@@ -309,7 +244,7 @@ export async function POST(request: NextRequest) {
         project_id,
         contact_id,
         template_id,
-        file_url: generatedPdfUrl,
+        file_url: file_url || null,  // PDF generated after signing, not at creation
         signature_fields: finalSignatureFields,
         requires_customer_signature,
         requires_company_signature,
@@ -328,13 +263,7 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/signature-documents', 201, duration)
 
-    // Include PDF generation error in response for debugging
-    const response: { document: typeof document; pdf_generation_error?: string } = { document }
-    if (pdfGenerationError) {
-      response.pdf_generation_error = pdfGenerationError
-    }
-
-    return successResponse(response, 201)
+    return successResponse({ document }, 201)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error creating signature document', { error, duration })
