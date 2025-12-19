@@ -8,7 +8,7 @@ import type { SignatureFieldPlacement } from '@/components/signatures'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { LayoutTemplate, Loader2, FileText, Code2, Eye, Save } from 'lucide-react'
+import { LayoutTemplate, Loader2, FileText, Code2, Eye, Save, X } from 'lucide-react'
 
 interface Template {
   id: string
@@ -30,8 +30,7 @@ export default function TemplateEditorPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'fields' | 'html'>('fields')
   const [htmlContent, setHtmlContent] = useState('')
-  const [previewPdf, setPreviewPdf] = useState<string | null>(null)
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   const loadTemplate = useCallback(async () => {
     try {
@@ -116,37 +115,28 @@ export default function TemplateEditorPage() {
     }
   }
 
-  const handlePreviewPdf = async () => {
-    try {
-      setIsGeneratingPreview(true)
-      setError(null)
-
-      const res = await fetch('/api/signature-documents/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          template_id: templateId,
-          // Use sample data for preview
-          additional_data: {
-            customer_name: 'John Smith (Preview)',
-            project_name: 'Sample Project (Preview)',
-            current_date: new Date().toLocaleDateString(),
-          }
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate PDF preview')
-      }
-
-      setPreviewPdf(data.pdf_url)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate PDF preview')
-    } finally {
-      setIsGeneratingPreview(false)
+  // Generate HTML preview with sample data
+  const getPreviewHtml = () => {
+    const sampleData: Record<string, string> = {
+      customer_name: 'John Smith (Preview)',
+      customer_email: 'john.smith@example.com',
+      customer_phone: '(555) 123-4567',
+      project_name: 'Sample Roofing Project',
+      project_description: 'Complete roof replacement with premium shingles',
+      property_address: '123 Main Street, Anytown, USA 12345',
+      company_name: 'Appalachian Storm Restoration',
+      company_phone: '(555) 987-6543',
+      company_website: 'www.example.com',
+      current_date: new Date().toLocaleDateString(),
+      contract_amount: '$15,000.00',
+      license_number: 'ROO-12345',
     }
+
+    let preview = htmlContent
+    Object.entries(sampleData).forEach(([key, value]) => {
+      preview = preview.replace(new RegExp(`{{${key}}}`, 'g'), value)
+    })
+    return preview
   }
 
   if (isLoading) {
@@ -260,16 +250,16 @@ export default function TemplateEditorPage() {
                 </div>
                 <div className="flex gap-3">
                   <Button
-                    onClick={handlePreviewPdf}
-                    disabled={isGeneratingPreview || !htmlContent.trim()}
+                    onClick={() => setShowPreview(!showPreview)}
+                    disabled={!htmlContent.trim()}
                     variant="outline"
                   >
-                    {isGeneratingPreview ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {showPreview ? (
+                      <X className="h-4 w-4 mr-2" />
                     ) : (
                       <Eye className="h-4 w-4 mr-2" />
                     )}
-                    Preview PDF
+                    {showPreview ? 'Hide Preview' : 'Preview'}
                   </Button>
                   <Button
                     onClick={handleSaveHtml}
@@ -319,14 +309,22 @@ export default function TemplateEditorPage() {
               </div>
             </div>
 
-            {previewPdf && (
+            {showPreview && htmlContent.trim() && (
               <div className="p-6 border-t border-border">
-                <h3 className="text-md font-semibold text-foreground mb-3">PDF Preview</h3>
-                <iframe
-                  src={previewPdf}
-                  className="w-full h-96 border border-border rounded"
-                  title="PDF Preview"
-                />
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-md font-semibold text-foreground">Preview</h3>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    Sample data shown - this is how customers will see the document
+                  </span>
+                </div>
+                <div className="border border-border rounded bg-card">
+                  <iframe
+                    srcDoc={getPreviewHtml()}
+                    className="w-full h-[600px]"
+                    title="Template Preview"
+                    sandbox="allow-same-origin"
+                  />
+                </div>
               </div>
             )}
           </div>
