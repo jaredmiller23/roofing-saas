@@ -20,6 +20,29 @@ export interface SearchQuery extends PaginationQuery {
 }
 
 // ============================================
+// Tenant Types
+// ============================================
+
+export type AutoCreateProjectSetting = 'always' | 'prompt' | 'never'
+
+export interface Tenant {
+  id: string
+  name: string
+  subdomain: string
+  custom_domain?: string
+  settings?: Record<string, unknown>
+  features?: Record<string, unknown>
+  subscription_status?: string
+  subscription_expires_at?: string
+  logo_url?: string
+  primary_color?: string
+  is_active: boolean
+  auto_create_project_for_homeowners?: AutoCreateProjectSetting
+  created_at: string
+  updated_at: string
+}
+
+// ============================================
 // Contact Types
 // ============================================
 

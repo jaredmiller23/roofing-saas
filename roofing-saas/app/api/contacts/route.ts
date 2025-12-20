@@ -11,7 +11,7 @@ import {
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import type { ContactListResponse } from '@/lib/types/api'
+import type { ContactListResponse, AutoCreateProjectSetting } from '@/lib/types/api'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
@@ -194,6 +194,62 @@ export async function POST(request: NextRequest) {
       }
     )
 
+    // Check if we need to auto-create a project for homeowner contacts
+    let autoCreatedProject = null
+    let promptForProject = false
+
+    if (contact.contact_category === 'homeowner') {
+      // Fetch tenant setting for auto-creating projects
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .select('auto_create_project_for_homeowners')
+        .eq('id', tenantId)
+        .single()
+
+      if (tenantError) {
+        logger.error('Failed to fetch tenant settings', { error: tenantError, tenantId })
+      } else {
+        const setting: AutoCreateProjectSetting = tenant?.auto_create_project_for_homeowners || 'prompt'
+
+        if (setting === 'always') {
+          // Auto-create project without prompting
+          try {
+            const { data: project, error: projectError } = await supabase
+              .from('projects')
+              .insert({
+                name: `${contact.first_name} ${contact.last_name} - Roofing Project`,
+                contact_id: contact.id,
+                tenant_id: tenantId,
+                created_by: user.id,
+                pipeline_stage: 'prospect',
+                type: 'roofing',
+                lead_source: 'homeowner_contact',
+                priority: 'normal',
+              })
+              .select()
+              .single()
+
+            if (projectError) {
+              logger.error('Failed to auto-create project', { error: projectError, contactId: contact.id })
+            } else {
+              autoCreatedProject = project
+              logger.info('Auto-created project for homeowner contact', {
+                projectId: project.id,
+                contactId: contact.id,
+                tenantId
+              })
+            }
+          } catch (error) {
+            logger.error('Exception during auto-project creation', { error, contactId: contact.id })
+          }
+        } else if (setting === 'prompt') {
+          // Set flag to prompt user on frontend
+          promptForProject = true
+        }
+        // 'never' - do nothing
+      }
+    }
+
     // Award points for creating a contact (non-blocking)
     awardPointsSafe(
       user.id,
@@ -215,7 +271,16 @@ export async function POST(request: NextRequest) {
     logger.apiResponse('POST', '/api/contacts', 201, duration)
     logger.info('Contact created', { contactId: contact.id, tenantId })
 
-    return createdResponse({ contact })
+    // Return response with project creation info
+    const response: { contact: typeof contact; project?: typeof autoCreatedProject; prompt_for_project?: boolean } = { contact }
+    if (autoCreatedProject) {
+      response.project = autoCreatedProject
+    }
+    if (promptForProject) {
+      response.prompt_for_project = true
+    }
+
+    return createdResponse(response)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Create contact error', { error, duration })
