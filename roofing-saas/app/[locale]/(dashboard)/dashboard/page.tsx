@@ -60,9 +60,13 @@ export default function DashboardPage() {
         {/* Comprehensive KPI Dashboard */}
         <DashboardMetrics scope={scope} />
 
-        {/* Weather & Gamification */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Weather - Full Width */}
+        <div className="w-full">
           <WeatherWidget />
+        </div>
+
+        {/* Gamification Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <WeeklyChallengeWidget />
           <PointsDisplay />
           <ActivityFeed />

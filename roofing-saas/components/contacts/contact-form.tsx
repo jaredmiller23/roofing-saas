@@ -521,6 +521,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               type="number"
               id="roof_age"
               {...register('roof_age', { valueAsNumber: true })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="h-10"
             />
           </div>
@@ -533,6 +534,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               type="number"
               id="square_footage"
               {...register('square_footage', { valueAsNumber: true })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="h-10"
             />
           </div>
@@ -545,8 +547,48 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               type="number"
               id="stories"
               {...register('stories', { valueAsNumber: true })}
+              onWheel={(e) => e.currentTarget.blur()}
               className="h-10"
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Job Details */}
+      <div>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Job Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="job_type" className="block text-sm font-medium text-muted-foreground mb-1">
+              Job Type
+            </label>
+            <select
+              id="job_type"
+              {...register('job_type')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Select job type...</option>
+              <option value="roof">Roof</option>
+              <option value="siding">Siding</option>
+              <option value="gutters">Gutters</option>
+              <option value="windows">Windows</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="customer_type" className="block text-sm font-medium text-muted-foreground mb-1">
+              Customer Type
+            </label>
+            <select
+              id="customer_type"
+              {...register('customer_type')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Select customer type...</option>
+              <option value="insurance">Insurance</option>
+              <option value="retail">Retail</option>
+            </select>
           </div>
         </div>
       </div>
@@ -578,6 +620,65 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               className="h-10"
             />
           </div>
+
+          <div>
+            <label htmlFor="claim_number" className="block text-sm font-medium text-muted-foreground mb-1">
+              Claim Number
+            </label>
+            <Input
+              type="text"
+              id="claim_number"
+              {...register('claim_number')}
+              className="h-10"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="deductible" className="block text-sm font-medium text-muted-foreground mb-1">
+              Deductible
+            </label>
+            <Input
+              type="number"
+              id="deductible"
+              {...register('deductible', { valueAsNumber: true })}
+              onWheel={(e) => e.currentTarget.blur()}
+              className="h-10"
+              placeholder="$"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Communication Consent */}
+      <div>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Communication Consent</h2>
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('text_consent')}
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            <span className="text-sm text-foreground">Customer consents to receive text messages</span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('auto_text_consent')}
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            <span className="text-sm text-foreground">Customer consents to automated text messages</span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              {...register('auto_call_consent')}
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            <span className="text-sm text-foreground">Customer consents to automated calls</span>
+          </label>
         </div>
       </div>
 

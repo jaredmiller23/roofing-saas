@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
+import heic2any from 'heic2any'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,9 +42,10 @@ export function PhotoUpload({
 
   // Validate file type and size
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      return { valid: false, error: 'File must be an image (JPEG, PNG, WebP, etc.)' }
+    // Check file type (allow image/* and HEIC files)
+    const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+    if (!file.type.startsWith('image/') && !isHeic) {
+      return { valid: false, error: 'File must be an image (JPEG, PNG, WebP, HEIC, etc.)' }
     }
 
     // Check file size (20MB limit before compression)
@@ -60,12 +62,38 @@ export function PhotoUpload({
   const processFile = useCallback(
     async (file: File) => {
       try {
+        let processedFile = file
+
+        // Convert HEIC to JPEG if needed
+        const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+        if (isHeic) {
+          setUploadState({
+            status: 'compressing',
+            progress: 10,
+            message: 'Converting HEIC to JPEG...',
+          })
+
+          const convertedBlob = await heic2any({
+            blob: file,
+            toType: 'image/jpeg',
+            quality: 0.9,
+          })
+
+          // heic2any can return a single blob or array of blobs
+          const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+          processedFile = new File(
+            [blob],
+            file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
+            { type: 'image/jpeg' }
+          )
+        }
+
         // Show preview
         const reader = new FileReader()
         reader.onloadend = () => {
           setPreviewUrl(reader.result as string)
         }
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(processedFile)
 
         // Compress image
         setUploadState({
@@ -74,7 +102,7 @@ export function PhotoUpload({
           message: 'Compressing image...',
         })
 
-        const compressed = await compressImage(file)
+        const compressed = await compressImage(processedFile)
 
         setUploadState({
           status: 'compressing',
@@ -202,25 +230,42 @@ export function PhotoUpload({
     [contactId, projectId, tenantId, mode, onUploadSuccess, onUploadError]
   )
 
-  // Handle file selection from input
+  // Handle file selection from input (supports multiple files)
   const handleFileSelect = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (!file) return
+      const files = event.target.files
+      if (!files || files.length === 0) return
 
-      // Validate file
-      const validation = validateFile(file)
-      if (!validation.valid) {
-        setUploadState({
-          status: 'error',
-          progress: 0,
-          message: validation.error || 'Invalid file',
-        })
-        onUploadError?.(validation.error || 'Invalid file')
-        return
+      // Process each file sequentially
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+
+        // Validate file
+        const validation = validateFile(file)
+        if (!validation.valid) {
+          setUploadState({
+            status: 'error',
+            progress: 0,
+            message: `File ${i + 1}/${files.length}: ${validation.error || 'Invalid file'}`,
+          })
+          onUploadError?.(validation.error || 'Invalid file')
+          continue // Skip invalid files, continue with others
+        }
+
+        // Update message for batch progress
+        if (files.length > 1) {
+          setUploadState({
+            status: 'compressing',
+            progress: 0,
+            message: `Processing file ${i + 1} of ${files.length}...`,
+          })
+        }
+
+        await processFile(file)
       }
 
-      await processFile(file)
+      // Reset the input so the same file(s) can be selected again
+      event.target.value = ''
     },
     [validateFile, onUploadError, processFile]
   )
@@ -324,7 +369,7 @@ export function PhotoUpload({
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={capturePhoto}
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                 >
                   Capture Photo
                 </button>
@@ -343,7 +388,7 @@ export function PhotoUpload({
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={startCamera}
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center justify-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
@@ -384,14 +429,14 @@ export function PhotoUpload({
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                Choose File
+                Choose Files
               </button>
 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
-                capture="environment"
+                accept="image/*,.heic,.heif"
+                multiple
                 onChange={handleFileSelect}
                 className="hidden"
               />

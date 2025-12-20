@@ -53,11 +53,18 @@ export const createContactSchema = z.object({
   property_value: z.number().positive().optional(),
   square_footage: z.number().int().positive().optional(),
   stories: z.number().int().min(1).max(10).optional(),
-  // Insurance
+  // Insurance & Job Details
   insurance_carrier: z.string().optional(),
   policy_number: z.string().optional(),
   claim_number: z.string().optional(),
   deductible: z.number().positive().optional(),
+  policy_holder_id: z.string().uuid().optional().nullable(),
+  job_type: z.string().optional(),
+  customer_type: z.enum(['insurance', 'retail']).optional(),
+  // Communication Consent
+  text_consent: z.boolean().optional(),
+  auto_text_consent: z.boolean().optional(),
+  auto_call_consent: z.boolean().optional(),
   // Other
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   tags: z.array(z.string()).optional(),

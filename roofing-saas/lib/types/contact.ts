@@ -17,6 +17,8 @@ export type ContactStage =
 
 export type ContactPriority = 'low' | 'normal' | 'high' | 'urgent'
 
+export type CustomerType = 'insurance' | 'retail'
+
 /**
  * Contact category (role/type of contact)
  * Used for combined type system: e.g., "Lead-Homeowner", "Customer-Adjuster"
@@ -82,20 +84,26 @@ export interface Contact {
   square_footage: number | null
   stories: number | null
 
-  // Insurance
+  // Insurance & Job Details
   insurance_carrier: string | null
   policy_number: string | null
   claim_number: string | null
   deductible: number | null
+  policy_holder_id: string | null  // FK to another contact who holds the insurance policy
+  job_type: string | null  // Roof, Siding, Gutters, etc.
+  customer_type: CustomerType | null  // 'insurance' or 'retail'
 
   // Scoring
   lead_score: number
   priority: ContactPriority
 
-  // Compliance
+  // Compliance & Consent
   dnc_status: DNCStatus | null
   call_opt_out: boolean
   call_consent: boolean
+  text_consent: boolean
+  auto_text_consent: boolean
+  auto_call_consent: boolean
   timezone: string | null
 
   // Flexible
@@ -134,6 +142,12 @@ export interface CreateContactInput {
   policy_number?: string
   claim_number?: string
   deductible?: number
+  policy_holder_id?: string
+  job_type?: string
+  customer_type?: CustomerType
+  text_consent?: boolean
+  auto_text_consent?: boolean
+  auto_call_consent?: boolean
   priority?: ContactPriority
   tags?: string[]
   custom_fields?: Record<string, unknown>

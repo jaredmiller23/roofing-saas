@@ -1,10 +1,17 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
+
+interface AuthUserData {
+  email: string
+  first_name: string | undefined
+  last_name: string | undefined
+  last_sign_in_at: string | undefined
+}
 
 /**
  * GET /api/admin/users
@@ -31,23 +38,14 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = await createClient()
+    const adminClient = await createAdminClient()
     const searchParams = request.nextUrl.searchParams
     const excludeAdmins = searchParams.get('exclude_admins') === 'true'
 
-    // Fetch all users in tenant with their roles
+    // Fetch all users in tenant with their roles (without auth.users join)
     let query = supabase
       .from('tenant_users')
-      .select(
-        `
-        user_id,
-        role,
-        users:user_id (
-          email,
-          raw_user_meta_data,
-          last_sign_in_at
-        )
-      `
-      )
+      .select('user_id, role, created_at')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
 
@@ -63,23 +61,40 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to fetch users')
     }
 
-    // Transform to UserForImpersonation format
-    const users: UserForImpersonation[] = (tenantUsers || []).map(
-      (tu) => {
-        const userData = tu.users as { email?: string; raw_user_meta_data?: { first_name?: string; last_name?: string; name?: string }; last_sign_in_at?: string } | null
-        const metadata = userData?.raw_user_meta_data || {}
+    // Get user details from auth.users via admin API
+    const userIds = tenantUsers?.map(tu => tu.user_id) || []
+    const { data: authUsers, error: authError } = await adminClient.auth.admin.listUsers()
 
-        return {
-          id: tu.user_id,
-          email: userData?.email || '',
-          first_name: metadata.first_name || metadata.name?.split(' ')[0],
-          last_name: metadata.last_name || metadata.name?.split(' ')[1],
-          role: tu.role,
-          last_active: userData?.last_sign_in_at,
-          is_admin: tu.role === 'admin',
-        }
-      }
+    if (authError) {
+      logger.error('Error fetching auth users', { error: authError })
+      throw InternalError('Failed to fetch user details')
+    }
+
+    // Create a map of user details
+    const userMap = new Map<string, AuthUserData>(
+      authUsers.users
+        .filter(u => userIds.includes(u.id))
+        .map(u => [u.id, {
+          email: u.email || '',
+          first_name: u.user_metadata?.first_name || u.user_metadata?.name?.split(' ')[0] || undefined,
+          last_name: u.user_metadata?.last_name || u.user_metadata?.name?.split(' ')[1] || undefined,
+          last_sign_in_at: u.last_sign_in_at || undefined,
+        }])
     )
+
+    // Transform to UserForImpersonation format
+    const users: UserForImpersonation[] = (tenantUsers || []).map(tu => {
+      const authUser = userMap.get(tu.user_id) ?? { email: '', first_name: undefined, last_name: undefined, last_sign_in_at: undefined }
+      return {
+        id: tu.user_id,
+        email: authUser.email,
+        first_name: authUser.first_name,
+        last_name: authUser.last_name,
+        role: tu.role,
+        last_active: authUser.last_sign_in_at,
+        is_admin: tu.role === 'admin',
+      }
+    })
 
     return successResponse({
       users,
