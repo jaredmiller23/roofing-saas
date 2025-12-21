@@ -6,7 +6,7 @@
  * Instagram-style bottom navigation bar for field workers.
  * Features:
  * - Fixed bottom position
- * - 5 tabs: Home, Search/Map, Voice (center, prominent), Activity, Profile
+ * - 5 tabs: Pipeline, Signatures, Voice (center, prominent), Knock, Claims
  * - Voice tab activates AI assistant with animation and feedback
  * - Haptic feedback on tap (via navigator.vibrate)
  * - Active state indicators
@@ -22,12 +22,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home,
-  Search,
+  GitBranch,
+  PenTool,
   Mic,
   MicOff,
-  Activity,
-  User,
+  DoorClosed,
+  ClipboardList,
   X,
   Loader2,
   AlertCircle,
@@ -52,12 +52,13 @@ interface FieldWorkerBottomNavProps {
 type VoiceSessionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
 
 // Navigation tabs - Instagram style with Voice as center special tab
+// Business workflow: Pipeline → Signatures → VOICE → Knock → Claims
 const navTabs: NavTab[] = [
-  { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search },
+  { href: '/projects', label: 'Pipeline', icon: GitBranch },
+  { href: '/signatures', label: 'Signatures', icon: PenTool },
   { label: 'Voice', icon: Mic, isSpecial: true, isVoice: true },
-  { href: '/activity', label: 'Activity', icon: Activity },
-  { href: '/profile', label: 'Profile', icon: User },
+  { href: '/knocks', label: 'Knock', icon: DoorClosed },
+  { href: '/claims', label: 'Claims', icon: ClipboardList },
 ]
 
 export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
