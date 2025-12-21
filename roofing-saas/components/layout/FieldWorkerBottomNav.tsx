@@ -12,6 +12,8 @@
  * - Active state indicators
  * - Smooth transitions
  * - Voice AI integration with permissions handling
+ * - Enhanced design system integration with consistent button patterns
+ * - Improved accessibility and error handling
  *
  * Reference: Instagram app bottom navigation
  */
@@ -28,8 +30,10 @@ import {
   User,
   X,
   Loader2,
+  AlertCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { VoiceSession } from '@/components/voice/VoiceSession'
 import { usePermissions } from '@/hooks/usePermissions'
 
@@ -168,60 +172,87 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
             const isVoiceLoading = voiceSessionStatus === 'connecting'
 
             return (
-              <button
+              <Button
                 key={`voice-${index}`}
                 onClick={() => handleTabPress(tab)}
-                className={cn(
-                  // Base styles
-                  "flex flex-col items-center justify-center relative",
-                  "transition-all duration-300 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  // Special styling for Voice tab (center, prominent)
-                  "p-2 rounded-2xl",
+                variant={
                   isVoiceActive
-                    ? "bg-green-600 text-primary-foreground shadow-lg shadow-green-600/25 animate-pulse"
+                    ? "default"
                     : voiceSessionStatus === 'error'
-                    ? "bg-red-600 text-primary-foreground shadow-lg shadow-red-600/25"
-                    : "bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900",
+                    ? "destructive"
+                    : "ghost"
+                }
+                size="icon"
+                className={cn(
+                  // Base styles for voice tab
+                  "flex flex-col items-center justify-center relative h-auto w-auto min-h-[56px] p-2 rounded-2xl",
+                  "transition-all duration-300 ease-out",
+                  // Special styling for Voice tab states
+                  isVoiceActive && [
+                    "bg-green-600 text-primary-foreground shadow-lg shadow-green-600/25",
+                    !prefersReducedMotion && "animate-pulse"
+                  ],
+                  voiceSessionStatus === 'error' && [
+                    "bg-red-600 text-primary-foreground shadow-lg shadow-red-600/25"
+                  ],
+                  voiceSessionStatus === 'idle' && [
+                    "bg-blue-50 text-blue-600 hover:bg-blue-100",
+                    "dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900"
+                  ],
                   // Animation scale effect
-                  !prefersReducedMotion && "active:scale-95 hover:scale-105"
+                  !prefersReducedMotion && "active:scale-95 hover:scale-105",
+                  // Enhanced focus styles
+                  "focus-visible:ring-2 focus-visible:ring-offset-2",
+                  isVoiceActive && "focus-visible:ring-green-500/50",
+                  voiceSessionStatus === 'error' && "focus-visible:ring-red-500/50"
                 )}
                 aria-label={
-                  isVoiceActive
+                  voiceSessionStatus === 'error'
+                    ? "Voice Assistant Error - Tap to retry"
+                    : isVoiceActive
                     ? "Voice Assistant Active - Tap to open controls"
+                    : voiceSessionStatus === 'connecting'
+                    ? "Voice Assistant Connecting..."
                     : "Activate Voice Assistant"
                 }
+                aria-describedby={!canView('voice_assistant') ? "voice-permission-error" : undefined}
                 disabled={!canView('voice_assistant')}
+                data-testid="voice-assistant-button"
               >
-                {/* Icon container with animation */}
+                {/* Icon container with enhanced animation */}
                 <div className="relative flex items-center justify-center transition-transform duration-200 mb-1">
                   <VoiceIcon
                     className={cn(
                       "h-7 w-7 transition-all duration-200",
-                      isVoiceLoading && "animate-spin"
+                      isVoiceLoading && "animate-spin",
+                      voiceSessionStatus === 'error' && "text-primary-foreground"
                     )}
                     aria-hidden="true"
                   />
 
-                  {/* Voice activity indicator */}
+                  {/* Voice activity indicator with improved animation */}
                   {isVoiceActive && !prefersReducedMotion && (
                     <div className="absolute inset-0 rounded-full bg-green-400/30 animate-ping" />
                   )}
+
+                  {/* Error indicator */}
+                  {voiceSessionStatus === 'error' && (
+                    <div className="absolute -top-1 -right-1">
+                      <AlertCircle className="h-3 w-3 text-primary-foreground" aria-hidden="true" />
+                    </div>
+                  )}
                 </div>
 
-                {/* Tab label */}
+                {/* Tab label with improved contrast */}
                 <span className={cn(
-                  "text-xs font-medium transition-all duration-200",
-                  isVoiceActive
-                    ? "text-primary-foreground"
-                    : voiceSessionStatus === 'error'
-                    ? "text-primary-foreground"
-                    : "text-blue-600 dark:text-blue-400",
-                  "leading-tight"
+                  "text-xs font-medium transition-all duration-200 leading-tight",
+                  isVoiceActive && "text-primary-foreground font-semibold",
+                  voiceSessionStatus === 'error' && "text-primary-foreground font-semibold",
+                  voiceSessionStatus === 'idle' && "text-blue-600 dark:text-blue-400"
                 )}>
                   {tab.label}
                 </span>
-              </button>
+              </Button>
             )
           }
 
@@ -230,62 +261,78 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
           const active = isActive(tab.href)
 
           return (
-            <Link
+            <Button
               key={tab.href}
-              href={tab.href!}
+              asChild
+              variant="ghost"
+              size="icon"
               onClick={() => handleTabPress(tab)}
               className={cn(
                 // Base styles for regular navigation tabs
-                "flex flex-col items-center justify-center relative",
+                "flex flex-col items-center justify-center relative h-auto w-auto min-h-[56px] p-3 rounded-xl",
                 "transition-all duration-300 ease-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                // Standard tab styling
-                "p-3 rounded-xl",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
-                // Touch feedback
-                !prefersReducedMotion && "active:scale-95"
+                // Enhanced styling with design system integration
+                active && [
+                  "text-primary bg-primary/5 hover:bg-primary/10",
+                  "dark:bg-primary/10 dark:hover:bg-primary/15"
+                ],
+                !active && [
+                  "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  "dark:hover:bg-muted/30"
+                ],
+                // Touch feedback with improved scaling
+                !prefersReducedMotion && "active:scale-95 hover:scale-[1.02]",
+                // Enhanced focus styles
+                "focus-visible:ring-2 focus-visible:ring-offset-2",
+                active && "focus-visible:ring-primary/50"
               )}
               aria-label={`Navigate to ${tab.label}`}
               aria-current={active ? 'page' : undefined}
+              data-testid={`nav-tab-${tab.label.toLowerCase()}`}
             >
-              {/* Icon container */}
-              <div className="relative flex items-center justify-center transition-transform duration-200 mb-1">
-                <Icon
-                  className={cn(
-                    "h-6 w-6 transition-all duration-200",
-                    active && !prefersReducedMotion && "animate-pulse"
-                  )}
-                  aria-hidden="true"
-                />
-
-                {/* Active indicator dot */}
-                {active && (
-                  <div
+              <Link
+                href={tab.href!}
+                className="flex flex-col items-center justify-center w-full h-full"
+              >
+                {/* Icon container with enhanced animation */}
+                <div className="relative flex items-center justify-center transition-transform duration-200 mb-1">
+                  <Icon
                     className={cn(
-                      "absolute -bottom-1 h-1 w-1 rounded-full bg-primary",
-                      "transition-all duration-300",
-                      !prefersReducedMotion && "animate-pulse"
+                      "h-6 w-6 transition-all duration-200",
+                      active && [
+                        "text-primary",
+                        !prefersReducedMotion && "animate-pulse"
+                      ]
                     )}
                     aria-hidden="true"
                   />
-                )}
-              </div>
 
-              {/* Tab label */}
-              <span
-                className={cn(
-                  "text-xs font-medium transition-all duration-200",
-                  active
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground",
-                  "leading-tight"
-                )}
-              >
-                {tab.label}
-              </span>
-            </Link>
+                  {/* Enhanced active indicator */}
+                  {active && (
+                    <div
+                      className={cn(
+                        "absolute -bottom-1 h-1.5 w-1.5 rounded-full bg-primary shadow-sm",
+                        "transition-all duration-300",
+                        !prefersReducedMotion && "animate-pulse"
+                      )}
+                      aria-hidden="true"
+                    />
+                  )}
+                </div>
+
+                {/* Tab label with improved typography */}
+                <span
+                  className={cn(
+                    "text-xs font-medium transition-all duration-200 leading-tight",
+                    active
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground group-hover:text-foreground"
+                  )}
+                >
+                  {tab.label}
+                </span>
+              </Link>
+            </Button>
           )
         })}
       </div>
@@ -309,13 +356,15 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={handleVoiceSessionEnd}
-                className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-muted/50"
                 aria-label="Close voice assistant"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             {/* Modal Content */}
@@ -329,6 +378,11 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
           </div>
         </div>
       )}
+
+      {/* Hidden accessibility description for voice permissions */}
+      <div id="voice-permission-error" className="sr-only">
+        You don&apos;t have permission to use the voice assistant. Please contact your administrator.
+      </div>
     </nav>
   )
 }
