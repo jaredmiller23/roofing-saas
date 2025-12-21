@@ -105,3 +105,19 @@ SECRETS*.md
 # IDE/Editor credential caches
 .vscode/settings.json
 .idea/workspace.xml
+
+# ============================================
+# VEST/Archon Development Infrastructure
+# ============================================
+# Transient execution state - session-specific, not project config
+# See: ~/Projects/VEST/ for VEST documentation
+
+# VEST v1 execution state
+.aces/
+
+# VEST v2 execution state (if created locally)
+.vest/
+
+# Claude Code SDK settings (session-specific)
+.claude_settings.json
+.vest_settings.json
