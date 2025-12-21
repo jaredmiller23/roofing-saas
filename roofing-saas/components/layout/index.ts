@@ -13,6 +13,8 @@ export { FieldWorkerHome } from './FieldWorkerHome'
 export { AdaptiveLayout } from './AdaptiveLayout'
 export { Sidebar } from './Sidebar'
 export { ManagerLayout } from './ManagerLayout'
+export { HamburgerMenu } from './HamburgerMenu'
 
 // Export types
 export type { Story, FieldWorkerTopBarIGProps } from './types'
+export type { HamburgerMenuProps } from './HamburgerMenu'

@@ -6,10 +6,10 @@
  * Instagram-style top bar for field worker mode.
  * Features:
  * - Clean, minimal header
- * - Logo/brand on left
+ * - Optional hamburger menu on left for navigation drawer
+ * - Logo/brand in center or left
  * - Notification bell + settings on right
  * - Support for story row below (optional)
- * - No hamburger menu - navigation is in bottom bar
  * - Follows Instagram app design patterns
  */
 
@@ -20,6 +20,7 @@ import { Bell, Settings } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { HamburgerMenu } from './HamburgerMenu'
 import type { FieldWorkerTopBarIGProps } from './types'
 
 export function FieldWorkerTopBarIG({
@@ -28,9 +29,12 @@ export function FieldWorkerTopBarIG({
   showNotificationBadge = false,
   stories = [],
   showStories = false,
+  showHamburgerMenu = false,
+  isMenuOpen = false,
   onNotificationClick,
   onSettingsClick,
   onStoryClick,
+  onMenuClick,
 }: FieldWorkerTopBarIGProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
@@ -69,23 +73,37 @@ export function FieldWorkerTopBarIG({
         "pt-safe-top"
       )}>
         <div className="flex h-16 items-center justify-between px-4">
-          {/* Brand/Logo */}
-          <Link
-            href="/dashboard"
-            className={cn(
-              "flex items-center group",
-              "transition-transform duration-200",
-              !prefersReducedMotion && "hover:scale-105 active:scale-95"
+          {/* Left Section - Hamburger Menu + Brand/Logo */}
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu Button */}
+            {showHamburgerMenu && (
+              <HamburgerMenu
+                isOpen={isMenuOpen}
+                onClick={onMenuClick}
+                ariaLabel={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                size="md"
+                variant="ghost"
+              />
             )}
-            onClick={handleHapticFeedback}
-          >
-            <h1 className={cn(
-              "text-2xl font-bold text-foreground transition-colors",
-              "group-hover:text-primary"
-            )} style={{ fontFamily: "'Pacifico', cursive" }}>
-              Job Clarity
-            </h1>
-          </Link>
+
+            {/* Brand/Logo */}
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center group",
+                "transition-transform duration-200",
+                !prefersReducedMotion && "hover:scale-105 active:scale-95"
+              )}
+              onClick={handleHapticFeedback}
+            >
+              <h1 className={cn(
+                "text-2xl font-bold text-foreground transition-colors",
+                "group-hover:text-primary"
+              )} style={{ fontFamily: "'Pacifico', cursive" }}>
+                Job Clarity
+              </h1>
+            </Link>
+          </div>
 
           {/* Actions - Notification Bell & Settings */}
           <div className="flex items-center gap-2">
