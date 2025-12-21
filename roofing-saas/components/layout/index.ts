@@ -14,7 +14,9 @@ export { AdaptiveLayout } from './AdaptiveLayout'
 export { Sidebar } from './Sidebar'
 export { ManagerLayout } from './ManagerLayout'
 export { HamburgerMenu } from './HamburgerMenu'
+export { MobileSearchBar } from './MobileSearchBar'
 
 // Export types
 export type { Story, FieldWorkerTopBarIGProps } from './types'
 export type { HamburgerMenuProps } from './HamburgerMenu'
+export type { MobileSearchBarProps } from './MobileSearchBar'

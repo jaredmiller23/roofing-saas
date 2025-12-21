@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { HamburgerMenu } from './HamburgerMenu'
+import { MobileSearchBar } from './MobileSearchBar'
 import type { FieldWorkerTopBarIGProps } from './types'
 
 export function FieldWorkerTopBarIG({
@@ -31,10 +32,18 @@ export function FieldWorkerTopBarIG({
   showStories = false,
   showHamburgerMenu = false,
   isMenuOpen = false,
+  showSearch = false,
+  isSearchExpanded = false,
+  searchValue = '',
+  searchPlaceholder = 'Search...',
   onNotificationClick,
   onSettingsClick,
   onStoryClick,
   onMenuClick,
+  onSearchQueryChange,
+  onSearch,
+  onSearchClear,
+  onSearchToggleExpanded,
 }: FieldWorkerTopBarIGProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
@@ -105,59 +114,76 @@ export function FieldWorkerTopBarIG({
             </Link>
           </div>
 
-          {/* Actions - Notification Bell & Settings */}
+          {/* Actions - Search or Notification Bell & Settings */}
           <div className="flex items-center gap-2">
-            {/* Notification Bell */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                handleHapticFeedback()
-                onNotificationClick?.()
-              }}
-              className={cn(
-                "relative transition-all duration-200",
-                "hover:bg-accent/50 focus-visible:bg-accent/50",
-                !prefersReducedMotion && "hover:scale-105 active:scale-95"
-              )}
-              aria-label={`Notifications${notificationCount > 0 ? ` (${notificationCount} unread)` : ''}`}
-            >
-              <Bell className="h-6 w-6" />
-
-              {/* Notification Badge */}
-              {shouldShowBadge && (
-                <Badge
-                  variant="destructive"
+            {showSearch ? (
+              /* Mobile Search Bar */
+              <MobileSearchBar
+                placeholder={searchPlaceholder}
+                isExpanded={isSearchExpanded}
+                value={searchValue}
+                onQueryChange={onSearchQueryChange}
+                onSearch={onSearch}
+                onClear={onSearchClear}
+                onToggleExpanded={onSearchToggleExpanded}
+                className="transition-all duration-200"
+              />
+            ) : (
+              /* Default Icons - Notification Bell & Settings */
+              <>
+                {/* Notification Bell */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    handleHapticFeedback()
+                    onNotificationClick?.()
+                  }}
                   className={cn(
-                    "absolute -top-1 -right-1 min-w-5 h-5 px-1.5 text-xs",
-                    "flex items-center justify-center",
-                    // Animation for new notifications
-                    !prefersReducedMotion && notificationCount > 0 && "animate-pulse"
+                    "relative transition-all duration-200",
+                    "hover:bg-accent/50 focus-visible:bg-accent/50",
+                    !prefersReducedMotion && "hover:scale-105 active:scale-95"
                   )}
-                  aria-hidden="true"
+                  aria-label={`Notifications${notificationCount > 0 ? ` (${notificationCount} unread)` : ''}`}
                 >
-                  {notificationCount > 99 ? '99+' : notificationCount > 0 ? notificationCount : ''}
-                </Badge>
-              )}
-            </Button>
+                  <Bell className="h-6 w-6" />
 
-            {/* Settings */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                handleHapticFeedback()
-                onSettingsClick?.()
-              }}
-              className={cn(
-                "transition-all duration-200",
-                "hover:bg-accent/50 focus-visible:bg-accent/50",
-                !prefersReducedMotion && "hover:scale-105 active:scale-95"
-              )}
-              aria-label="Settings"
-            >
-              <Settings className="h-6 w-6" />
-            </Button>
+                  {/* Notification Badge */}
+                  {shouldShowBadge && (
+                    <Badge
+                      variant="destructive"
+                      className={cn(
+                        "absolute -top-1 -right-1 min-w-5 h-5 px-1.5 text-xs",
+                        "flex items-center justify-center",
+                        // Animation for new notifications
+                        !prefersReducedMotion && notificationCount > 0 && "animate-pulse"
+                      )}
+                      aria-hidden="true"
+                    >
+                      {notificationCount > 99 ? '99+' : notificationCount > 0 ? notificationCount : ''}
+                    </Badge>
+                  )}
+                </Button>
+
+                {/* Settings */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    handleHapticFeedback()
+                    onSettingsClick?.()
+                  }}
+                  className={cn(
+                    "transition-all duration-200",
+                    "hover:bg-accent/50 focus-visible:bg-accent/50",
+                    !prefersReducedMotion && "hover:scale-105 active:scale-95"
+                  )}
+                  aria-label="Settings"
+                >
+                  <Settings className="h-6 w-6" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>

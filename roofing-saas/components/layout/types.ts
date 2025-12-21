@@ -32,6 +32,14 @@ export interface FieldWorkerTopBarIGProps {
   showHamburgerMenu?: boolean
   /** Whether the hamburger menu is currently open */
   isMenuOpen?: boolean
+  /** Whether to show search instead of notification/settings icons */
+  showSearch?: boolean
+  /** Whether the search input is currently expanded */
+  isSearchExpanded?: boolean
+  /** Current search query value */
+  searchValue?: string
+  /** Placeholder text for search input */
+  searchPlaceholder?: string
   /** Callback when notification bell is clicked */
   onNotificationClick?: () => void
   /** Callback when settings is clicked */
@@ -40,4 +48,12 @@ export interface FieldWorkerTopBarIGProps {
   onStoryClick?: (story: Story) => void
   /** Callback when hamburger menu is clicked */
   onMenuClick?: () => void
+  /** Callback when search query changes */
+  onSearchQueryChange?: (query: string) => void
+  /** Callback when search is submitted */
+  onSearch?: (query: string) => void
+  /** Callback when search is cleared */
+  onSearchClear?: () => void
+  /** Callback when search input is expanded/collapsed */
+  onSearchToggleExpanded?: (expanded: boolean) => void
 }
