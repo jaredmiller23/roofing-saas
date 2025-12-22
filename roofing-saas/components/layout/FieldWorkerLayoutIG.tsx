@@ -123,8 +123,9 @@ export function FieldWorkerLayoutIG({
       </div>
 
       {/* Fixed Bottom Navigation */}
+      {/* Note: z-50 to ensure bottom nav appears above AIAssistantBar (z-40) */}
       {showBottomNav && (
-        <div className="flex-shrink-0 relative z-30">
+        <div className="flex-shrink-0 relative z-50">
           <FieldWorkerBottomNav className="border-t border-border/50 bg-background/95 backdrop-blur-sm" />
         </div>
       )}
