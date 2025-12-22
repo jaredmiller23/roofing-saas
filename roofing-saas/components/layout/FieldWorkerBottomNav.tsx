@@ -163,8 +163,8 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
       )}
       aria-label="Bottom navigation"
     >
-      {/* Navigation container */}
-      <div className="flex items-center justify-around px-2 py-1">
+      {/* Navigation container - flex with equal distribution */}
+      <div className="flex items-center justify-evenly px-1 py-1 w-full">
         {navTabs.map((tab, index) => {
           // Handle voice tab specially (no navigation, just activation)
           if (tab.isVoice) {
@@ -185,8 +185,8 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
                 }
                 size="icon"
                 className={cn(
-                  // Base styles for voice tab
-                  "flex flex-col items-center justify-center relative h-auto w-auto min-h-[56px] p-2 rounded-2xl",
+                  // Base styles for voice tab - flex-1 ensures equal distribution
+                  "flex-1 flex flex-col items-center justify-center relative h-auto min-h-[56px] max-w-[72px] p-2 rounded-2xl",
                   "transition-all duration-300 ease-out",
                   // Special styling for Voice tab states
                   isVoiceActive && [
@@ -269,8 +269,8 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
               size="icon"
               onClick={() => handleTabPress(tab)}
               className={cn(
-                // Base styles for regular navigation tabs
-                "flex flex-col items-center justify-center relative h-auto w-auto min-h-[56px] p-3 rounded-xl",
+                // Base styles for regular navigation tabs - flex-1 ensures equal distribution
+                "flex-1 flex flex-col items-center justify-center relative h-auto min-h-[56px] max-w-[72px] p-2 rounded-xl",
                 "transition-all duration-300 ease-out",
                 // Enhanced styling with design system integration
                 active && [
