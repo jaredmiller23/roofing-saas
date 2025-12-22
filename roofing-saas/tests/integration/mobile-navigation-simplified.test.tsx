@@ -111,8 +111,9 @@ describe('Mobile Navigation Simplified Integration', () => {
 
       expect(screen.getByRole('navigation', { name: /bottom navigation/i })).toBeInTheDocument()
       expect(screen.getByTestId('voice-assistant-button')).toBeInTheDocument()
-      expect(screen.getByTestId('nav-tab-home')).toBeInTheDocument()
-      expect(screen.getByTestId('nav-tab-search')).toBeInTheDocument()
+      // Updated: Now uses business workflow tabs instead of social-style tabs
+      expect(screen.getByTestId('nav-tab-pipeline')).toBeInTheDocument()
+      expect(screen.getByTestId('nav-tab-signatures')).toBeInTheDocument()
     })
 
     it('should open voice session modal when voice button is clicked', async () => {
@@ -291,8 +292,9 @@ describe('Mobile Navigation Simplified Integration', () => {
       const voiceButton = screen.getByTestId('voice-assistant-button')
       expect(voiceButton).toHaveAttribute('aria-label')
 
-      const homeTab = screen.getByTestId('nav-tab-home')
-      expect(homeTab).toHaveAttribute('aria-label')
+      // Updated: Now uses business workflow tabs
+      const pipelineTab = screen.getByTestId('nav-tab-pipeline')
+      expect(pipelineTab).toHaveAttribute('aria-label')
     })
 
     it('should support keyboard navigation', async () => {

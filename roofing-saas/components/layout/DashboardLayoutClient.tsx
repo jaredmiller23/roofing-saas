@@ -5,6 +5,7 @@ import { AIAssistantProvider } from '@/lib/ai-assistant/context'
 import { AIAssistantBar } from '@/components/ai-assistant/AIAssistantBar'
 import { ImpersonationBanner } from '@/components/impersonation'
 import { UIModeProvider } from '@/lib/ui-mode/context'
+import { UIPreferencesProvider } from '@/lib/ui-preferences/context'
 import { AdaptiveLayout } from '@/components/layout/AdaptiveLayout'
 
 interface DashboardLayoutClientProps {
@@ -19,17 +20,19 @@ export function DashboardLayoutClient({ children, userRole, userEmail }: Dashboa
 
   return (
     <UIModeProvider>
-      <AIAssistantProvider>
-        <ImpersonationBanner />
-        <AdaptiveLayout
-          userEmail={userEmail || ''}
-          userRole={userRole || 'user'}
-        >
-          {children}
-        </AdaptiveLayout>
-        <GlobalSearch />
-        <AIAssistantBar />
-      </AIAssistantProvider>
+      <UIPreferencesProvider>
+        <AIAssistantProvider>
+          <ImpersonationBanner />
+          <AdaptiveLayout
+            userEmail={userEmail || ''}
+            userRole={userRole || 'user'}
+          >
+            {children}
+          </AdaptiveLayout>
+          <GlobalSearch />
+          <AIAssistantBar />
+        </AIAssistantProvider>
+      </UIPreferencesProvider>
     </UIModeProvider>
   )
 }
