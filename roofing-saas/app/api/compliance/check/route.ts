@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { canMakeCall } from '@/lib/compliance/call-compliance'
 import { logger } from '@/lib/logger'
 
@@ -26,27 +26,21 @@ import { logger } from '@/lib/logger'
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    // Get tenant ID from user metadata
-    const tenantId = user.user_metadata?.org_id
+    // Get tenant ID from database
+    const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       return NextResponse.json(
-        { success: false, error: 'No organization found' },
-        { status: 400 }
+        { success: false, error: 'User not associated with tenant' },
+        { status: 403 }
       )
     }
 

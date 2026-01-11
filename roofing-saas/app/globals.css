@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "react-big-calendar/lib/css/react-big-calendar.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -380,44 +381,93 @@
 
 /* Main calendar container */
 .rbc-calendar {
-  background-color: var(--card);
-  color: var(--foreground);
-  font-family: inherit;
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  font-family: inherit !important;
 }
 
 /* Toolbar (navigation) */
 .rbc-toolbar {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-radius: var(--radius);
-  background-color: var(--muted);
+  margin-bottom: 1rem !important;
+  padding: 0.5rem !important;
+  border-radius: var(--radius) !important;
+  background-color: var(--muted) !important;
 }
 
-.rbc-toolbar button {
-  color: var(--foreground);
-  background-color: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
+/* Button Group Container */
+.rbc-btn-group {
+  background-color: transparent !important;
+  border: none !important;
+  display: inline-flex !important;
+  border-radius: var(--radius) !important;
 }
 
-.rbc-toolbar button:hover {
-  background-color: var(--accent);
-  border-color: var(--primary);
+.rbc-btn-group > button {
+  color: var(--foreground) !important;
+  background-color: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
 }
 
+/* All toolbar buttons - comprehensive targeting */
+.rbc-toolbar button,
+.rbc-btn-group > button {
+  color: var(--foreground) !important;
+  background-color: transparent !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+
+/* Hover state for all buttons */
+.rbc-toolbar button:hover,
+.rbc-btn-group > button:hover {
+  background-color: var(--accent) !important;
+  border-color: var(--primary) !important;
+  color: var(--foreground) !important;
+}
+
+/* Focus state for accessibility */
+.rbc-toolbar button:focus,
+.rbc-btn-group > button:focus {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+  background-color: var(--accent) !important;
+  border-color: var(--primary) !important;
+  color: var(--foreground) !important;
+}
+
+/* Active and selected states */
 .rbc-toolbar button:active,
-.rbc-toolbar button.rbc-active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
+.rbc-toolbar button.rbc-active,
+.rbc-btn-group > button:active,
+.rbc-btn-group > button.rbc-active {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Disabled state */
+.rbc-toolbar button:disabled,
+.rbc-btn-group > button:disabled {
+  background-color: var(--muted) !important;
+  border-color: var(--border) !important;
+  color: var(--muted-foreground) !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
 }
 
 .rbc-toolbar-label {
-  color: var(--foreground);
-  font-weight: 600;
-  font-size: 1.125rem;
+  color: var(--foreground) !important;
+  font-weight: 600 !important;
+  font-size: 1.125rem !important;
 }
 
 /* Month view */

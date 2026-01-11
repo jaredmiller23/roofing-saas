@@ -5,9 +5,10 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateEmbedding } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
@@ -15,13 +16,14 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Check auth
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
     }
 
     const body = await request.json()
@@ -38,9 +40,6 @@ export async function POST(request: NextRequest) {
       throw InternalError('Failed to generate query embedding')
     }
 
-    // Get tenant ID from JWT
-    const tenantId = user.user_metadata?.tenant_id
-
     // Search using database function
     const { data: results, error: searchError } = await supabase.rpc(
       'search_roofing_knowledge',
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
         match_threshold: threshold,
         match_count: limit,
         filter_category: category || null,
-        filter_tenant_id: tenantId || null,
+        filter_tenant_id: tenantId,
       }
     )
 

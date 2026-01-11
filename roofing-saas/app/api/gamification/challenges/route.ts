@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
 import { challengeConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
@@ -21,20 +22,20 @@ export async function GET() {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
     const { data, error } = await supabase
       .from('challenges')
       .select('*')
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
       .order('start_date', { ascending: false })
 
     if (error) {
-      logger.error('Failed to fetch challenges', { error, org_id })
+      logger.error('Failed to fetch challenges', { error, tenantId })
       throw InternalError(error.message)
     }
 
@@ -57,9 +58,9 @@ export async function POST(request: Request) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -74,16 +75,16 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('challenges')
-      .insert({ ...validated, org_id, created_by: user.id })
+      .insert({ ...validated, tenantId, created_by: user.id })
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to create challenge', { error, org_id })
+      logger.error('Failed to create challenge', { error, tenantId })
       throw InternalError(error.message)
     }
 
-    logger.info('Created challenge', { org_id, challenge_id: data.id, title: data.title })
+    logger.info('Created challenge', { tenantId, challenge_id: data.id, title: data.title })
 
     return createdResponse({ data, success: true })
   } catch (error) {

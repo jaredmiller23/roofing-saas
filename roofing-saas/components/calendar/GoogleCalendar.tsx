@@ -96,7 +96,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </CardContent>
       </Card>
     )
@@ -164,14 +164,14 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
   return (
     <div className="space-y-4">
       {/* Connected Status */}
-      <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="flex items-center justify-between bg-primary/10 border border-primary/30 rounded-lg p-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
-            <Calendar className="h-5 w-5 text-green-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/20 rounded-full">
+            <Calendar className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="font-medium text-green-900">Google Calendar Connected</p>
-            <p className="text-sm text-green-700">Your events are syncing automatically</p>
+            <p className="font-medium text-foreground">Google Calendar Connected</p>
+            <p className="text-sm text-muted-foreground">Your events are syncing automatically</p>
           </div>
         </div>
         <Button

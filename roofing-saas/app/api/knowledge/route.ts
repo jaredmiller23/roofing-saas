@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateKnowledgeEmbedding } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
@@ -64,17 +65,16 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
     // Check if user is admin
-    const tenantId = user.user_metadata?.tenant_id
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
+    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
@@ -148,17 +148,16 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
     // Check if user is admin
-    const tenantId = user.user_metadata?.tenant_id
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
+    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
@@ -221,17 +220,16 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
     // Check if user is admin
-    const tenantId = user.user_metadata?.tenant_id
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
+    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')

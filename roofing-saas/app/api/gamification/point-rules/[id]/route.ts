@@ -4,9 +4,10 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { pointRuleConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface RouteParams {
@@ -25,19 +26,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const supabase = await createClient()
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
-
-    if (!org_id) {
-      throw ValidationError('Organization not found')
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
     }
 
     // Parse and validate request body
@@ -50,7 +46,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const validated = validationResult.data
 
-    // Update point rule (RLS ensures org_id isolation)
+    // Update point rule (RLS ensures tenantId isolation)
     const { data, error } = await supabase
       .from('point_rules')
       .update({
@@ -58,12 +54,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to update point rule', { error, org_id, rule_id: id })
+      logger.error('Failed to update point rule', { error, tenantId, rule_id: id })
 
       if (error.code === 'PGRST116') {
         throw NotFoundError('Point rule not found')
@@ -73,7 +69,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     logger.info('Updated point rule', {
-      org_id,
+      tenantId,
       rule_id: data.id,
       action_type: data.action_type,
     })
@@ -95,34 +91,29 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const supabase = await createClient()
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
-
-    if (!org_id) {
-      throw ValidationError('Organization not found')
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
     }
 
-    // Delete point rule (RLS ensures org_id isolation)
+    // Delete point rule (RLS ensures tenantId isolation)
     const { error } = await supabase
       .from('point_rules')
       .delete()
       .eq('id', id)
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
 
     if (error) {
-      logger.error('Failed to delete point rule', { error, org_id, rule_id: id })
+      logger.error('Failed to delete point rule', { error, tenantId, rule_id: id })
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted point rule', { org_id, rule_id: id })
+    logger.info('Deleted point rule', { tenantId, rule_id: id })
 
     return successResponse({ success: true })
   } catch (error) {

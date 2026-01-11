@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
 import { rewardConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
@@ -21,20 +22,20 @@ export async function GET() {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
     const { data, error } = await supabase
       .from('reward_configs')
       .select('*')
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
       .order('points_required', { ascending: true })
 
     if (error) {
-      logger.error('Failed to fetch rewards', { error, org_id })
+      logger.error('Failed to fetch rewards', { error, tenantId })
       throw InternalError(error.message)
     }
 
@@ -57,9 +58,9 @@ export async function POST(request: Request) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -74,12 +75,12 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('reward_configs')
-      .insert({ ...validated, org_id, created_by: user.id })
+      .insert({ ...validated, tenantId, created_by: user.id })
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to create reward', { error, org_id })
+      logger.error('Failed to create reward', { error, tenantId })
 
       if (error.code === '23505') {
         throw ConflictError('A reward with this name already exists')
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       throw InternalError(error.message)
     }
 
-    logger.info('Created reward', { org_id, reward_id: data.id, name: data.name })
+    logger.info('Created reward', { tenantId, reward_id: data.id, name: data.name })
 
     return createdResponse({ data, success: true })
   } catch (error) {

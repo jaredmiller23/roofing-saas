@@ -3,6 +3,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
 import { challengeConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
@@ -25,9 +26,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -44,12 +45,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       .from('challenges')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to update challenge', { error, org_id, challenge_id: id })
+      logger.error('Failed to update challenge', { error, tenantId, challenge_id: id })
 
       if (error.code === 'PGRST116') {
         throw NotFoundError('Challenge not found')
@@ -58,7 +59,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw InternalError(error.message)
     }
 
-    logger.info('Updated challenge', { org_id, challenge_id: data.id })
+    logger.info('Updated challenge', { tenantId, challenge_id: data.id })
 
     return successResponse({ data, success: true })
   } catch (error) {
@@ -80,9 +81,9 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -90,14 +91,14 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       .from('challenges')
       .delete()
       .eq('id', id)
-      .eq('org_id', org_id)
+      .eq('tenantId', tenantId)
 
     if (error) {
-      logger.error('Failed to delete challenge', { error, org_id, challenge_id: id })
+      logger.error('Failed to delete challenge', { error, tenantId, challenge_id: id })
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted challenge', { org_id, challenge_id: id })
+    logger.info('Deleted challenge', { tenantId, challenge_id: id })
 
     return successResponse({ success: true })
   } catch (error) {

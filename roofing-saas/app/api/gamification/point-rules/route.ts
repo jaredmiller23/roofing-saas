@@ -4,9 +4,10 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { pointRuleConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 /**
@@ -18,35 +19,30 @@ export async function GET() {
     const supabase = await createClient()
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
-
-    if (!org_id) {
-      throw ValidationError('Organization not found')
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
     }
 
     // Fetch point rules
     const { data, error } = await supabase
       .from('point_rules')
       .select('*')
-      .eq('org_id', org_id)
+      .eq('tenant_id', tenantId)
       .order('category', { ascending: true })
       .order('action_name', { ascending: true })
 
     if (error) {
-      logger.error('Failed to fetch point rules', { error, org_id })
+      logger.error('Failed to fetch point rules', { error, tenantId })
       throw InternalError(error.message)
     }
 
-    logger.info('Fetched point rules', { org_id, count: data?.length || 0 })
+    logger.info('Fetched point rules', { tenantId, count: data?.length || 0 })
 
     return successResponse({ data, success: true })
   } catch (error) {
@@ -64,19 +60,14 @@ export async function POST(request: Request) {
     const supabase = await createClient()
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const user = await getCurrentUser()
+    if (!user) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
-
-    if (!org_id) {
-      throw ValidationError('Organization not found')
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with tenant')
     }
 
     // Parse and validate request body
@@ -94,14 +85,14 @@ export async function POST(request: Request) {
       .from('point_rules')
       .insert({
         ...validated,
-        org_id,
+        tenant_id: tenantId,
         created_by: user.id,
       })
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to create point rule', { error, org_id, action_type: validated.action_type })
+      logger.error('Failed to create point rule', { error, tenantId, action_type: validated.action_type })
 
       // Handle unique constraint violation
       if (error.code === '23505') {
@@ -112,7 +103,7 @@ export async function POST(request: Request) {
     }
 
     logger.info('Created point rule', {
-      org_id,
+      tenantId,
       rule_id: data.id,
       action_type: data.action_type,
       points: data.points_value,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generatePipelineAnalytics, createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { generateRevenueForecast } from '@/lib/analytics/forecasting'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
@@ -53,9 +54,14 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Get current user and tenant
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      return NextResponse.json({ error: 'User not associated with tenant' }, { status: 403 })
     }
 
     // Fetch projects data
@@ -71,7 +77,7 @@ export async function GET(request: NextRequest) {
           phone
         )
       `)
-      .eq('tenant_id', user.user_metadata?.tenant_id)
+      .eq('tenant_id', tenantId)
       .gte('created_at', filters.dateRange.start.toISOString())
       .lte('created_at', filters.dateRange.end.toISOString())
       .eq('is_deleted', false)
@@ -145,7 +151,7 @@ export async function GET(request: NextRequest) {
           raw_user_meta_data
         )
       `)
-      .eq('tenant_id', user.user_metadata?.tenant_id)
+      .eq('tenant_id', tenantId)
 
     // Build user name map
     const userNames: Record<string, string> = {}

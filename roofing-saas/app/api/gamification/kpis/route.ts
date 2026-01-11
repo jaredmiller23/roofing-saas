@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
 import { kpiDefinitionSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
@@ -21,9 +22,9 @@ export async function GET(request: Request) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const isSystem = searchParams.get('system')
 
-    let query = supabase.from('kpi_snapshots').select('*').eq('org_id', org_id)
+    let query = supabase.from('kpi_snapshots').select('*').eq('tenantId', tenantId)
 
     if (isSystem !== null) {
       query = query.eq('is_system', isSystem === 'true')
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
     const { data, error } = await query.order('is_system', { ascending: false }).order('name', { ascending: true })
 
     if (error) {
-      logger.error('Failed to fetch KPIs', { error, org_id })
+      logger.error('Failed to fetch KPIs', { error, tenantId })
       throw InternalError(error.message)
     }
 
@@ -63,9 +64,9 @@ export async function POST(request: Request) {
       throw AuthenticationError()
     }
 
-    const org_id = user.user_metadata?.org_id
+    const tenantId = await getUserTenantId(user.id)
 
-    if (!org_id) {
+    if (!tenantId) {
       throw ValidationError('Organization not found')
     }
 
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
       .from('kpi_snapshots')
       .insert({
         ...validated,
-        org_id,
+        tenantId,
         is_system: false, // Custom KPIs are never system KPIs
         created_by: user.id,
       })
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      logger.error('Failed to create KPI', { error, org_id })
+      logger.error('Failed to create KPI', { error, tenantId })
 
       if (error.code === '23505') {
         throw ConflictError('A KPI with this name already exists')
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
       throw InternalError(error.message)
     }
 
-    logger.info('Created KPI', { org_id, kpi_id: data.id, name: data.name })
+    logger.info('Created KPI', { tenantId, kpi_id: data.id, name: data.name })
 
     return createdResponse({ data, success: true })
   } catch (error) {
