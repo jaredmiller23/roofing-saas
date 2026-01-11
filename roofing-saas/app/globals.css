@@ -257,6 +257,70 @@
 }
 
 /* ========================================
+   LAYOUT SYSTEM VARIABLES
+   Z-index scale, height constants, safe areas
+   ======================================== */
+
+:root {
+  /* Z-Index Scale - Consistent layering across the app
+     Use these values instead of arbitrary z-[N] classes */
+  --z-content: 10;        /* Base content layer */
+  --z-sticky: 20;         /* Sticky headers, stories row */
+  --z-fixed-nav: 30;      /* Fixed navigation bars */
+  --z-sidebar: 40;        /* Sidebar, AI assistant bar */
+  --z-overlay: 50;        /* Overlay backgrounds, dropdowns */
+  --z-modal: 60;          /* Modal dialogs */
+  --z-popover: 70;        /* Popovers, tooltips, map pins */
+  --z-toast: 80;          /* Toast notifications (highest) */
+
+  /* Layout Heights - Use in calc() expressions
+     Example: h-[calc(100vh-var(--header-height))] */
+  --header-height: 4rem;       /* 64px - Desktop header */
+  --mobile-header-height: 3.5rem; /* 56px - Mobile top bar */
+  --bottom-nav-height: 3.5rem; /* 56px - Instagram bottom nav */
+  --ai-bar-height: 5rem;       /* 80px - AI assistant bar */
+  --sidebar-width: 16rem;      /* 256px - Desktop sidebar (w-64) */
+}
+
+/* Safe Area Utilities for Notched Devices
+   Use on fixed/sticky elements that touch screen edges */
+@supports (padding: env(safe-area-inset-top)) {
+  .pt-safe-top { padding-top: env(safe-area-inset-top); }
+  .pb-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe-left { padding-left: env(safe-area-inset-left); }
+  .pr-safe-right { padding-right: env(safe-area-inset-right); }
+  .mt-safe-top { margin-top: env(safe-area-inset-top); }
+  .mb-safe-bottom { margin-bottom: env(safe-area-inset-bottom); }
+  .ml-safe-left { margin-left: env(safe-area-inset-left); }
+  .mr-safe-right { margin-right: env(safe-area-inset-right); }
+}
+
+/* ========================================
+   ADAPTIVE LAYOUT MODE CLASSES
+   CSS-based sidebar hiding for field/manager modes
+   ======================================== */
+
+/* Field mode - Hide desktop sidebar, allow full-width content */
+body.field-mode-active aside[id="sidebar-navigation"],
+body.field-mode-active .sidebar-navigation {
+  display: none !important;
+}
+
+body.field-mode-active main {
+  margin-left: 0 !important;
+}
+
+/* Manager mode - Hide sidebar on mobile/tablet, show on desktop */
+body.manager-mode-active aside[id="sidebar-navigation"],
+body.manager-mode-active .sidebar-navigation {
+  display: none !important;
+}
+
+body.manager-mode-active main {
+  margin-left: 0 !important;
+}
+
+/* ========================================
    NIGHTFALL UTILITY CLASSES
    ======================================== */
 

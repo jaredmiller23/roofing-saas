@@ -82,7 +82,7 @@ export function ConversationList({
       </div>
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto overscroll-y-contain">
+      <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
             {searchQuery ? (

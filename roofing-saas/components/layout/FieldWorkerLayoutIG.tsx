@@ -152,7 +152,7 @@ export function FieldWorkerLayoutIG({
       {/* Main Content Area - Scrollable */}
       <div
         className={cn(
-          'flex-1 overflow-y-auto overscroll-behavior-y-contain',
+          'flex-1 overflow-y-auto',
           // Ensure proper spacing from fixed elements
           'relative z-10',
           // Handle safe areas and proper scroll behavior

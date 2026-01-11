@@ -161,7 +161,7 @@ export default function PipelineAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="h-[calc(100vh-var(--header-height))] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading analytics...</p>
@@ -171,7 +171,7 @@ export default function PipelineAnalyticsPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="h-[calc(100vh-var(--header-height))] overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="px-4 md:px-8 py-4 md:py-6 bg-card border-b">

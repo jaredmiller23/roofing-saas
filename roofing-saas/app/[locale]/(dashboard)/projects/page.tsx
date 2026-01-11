@@ -26,7 +26,7 @@ export default function ProjectsPage() {
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban')
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="h-[calc(100vh-var(--header-height))] overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="px-4 md:px-8 py-4 md:py-6 bg-card border-b border">

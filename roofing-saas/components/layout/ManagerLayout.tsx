@@ -135,7 +135,7 @@ export function ManagerLayout({ children, userEmail, userRole = 'user' }: Manage
         onMouseLeave={() => setIsHovering(false)}
         className={cn(
           "fixed top-0 left-0 h-screen bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground",
-          "flex flex-col z-40",
+          "flex flex-col z-40 pt-safe-top",
           "transition-all ease-out",
           prefersReducedMotion ? 'duration-0' : 'duration-200',
           shouldExpand ? 'w-64' : 'w-16'

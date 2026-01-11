@@ -125,7 +125,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
       {/* Mobile Menu Button - hidden when ig-nav-active via CSS */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="lg:hidden fixed top-4 left-4 z-50 mt-safe-top ml-safe-left p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={isMobileOpen ? "Close menu" : "Open menu"}
         aria-expanded={isMobileOpen}
         aria-controls="sidebar-navigation"
@@ -145,7 +145,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
       {/* Sidebar */}
       <aside
         id="sidebar-navigation"
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground w-64 flex flex-col z-40 transition-transform duration-300 ${
+        className={`sidebar-navigation fixed top-0 left-0 h-screen bg-gradient-to-b from-sidebar to-slate text-sidebar-foreground w-64 flex flex-col z-40 transition-transform duration-300 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         role="navigation"

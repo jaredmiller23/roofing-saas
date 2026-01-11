@@ -234,7 +234,7 @@ export function TerritoryMapEditor({
 
       {/* Instructions overlay */}
       {isLoaded && !currentBoundary && (
-        <div className="absolute top-4 left-4 bg-card rounded-lg shadow-lg p-3 z-[1000] max-w-xs">
+        <div className="absolute top-4 left-4 bg-card rounded-lg shadow-lg p-3 z-60 max-w-xs">
           <h4 className="font-semibold text-sm text-foreground mb-2">Draw Territory Boundary</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
             <li className="flex items-start gap-2">
@@ -255,7 +255,7 @@ export function TerritoryMapEditor({
 
       {/* Boundary info */}
       {isLoaded && currentBoundary && (
-        <div className="absolute bottom-4 left-4 bg-card rounded-lg shadow-lg p-3 z-[1000]">
+        <div className="absolute bottom-4 left-4 bg-card rounded-lg shadow-lg p-3 z-60">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold text-foreground">

@@ -51,18 +51,26 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   // Determine if we're in Instagram navigation mode
   const isInstagramMode = mode === 'field' && preferences.nav_style === 'instagram'
 
-  // Hide the default sidebar's mobile hamburger when in Instagram mode
+  // Manage body classes for CSS-based layout control
+  // This allows hiding the sidebar via CSS instead of negative margins
   useEffect(() => {
-    if (isInstagramMode) {
-      // Add a class to body to hide the sidebar hamburger via CSS
-      document.body.classList.add('ig-nav-active')
-    } else {
-      document.body.classList.remove('ig-nav-active')
+    // Clear all mode classes first
+    document.body.classList.remove('ig-nav-active', 'field-mode-active', 'manager-mode-active')
+
+    // Add appropriate class based on mode
+    if (mode === 'field') {
+      document.body.classList.add('field-mode-active')
+      if (isInstagramMode) {
+        document.body.classList.add('ig-nav-active')
+      }
+    } else if (mode === 'manager') {
+      document.body.classList.add('manager-mode-active')
     }
+
     return () => {
-      document.body.classList.remove('ig-nav-active')
+      document.body.classList.remove('ig-nav-active', 'field-mode-active', 'manager-mode-active')
     }
-  }, [isInstagramMode])
+  }, [mode, isInstagramMode])
 
   // Drawer handlers
   const handleDrawerOpen = useCallback(() => {
@@ -106,12 +114,12 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   const isOnDashboard = pathname.endsWith('/dashboard')
 
   // Field mode: Show field-specific UI with full-screen layout
-  // Uses negative margin to hide the default sidebar
+  // Sidebar is hidden via CSS (field-mode-active class on body)
   if (mode === 'field') {
     // Wait for preferences to load to avoid flash
     if (!mounted) {
       return (
-        <div className="lg:-ml-64 w-screen min-h-screen bg-background flex items-center justify-center">
+        <div className="w-full min-h-screen bg-background flex items-center justify-center">
           <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
       )
@@ -149,17 +157,17 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     )
 
     return (
-      <div className="lg:-ml-64 w-screen min-h-screen bg-background">
+      <div className="w-full min-h-screen bg-background">
         {layoutContent}
       </div>
     )
   }
 
   // Manager mode: Show collapsible sidebar optimized for tablets
-  // Uses negative margin to hide the default sidebar, then renders ManagerLayout
+  // Sidebar is hidden via CSS (manager-mode-active class on body)
   if (mode === 'manager') {
     return (
-      <div className="lg:-ml-64 w-screen min-h-screen">
+      <div className="w-full min-h-screen">
         <ManagerLayout userEmail={userEmail} userRole={userRole}>
           {children}
         </ManagerLayout>
