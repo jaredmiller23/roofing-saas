@@ -57,6 +57,28 @@ export function TerritoryMapEditor({
     setMap(null)
   }, [])
 
+  // Helper to extract coordinates from a polygon and notify parent
+  const extractAndNotifyBoundary = useCallback((polygon: google.maps.Polygon) => {
+    const path = polygon.getPath()
+    const coords: number[][] = []
+    for (let i = 0; i < path.getLength(); i++) {
+      const point = path.getAt(i)
+      coords.push([point.lng(), point.lat()])
+    }
+    // Close the polygon
+    if (coords.length > 0) {
+      coords.push(coords[0])
+    }
+
+    const boundary: TerritoryBoundary = {
+      type: 'Polygon',
+      coordinates: [coords],
+    }
+
+    setCurrentBoundary(boundary)
+    onBoundaryChange?.(boundary)
+  }, [onBoundaryChange])
+
   // Load initial boundary
   useEffect(() => {
     if (!map || !initialBoundary || !isLoaded) return
@@ -86,6 +108,25 @@ export function TerritoryMapEditor({
         overlayRef.current = polygon
         setCurrentOverlay(polygon)
 
+        // Add listeners for polygon edits
+        const polygonPath = polygon.getPath()
+
+        // Listen for vertex changes
+        google.maps.event.addListener(polygonPath, 'set_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+        google.maps.event.addListener(polygonPath, 'insert_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+        google.maps.event.addListener(polygonPath, 'remove_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+
+        // Listen for drag end (whole polygon moved)
+        google.maps.event.addListener(polygon, 'dragend', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+
         // Fit bounds to polygon
         const bounds = new google.maps.LatLngBounds()
         path.forEach(point => bounds.extend(point))
@@ -94,7 +135,7 @@ export function TerritoryMapEditor({
     } catch (error) {
       console.error('Error loading initial boundary:', error)
     }
-  }, [map, initialBoundary, isLoaded])
+  }, [map, initialBoundary, isLoaded, extractAndNotifyBoundary])
 
   // Drawing callback
   const onOverlayComplete = useCallback(
@@ -122,6 +163,20 @@ export function TerritoryMapEditor({
         // Close the polygon by adding first point at the end
         coords.push(coords[0])
         coordinates = [coords]
+
+        // Add listeners for subsequent edits to this polygon
+        google.maps.event.addListener(path, 'set_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+        google.maps.event.addListener(path, 'insert_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+        google.maps.event.addListener(path, 'remove_at', () => {
+          extractAndNotifyBoundary(polygon)
+        })
+        google.maps.event.addListener(polygon, 'dragend', () => {
+          extractAndNotifyBoundary(polygon)
+        })
       } else if (event.type === google.maps.drawing.OverlayType.RECTANGLE) {
         const rectangle = overlay as google.maps.Rectangle
         const bounds = rectangle.getBounds()
@@ -136,6 +191,28 @@ export function TerritoryMapEditor({
             [sw.lng(), ne.lat()], // Close polygon
           ]]
         }
+
+        // Add listener for rectangle bounds changes
+        google.maps.event.addListener(rectangle, 'bounds_changed', () => {
+          const newBounds = rectangle.getBounds()
+          if (newBounds) {
+            const newNe = newBounds.getNorthEast()
+            const newSw = newBounds.getSouthWest()
+            const newCoords = [[
+              [newSw.lng(), newNe.lat()],
+              [newNe.lng(), newNe.lat()],
+              [newNe.lng(), newSw.lat()],
+              [newSw.lng(), newSw.lat()],
+              [newSw.lng(), newNe.lat()],
+            ]]
+            const newBoundary: TerritoryBoundary = {
+              type: 'Polygon',
+              coordinates: newCoords,
+            }
+            setCurrentBoundary(newBoundary)
+            onBoundaryChange?.(newBoundary)
+          }
+        })
       }
 
       const boundary: TerritoryBoundary = {
@@ -146,7 +223,7 @@ export function TerritoryMapEditor({
       setCurrentBoundary(boundary)
       onBoundaryChange?.(boundary)
     },
-    [onBoundaryChange]
+    [onBoundaryChange, extractAndNotifyBoundary]
   )
 
   // Clear boundary
