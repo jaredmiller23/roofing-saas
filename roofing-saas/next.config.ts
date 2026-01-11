@@ -40,12 +40,19 @@ const nextConfig: NextConfig = {
   },
   // Production optimization and security headers
   async headers() {
+    // Only allow unsafe-eval in development (needed for Next.js HMR/dev mode)
+    // Production builds don't need eval and this improves security
+    const isDev = process.env.NODE_ENV === 'development'
+    const scriptSrc = isDev
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com"
+      : "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com"
+
     const securityHeaders = [
       {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com", // Google Maps scripts
+          scriptSrc, // Google Maps scripts (unsafe-eval only in dev)
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // CSS-in-JS + Google Fonts
           "img-src 'self' data: blob: https://wfifizczqvogbcqamnmw.supabase.co https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
           "font-src 'self' data: https://fonts.gstatic.com",
