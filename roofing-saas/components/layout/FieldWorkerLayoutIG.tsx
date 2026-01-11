@@ -23,6 +23,7 @@ import { ReactNode } from 'react'
 import { FieldWorkerTopBarIG } from './FieldWorkerTopBarIG'
 import { FieldWorkerBottomNav } from './FieldWorkerBottomNav'
 import { StoriesRow } from './StoriesRow'
+import { NavigationDrawer } from './NavigationDrawer'
 import { cn } from '@/lib/utils'
 import type { FieldWorkerTopBarIGProps } from './types'
 import type { EnhancedStory, QuickAction } from './StoriesRow'
@@ -52,6 +53,24 @@ export interface FieldWorkerLayoutIGProps {
   showAddStoryButton?: boolean
   /** Whether to show the bottom navigation */
   showBottomNav?: boolean
+  /** Whether the navigation drawer is open */
+  isDrawerOpen?: boolean
+  /** Callback when drawer should open */
+  onDrawerOpen?: () => void
+  /** Callback when drawer should close */
+  onDrawerClose?: () => void
+  /** Whether the search bar is expanded */
+  isSearchExpanded?: boolean
+  /** Current search value */
+  searchValue?: string
+  /** Callback when search value changes */
+  onSearchChange?: (value: string) => void
+  /** Callback when search is submitted */
+  onSearchSubmit?: (value: string) => void
+  /** Callback when search is cleared */
+  onSearchClear?: () => void
+  /** Callback when search expands/collapses */
+  onSearchToggle?: (expanded: boolean) => void
 }
 
 export function FieldWorkerLayoutIG({
@@ -67,6 +86,17 @@ export function FieldWorkerLayoutIG({
   onAddStoryClick,
   showAddStoryButton = true,
   showBottomNav = true,
+  // Drawer props
+  isDrawerOpen = false,
+  onDrawerOpen,
+  onDrawerClose,
+  // Search props
+  isSearchExpanded = false,
+  searchValue = '',
+  onSearchChange,
+  onSearchSubmit,
+  onSearchClear,
+  onSearchToggle,
 }: FieldWorkerLayoutIGProps) {
   return (
     <div
@@ -77,6 +107,12 @@ export function FieldWorkerLayoutIG({
         className
       )}
     >
+      {/* Navigation Drawer */}
+      <NavigationDrawer
+        isOpen={isDrawerOpen}
+        onClose={onDrawerClose || (() => {})}
+      />
+
       {/* Fixed Top Bar */}
       <div className="flex-shrink-0 relative z-30">
         <FieldWorkerTopBarIG
@@ -84,6 +120,16 @@ export function FieldWorkerLayoutIG({
           stories={stories}
           showStories={false} // Stories are rendered separately below
           onStoryClick={onStoryClick ? (story) => onStoryClick(story as EnhancedStory) : undefined}
+          // Drawer props
+          isMenuOpen={isDrawerOpen}
+          onMenuClick={onDrawerOpen}
+          // Search props
+          isSearchExpanded={isSearchExpanded}
+          searchValue={searchValue}
+          onSearchQueryChange={onSearchChange}
+          onSearch={onSearchSubmit}
+          onSearchClear={onSearchClear}
+          onSearchToggleExpanded={onSearchToggle}
         />
       </div>
 

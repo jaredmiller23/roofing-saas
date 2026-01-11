@@ -6,11 +6,13 @@
  * Instagram-style top bar for field worker mode.
  * Features:
  * - Clean, minimal header
- * - Optional hamburger menu on left for navigation drawer
- * - Logo/brand in center or left
- * - Notification bell + settings on right
- * - Support for story row below (optional)
+ * - Hamburger menu on left for navigation drawer
+ * - Logo/brand in center
+ * - Search icon on right (expands to search bar)
  * - Follows Instagram app design patterns
+ *
+ * Updated: 2026-01-11 - Changed defaults to show hamburger + search
+ * per Fahredin's original request (not bell/settings)
  */
 
 import { useState, useEffect } from 'react'
@@ -30,9 +32,9 @@ export function FieldWorkerTopBarIG({
   showNotificationBadge = false,
   stories = [],
   showStories = false,
-  showHamburgerMenu = false,
+  showHamburgerMenu = true,  // Default: show hamburger for drawer access
   isMenuOpen = false,
-  showSearch = false,
+  showSearch = true,  // Default: show search (not bell/settings)
   isSearchExpanded = false,
   searchValue = '',
   searchPlaceholder = 'Search...',

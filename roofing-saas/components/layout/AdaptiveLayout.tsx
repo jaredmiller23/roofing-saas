@@ -20,7 +20,7 @@
  * we use CSS to hide/override it and render our own navigation.
  */
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUIModeContext } from '@/lib/ui-mode/context'
 import { useUIPreferences } from '@/lib/hooks/useUIPreferences'
@@ -41,6 +41,13 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   const pathname = usePathname()
   const router = useRouter()
 
+  // Drawer state
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  // Search state
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+
   // Determine if we're in Instagram navigation mode
   const isInstagramMode = mode === 'field' && preferences.nav_style === 'instagram'
 
@@ -57,14 +64,39 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     }
   }, [isInstagramMode])
 
-  // Navigation handlers for IG mode top bar
-  const handleNotificationClick = () => {
-    router.push('/notifications')
-  }
+  // Drawer handlers
+  const handleDrawerOpen = useCallback(() => {
+    setIsDrawerOpen(true)
+  }, [])
 
-  const handleSettingsClick = () => {
-    router.push('/settings')
-  }
+  const handleDrawerClose = useCallback(() => {
+    setIsDrawerOpen(false)
+  }, [])
+
+  // Search handlers
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchValue(value)
+  }, [])
+
+  const handleSearchSubmit = useCallback((value: string) => {
+    // Navigate to search results page with query
+    if (value.trim()) {
+      router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+      setIsSearchExpanded(false)
+      setSearchValue('')
+    }
+  }, [router])
+
+  const handleSearchClear = useCallback(() => {
+    setSearchValue('')
+  }, [])
+
+  const handleSearchToggle = useCallback((expanded: boolean) => {
+    setIsSearchExpanded(expanded)
+    if (!expanded) {
+      setSearchValue('')
+    }
+  }, [])
 
   // Log current mode and navigation style for verification (as requested in success criteria)
   console.log('AdaptiveLayout - Current UI Mode:', mode, 'Config:', config, 'NavStyle:', preferences.nav_style)
@@ -87,13 +119,19 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     // Smooth transition wrapper to prevent layout shift when switching navigation styles
     const layoutContent = preferences.nav_style === 'instagram' ? (
       <FieldWorkerLayoutIG
-        topBarProps={{
-          showNotificationBadge: true,
-          notificationCount: 0,
-          onNotificationClick: handleNotificationClick,
-          onSettingsClick: handleSettingsClick,
-        }}
-        showStories={false} // Disable stories for now - can enable later
+        // Drawer props
+        isDrawerOpen={isDrawerOpen}
+        onDrawerOpen={handleDrawerOpen}
+        onDrawerClose={handleDrawerClose}
+        // Search props
+        isSearchExpanded={isSearchExpanded}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
+        onSearchClear={handleSearchClear}
+        onSearchToggle={handleSearchToggle}
+        // Other props
+        showStories={false} // Disable stories (not requested)
         showBottomNav={true}
         className="transition-opacity duration-300 ease-in-out"
       >

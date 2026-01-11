@@ -51,9 +51,14 @@ export interface UIPreferencesInput extends Partial<UIPreferences> {
 
 /**
  * Default UI preferences
+ *
+ * NOTE: nav_style defaults to 'instagram' so mobile users get the
+ * Instagram-style navigation automatically. Desktop users (mode='full')
+ * always get traditional nav regardless of this setting, so it's safe.
+ * Users can always change this in Settings > Appearance.
  */
 export const DEFAULT_UI_PREFERENCES: UIPreferences = {
-  nav_style: 'traditional',
+  nav_style: 'instagram',  // Mobile-first: auto-enable Instagram nav
   ui_mode: undefined, // Will be auto-detected
   ui_mode_auto_detect: true,
   theme: 'system',
