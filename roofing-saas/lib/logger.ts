@@ -3,9 +3,13 @@
  *
  * Centralized logging with structured data and log levels
  * Integrates with Sentry for error tracking and performance monitoring
+ *
+ * SECURITY: All log contexts are sanitized to prevent PII leakage.
+ * Use sanitizeError() for error objects, sanitizeContext() for full contexts.
  */
 
 import * as Sentry from '@sentry/nextjs'
+import { sanitizeError, sanitizeContext } from '@/lib/utils/sanitize-error'
 
 export enum LogLevel {
   DEBUG = 'debug',
@@ -33,7 +37,9 @@ class Logger {
 
   private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
     const timestamp = new Date().toISOString()
-    const contextStr = context ? ` ${JSON.stringify(context)}` : ''
+    // Sanitize context before serializing to prevent PII leakage
+    const sanitized = context ? sanitizeContext(context) : undefined
+    const contextStr = sanitized ? ` ${JSON.stringify(sanitized)}` : ''
     return `[${timestamp}] [${level.toUpperCase()}] ${message}${contextStr}`
   }
 
@@ -56,17 +62,20 @@ class Logger {
         console.error(formatted)
         // Send errors to Sentry in all environments
         // Sentry config filters by environment (development/staging/production)
+        // SECURITY: Sanitize context before sending to Sentry
+        const sanitizedContext = context ? sanitizeContext(context) : undefined
         if (context?.error instanceof Error) {
           // If context has an actual Error object, send it
+          // Use sanitizeError to strip PII from error details
           Sentry.captureException(context.error, {
             level: 'error',
-            extra: { ...context, message },
+            extra: { ...sanitizedContext, message },
           })
         } else {
           // Otherwise create an Error with the message
           Sentry.captureException(new Error(message), {
             level: 'error',
-            extra: context,
+            extra: sanitizedContext,
           })
         }
         break
@@ -162,6 +171,7 @@ class Logger {
   }
 
   // Enhanced API error logging with full context
+  // SECURITY: Uses sanitizeError to strip PII from error objects
   apiError(
     method: string,
     path: string,
@@ -169,9 +179,8 @@ class Logger {
     error: unknown,
     context?: { userId?: string; tenantId?: string; requestBody?: unknown }
   ): void {
-    const errorDetails = error instanceof Error
-      ? { message: error.message, name: error.name, stack: error.stack }
-      : { message: String(error) }
+    // Use sanitizeError to properly strip PII from error details
+    const errorDetails = sanitizeError(error)
 
     this.error(`API error: ${method} ${path} ${status}`, {
       method,
