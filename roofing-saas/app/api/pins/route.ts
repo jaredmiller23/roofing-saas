@@ -159,6 +159,7 @@ export async function POST(request: NextRequest) {
 
     let createdContactId: string | null = null
     let createdProjectId: string | null = null
+    let projectCreationError: string | null = null
 
     // If creating contact (lead)
     if (create_contact && contact_data) {
@@ -228,7 +229,14 @@ export async function POST(request: NextRequest) {
             .single()
 
           if (projectError) {
-            logger.error('[API] Error creating project for lead:', { error: projectError })
+            logger.error('[API] Error creating project for lead:', {
+              error: projectError,
+              code: projectError.code,
+              message: projectError.message,
+              details: projectError.details,
+              hint: projectError.hint
+            })
+            projectCreationError = `${projectError.code}: ${projectError.message}`
           } else {
             logger.debug('[API] Project created for lead:', { project_id: newProject?.id })
             createdProjectId = newProject?.id || null
@@ -275,7 +283,8 @@ export async function POST(request: NextRequest) {
     return successResponse({
       ...newPin,
       contact_id: createdContactId,
-      project_id: createdProjectId
+      project_id: createdProjectId,
+      project_creation_error: projectCreationError
     })
   } catch (error) {
     logger.error('[API] Error in POST /api/pins:', { error })
