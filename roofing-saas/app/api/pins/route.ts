@@ -72,10 +72,7 @@ export async function GET(request: NextRequest) {
       user_name: 'User' // Simplified for now
     })) || []
 
-    return successResponse({
-      success: true,
-      pins: pinsWithUsers
-    })
+    return successResponse(pinsWithUsers)
   } catch (error) {
     logger.error('[API] Error in GET /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -236,11 +233,8 @@ export async function POST(request: NextRequest) {
     }
 
     return successResponse({
-      success: true,
-      data: {
-        ...newPin,
-        contact_id: createdContactId
-      }
+      ...newPin,
+      contact_id: createdContactId
     })
   } catch (error) {
     logger.error('[API] Error in POST /api/pins:', { error })
@@ -313,10 +307,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    return successResponse({
-      success: true,
-      data: updatedPin
-    })
+    return successResponse(updatedPin)
   } catch (error) {
     logger.error('[API] Error in PUT /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

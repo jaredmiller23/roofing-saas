@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Clarity - Complete App Guide</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #FF8243;
+            border-bottom: 3px solid #FF8243;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #2D7A7A;
+            border-bottom: 2px solid #2D7A7A;
+            padding-bottom: 10px;
+            margin-top: 50px;
+        }
+        h3 {
+            color: #444;
+            margin-top: 30px;
+            background: #f8f8f8;
+            padding: 10px 15px;
+            border-left: 4px solid #FF8243;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th {
+            background: #2D7A7A;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:hover {
+            background: #f9f9f9;
+        }
+        .toc {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+        .toc h2 {
+            margin-top: 0;
+            border-bottom: none;
+            color: #333;
+        }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            columns: 2;
+        }
+        .toc li {
+            margin: 8px 0;
+        }
+        .toc a {
+            color: #2D7A7A;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .toc a:hover {
+            color: #FF8243;
+        }
+        .page-route {
+            background: #e8f4f4;
+            color: #2D7A7A;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .summary {
+            background: #fff8f5;
+            border-left: 4px solid #FF8243;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #666;
+        }
+        .section-intro {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .workflow-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f4f4 100%);
+            border: 1px solid #2D7A7A;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .workflow-box h4 {
+            margin-top: 0;
+            color: #2D7A7A;
+        }
+        .workflow-box ol {
+            margin-bottom: 0;
+        }
+        .print-break {
+            page-break-before: always;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            .toc {
+                page-break-after: always;
+            }
+            h2 {
+                page-break-before: always;
+            }
+            table {
+                font-size: 11px;
+            }
+            th, td {
+                padding: 6px 8px;
+            }
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #FF8243 0%, #2D7A7A 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px 12px 0 0;
+            margin: -40px -40px 40px -40px;
+        }
+        .header-bar h1 {
+            color: white;
+            border-bottom: none;
+            margin: 0;
+            padding: 0;
+        }
+        .header-bar p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <h1>Job Clarity - Complete App Guide</h1>
+            <p>Everything you need to know about every button, link, and feature in the app</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">55+</div>
+                    <div class="stat-label">Pages</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">850+</div>
+                    <div class="stat-label">Buttons & Features</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Sections</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#navigation">1. Navigation (How to Get Around)</a></li>
+                <li><a href="#dashboard">2. Dashboard (Home Screen)</a></li>
+                <li><a href="#pipeline">3. Pipeline / Projects</a></li>
+                <li><a href="#contacts">4. Contacts</a></li>
+                <li><a href="#signatures">5. Signatures & Estimates</a></li>
+                <li><a href="#tasks">6. Tasks & Events</a></li>
+                <li><a href="#knocks">7. Knocks (Door Knocking)</a></li>
+                <li><a href="#claims">8. Claims</a></li>
+                <li><a href="#communications">9. Communications</a></li>
+                <li><a href="#storm">10. Storm Features</a></li>
+                <li><a href="#business">11. Business Features</a></li>
+                <li><a href="#settings">12. Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- SECTION 1: NAVIGATION -->
+        <h2 id="navigation">1. Navigation (How to Get Around)</h2>
+        <p class="section-intro">The app has different navigation layouts depending on your device. Here's what you'll see.</p>
+
+        <h3>Desktop Sidebar (Left Side Menu)</h3>
+        <div class="summary">The main menu on the left side of the screen when using a computer or tablet.</div>
+        <table>
+            <tr><th>What You'll See</th><th>What It Does</th><th>Where It Goes</th></tr>
+            <tr><td><strong>Job Clarity</strong> (Logo at top)</td><td>Click to go home</td><td>Dashboard</td></tr>
+            <tr><td colspan="3" style="background:#f0f0f0;font-weight:bold;">SELL Section</td></tr>
+            <tr><td>Knock</td><td>Door knocking tracker</td><td>/knocks</td></tr>
+            <tr><td>Signatures</td><td>Contracts & documents to sign</td><td>/signatures</td></tr>
+            <tr><td>Claims</td><td>Insurance claims management</td><td>/claims</td></tr>
+            <tr><td>Incentives</td><td>Points, rewards, leaderboards</td><td>/incentives</td></tr>
+            <tr><td>Lead Gen</td><td>Storm-based lead generation</td><td>/storm-targeting</td></tr>
+            <tr><td>Storm Intel</td><td>Weather & storm tracking</td><td>/storm-tracking</td></tr>
+            <tr><td colspan="3" style="background:#f0f0f0;font-weight:bold;">CORE Section</td></tr>
+            <tr><td>Dashboard</td><td>Main home screen with stats</td><td>/dashboard</td></tr>
+            <tr><td>Pipeline</td><td>All your projects & opportunities</td><td>/projects</td></tr>
+            <tr><td>Business Intel</td><td>AI-powered insights</td><td>/insights</td></tr>
+            <tr><td>Events</td><td>Calendar & appointments</td><td>/events</td></tr>
+            <tr><td>Tasks</td><td>To-do list & task board</td><td>/tasks</td></tr>
+            <tr><td colspan="3" style="background:#f0f0f0;font-weight:bold;">COMMUNICATIONS Section</td></tr>
+            <tr><td>Call Log</td><td>Phone call history</td><td>/call-logs</td></tr>
+            <tr><td>Messages</td><td>Text message conversations</td><td>/messages</td></tr>
+            <tr><td>Emails</td><td>Email campaigns</td><td>/campaigns</td></tr>
+            <tr><td>Contacts</td><td>All your leads & customers</td><td>/contacts</td></tr>
+            <tr><td colspan="3" style="background:#f0f0f0;font-weight:bold;">Bottom of Sidebar</td></tr>
+            <tr><td>Settings</td><td>App settings & preferences</td><td>/settings</td></tr>
+            <tr><td>Sign Out</td><td>Log out of the app</td><td>Logs you out</td></tr>
+        </table>
+
+        <h3>Mobile Bottom Navigation (Phone)</h3>
+        <div class="summary">When using the app on your phone, you'll see 5 buttons at the bottom of the screen.</div>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Pipeline</strong></td><td>View all your projects</td></tr>
+            <tr><td><strong>Signatures</strong></td><td>Contracts & documents</td></tr>
+            <tr><td><strong>Voice</strong> (center, blue)</td><td>Voice assistant - tap and talk!</td></tr>
+            <tr><td><strong>Knock</strong></td><td>Door knocking tracker</td></tr>
+            <tr><td><strong>Claims</strong></td><td>Insurance claims</td></tr>
+        </table>
+        <p><em>Tip: The hamburger menu (three lines) at the top opens the full navigation with all options.</em></p>
+
+        <!-- SECTION 2: DASHBOARD -->
+        <h2 id="dashboard" class="print-break">2. Dashboard (Home Screen)</h2>
+        <p class="section-intro">Your main home screen showing key numbers, weather, and team performance.</p>
+
+        <h3>Top Section - View Toggle</h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Company</strong></td><td>See stats for the whole company</td></tr>
+            <tr><td><strong>Team</strong></td><td>See stats for your team only</td></tr>
+            <tr><td><strong>Personal</strong></td><td>See just your own stats</td></tr>
+        </table>
+
+        <h3>KPI Cards (The 4 Big Number Cards)</h3>
+        <table>
+            <tr><th>Card</th><th>What It Shows</th></tr>
+            <tr><td><strong>Revenue</strong></td><td>Money earned this month</td></tr>
+            <tr><td><strong>Pipeline Value</strong></td><td>Total value of active opportunities</td></tr>
+            <tr><td><strong>Door Knocks</strong></td><td>Number of doors knocked this week</td></tr>
+            <tr><td><strong>Conversion Rate</strong></td><td>Percentage of leads that became customers</td></tr>
+        </table>
+
+        <h3>Weather Widget</h3>
+        <table>
+            <tr><th>What You'll See</th><th>What It Means</th></tr>
+            <tr><td><strong>Safe to Work</strong> (green)</td><td>Good weather for roofing</td></tr>
+            <tr><td><strong>Use Caution</strong> (yellow)</td><td>Be careful, weather could change</td></tr>
+            <tr><td><strong>Not Safe</strong> (red)</td><td>Don't go on roofs today</td></tr>
+            <tr><td>Refresh button</td><td>Click to get latest weather</td></tr>
+        </table>
+
+        <h3>Leaderboards</h3>
+        <table>
+            <tr><th>Button</th><th>What It Shows</th></tr>
+            <tr><td><strong>Daily</strong></td><td>Today's top performers</td></tr>
+            <tr><td><strong>Weekly</strong></td><td>This week's top performers</td></tr>
+            <tr><td><strong>Monthly</strong></td><td>This month's top performers</td></tr>
+            <tr><td><strong>All</strong></td><td>All-time top performers</td></tr>
+        </table>
+
+        <!-- SECTION 3: PIPELINE -->
+        <h2 id="pipeline" class="print-break">3. Pipeline / Projects</h2>
+        <p class="section-intro">This is where you manage all your sales opportunities and projects.</p>
+
+        <h3>Projects List Page <span class="page-route">/projects</span></h3>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td><strong>Kanban</strong> button</td><td>View as a board with columns (like sticky notes)</td></tr>
+            <tr><td><strong>Table</strong> button</td><td>View as a list/spreadsheet</td></tr>
+            <tr><td><strong>Analytics</strong></td><td>See charts and reports about your pipeline</td></tr>
+            <tr><td><strong>+ New Opportunity</strong></td><td>Create a new lead/opportunity</td></tr>
+        </table>
+
+        <h4>Quick Filters (Kanban View)</h4>
+        <table>
+            <tr><th>Filter</th><th>What It Shows</th></tr>
+            <tr><td><strong>All</strong></td><td>Everything</td></tr>
+            <tr><td><strong>Active Sales</strong></td><td>Prospects, qualified leads, quotes sent, negotiating</td></tr>
+            <tr><td><strong>In Production</strong></td><td>Jobs currently being worked on</td></tr>
+            <tr><td><strong>Closed</strong></td><td>Completed or lost opportunities</td></tr>
+            <tr><td>Search box</td><td>Find by name, contact, email, or phone</td></tr>
+            <tr><td><strong>Reset</strong></td><td>Clear all filters and show everything</td></tr>
+        </table>
+
+        <h4>On Each Project Card</h4>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td>Click project name</td><td>Open the project details</td></tr>
+            <tr><td>Click contact name</td><td>Open the contact details</td></tr>
+            <tr><td><strong>Start Production</strong> (green)</td><td>Convert won deal to a production job</td></tr>
+            <tr><td><strong>Mark as Lost</strong></td><td>Mark opportunity as lost</td></tr>
+            <tr><td><strong>Reactivate</strong></td><td>Bring back a lost opportunity</td></tr>
+            <tr><td>Phone icon (green)</td><td>Call the contact</td></tr>
+            <tr><td>Message icon</td><td>Text the contact</td></tr>
+            <tr><td>Email icon</td><td>Email the contact</td></tr>
+            <tr><td>Drag the card</td><td>Move to a different stage</td></tr>
+        </table>
+
+        <h3>Project Details Page</h3>
+        <table>
+            <tr><th>Tab</th><th>What's In It</th></tr>
+            <tr><td><strong>Overview</strong></td><td>Project summary, financials, notes</td></tr>
+            <tr><td><strong>Quote Options</strong></td><td>Different pricing options for the customer</td></tr>
+            <tr><td><strong>Jobs</strong></td><td>Production jobs for this project</td></tr>
+            <tr><td><strong>Files</strong></td><td>Documents and photos</td></tr>
+            <tr><td><strong>Contact</strong></td><td>Customer contact information</td></tr>
+        </table>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Start Production</strong></td><td>Create a production job</td></tr>
+            <tr><td><strong>Job Costing</strong></td><td>View costs and profitability</td></tr>
+            <tr><td><strong>Claims</strong></td><td>Manage insurance claims</td></tr>
+            <tr><td><strong>Send Signature</strong></td><td>Send a document for signing</td></tr>
+            <tr><td><strong>Edit Project</strong></td><td>Edit project details</td></tr>
+        </table>
+
+        <!-- SECTION 4: CONTACTS -->
+        <h2 id="contacts" class="print-break">4. Contacts</h2>
+        <p class="section-intro">Your customer database - all leads, prospects, and customers in one place.</p>
+
+        <h3>Contacts List <span class="page-route">/contacts</span></h3>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td><strong>+ Add Contact</strong></td><td>Create a new contact</td></tr>
+            <tr><td>Search box</td><td>Search by name, email, or phone</td></tr>
+            <tr><td>Stage dropdown</td><td>Filter by sales stage</td></tr>
+            <tr><td>Type dropdown</td><td>Filter by Lead/Prospect/Customer</td></tr>
+            <tr><td>Priority dropdown</td><td>Filter by Urgent/High/Normal/Low</td></tr>
+            <tr><td><strong>Apply Filters</strong></td><td>Apply your filter selections</td></tr>
+            <tr><td><strong>Reset</strong></td><td>Clear all filters</td></tr>
+        </table>
+
+        <h4>Quick Filter Chips</h4>
+        <table>
+            <tr><th>Chip</th><th>What It Shows</th></tr>
+            <tr><td><strong>Urgent</strong> (red)</td><td>Contacts marked as urgent priority</td></tr>
+            <tr><td><strong>High Priority</strong> (orange)</td><td>High priority contacts</td></tr>
+            <tr><td><strong>New Leads</strong></td><td>Brand new leads</td></tr>
+            <tr><td><strong>Active Deals</strong></td><td>Contacts in negotiation stage</td></tr>
+            <tr><td><strong>Customers</strong></td><td>Contacts who became customers (won)</td></tr>
+        </table>
+
+        <h4>On Each Contact Row</h4>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td>Click name</td><td>Open contact details</td></tr>
+            <tr><td>Phone icon (green)</td><td>Call the contact</td></tr>
+            <tr><td>Message icon</td><td>Text the contact</td></tr>
+            <tr><td>Email icon</td><td>Email the contact</td></tr>
+            <tr><td><strong>Edit</strong></td><td>Edit contact info</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Delete contact (asks for confirmation)</td></tr>
+            <tr><td>Checkbox</td><td>Select for bulk actions</td></tr>
+        </table>
+
+        <h4>Bulk Actions (when contacts are selected)</h4>
+        <table>
+            <tr><th>Action</th><th>What It Does</th></tr>
+            <tr><td>Change Stage dropdown</td><td>Change stage for all selected</td></tr>
+            <tr><td>Change Priority dropdown</td><td>Change priority for all selected</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Delete all selected contacts</td></tr>
+            <tr><td><strong>Clear</strong></td><td>Unselect all</td></tr>
+        </table>
+
+        <h3>Create/Edit Contact Form</h3>
+        <table>
+            <tr><th>Field</th><th>What to Enter</th></tr>
+            <tr><td>First Name *</td><td>Customer's first name (required)</td></tr>
+            <tr><td>Last Name *</td><td>Customer's last name (required)</td></tr>
+            <tr><td>Email</td><td>Customer's email address</td></tr>
+            <tr><td>Phone</td><td>Customer's phone number</td></tr>
+            <tr><td>Category *</td><td>Type of contact</td></tr>
+            <tr><td>Sales Stage</td><td>Lead, Prospect, or Customer</td></tr>
+            <tr><td>Stage</td><td>New, Contacted, Qualified, etc.</td></tr>
+            <tr><td>Priority</td><td>Urgent, High, Normal, or Low</td></tr>
+            <tr><td>Source</td><td>How you got this lead (referral, door knock, etc.)</td></tr>
+            <tr><td>Address fields</td><td>Street, City, State, ZIP</td></tr>
+            <tr><td>Property details</td><td>Property type, roof type, age, sq ft</td></tr>
+            <tr><td>Insurance info</td><td>Carrier, policy number, claim number</td></tr>
+        </table>
+
+        <!-- SECTION 5: SIGNATURES -->
+        <h2 id="signatures" class="print-break">5. Signatures & Estimates</h2>
+        <p class="section-intro">Send contracts and documents for electronic signatures.</p>
+
+        <h3>Signatures List <span class="page-route">/signatures</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Templates</strong></td><td>View and manage document templates</td></tr>
+            <tr><td><strong>+ New Document</strong></td><td>Create a new document to send</td></tr>
+            <tr><td>Search box</td><td>Search documents</td></tr>
+            <tr><td>Status dropdown</td><td>Filter by Draft/Sent/Signed/etc.</td></tr>
+        </table>
+
+        <h4>On Each Document</h4>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td>Click title</td><td>Open document details</td></tr>
+            <tr><td><strong>Send</strong> (on drafts)</td><td>Send for signature</td></tr>
+            <tr><td><strong>Download</strong> (on signed)</td><td>Download the signed PDF</td></tr>
+        </table>
+
+        <h3>Create New Document (5-Step Wizard)</h3>
+        <div class="workflow-box">
+            <h4>Step-by-Step Process</h4>
+            <ol>
+                <li><strong>Choose Template</strong> - Pick a template or start from scratch</li>
+                <li><strong>Document Info</strong> - Enter title, type, link to project/contact</li>
+                <li><strong>Upload PDF</strong> - Upload your document (or use template)</li>
+                <li><strong>Place Fields</strong> - Add signature boxes where needed</li>
+                <li><strong>Review & Create</strong> - Review everything and create</li>
+            </ol>
+        </div>
+
+        <h3>Sending a Document</h3>
+        <table>
+            <tr><th>Field</th><th>What to Enter</th></tr>
+            <tr><td>Recipient Name *</td><td>Who should sign</td></tr>
+            <tr><td>Recipient Email *</td><td>Their email address</td></tr>
+            <tr><td>Custom Message</td><td>Personal note to include</td></tr>
+            <tr><td>Expires In (Days)</td><td>How long they have to sign</td></tr>
+        </table>
+
+        <h3>Document Status Colors</h3>
+        <table>
+            <tr><th>Status</th><th>What It Means</th></tr>
+            <tr><td><strong>Draft</strong> (gray)</td><td>Not sent yet</td></tr>
+            <tr><td><strong>Sent</strong> (blue)</td><td>Sent, waiting for signature</td></tr>
+            <tr><td><strong>Viewed</strong> (purple)</td><td>Customer opened it</td></tr>
+            <tr><td><strong>Signed</strong> (green)</td><td>Signed! All done.</td></tr>
+            <tr><td><strong>Expired</strong> (yellow)</td><td>Time ran out, not signed</td></tr>
+            <tr><td><strong>Declined</strong> (red)</td><td>Customer declined to sign</td></tr>
+        </table>
+
+        <!-- SECTION 6: TASKS & EVENTS -->
+        <h2 id="tasks" class="print-break">6. Tasks & Events</h2>
+        <p class="section-intro">Manage your to-do list and calendar.</p>
+
+        <h3>Tasks <span class="page-route">/tasks</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Board View</strong></td><td>See tasks as a Kanban board</td></tr>
+            <tr><td><strong>+ New Task</strong></td><td>Create a new task</td></tr>
+        </table>
+
+        <h4>Task Board Columns</h4>
+        <table>
+            <tr><th>Column</th><th>What It Means</th></tr>
+            <tr><td><strong>To Do</strong></td><td>Tasks not started yet</td></tr>
+            <tr><td><strong>In Progress</strong></td><td>Tasks you're working on</td></tr>
+            <tr><td><strong>Completed</strong></td><td>Finished tasks</td></tr>
+        </table>
+        <p><em>Tip: Drag tasks between columns to change their status!</em></p>
+
+        <h4>On Each Task</h4>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>View</strong> (eye icon)</td><td>See task details</td></tr>
+            <tr><td><strong>Edit</strong></td><td>Edit the task</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Delete the task</td></tr>
+        </table>
+
+        <h3>Events / Calendar <span class="page-route">/events</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>+ Schedule Event</strong></td><td>Create a new appointment</td></tr>
+            <tr><td><strong>Calendar View</strong></td><td>See events on a calendar</td></tr>
+            <tr><td><strong>List View</strong></td><td>See events as a list</td></tr>
+            <tr><td><strong>Standard Calendar</strong></td><td>Use built-in calendar</td></tr>
+            <tr><td><strong>Google Calendar</strong></td><td>Use Google Calendar</td></tr>
+        </table>
+
+        <h4>Event Types</h4>
+        <table>
+            <tr><th>Type</th><th>What It's For</th></tr>
+            <tr><td>Appointment</td><td>Customer meeting</td></tr>
+            <tr><td>Inspection</td><td>Property inspection</td></tr>
+            <tr><td>Adjuster Meeting</td><td>Insurance adjuster visit</td></tr>
+            <tr><td>Crew Meeting</td><td>Team meeting</td></tr>
+            <tr><td>Follow Up</td><td>Follow-up call/visit</td></tr>
+            <tr><td>Callback</td><td>Scheduled callback</td></tr>
+            <tr><td>Estimate</td><td>Give an estimate</td></tr>
+        </table>
+
+        <!-- SECTION 7: KNOCKS -->
+        <h2 id="knocks" class="print-break">7. Knocks (Door Knocking)</h2>
+        <p class="section-intro">Track door-to-door canvassing with GPS, territories, and dispositions.</p>
+
+        <h3>Knocks Main Page <span class="page-route">/knocks</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td>View dropdown</td><td>Switch between Map, KPIs, and Territories views</td></tr>
+            <tr><td><strong>Log Knock</strong></td><td>Quick log a knock (opens form)</td></tr>
+            <tr><td><strong>+ New Territory</strong></td><td>Create a new territory</td></tr>
+        </table>
+
+        <h4>Map View</h4>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td><strong>Drop Pins</strong></td><td>Turn on to drop pins by clicking the map</td></tr>
+            <tr><td>Crosshair button</td><td>Center map on your current location</td></tr>
+            <tr><td>Click a pin</td><td>Edit that pin</td></tr>
+            <tr><td>Territory buttons</td><td>Select a territory to view</td></tr>
+            <tr><td><strong>Clear Selection</strong></td><td>Show all territories</td></tr>
+        </table>
+
+        <h4>Pin Colors (Disposition)</h4>
+        <table>
+            <tr><th>Color</th><th>What It Means</th></tr>
+            <tr><td style="color:green"><strong>Green</strong></td><td>Interested</td></tr>
+            <tr><td style="color:orange"><strong>Orange</strong></td><td>Not Home</td></tr>
+            <tr><td style="color:red"><strong>Red</strong></td><td>Not Interested</td></tr>
+            <tr><td style="color:blue"><strong>Blue</strong></td><td>Appointment Set</td></tr>
+            <tr><td style="color:purple"><strong>Purple</strong></td><td>Callback Later</td></tr>
+            <tr><td style="color:gray"><strong>Gray</strong></td><td>Do Not Contact</td></tr>
+            <tr><td style="color:teal"><strong>Teal</strong></td><td>Already Customer</td></tr>
+        </table>
+
+        <h3>Log a Knock <span class="page-route">/knocks/new</span></h3>
+        <div class="workflow-box">
+            <h4>Quick Knock Logging</h4>
+            <ol>
+                <li>Click <strong>Get My Location</strong> to capture GPS</li>
+                <li>Select a <strong>disposition</strong> (Interested, Not Home, etc.)</li>
+                <li>Add optional notes</li>
+                <li>Click <strong>Log Knock</strong></li>
+            </ol>
+        </div>
+
+        <h4>Disposition Options</h4>
+        <table>
+            <tr><th>Button</th><th>When to Use</th></tr>
+            <tr><td><strong>Not Home</strong></td><td>Nobody answered</td></tr>
+            <tr><td><strong>Interested</strong></td><td>They want to know more</td></tr>
+            <tr><td><strong>Not Interested</strong></td><td>They said no</td></tr>
+            <tr><td><strong>Set Appointment</strong></td><td>Scheduled an appointment (shows date/time fields)</td></tr>
+            <tr><td><strong>Callback Later</strong></td><td>Call them back later (shows date field)</td></tr>
+        </table>
+
+        <!-- SECTION 8: CLAIMS -->
+        <h2 id="claims" class="print-break">8. Claims</h2>
+        <p class="section-intro">Manage insurance claims from inspection to payment.</p>
+
+        <h3>Claims List <span class="page-route">/claims</span></h3>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td>Search box</td><td>Search by claim #, address, or policy #</td></tr>
+            <tr><td>Status dropdown</td><td>Filter by claim status</td></tr>
+            <tr><td>Project dropdown</td><td>Filter by project</td></tr>
+            <tr><td>Date From/To</td><td>Filter by date range</td></tr>
+            <tr><td><strong>Export CSV</strong></td><td>Download as spreadsheet</td></tr>
+            <tr><td><strong>Export PDF</strong></td><td>Download as PDF</td></tr>
+            <tr><td>Click claim card</td><td>Open claim details</td></tr>
+        </table>
+
+        <h4>Claim Status Colors</h4>
+        <table>
+            <tr><th>Status</th><th>What It Means</th></tr>
+            <tr><td><strong>New</strong></td><td>Just created</td></tr>
+            <tr><td><strong>Docs Pending</strong></td><td>Waiting for documents</td></tr>
+            <tr><td><strong>Under Review</strong></td><td>Insurance is reviewing</td></tr>
+            <tr><td><strong>Approved</strong></td><td>Claim approved!</td></tr>
+            <tr><td><strong>Paid</strong></td><td>Payment received</td></tr>
+            <tr><td><strong>Closed</strong></td><td>Claim is complete</td></tr>
+            <tr><td><strong>Disputed</strong></td><td>Claim is in dispute</td></tr>
+        </table>
+
+        <h3>Project Claims <span class="page-route">/projects/{id}/claims</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Back to Project</strong></td><td>Return to project page</td></tr>
+            <tr><td><strong>Start Inspection</strong></td><td>Begin property inspection wizard</td></tr>
+            <tr><td><strong>New Inspection</strong></td><td>Start new inspection</td></tr>
+            <tr><td><strong>Export Claim Package</strong></td><td>Download all claim documents</td></tr>
+            <tr><td><strong>View Project</strong></td><td>Back to project details</td></tr>
+        </table>
+
+        <h3>Claim Details</h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Sync to Claims</strong></td><td>Sync data to claims system</td></tr>
+            <tr><td><strong>Export Package</strong></td><td>Download claim package as ZIP</td></tr>
+            <tr><td><strong>Approve Claim</strong></td><td>Approve the claim</td></tr>
+            <tr><td><strong>Reject Claim</strong></td><td>Reject the claim</td></tr>
+            <tr><td>Status buttons</td><td>Move claim to next status</td></tr>
+        </table>
+
+        <h4>Tabs</h4>
+        <table>
+            <tr><th>Tab</th><th>What's In It</th></tr>
+            <tr><td><strong>Claim Details</strong></td><td>Policy info, property info</td></tr>
+            <tr><td><strong>Timeline</strong></td><td>History of claim events</td></tr>
+            <tr><td><strong>Documents</strong></td><td>Upload and download documents</td></tr>
+        </table>
+
+        <h3>Inspection Wizard</h3>
+        <div class="workflow-box">
+            <h4>Inspection Steps</h4>
+            <ol>
+                <li><strong>Location</strong> - Verify you're at the right property</li>
+                <li><strong>Overview Photo</strong> - Take a wide shot of the roof</li>
+                <li><strong>Damage Checklist</strong> - Select which areas have damage</li>
+                <li><strong>Photo Capture</strong> - Take photos of each damage area</li>
+                <li><strong>Review & Submit</strong> - Review and submit inspection</li>
+            </ol>
+        </div>
+
+        <!-- SECTION 9: COMMUNICATIONS -->
+        <h2 id="communications" class="print-break">9. Communications</h2>
+        <p class="section-intro">Messages, calls, and email campaigns.</p>
+
+        <h3>Messages (SMS) <span class="page-route">/messages</span></h3>
+        <table>
+            <tr><th>Feature</th><th>What It Does</th></tr>
+            <tr><td>Search conversations</td><td>Find a conversation by name or phone</td></tr>
+            <tr><td><strong>+ New</strong></td><td>Start new conversation (go to Contacts)</td></tr>
+            <tr><td>Click conversation</td><td>Open message thread</td></tr>
+            <tr><td>Type message</td><td>Write your message (1600 char limit for SMS)</td></tr>
+            <tr><td>Send button</td><td>Send the message</td></tr>
+        </table>
+        <p><em>Tip: Press Enter to send, Shift+Enter for a new line.</em></p>
+
+        <h3>Call Logs <span class="page-route">/call-logs</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>+ Log Call</strong></td><td>Record a phone call</td></tr>
+            <tr><td>View link</td><td>See call details</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Delete the call log</td></tr>
+        </table>
+
+        <h4>Call Log Form</h4>
+        <table>
+            <tr><th>Field</th><th>What to Enter</th></tr>
+            <tr><td>Direction</td><td>Inbound or Outbound</td></tr>
+            <tr><td>Phone Number *</td><td>The phone number</td></tr>
+            <tr><td>Duration</td><td>How long the call was (seconds)</td></tr>
+            <tr><td>Outcome</td><td>Answered, Voicemail, Busy, etc.</td></tr>
+            <tr><td>Disposition</td><td>What was the result</td></tr>
+            <tr><td>Notes</td><td>Any notes about the call</td></tr>
+        </table>
+
+        <h4>Audio Player (if recording exists)</h4>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td>Play/Pause</td><td>Play or pause recording</td></tr>
+            <tr><td>Skip Back</td><td>Go back 15 seconds</td></tr>
+            <tr><td>Skip Forward</td><td>Go forward 15 seconds</td></tr>
+            <tr><td>Speed buttons</td><td>Change playback speed (0.5x, 1x, 1.5x, 2x)</td></tr>
+            <tr><td>Volume</td><td>Adjust volume or mute</td></tr>
+            <tr><td><strong>Download</strong></td><td>Download the recording</td></tr>
+        </table>
+
+        <h3>Campaigns <span class="page-route">/campaigns</span></h3>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>+ Create Campaign</strong></td><td>Start a new campaign</td></tr>
+            <tr><td>All/Draft/Active/Paused/Archived tabs</td><td>Filter campaigns by status</td></tr>
+            <tr><td>Click campaign card</td><td>Open campaign editor</td></tr>
+            <tr><td>More menu (three dots)</td><td>Edit, Duplicate, Pause, Archive</td></tr>
+        </table>
+
+        <!-- SECTION 10: STORM FEATURES -->
+        <h2 id="storm" class="print-break">10. Storm Features</h2>
+        <p class="section-intro">Track storms and generate leads from affected areas.</p>
+
+        <h3>Storm Tracking <span class="page-route">/storm-tracking</span></h3>
+        <table>
+            <tr><th>Tab</th><th>What It Shows</th></tr>
+            <tr><td><strong>Overview</strong></td><td>Active alerts, stats, map preview</td></tr>
+            <tr><td><strong>Map View</strong></td><td>Full map with storm locations</td></tr>
+            <tr><td><strong>Affected Customers</strong></td><td>Customers in storm path</td></tr>
+            <tr><td><strong>Response Mode</strong></td><td>Emergency response controls</td></tr>
+        </table>
+
+        <h4>Response Mode Controls</h4>
+        <table>
+            <tr><th>Toggle</th><th>What It Does</th></tr>
+            <tr><td><strong>Activate/Deactivate</strong></td><td>Turn response mode on/off</td></tr>
+            <tr><td>Auto Notifications</td><td>Automatically notify affected customers</td></tr>
+            <tr><td>Auto Lead Generation</td><td>Create leads from affected properties</td></tr>
+            <tr><td>Priority Routing</td><td>Send high-priority leads to top reps</td></tr>
+            <tr><td>Crew Pre-Positioning</td><td>Send crew positioning alerts</td></tr>
+            <tr><td>Extended Hours</td><td>Enable extended business hours</td></tr>
+        </table>
+
+        <h3>Storm Targeting / Lead Gen <span class="page-route">/storm-targeting</span></h3>
+        <div class="workflow-box">
+            <h4>How to Extract Addresses</h4>
+            <ol>
+                <li>Enter a <strong>ZIP code</strong> and click <strong>Load</strong> to draw that area</li>
+                <li>Or use the drawing tools to draw a polygon, rectangle, or circle</li>
+                <li>Give the area a <strong>name</strong></li>
+                <li>Click <strong>Extract Addresses</strong></li>
+                <li><strong>Export to CSV</strong> or <strong>Import to Contacts</strong></li>
+            </ol>
+        </div>
+
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>Load</strong> (next to ZIP)</td><td>Load ZIP code boundary on map</td></tr>
+            <tr><td><strong>Extract Addresses</strong></td><td>Get all addresses in the drawn area</td></tr>
+            <tr><td><strong>Clear</strong></td><td>Remove the drawing from the map</td></tr>
+            <tr><td><strong>Export to CSV</strong></td><td>Download addresses as spreadsheet</td></tr>
+            <tr><td><strong>Import to Contacts</strong></td><td>Create contacts from addresses</td></tr>
+        </table>
+
+        <!-- SECTION 11: BUSINESS FEATURES -->
+        <h2 id="business" class="print-break">11. Business Features</h2>
+        <p class="section-intro">Incentives, AI insights, financials, and automation.</p>
+
+        <h3>Incentives <span class="page-route">/incentives</span></h3>
+        <p>View your points, progress, challenges, and leaderboards.</p>
+        <table>
+            <tr><th>Feature</th><th>What It Shows</th></tr>
+            <tr><td><strong>Points Display</strong></td><td>Your current level and points</td></tr>
+            <tr><td><strong>Weekly Challenge</strong></td><td>Current challenge and progress</td></tr>
+            <tr><td><strong>Achievements</strong></td><td>Badges you've earned</td></tr>
+            <tr><td><strong>Leaderboards</strong></td><td>Top performers (Daily/Weekly/Monthly/All)</td></tr>
+        </table>
+
+        <h3>Business Intel / Insights <span class="page-route">/insights</span></h3>
+        <p>Ask questions about your data and get AI-powered answers.</p>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td><strong>Ask a Question</strong></td><td>Open the query input</td></tr>
+            <tr><td><strong>Explore</strong> tab</td><td>Browse suggested questions</td></tr>
+            <tr><td><strong>Results</strong> tab</td><td>See query results as charts/tables</td></tr>
+            <tr><td><strong>History</strong> tab</td><td>View past queries</td></tr>
+            <tr><td>Star icon</td><td>Add query to favorites</td></tr>
+            <tr><td>Play icon</td><td>Run a query again</td></tr>
+        </table>
+
+        <h3>Financials <span class="page-route">/financials</span></h3>
+        <p>Profit & loss reporting by project.</p>
+        <table>
+            <tr><th>Card</th><th>What It Shows</th></tr>
+            <tr><td><strong>Total Revenue</strong></td><td>All money earned</td></tr>
+            <tr><td><strong>Total Costs</strong></td><td>All costs</td></tr>
+            <tr><td><strong>Gross Profit</strong></td><td>Revenue minus costs</td></tr>
+            <tr><td><strong>Project Performance</strong></td><td>How many projects are profitable</td></tr>
+        </table>
+
+        <h3>Automations <span class="page-route">/automations</span></h3>
+        <p>Create automated workflows that run in the background.</p>
+        <table>
+            <tr><th>Button</th><th>What It Does</th></tr>
+            <tr><td><strong>+ Create Workflow</strong></td><td>Build a new automation</td></tr>
+            <tr><td><strong>My Workflows</strong> tab</td><td>View your automations</td></tr>
+            <tr><td><strong>Templates</strong> tab</td><td>Start from a template</td></tr>
+            <tr><td><strong>Recent Executions</strong> tab</td><td>See what's run recently</td></tr>
+            <tr><td><strong>Pause/Resume</strong></td><td>Turn automation on/off</td></tr>
+        </table>
+
+        <!-- SECTION 12: SETTINGS -->
+        <h2 id="settings" class="print-break">12. Settings</h2>
+        <p class="section-intro">Configure your account and app preferences.</p>
+
+        <h3>Settings Hub <span class="page-route">/settings</span></h3>
+        <table>
+            <tr><th>Tab</th><th>What's In It</th></tr>
+            <tr><td><strong>General</strong></td><td>General settings</td></tr>
+            <tr><td><strong>Appearance</strong></td><td>Theme and display options</td></tr>
+            <tr><td><strong>Branding</strong></td><td>Company branding</td></tr>
+            <tr><td><strong>Pipeline</strong></td><td>Sales pipeline configuration</td></tr>
+            <tr><td><strong>Templates</strong></td><td>Document templates</td></tr>
+            <tr><td><strong>Roles</strong></td><td>User roles and permissions</td></tr>
+            <tr><td><strong>Security</strong></td><td>Security settings</td></tr>
+            <tr><td><strong>Integrations</strong></td><td>Connect other apps</td></tr>
+        </table>
+
+        <h3>Profile Settings <span class="page-route">/settings/profile</span></h3>
+        <table>
+            <tr><th>Tab</th><th>What's In It</th></tr>
+            <tr><td><strong>Profile</strong></td><td>Your name, photo, contact info, address</td></tr>
+            <tr><td><strong>Notifications</strong></td><td>What notifications you receive</td></tr>
+            <tr><td><strong>Security</strong></td><td>Password, 2FA, active sessions</td></tr>
+        </table>
+
+        <h4>Profile Tab</h4>
+        <table>
+            <tr><th>Button/Field</th><th>What It Does</th></tr>
+            <tr><td><strong>Upload Photo</strong></td><td>Add your profile picture</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Remove your photo</td></tr>
+            <tr><td>Full Name</td><td>Your display name</td></tr>
+            <tr><td>Phone Number</td><td>Your phone</td></tr>
+            <tr><td>Job Title</td><td>Your role/title</td></tr>
+            <tr><td>Bio</td><td>About you</td></tr>
+            <tr><td>Address fields</td><td>Your address</td></tr>
+            <tr><td>Timezone</td><td>Your time zone</td></tr>
+            <tr><td><strong>Save Changes</strong></td><td>Save your updates</td></tr>
+        </table>
+
+        <h4>Security Tab</h4>
+        <table>
+            <tr><th>Button/Feature</th><th>What It Does</th></tr>
+            <tr><td><strong>Enable 2FA</strong></td><td>Turn on two-factor authentication</td></tr>
+            <tr><td><strong>Change Password</strong></td><td>Update your password</td></tr>
+            <tr><td>Active Sessions</td><td>See where you're logged in</td></tr>
+            <tr><td><strong>Sign out</strong> (per session)</td><td>Log out from that device</td></tr>
+            <tr><td><strong>Sign out all other devices</strong></td><td>Log out everywhere else</td></tr>
+            <tr><td>Login Activity</td><td>See recent login attempts</td></tr>
+        </table>
+
+        <h3>Digital Business Card <span class="page-route">/settings/my-card</span></h3>
+        <p>Create a shareable digital business card with your info and QR code.</p>
+        <table>
+            <tr><th>Tab</th><th>What's In It</th></tr>
+            <tr><td><strong>Editor</strong></td><td>Fill in your card info</td></tr>
+            <tr><td><strong>Share</strong></td><td>Get your card link and QR code</td></tr>
+            <tr><td><strong>Analytics</strong></td><td>See how many people viewed your card</td></tr>
+        </table>
+
+        <!-- QUICK REFERENCE -->
+        <h2 class="print-break">Quick Reference - Common Tasks</h2>
+
+        <div class="workflow-box">
+            <h4>Add a New Lead</h4>
+            <ol>
+                <li>Go to <strong>Contacts</strong></li>
+                <li>Click <strong>+ Add Contact</strong></li>
+                <li>Fill in their information</li>
+                <li>Click <strong>Create Contact</strong></li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Log a Door Knock</h4>
+            <ol>
+                <li>Go to <strong>Knock</strong></li>
+                <li>Click <strong>Log Knock</strong></li>
+                <li>Click <strong>Get My Location</strong></li>
+                <li>Select the result (Interested, Not Home, etc.)</li>
+                <li>Click <strong>Log Knock</strong></li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Send a Contract for Signature</h4>
+            <ol>
+                <li>Go to <strong>Signatures</strong></li>
+                <li>Click <strong>+ New Document</strong></li>
+                <li>Choose a template or start fresh</li>
+                <li>Fill in the details</li>
+                <li>Add signature fields</li>
+                <li>Click <strong>Create Document</strong></li>
+                <li>Click <strong>Send</strong> and enter their email</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Start a Claim Inspection</h4>
+            <ol>
+                <li>Go to the <strong>Project</strong></li>
+                <li>Click <strong>Claims</strong></li>
+                <li>Click <strong>Start Inspection</strong></li>
+                <li>Follow the wizard steps</li>
+                <li>Submit when done</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Move a Project to the Next Stage</h4>
+            <ol>
+                <li>Go to <strong>Pipeline</strong></li>
+                <li>Find the project card</li>
+                <li>Drag it to the next column</li>
+                <li>Or click the card and use the stage buttons</li>
+            </ol>
+        </div>
+
+        <div style="margin-top:60px; padding-top:30px; border-top:2px solid #eee; text-align:center; color:#999;">
+            <p><strong>Job Clarity</strong> - Roofing CRM</p>
+            <p>Document generated January 2026</p>
+        </div>
+    </div>
+</body>
+</html>
