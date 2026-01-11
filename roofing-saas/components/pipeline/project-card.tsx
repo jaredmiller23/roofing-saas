@@ -80,8 +80,10 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
       })
 
       if (response.ok) {
-        // Refresh the page to show updated pipeline
-        router.refresh()
+        // Use the callback to update parent state immediately
+        if (onMoveProject) {
+          onMoveProject(project.id, 'lost')
+        }
       } else {
         const errorData = await response.json()
         alert(errorData.error?.message || 'Failed to mark as lost')
@@ -109,8 +111,10 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
       })
 
       if (response.ok) {
-        // Refresh the page to show updated pipeline
-        router.refresh()
+        // Use the callback to update parent state immediately
+        if (onMoveProject) {
+          onMoveProject(project.id, 'prospect')
+        }
       } else {
         const errorData = await response.json()
         alert(errorData.error?.message || 'Failed to reactivate opportunity')
