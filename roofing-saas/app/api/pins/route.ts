@@ -213,14 +213,14 @@ export async function POST(request: NextRequest) {
               contact_id: contact,
               name: projectName,
               status: 'lead',
-              pipeline_stage: 'new_lead',
+              pipeline_stage: 'prospect',
               type: 'residential',
               lead_source: 'door_knock',
               created_by: user.id,
               description: notes || `Lead from door knock at ${address_street || address || 'unknown address'}`,
               custom_fields: {
                 proline_pipeline: 'SALES',
-                proline_stage: 'New Lead',
+                proline_stage: 'Prospect',
                 source_knock_id: newPin.id,
                 source_disposition: disposition
               }
