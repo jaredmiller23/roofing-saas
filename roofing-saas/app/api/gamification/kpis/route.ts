@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const isSystem = searchParams.get('system')
 
-    let query = supabase.from('kpi_snapshots').select('*').eq('tenantId', tenantId)
+    let query = supabase.from('kpi_snapshots').select('*').eq('tenant_id', tenantId)
 
     if (isSystem !== null) {
       query = query.eq('is_system', isSystem === 'true')
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       .from('kpi_snapshots')
       .insert({
         ...validated,
-        tenantId,
+        tenant_id: tenantId,
         is_system: false, // Custom KPIs are never system KPIs
         created_by: user.id,
       })

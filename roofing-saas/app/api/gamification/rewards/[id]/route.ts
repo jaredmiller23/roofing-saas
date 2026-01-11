@@ -26,9 +26,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
@@ -45,12 +45,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       .from('reward_configs')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to update reward', { error, tenantId, reward_id: id })
+      logger.error('Failed to update reward', { error, tenant_id, reward_id: id })
 
       if (error.code === 'PGRST116') {
         throw NotFoundError('Reward not found')
@@ -59,7 +59,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw InternalError(error.message)
     }
 
-    logger.info('Updated reward', { tenantId, reward_id: data.id })
+    logger.info('Updated reward', { tenant_id, reward_id: data.id })
 
     return successResponse({ data, success: true })
   } catch (error) {
@@ -81,20 +81,20 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
-    const { error } = await supabase.from('reward_configs').delete().eq('id', id).eq('tenantId', tenantId)
+    const { error } = await supabase.from('reward_configs').delete().eq('id', id).eq('tenant_id', tenant_id)
 
     if (error) {
-      logger.error('Failed to delete reward', { error, tenantId, reward_id: id })
+      logger.error('Failed to delete reward', { error, tenant_id, reward_id: id })
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted reward', { tenantId, reward_id: id })
+    logger.info('Deleted reward', { tenant_id, reward_id: id })
 
     return successResponse({ success: true })
   } catch (error) {

@@ -31,7 +31,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('challenges')
       .select('*')
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenantId)
       .order('start_date', { ascending: false })
 
     if (error) {
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('challenges')
-      .insert({ ...validated, tenantId, created_by: user.id })
+      .insert({ ...validated, tenant_id: tenantId, created_by: user.id })
       .select()
       .single()
 

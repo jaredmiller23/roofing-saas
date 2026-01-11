@@ -26,9 +26,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       .from('kpi_snapshots')
       .select('is_system')
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .single()
 
     if (existing?.is_system) {
@@ -60,12 +60,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         .from('kpi_snapshots')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .eq('tenantId', tenantId)
+        .eq('tenant_id', tenant_id)
         .select()
         .single()
 
       if (error) {
-        logger.error('Failed to update system KPI', { error, tenantId, kpi_id: id })
+        logger.error('Failed to update system KPI', { error, tenant_id, kpi_id: id })
         throw InternalError(error.message)
       }
 
@@ -86,12 +86,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       .from('kpi_snapshots')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to update KPI', { error, tenantId, kpi_id: id })
+      logger.error('Failed to update KPI', { error, tenant_id, kpi_id: id })
 
       if (error.code === 'PGRST116') {
         throw NotFoundError('KPI not found')
@@ -100,7 +100,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw InternalError(error.message)
     }
 
-    logger.info('Updated KPI', { tenantId, kpi_id: data.id })
+    logger.info('Updated KPI', { tenant_id, kpi_id: data.id })
 
     return successResponse({ data, success: true })
   } catch (error) {
@@ -122,9 +122,9 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
@@ -133,21 +133,21 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       .from('kpi_snapshots')
       .select('is_system')
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .single()
 
     if (existing?.is_system) {
       throw AuthorizationError('System KPIs cannot be deleted')
     }
 
-    const { error } = await supabase.from('kpi_snapshots').delete().eq('id', id).eq('tenantId', tenantId)
+    const { error } = await supabase.from('kpi_snapshots').delete().eq('id', id).eq('tenant_id', tenant_id)
 
     if (error) {
-      logger.error('Failed to delete KPI', { error, tenantId, kpi_id: id })
+      logger.error('Failed to delete KPI', { error, tenant_id, kpi_id: id })
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted KPI', { tenantId, kpi_id: id })
+    logger.info('Deleted KPI', { tenant_id, kpi_id: id })
 
     return successResponse({ success: true })
   } catch (error) {

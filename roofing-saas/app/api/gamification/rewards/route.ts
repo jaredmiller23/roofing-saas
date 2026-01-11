@@ -22,20 +22,20 @@ export async function GET() {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
     const { data, error } = await supabase
       .from('reward_configs')
       .select('*')
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .order('points_required', { ascending: true })
 
     if (error) {
-      logger.error('Failed to fetch rewards', { error, tenantId })
+      logger.error('Failed to fetch rewards', { error, tenant_id })
       throw InternalError(error.message)
     }
 
@@ -58,9 +58,9 @@ export async function POST(request: Request) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    const tenant_id = await getUserTenantId(user.id)
 
-    if (!tenantId) {
+    if (!tenant_id) {
       throw ValidationError('Organization not found')
     }
 
@@ -75,12 +75,12 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('reward_configs')
-      .insert({ ...validated, tenantId, created_by: user.id })
+      .insert({ ...validated, tenant_id, created_by: user.id })
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to create reward', { error, tenantId })
+      logger.error('Failed to create reward', { error, tenant_id })
 
       if (error.code === '23505') {
         throw ConflictError('A reward with this name already exists')
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       throw InternalError(error.message)
     }
 
-    logger.info('Created reward', { tenantId, reward_id: data.id, name: data.name })
+    logger.info('Created reward', { tenant_id, reward_id: data.id, name: data.name })
 
     return createdResponse({ data, success: true })
   } catch (error) {

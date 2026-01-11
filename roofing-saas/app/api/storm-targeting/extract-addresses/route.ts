@@ -245,12 +245,16 @@ export async function POST(request: NextRequest) {
 // =====================================================
 
 export async function OPTIONS() {
+  // Use specific origin from env, not wildcard
+  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL || 'https://roofing-saas.vercel.app';
+
   return new NextResponse(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': allowedOrigin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
     },
   });
 }

@@ -31,8 +31,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
+    const tenant_id = await getUserTenantId(user.id)
+    if (!tenant_id) {
       throw AuthorizationError('User not associated with tenant')
     }
 
@@ -46,7 +46,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const validated = validationResult.data
 
-    // Update point rule (RLS ensures tenantId isolation)
+    // Update point rule (RLS ensures tenant_id isolation)
     const { data, error } = await supabase
       .from('point_rules')
       .update({
@@ -54,12 +54,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
       .select()
       .single()
 
     if (error) {
-      logger.error('Failed to update point rule', { error, tenantId, rule_id: id })
+      logger.error('Failed to update point rule', { error, tenant_id, rule_id: id })
 
       if (error.code === 'PGRST116') {
         throw NotFoundError('Point rule not found')
@@ -69,7 +69,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     logger.info('Updated point rule', {
-      tenantId,
+      tenant_id,
       rule_id: data.id,
       action_type: data.action_type,
     })
@@ -96,24 +96,24 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       throw AuthenticationError()
     }
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
+    const tenant_id = await getUserTenantId(user.id)
+    if (!tenant_id) {
       throw AuthorizationError('User not associated with tenant')
     }
 
-    // Delete point rule (RLS ensures tenantId isolation)
+    // Delete point rule (RLS ensures tenant_id isolation)
     const { error } = await supabase
       .from('point_rules')
       .delete()
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenant_id)
 
     if (error) {
-      logger.error('Failed to delete point rule', { error, tenantId, rule_id: id })
+      logger.error('Failed to delete point rule', { error, tenant_id, rule_id: id })
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted point rule', { tenantId, rule_id: id })
+    logger.info('Deleted point rule', { tenant_id, rule_id: id })
 
     return successResponse({ success: true })
   } catch (error) {

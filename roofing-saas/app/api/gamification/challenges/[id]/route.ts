@@ -45,7 +45,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       .from('challenges')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenantId)
       .select()
       .single()
 
@@ -91,7 +91,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       .from('challenges')
       .delete()
       .eq('id', id)
-      .eq('tenantId', tenantId)
+      .eq('tenant_id', tenantId)
 
     if (error) {
       logger.error('Failed to delete challenge', { error, tenantId, challenge_id: id })

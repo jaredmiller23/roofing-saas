@@ -131,9 +131,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Set secure cookie
+    // SECURITY: Always use secure cookies - localhost is treated specially by browsers
+    // and will still work with secure: true in development
     cookieStore.set(IMPERSONATION_COOKIE_NAME, JSON.stringify(sessionData), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'strict',
       expires: expiresAt,
       path: '/',

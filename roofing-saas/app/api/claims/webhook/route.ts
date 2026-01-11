@@ -25,8 +25,13 @@ function verifyWebhookSignature(
   signature: string | null
 ): boolean {
   if (!WEBHOOK_SECRET) {
-    // If no secret configured, skip verification in development
-    logger.warn('No webhook secret configured, skipping signature verification')
+    // SECURITY: Fail in production if webhook secret is not configured
+    if (process.env.NODE_ENV === 'production') {
+      logger.error('CLAIMS_WEBHOOK_SECRET is required in production')
+      return false
+    }
+    // In development, warn but allow (for testing)
+    logger.warn('No webhook secret configured, skipping signature verification (development only)')
     return true
   }
 
