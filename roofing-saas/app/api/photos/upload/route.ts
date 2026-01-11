@@ -1,10 +1,24 @@
 import { NextRequest } from 'next/server'
+import { fileTypeFromBuffer } from 'file-type'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
+
+// Allowed image MIME types based on magic bytes (server-side validation)
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/avif',
+  'image/bmp',
+  'image/tiff',
+]
 
 /**
  * POST /api/photos/upload
@@ -38,15 +52,40 @@ export async function POST(request: NextRequest) {
       throw ValidationError('File is required')
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      throw ValidationError('File must be an image')
-    }
-
     // Validate file size (10 MB before compression)
     const maxBytes = 10 * 1024 * 1024 * 2 // 20 MB raw (will be compressed)
     if (file.size > maxBytes) {
       throw ValidationError('File too large. Maximum size is 20 MB (will be compressed to ~2 MB)')
+    }
+
+    // Convert File to ArrayBuffer for upload
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Server-side MIME validation using magic bytes (cannot be spoofed)
+    // This detects the actual file type by reading the file header, not trusting browser-provided type
+    const detectedType = await fileTypeFromBuffer(buffer)
+    const actualMime = detectedType?.mime
+
+    if (!actualMime || !ALLOWED_IMAGE_TYPES.includes(actualMime)) {
+      const claimed = file.type || 'unknown'
+      logger.warn('MIME type mismatch or invalid file', {
+        claimedType: claimed,
+        detectedType: actualMime || 'undetected',
+        fileName: file.name,
+      })
+      throw ValidationError(
+        `Invalid file type. Detected: ${actualMime || 'unknown'}. Allowed: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+      )
+    }
+
+    // Also check that browser-provided type matches detected type (optional warning)
+    if (file.type && file.type !== actualMime) {
+      logger.warn('MIME type mismatch between browser and detection', {
+        browserType: file.type,
+        detectedType: actualMime,
+        fileName: file.name,
+      })
     }
 
     // Parse metadata
@@ -61,10 +100,6 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Convert File to ArrayBuffer for upload
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
     // Generate unique filename
     const now = new Date()
     const year = now.getFullYear()
@@ -78,7 +113,7 @@ export async function POST(request: NextRequest) {
     const { data: storageData, error: storageError } = await supabase.storage
       .from('property-photos')
       .upload(filePath, buffer, {
-        contentType: file.type,
+        contentType: actualMime, // Use server-detected MIME type
         cacheControl: '3600',
         upsert: false,
       })
@@ -95,6 +130,7 @@ export async function POST(request: NextRequest) {
     const { data: urlData } = supabase.storage.from('property-photos').getPublicUrl(filePath)
 
     // Save photo metadata to database
+    // Use server-detected MIME type for security
     const photoData = {
       tenant_id: tenantId,
       contact_id: contactId || null,
@@ -104,7 +140,8 @@ export async function POST(request: NextRequest) {
       thumbnail_url: urlData.publicUrl, // TODO: Generate thumbnail in future
       metadata: {
         original_name: file.name,
-        mime_type: file.type,
+        mime_type: actualMime, // Server-detected MIME type (more reliable than browser)
+        browser_mime_type: file.type, // Keep original for debugging
         size: file.size,
         ...metadata,
       },
