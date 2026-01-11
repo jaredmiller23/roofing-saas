@@ -158,8 +158,9 @@ export async function POST(request: NextRequest) {
     logger.debug('[API] Pin created successfully:', { pin_id: newPin.id })
 
     let createdContactId: string | null = null
+    let createdProjectId: string | null = null
 
-    // If creating contact
+    // If creating contact (lead)
     if (create_contact && contact_data) {
       logger.debug('[API] Creating contact from pin...')
       const { data: contact, error: contactError } = await supabase
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
         // Verify contact was actually created and update pin
         const { data: verifyContact } = await supabase
           .from('contacts')
-          .select('id')
+          .select('id, first_name, last_name')
           .eq('id', contact)
           .single()
 
@@ -193,6 +194,45 @@ export async function POST(request: NextRequest) {
               contact_id: contact
             })
             .eq('id', newPin.id)
+
+          // Create a project for this lead so it appears in the pipeline
+          const contactName = [verifyContact.first_name, verifyContact.last_name]
+            .filter(Boolean)
+            .join(' ') || 'Unknown'
+          const projectName = address_street
+            ? `${contactName} - ${address_street}`
+            : address
+              ? `${contactName} - ${address}`
+              : contactName
+
+          const { data: newProject, error: projectError } = await supabase
+            .from('projects')
+            .insert({
+              tenant_id: tenantId,
+              contact_id: contact,
+              name: projectName,
+              status: 'lead',
+              pipeline_stage: 'new_lead',
+              type: 'residential',
+              lead_source: 'door_knock',
+              created_by: user.id,
+              description: notes || `Lead from door knock at ${address_street || address || 'unknown address'}`,
+              custom_fields: {
+                proline_pipeline: 'SALES',
+                proline_stage: 'New Lead',
+                source_knock_id: newPin.id,
+                source_disposition: disposition
+              }
+            })
+            .select('id')
+            .single()
+
+          if (projectError) {
+            logger.error('[API] Error creating project for lead:', { error: projectError })
+          } else {
+            logger.debug('[API] Project created for lead:', { project_id: newProject?.id })
+            createdProjectId = newProject?.id || null
+          }
         }
       }
     }
@@ -234,7 +274,8 @@ export async function POST(request: NextRequest) {
 
     return successResponse({
       ...newPin,
-      contact_id: createdContactId
+      contact_id: createdContactId,
+      project_id: createdProjectId
     })
   } catch (error) {
     logger.error('[API] Error in POST /api/pins:', { error })
