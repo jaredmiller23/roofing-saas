@@ -6,6 +6,8 @@ import type {
   WorkflowFilters,
   WorkflowListResponse
 } from '@/lib/automation/workflow-types'
+import { AuthenticationError, ValidationError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
 const mockWorkflows: Workflow[] = [
@@ -87,7 +89,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const { searchParams } = new URL(request.url)
@@ -154,10 +156,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response)
   } catch (error) {
     console.error('Error fetching workflows:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch workflows' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
 
@@ -165,17 +164,14 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const body: CreateWorkflowInput = await request.json()
 
     // Validate required fields
     if (!body.name || !body.trigger || !body.actions) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, trigger, actions' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: name, trigger, actions')
     }
 
     // Create new workflow
@@ -208,9 +204,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newWorkflow, { status: 201 })
   } catch (error) {
     console.error('Error creating workflow:', error)
-    return NextResponse.json(
-      { error: 'Failed to create workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }

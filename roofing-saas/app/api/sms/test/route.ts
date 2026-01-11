@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { AuthorizationError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { sendSMS } from '@/lib/twilio/sms'
 import { z } from 'zod'
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     // Only allow in development
     if (process.env.NODE_ENV === 'production') {
-      return errorResponse(new Error('Test endpoint disabled in production'))
+      throw AuthorizationError('Test endpoint disabled in production')
     }
 
     logger.apiRequest('POST', '/api/sms/test', { environment: 'development' })

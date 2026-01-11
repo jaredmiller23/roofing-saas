@@ -2,28 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { workflowEngine } from '@/lib/automation/workflow-engine'
 import type { VariableContext } from '@/lib/automation/workflow-types'
+import { AuthenticationError, ValidationError, NotFoundError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const body = await request.json()
     const { workflow_id, trigger_data, context } = body
 
     if (!workflow_id || !trigger_data) {
-      return NextResponse.json(
-        { error: 'Missing required fields: workflow_id, trigger_data' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: workflow_id, trigger_data')
     }
 
     // Get workflow from the mock data or database
     const workflowResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/automations/${workflow_id}`)
     if (!workflowResponse.ok) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow')
     }
 
     const workflow = await workflowResponse.json()
@@ -55,10 +54,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error executing workflow:', error)
-    return NextResponse.json(
-      { error: 'Failed to execute workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
 
@@ -67,17 +63,14 @@ export async function PUT(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const body = await request.json()
     const { workflow_id, manual_data } = body
 
     if (!workflow_id) {
-      return NextResponse.json(
-        { error: 'Missing required field: workflow_id' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required field: workflow_id')
     }
 
     // Trigger manual workflow execution
@@ -88,9 +81,6 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error triggering manual workflow:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to trigger workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }

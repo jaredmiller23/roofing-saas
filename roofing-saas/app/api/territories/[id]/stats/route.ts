@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
@@ -24,13 +25,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     const { id } = await params
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .single()
 
     if (territoryError || !territory) {
-      return errorResponse(new Error('Territory not found'), 404)
+      throw NotFoundError('Territory')
     }
 
     // For now, we'll return basic stats

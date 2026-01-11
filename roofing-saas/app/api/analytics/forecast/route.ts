@@ -5,6 +5,8 @@ import { generateRevenueForecast } from '@/lib/analytics/forecasting'
 import { createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
 import { PipelineStage } from '@/lib/types/api'
+import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/analytics/forecast
@@ -52,12 +54,12 @@ export async function GET(request: NextRequest) {
     // Get current user and tenant
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'User not associated with tenant' }, { status: 403 })
+      throw AuthorizationError('User not associated with tenant')
     }
 
     // Fetch projects data including historical data for forecasting
@@ -84,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching projects for forecast:', error)
-      return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
+      throw new Error('Failed to fetch projects')
     }
 
     if (!projects || projects.length === 0) {
@@ -108,9 +110,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error generating revenue forecast:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }

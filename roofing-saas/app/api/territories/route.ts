@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
@@ -35,13 +36,13 @@ export async function GET(request: NextRequest) {
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     const supabase = await createClient()
@@ -100,13 +101,13 @@ export async function POST(request: NextRequest) {
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     // Parse and validate request body

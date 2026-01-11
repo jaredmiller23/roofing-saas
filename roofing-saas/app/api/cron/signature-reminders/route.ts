@@ -28,6 +28,8 @@ import {
   shouldSendReminder,
   type SignatureReminderData
 } from '@/lib/email/signature-reminder-templates'
+import { AuthenticationError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 // Verify cron secret for security
 function verifyCronSecret(request: NextRequest): boolean {
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
   // Verify authorization
   if (!verifyCronSecret(request)) {
     logger.warn('Unauthorized cron request attempt')
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return errorResponse(AuthenticationError('Unauthorized'))
   }
 
   logger.info('Starting signature reminder cron job')
@@ -272,11 +274,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Signature reminder cron job failed', { error, duration })
-
-    return NextResponse.json(
-      { error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
 

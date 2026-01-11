@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { AuthenticationError, ValidationError } from '@/lib/api/errors';
+import { errorResponse } from '@/lib/api/response';
 
 export interface SyncRequest {
   operations: SyncOperation[];
@@ -58,7 +60,7 @@ export async function POST(request: NextRequest) {
     // Verify authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      throw AuthenticationError('Unauthorized');
     }
 
     // Parse request body
@@ -67,9 +69,7 @@ export async function POST(request: NextRequest) {
 
     // Validate request
     if (!operations || !Array.isArray(operations)) {
-      return NextResponse.json({ 
-        error: 'Invalid request: operations array required' 
-      }, { status: 400 });
+      throw ValidationError('Invalid request: operations array required');
     }
 
     logger.info('Sync request received', {
@@ -141,14 +141,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     logger.error('Sync request failed', { error });
-    
-    return NextResponse.json({
-      success: false,
-      results: [],
-      conflicts: [],
-      server_timestamp: Date.now(),
-      error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status: 500 });
+    return errorResponse(error as Error);
   }
 }
 
@@ -397,7 +390,7 @@ export async function GET(request: NextRequest) {
     // Verify authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      throw AuthenticationError('Unauthorized');
     }
 
     const { searchParams } = new URL(request.url);
@@ -455,9 +448,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     logger.error('Sync metadata request failed', { error });
-    
-    return NextResponse.json({
-      error: 'Failed to fetch sync metadata'
-    }, { status: 500 });
+    return errorResponse(error as Error);
   }
 }

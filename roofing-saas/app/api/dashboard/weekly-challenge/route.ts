@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/dashboard/weekly-challenge
@@ -10,12 +12,12 @@ export async function GET() {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 403 })
+      throw AuthorizationError('No tenant found')
     }
 
     const supabase = await createClient()
@@ -43,10 +45,7 @@ export async function GET() {
 
     if (error) {
       console.error('Error fetching knock activities:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch weekly challenge data' },
-        { status: 500 }
-      )
+      throw new Error('Failed to fetch weekly challenge data')
     }
 
     // Count total knocks
@@ -78,9 +77,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Weekly challenge API error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch weekly challenge data' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }

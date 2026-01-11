@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import type { Workflow, UpdateWorkflowInput } from '@/lib/automation/workflow-types'
+import { AuthenticationError, NotFoundError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
 // This should be the same reference as in the main route.ts
@@ -53,23 +55,20 @@ export async function GET(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const { id } = await params
     const workflow = mockWorkflows.find(w => w.id === id)
 
     if (!workflow) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow')
     }
 
     return NextResponse.json(workflow)
   } catch (error) {
     console.error('Error fetching workflow:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
 
@@ -80,7 +79,7 @@ export async function PATCH(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const { id } = await params
@@ -88,7 +87,7 @@ export async function PATCH(
 
     const workflowIndex = mockWorkflows.findIndex(w => w.id === id)
     if (workflowIndex === -1) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow')
     }
 
     const existingWorkflow = mockWorkflows[workflowIndex]
@@ -116,10 +115,7 @@ export async function PATCH(
     return NextResponse.json(updatedWorkflow)
   } catch (error) {
     console.error('Error updating workflow:', error)
-    return NextResponse.json(
-      { error: 'Failed to update workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
 
@@ -130,14 +126,14 @@ export async function DELETE(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError('Unauthorized')
     }
 
     const { id } = await params
     const workflowIndex = mockWorkflows.findIndex(w => w.id === id)
 
     if (workflowIndex === -1) {
-      return NextResponse.json({ error: 'Workflow not found' }, { status: 404 })
+      throw NotFoundError('Workflow')
     }
 
     // Remove workflow from array (in real app, soft delete in database)
@@ -146,9 +142,6 @@ export async function DELETE(
     return NextResponse.json({ message: 'Workflow deleted successfully' })
   } catch (error) {
     console.error('Error deleting workflow:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete workflow' },
-      { status: 500 }
-    )
+    return errorResponse(error as Error)
   }
 }
