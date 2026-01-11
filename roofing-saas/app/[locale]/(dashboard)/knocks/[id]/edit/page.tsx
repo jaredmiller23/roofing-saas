@@ -53,7 +53,11 @@ export default function EditTerritoryPage({ params }: EditTerritoryPageProps) {
         }
 
         const result = await response.json()
-        const territoryData = result.territory
+        const territoryData = result.data?.territory
+
+        if (!territoryData) {
+          throw new Error('Territory not found')
+        }
 
         setTerritory(territoryData)
         if (territoryData.boundary_data) {
