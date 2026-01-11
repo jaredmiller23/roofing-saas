@@ -201,6 +201,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - sw.js (service worker - must not be redirected)
+     * - manifest.json (PWA manifest)
+     * - workbox-*.js (service worker chunks)
      *
      * Also includes i18n locale paths:
      * - / (root for locale redirect)
@@ -208,6 +211,6 @@ export const config = {
      */
     '/',
     '/(en|es|fr)/:path*',
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.json|workbox-.*\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
