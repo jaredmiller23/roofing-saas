@@ -52,12 +52,12 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/login">
-              <Button className="glow-purple">Start Free Trial</Button>
-            </Link>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Sign In</Link>
+            </Button>
+            <Button className="glow-purple" asChild>
+              <Link href="/login">Start Free Trial</Link>
+            </Button>
           </div>
 
           {/* Mobile menu button */}
@@ -85,12 +85,12 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Link href="/login">
-                  <Button variant="ghost" className="w-full">Sign In</Button>
-                </Link>
-                <Link href="/login">
-                  <Button className="w-full glow-purple">Start Free Trial</Button>
-                </Link>
+                <Button variant="ghost" className="w-full" asChild>
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button className="w-full glow-purple" asChild>
+                  <Link href="/login">Start Free Trial</Link>
+                </Button>
               </div>
             </div>
           </div>
