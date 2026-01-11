@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Check SMS compliance before sending
     const { canSendSMS } = await import('@/lib/twilio/compliance')
-    const permission = await canSendSMS(to)
+    const permission = await canSendSMS(to, tenantId)
 
     if (!permission.allowed) {
       throw ValidationError('Cannot send SMS', {

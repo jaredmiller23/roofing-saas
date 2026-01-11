@@ -45,10 +45,28 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Try to find the contact by phone number
+    // Look up tenant by the "To" number (the business's Twilio number)
+    // This is stored in tenant_settings.integrations->twilio->phone_number
+    const { data: tenantConfig } = await supabase
+      .from('tenant_settings')
+      .select('tenant_id')
+      .filter('integrations->twilio->>phone_number', 'eq', to)
+      .single()
+
+    if (!tenantConfig?.tenant_id) {
+      logger.warn('SMS webhook: Unknown Twilio number, cannot determine tenant', { to, from })
+      // Still return 200 to Twilio but don't process
+      return new NextResponse('OK', { status: 200 })
+    }
+
+    const tenantId = tenantConfig.tenant_id
+    logger.info('Resolved tenant from Twilio number', { to, tenantId })
+
+    // Try to find the contact by phone number (filtered by tenant)
     const { data: contact } = await supabase
       .from('contacts')
       .select('id, tenant_id')
+      .eq('tenant_id', tenantId)
       .or(`phone.eq.${from},mobile_phone.eq.${from}`)
       .eq('is_deleted', false)
       .limit(1)
@@ -56,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Log the incoming SMS as an activity
     const { error: activityError } = await supabase.from('activities').insert({
-      tenant_id: contact?.tenant_id || null,
+      tenant_id: tenantId,
       contact_id: contact?.id || null,
       type: 'sms',
       direction: 'inbound',
@@ -80,17 +98,17 @@ export async function POST(request: NextRequest) {
 
     if (isOptOutMessage(body)) {
       // Process opt-out request
-      const result = await optOutContact(from, `User sent: ${body}`)
+      const result = await optOutContact(from, tenantId, `User sent: ${body}`)
 
       if (result.success) {
         twiml.message('You have been unsubscribed from SMS messages. Reply START to opt back in.')
-        logger.info('Contact opted out via SMS', { from, contactId: result.contactId })
+        logger.info('Contact opted out via SMS', { from, contactId: result.contactId, tenantId })
       } else {
-        logger.error('Failed to process opt-out', { from, error: result.error })
+        logger.error('Failed to process opt-out', { from, error: result.error, tenantId })
       }
     } else if (isOptInMessage(body)) {
       // Process opt-in request
-      const result = await optInContact(from)
+      const result = await optInContact(from, tenantId)
 
       if (result.success) {
         twiml.message('You are now subscribed to receive SMS messages. Reply STOP to opt out.')

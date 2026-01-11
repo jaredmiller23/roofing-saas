@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
@@ -21,13 +22,13 @@ export async function GET(request: NextRequest) {
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     const supabase = await createClient()
@@ -93,13 +94,13 @@ export async function DELETE(request: NextRequest) {
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     const supabase = await createClient()
@@ -107,7 +108,7 @@ export async function DELETE(request: NextRequest) {
 
     const photoId = searchParams.get('id')
     if (!photoId) {
-      throw new Error('Photo ID is required')
+      throw ValidationError('Photo ID is required')
     }
 
     // Verify photo belongs to tenant
@@ -119,7 +120,7 @@ export async function DELETE(request: NextRequest) {
       .single()
 
     if (fetchError || !photo) {
-      throw new Error('Photo not found')
+      throw NotFoundError('Photo')
     }
 
     // Soft delete the photo

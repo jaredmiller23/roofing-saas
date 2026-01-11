@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
@@ -16,13 +17,13 @@ export async function POST(request: NextRequest) {
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return errorResponse(new Error('User not authenticated'), 401)
+      throw AuthenticationError('User not authenticated')
     }
 
     // Get tenant ID
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return errorResponse(new Error('No tenant found for user'), 403)
+      throw AuthorizationError('No tenant found for user')
     }
 
     // Parse multipart form data
@@ -34,18 +35,18 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!file) {
-      throw new Error('File is required')
+      throw ValidationError('File is required')
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      throw new Error('File must be an image')
+      throw ValidationError('File must be an image')
     }
 
     // Validate file size (10 MB before compression)
     const maxBytes = 10 * 1024 * 1024 * 2 // 20 MB raw (will be compressed)
     if (file.size > maxBytes) {
-      throw new Error(`File too large. Maximum size is 20 MB (will be compressed to ~2 MB)`)
+      throw ValidationError('File too large. Maximum size is 20 MB (will be compressed to ~2 MB)')
     }
 
     // Parse metadata

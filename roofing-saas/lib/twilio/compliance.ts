@@ -43,9 +43,13 @@ export function isOptInMessage(message: string): boolean {
 
 /**
  * Mark contact as opted out of SMS
+ * @param phoneNumber - The phone number to opt out
+ * @param tenantId - The tenant ID to filter by (required for multi-tenant safety)
+ * @param reason - The reason for opting out
  */
 export async function optOutContact(
   phoneNumber: string,
+  tenantId: string,
   reason: string = 'User requested STOP'
 ): Promise<{ success: boolean; contactId?: string; error?: string }> {
   try {
@@ -58,6 +62,7 @@ export async function optOutContact(
         sms_opt_out_date: new Date().toISOString(),
         sms_opt_out_reason: reason,
       })
+      .eq('tenant_id', tenantId)
       .or(`phone.eq.${phoneNumber},mobile_phone.eq.${phoneNumber}`)
       .eq('is_deleted', false)
       .select('id')
@@ -78,9 +83,12 @@ export async function optOutContact(
 
 /**
  * Mark contact as opted in to SMS
+ * @param phoneNumber - The phone number to opt in
+ * @param tenantId - The tenant ID to filter by (required for multi-tenant safety)
  */
 export async function optInContact(
-  phoneNumber: string
+  phoneNumber: string,
+  tenantId: string
 ): Promise<{ success: boolean; contactId?: string; error?: string }> {
   try {
     const supabase = await createClient()
@@ -94,6 +102,7 @@ export async function optInContact(
         sms_opt_out_date: null,
         sms_opt_out_reason: null,
       })
+      .eq('tenant_id', tenantId)
       .or(`phone.eq.${phoneNumber},mobile_phone.eq.${phoneNumber}`)
       .eq('is_deleted', false)
       .select('id')
@@ -115,8 +124,10 @@ export async function optInContact(
 /**
  * Check if SMS can be sent to a contact
  * Validates opt-out status and quiet hours
+ * @param phoneNumber - The phone number to check
+ * @param tenantId - The tenant ID to filter by (required for multi-tenant safety)
  */
-export async function canSendSMS(phoneNumber: string): Promise<{
+export async function canSendSMS(phoneNumber: string, tenantId: string): Promise<{
   allowed: boolean
   reason?: string
 }> {
@@ -127,6 +138,7 @@ export async function canSendSMS(phoneNumber: string): Promise<{
     const { data: contact, error } = await supabase
       .from('contacts')
       .select('sms_opt_out, sms_opt_in, timezone')
+      .eq('tenant_id', tenantId)
       .or(`phone.eq.${phoneNumber},mobile_phone.eq.${phoneNumber}`)
       .eq('is_deleted', false)
       .single()

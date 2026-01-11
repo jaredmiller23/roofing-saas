@@ -58,7 +58,7 @@ ariaFunctionRegistry.register({
 
     // Check compliance
     if (targetPhone) {
-      const canSend = await canSendSMS(targetPhone)
+      const canSend = await canSendSMS(targetPhone, context.tenantId)
       if (!canSend.allowed) {
         return {
           success: false,
