@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'wfifizczqvogbcqamnmw.supabase.co',
+        hostname: 'api.jobclarity.io',
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
@@ -54,9 +54,9 @@ const nextConfig: NextConfig = {
           "default-src 'self'",
           scriptSrc, // Google Maps scripts (unsafe-eval only in dev)
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // CSS-in-JS + Google Fonts
-          "img-src 'self' data: blob: https://wfifizczqvogbcqamnmw.supabase.co https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
+          "img-src 'self' data: blob: https://api.jobclarity.io https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
           "font-src 'self' data: https://fonts.gstatic.com",
-          "connect-src 'self' https://wfifizczqvogbcqamnmw.supabase.co wss://wfifizczqvogbcqamnmw.supabase.co https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API
+          "connect-src 'self' https://api.jobclarity.io wss://api.jobclarity.io https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API
           "worker-src 'self' blob:", // Service workers
           "child-src 'self' blob:", // Web workers and service workers
           "frame-src https://*.google.com", // Google Maps iframes if needed
