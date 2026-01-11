@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useCallback } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
@@ -9,6 +9,30 @@ import { createContactSchema, type CreateContactInput } from '@/lib/validations/
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+
+// Helper to clean form data before Zod validation
+// Converts NaN from empty number inputs to undefined, and empty string enums to undefined
+function cleanFormData(data: Record<string, unknown>): Record<string, unknown> {
+  const cleaned: Record<string, unknown> = { ...data }
+  for (const key of Object.keys(cleaned)) {
+    const value = cleaned[key]
+    // Convert NaN to undefined for number fields
+    if (typeof value === 'number' && isNaN(value)) {
+      cleaned[key] = undefined
+    }
+    // Convert empty string to undefined for enum fields (customer_type)
+    if (key === 'customer_type' && value === '') {
+      cleaned[key] = undefined
+    }
+  }
+  return cleaned
+}
+
+// Custom resolver that preprocesses data before Zod validation
+const createContactResolver: Resolver<CreateContactInput> = async (values, context, options) => {
+  const cleanedValues = cleanFormData(values) as CreateContactInput
+  return zodResolver(createContactSchema)(cleanedValues, context, options)
+}
 
 interface ContactFormProps {
   contact?: Contact
@@ -38,7 +62,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     watch,
     setValue: _setValue,
   } = useForm<CreateContactInput>({
-    resolver: zodResolver(createContactSchema),
+    resolver: createContactResolver,
     defaultValues: {
       first_name: contact?.first_name || '',
       last_name: contact?.last_name || '',
@@ -196,7 +220,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       {errors.root && (
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
           {errors.root.message}

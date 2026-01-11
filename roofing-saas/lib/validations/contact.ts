@@ -49,6 +49,7 @@ export const createContactSchema = z.object({
   // Property details
   property_type: z.string().optional(),
   roof_type: z.string().optional(),
+  // Note: NaN values from empty number inputs are handled in form submission
   roof_age: z.number().int().min(0).max(200).optional(),
   property_value: z.number().positive().optional(),
   square_footage: z.number().int().positive().optional(),
@@ -60,6 +61,7 @@ export const createContactSchema = z.object({
   deductible: z.number().positive().optional(),
   policy_holder_id: z.string().uuid().optional().nullable(),
   job_type: z.string().optional(),
+  // Note: Empty string for customer_type is handled in form submission
   customer_type: z.enum(['insurance', 'retail']).optional(),
   // Communication Consent
   text_consent: z.boolean().optional(),
