@@ -27,6 +27,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
+import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import {
   Home,
   GitBranch,
@@ -238,22 +239,21 @@ export function NavigationDrawer({ isOpen, onClose, className }: NavigationDrawe
               <Separator className="my-2" />
 
               {/* Sign Out Button */}
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  triggerHaptic()
-                  // TODO: Implement sign out
-                  window.location.href = '/auth/signout'
-                }}
-                className={cn(
-                  'w-full justify-start gap-3 px-3 py-3 h-auto',
-                  'text-destructive hover:text-destructive hover:bg-destructive/10',
-                  !prefersReducedMotion && 'active:scale-[0.98]'
-                )}
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="font-medium">Sign Out</span>
-              </Button>
+              <form action={signOut} className="w-full">
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  onClick={() => triggerHaptic()}
+                  className={cn(
+                    'w-full justify-start gap-3 px-3 py-3 h-auto',
+                    'text-destructive hover:text-destructive hover:bg-destructive/10',
+                    !prefersReducedMotion && 'active:scale-[0.98]'
+                  )}
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="font-medium">Sign Out</span>
+                </Button>
+              </form>
             </div>
           )}
         </div>

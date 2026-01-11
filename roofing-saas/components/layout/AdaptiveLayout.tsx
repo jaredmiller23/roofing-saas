@@ -79,9 +79,10 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   }, [])
 
   const handleSearchSubmit = useCallback((value: string) => {
-    // Navigate to search results page with query
+    // Navigate to contacts page with search query
+    // TODO: Implement dedicated search page or global search
     if (value.trim()) {
-      router.push(`/search?q=${encodeURIComponent(value.trim())}`)
+      router.push(`/contacts?search=${encodeURIComponent(value.trim())}`)
       setIsSearchExpanded(false)
       setSearchValue('')
     }
