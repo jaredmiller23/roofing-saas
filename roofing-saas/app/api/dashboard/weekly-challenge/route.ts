@@ -22,16 +22,14 @@ export async function GET() {
 
     const supabase = await createClient()
 
-    // Get current week's start (Monday) and end (Sunday)
+    // Use rolling 7-day window (same as dashboard door knocks metric)
+    // This provides consistency - if top shows 7 knocks, challenge should match
     const now = new Date()
-    const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek // If Sunday, go back 6 days
     const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() + daysToMonday)
+    weekStart.setDate(now.getDate() - 7)
     weekStart.setHours(0, 0, 0, 0)
 
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekStart.getDate() + 6) // Sunday
+    const weekEnd = new Date(now)
     weekEnd.setHours(23, 59, 59, 999)
 
     // Query door knock activities for current week (tenant-wide for participant count)
@@ -69,10 +67,8 @@ export async function GET() {
     // Target (configurable - default 50 per user)
     const target = 50
 
-    // Calculate time remaining
-    const msRemaining = weekEnd.getTime() - now.getTime()
-    const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24))
-    const timeRemaining = daysRemaining === 1 ? '1 day' : `${daysRemaining} days`
+    // Rolling window - always show "rolling 7 days"
+    const timeRemaining = 'rolling'
 
     return NextResponse.json({
       success: true,
@@ -80,7 +76,7 @@ export async function GET() {
         challenge: {
           id: 'weekly-knock-challenge',
           title: 'Weekly Knock Challenge',
-          description: `Complete ${target} door knocks this week to earn the bonus!`,
+          description: `Complete ${target} door knocks in 7 days to earn the bonus!`,
           startDate: weekStart.toISOString(),
           endDate: weekEnd.toISOString(),
           target,
