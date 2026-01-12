@@ -1388,6 +1388,520 @@ ariaFunctionRegistry.register({
 })
 
 // =============================================================================
+// Insurance Functions (Critical for Storm Damage Roofing)
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'update_insurance_info',
+  category: 'crm',
+  description: 'Update insurance information for a contact or project',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'update_insurance_info',
+    description: 'Update insurance details - carrier, claim number, approved value, or assign an adjuster to a project',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'Contact ID to update insurance info for',
+        },
+        project_id: {
+          type: 'string',
+          description: 'Project ID to update (for approved_value or adjuster)',
+        },
+        insurance_carrier: {
+          type: 'string',
+          description: 'Insurance company name (e.g., "State Farm", "Allstate")',
+        },
+        claim_number: {
+          type: 'string',
+          description: 'Insurance claim number',
+        },
+        customer_type: {
+          type: 'string',
+          enum: ['insurance', 'retail'],
+          description: 'Whether this is an insurance or retail job',
+        },
+        approved_value: {
+          type: 'number',
+          description: 'Insurance approved value in dollars (for project)',
+        },
+        adjuster_name: {
+          type: 'string',
+          description: 'Name of the insurance adjuster (will search/create contact)',
+        },
+        adjuster_phone: {
+          type: 'string',
+          description: 'Adjuster phone number',
+        },
+        adjuster_email: {
+          type: 'string',
+          description: 'Adjuster email address',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const {
+      contact_id,
+      project_id,
+      insurance_carrier,
+      claim_number,
+      customer_type,
+      approved_value,
+      adjuster_name,
+      adjuster_phone,
+      adjuster_email,
+    } = args as {
+      contact_id?: string
+      project_id?: string
+      insurance_carrier?: string
+      claim_number?: string
+      customer_type?: string
+      approved_value?: number
+      adjuster_name?: string
+      adjuster_phone?: string
+      adjuster_email?: string
+    }
+
+    const finalContactId = contact_id || context.contact?.id
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalContactId && !finalProjectId) {
+      return { success: false, error: 'Provide contact_id or project_id to update insurance info.' }
+    }
+
+    const updates: string[] = []
+
+    // Update contact insurance fields
+    if (finalContactId && (insurance_carrier || claim_number || customer_type)) {
+      const contactUpdates: Record<string, unknown> = {}
+      if (insurance_carrier) contactUpdates.insurance_carrier = insurance_carrier
+      if (claim_number) contactUpdates.claim_number = claim_number
+      if (customer_type) contactUpdates.customer_type = customer_type
+
+      const { error: contactError } = await context.supabase
+        .from('contacts')
+        .update(contactUpdates)
+        .eq('id', finalContactId)
+        .eq('tenant_id', context.tenantId)
+
+      if (contactError) {
+        return { success: false, error: contactError.message }
+      }
+
+      if (insurance_carrier) updates.push(`carrier: ${insurance_carrier}`)
+      if (claim_number) updates.push(`claim #: ${claim_number}`)
+      if (customer_type) updates.push(`type: ${customer_type}`)
+    }
+
+    // Update project fields (approved_value, adjuster)
+    if (finalProjectId) {
+      const projectUpdates: Record<string, unknown> = {}
+
+      if (approved_value !== undefined) {
+        projectUpdates.approved_value = approved_value
+        updates.push(`approved: $${approved_value.toLocaleString()}`)
+      }
+
+      // Handle adjuster - create contact if needed
+      if (adjuster_name) {
+        // Search for existing adjuster contact
+        const { data: existingAdjuster } = await context.supabase
+          .from('contacts')
+          .select('id, first_name, last_name')
+          .eq('tenant_id', context.tenantId)
+          .ilike('first_name', `%${adjuster_name.split(' ')[0]}%`)
+          .eq('contact_type', 'adjuster')
+          .limit(1)
+          .single()
+
+        let adjusterId: string
+
+        if (existingAdjuster) {
+          adjusterId = existingAdjuster.id
+          updates.push(`adjuster: ${existingAdjuster.first_name} ${existingAdjuster.last_name} (existing)`)
+        } else {
+          // Create new adjuster contact
+          const nameParts = adjuster_name.split(' ')
+          const firstName = nameParts[0] || adjuster_name
+          const lastName = nameParts.slice(1).join(' ') || ''
+
+          const { data: newAdjuster, error: createError } = await context.supabase
+            .from('contacts')
+            .insert({
+              tenant_id: context.tenantId,
+              first_name: firstName,
+              last_name: lastName,
+              phone: adjuster_phone,
+              email: adjuster_email,
+              contact_type: 'adjuster',
+              company: insurance_carrier,
+              created_by: context.userId,
+            })
+            .select('id')
+            .single()
+
+          if (createError) {
+            return { success: false, error: `Failed to create adjuster: ${createError.message}` }
+          }
+
+          adjusterId = newAdjuster.id
+          updates.push(`adjuster: ${adjuster_name} (created)`)
+        }
+
+        projectUpdates.adjuster_contact_id = adjusterId
+      }
+
+      if (Object.keys(projectUpdates).length > 0) {
+        const { error: projectError } = await context.supabase
+          .from('projects')
+          .update(projectUpdates)
+          .eq('id', finalProjectId)
+          .eq('tenant_id', context.tenantId)
+
+        if (projectError) {
+          return { success: false, error: projectError.message }
+        }
+      }
+    }
+
+    if (updates.length === 0) {
+      return { success: false, error: 'No insurance fields provided to update.' }
+    }
+
+    // Log the update
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      contact_id: finalContactId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: `Insurance info updated: ${updates.join(', ')}`,
+      created_by: context.userId,
+      metadata: { via: 'aria', event: 'insurance_update' },
+    })
+
+    return {
+      success: true,
+      message: `Insurance info updated: ${updates.join(', ')}`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_insurance_status',
+  category: 'crm',
+  description: 'Get insurance details for a project or contact',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_insurance_status',
+    description: 'Get insurance information including carrier, claim number, adjuster, and approved value',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID to get insurance status for',
+        },
+        contact_id: {
+          type: 'string',
+          description: 'Contact ID to get insurance info for',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, contact_id } = args as { project_id?: string; contact_id?: string }
+
+    const finalProjectId = project_id || context.project?.id
+    const finalContactId = contact_id || context.contact?.id
+
+    if (!finalProjectId && !finalContactId) {
+      return { success: false, error: 'Provide project_id or contact_id.' }
+    }
+
+    let projectData = null
+    let contactData = null
+
+    // Get project with adjuster info
+    if (finalProjectId) {
+      const { data, error } = await context.supabase
+        .from('projects')
+        .select(`
+          id, name, approved_value, estimated_value, final_value, pipeline_stage,
+          contact:contact_id (
+            id, first_name, last_name, insurance_carrier, claim_number, customer_type
+          ),
+          adjuster:adjuster_contact_id (
+            id, first_name, last_name, phone, email, company
+          )
+        `)
+        .eq('id', finalProjectId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      projectData = data
+      // Get contact data from project
+      contactData = Array.isArray(data.contact) ? data.contact[0] : data.contact
+    } else if (finalContactId) {
+      // Get contact directly
+      const { data, error } = await context.supabase
+        .from('contacts')
+        .select('id, first_name, last_name, insurance_carrier, claim_number, customer_type')
+        .eq('id', finalContactId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      contactData = data
+    }
+
+    // Build response message
+    const lines: string[] = ['🏥 Insurance Status:']
+
+    if (projectData) {
+      lines.push(`Project: ${projectData.name}`)
+      lines.push(`Stage: ${projectData.pipeline_stage}`)
+    }
+
+    if (contactData) {
+      const contactName = `${contactData.first_name} ${contactData.last_name}`.trim()
+      lines.push(`Customer: ${contactName}`)
+
+      if (contactData.customer_type) {
+        lines.push(`Job Type: ${contactData.customer_type === 'insurance' ? '🏥 Insurance' : '💵 Retail'}`)
+      }
+      if (contactData.insurance_carrier) {
+        lines.push(`Carrier: ${contactData.insurance_carrier}`)
+      }
+      if (contactData.claim_number) {
+        lines.push(`Claim #: ${contactData.claim_number}`)
+      }
+    }
+
+    if (projectData) {
+      if (projectData.approved_value) {
+        lines.push(`✅ Approved: $${projectData.approved_value.toLocaleString()}`)
+      } else if (projectData.estimated_value) {
+        lines.push(`📝 Estimated: $${projectData.estimated_value.toLocaleString()} (not yet approved)`)
+      }
+
+      const adjuster = Array.isArray(projectData.adjuster) ? projectData.adjuster[0] : projectData.adjuster
+      if (adjuster) {
+        lines.push(``)
+        lines.push(`👤 Adjuster: ${adjuster.first_name} ${adjuster.last_name}`)
+        if (adjuster.company) lines.push(`   Company: ${adjuster.company}`)
+        if (adjuster.phone) lines.push(`   Phone: ${adjuster.phone}`)
+        if (adjuster.email) lines.push(`   Email: ${adjuster.email}`)
+      } else {
+        lines.push(``)
+        lines.push(`⚠️ No adjuster assigned`)
+      }
+    }
+
+    return {
+      success: true,
+      data: { project: projectData, contact: contactData },
+      message: lines.join('\n'),
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'schedule_adjuster_meeting',
+  category: 'calendar',
+  description: 'Schedule a meeting with the insurance adjuster',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'schedule_adjuster_meeting',
+    description: 'Schedule an adjuster meeting/inspection for a project',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID for the adjuster meeting',
+        },
+        date: {
+          type: 'string',
+          description: 'Date/time for the meeting (e.g., "tomorrow at 2pm", "January 15 at 10am")',
+        },
+        meeting_type: {
+          type: 'string',
+          enum: ['initial_inspection', 'reinspection', 'supplement_review', 'final_inspection'],
+          description: 'Type of adjuster meeting (default: initial_inspection)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes about the meeting',
+        },
+        notify_adjuster: {
+          type: 'boolean',
+          description: 'Whether to notify the adjuster (via email/SMS) - default false',
+        },
+      },
+      required: ['project_id', 'date'],
+    },
+  },
+  execute: async (args, context) => {
+    const {
+      project_id,
+      date,
+      meeting_type = 'initial_inspection',
+      notes,
+      notify_adjuster = false,
+    } = args as {
+      project_id: string
+      date: string
+      meeting_type?: string
+      notes?: string
+      notify_adjuster?: boolean
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    // Get project with adjuster and contact info
+    const { data: project, error: projectError } = await context.supabase
+      .from('projects')
+      .select(`
+        id, name, property_address,
+        contact:contact_id (id, first_name, last_name, phone, address_street, address_city),
+        adjuster:adjuster_contact_id (id, first_name, last_name, email, phone)
+      `)
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .single()
+
+    if (projectError) {
+      return { success: false, error: projectError.message }
+    }
+
+    // Parse the date
+    let meetingDate: Date
+    const lowerDate = date.toLowerCase()
+    const now = new Date()
+
+    if (lowerDate === 'today') {
+      meetingDate = now
+    } else if (lowerDate === 'tomorrow') {
+      meetingDate = new Date(now)
+      meetingDate.setDate(meetingDate.getDate() + 1)
+      meetingDate.setHours(10, 0, 0, 0)
+    } else if (lowerDate.includes('next')) {
+      meetingDate = new Date(now)
+      meetingDate.setDate(meetingDate.getDate() + 7)
+      meetingDate.setHours(10, 0, 0, 0)
+    } else {
+      meetingDate = new Date(date)
+      if (isNaN(meetingDate.getTime())) {
+        return { success: false, error: `Could not parse date: "${date}"` }
+      }
+    }
+
+    // Extract time if present
+    const timeMatch = lowerDate.match(/(\d{1,2})\s*(am|pm)/i)
+    if (timeMatch) {
+      let hours = parseInt(timeMatch[1])
+      if (timeMatch[2].toLowerCase() === 'pm' && hours < 12) hours += 12
+      if (timeMatch[2].toLowerCase() === 'am' && hours === 12) hours = 0
+      meetingDate.setHours(hours, 0, 0, 0)
+    }
+
+    const contactData = Array.isArray(project.contact) ? project.contact[0] : project.contact
+    const adjusterData = Array.isArray(project.adjuster) ? project.adjuster[0] : project.adjuster
+
+    // Format meeting title
+    const meetingTypeLabels: Record<string, string> = {
+      initial_inspection: 'Initial Adjuster Inspection',
+      reinspection: 'Adjuster Re-inspection',
+      supplement_review: 'Supplement Review Meeting',
+      final_inspection: 'Final Inspection',
+    }
+    const title = `${meetingTypeLabels[meeting_type] || 'Adjuster Meeting'} - ${project.name}`
+
+    // Create the activity
+    const { data: activity, error: activityError } = await context.supabase
+      .from('activities')
+      .insert({
+        tenant_id: context.tenantId,
+        contact_id: contactData?.id,
+        project_id: finalProjectId,
+        type: 'meeting',
+        description: title,
+        due_date: meetingDate.toISOString(),
+        created_by: context.userId,
+        metadata: {
+          appointment_type: 'adjuster_meeting',
+          meeting_type,
+          adjuster_id: adjusterData?.id,
+          adjuster_name: adjusterData ? `${adjusterData.first_name} ${adjusterData.last_name}` : null,
+          property_address: project.property_address || contactData?.address_street,
+          notes,
+          status: 'scheduled',
+          via: 'aria',
+        },
+      })
+      .select()
+      .single()
+
+    if (activityError) {
+      return { success: false, error: activityError.message }
+    }
+
+    const dateStr = meetingDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    })
+    const timeStr = meetingDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+
+    let message = `📅 ${meetingTypeLabels[meeting_type]} scheduled:\n`
+    message += `Date: ${dateStr} at ${timeStr}\n`
+    message += `Project: ${project.name}\n`
+
+    if (adjusterData) {
+      message += `Adjuster: ${adjusterData.first_name} ${adjusterData.last_name}\n`
+    } else {
+      message += `⚠️ Note: No adjuster assigned to this project yet\n`
+    }
+
+    if (notify_adjuster && adjusterData?.email) {
+      message += `\n(Adjuster notification requested - would send to ${adjusterData.email})`
+      // TODO: Actually send notification via email
+    }
+
+    return {
+      success: true,
+      data: activity,
+      message,
+    }
+  },
+})
+
+// =============================================================================
 // Contact Management Functions
 // =============================================================================
 
