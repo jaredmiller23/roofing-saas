@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { InternalError } from '@/lib/api/errors'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface LeaderboardEntry {
@@ -9,6 +10,11 @@ interface LeaderboardEntry {
   knock_count?: number
   sales_count?: number
   total_points?: number
+  avatar_url: string | null
+}
+
+interface UserInfo {
+  name: string
   avatar_url: string | null
 }
 
@@ -28,8 +34,69 @@ function getDateByPeriod(period: string): string {
   }
 }
 
+/**
+ * Get user info (name, avatar) from tenant_users joined with auth.users
+ * Returns a map of user_id -> {name, avatar_url}
+ */
+async function getUserInfoMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tenantId: string
+): Promise<Map<string, UserInfo>> {
+  const { data: tenantUsers } = await supabase
+    .from('tenant_users')
+    .select(`
+      user_id,
+      users:user_id (
+        email,
+        raw_user_meta_data
+      )
+    `)
+    .eq('tenant_id', tenantId)
+
+  const userMap = new Map<string, UserInfo>()
+
+  tenantUsers?.forEach((tu) => {
+    const userData = tu.users as {
+      email?: string
+      raw_user_meta_data?: {
+        first_name?: string
+        last_name?: string
+        full_name?: string
+        name?: string
+        avatar_url?: string
+      }
+    } | null
+
+    const metadata = userData?.raw_user_meta_data || {}
+    const firstName = metadata.first_name || ''
+    const lastName = metadata.last_name || ''
+    const fullName = metadata.full_name ||
+                     metadata.name ||
+                     `${firstName} ${lastName}`.trim() ||
+                     userData?.email ||
+                     'Unknown'
+
+    userMap.set(tu.user_id, {
+      name: fullName,
+      avatar_url: metadata.avatar_url || null
+    })
+  })
+
+  return userMap
+}
+
 export async function GET(request: Request) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthenticationError('No tenant found')
+    }
+
     const supabase = await createClient()
 
     // Get query parameters
@@ -38,18 +105,19 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const type = searchParams.get('type') || 'points' // 'points', 'knocks', or 'sales'
 
-    // Get current user for comparison
-    const { data: { user } } = await supabase.auth.getUser()
+    // Get user info map for name lookups
+    const userInfoMap = await getUserInfoMap(supabase, tenantId)
 
     let leaderboard: LeaderboardEntry[] = []
     let userRank: number | null = null
     let userCount = 0
 
     if (type === 'knocks') {
-      // Count door knock activities by user - use raw SQL for aggregation
+      // Count door knock activities by user within tenant
       const { data: knockCounts, error } = await supabase
         .from('activities')
-        .select('created_by, tenant_id')
+        .select('created_by')
+        .eq('tenant_id', tenantId)
         .eq('type', 'door_knock')
         .gte('created_at', getDateByPeriod(period))
 
@@ -67,32 +135,31 @@ export async function GET(request: Request) {
         }
       })
 
-      // Get user names from profiles table
-      const { data: users } = await supabase.from('profiles').select('id, full_name, avatar_url')
-      const userMap = new Map(users?.map(u => [u.id, u.full_name || 'Unknown']) || [])
-      const avatarMap = new Map(users?.map(u => [u.id, u.avatar_url]) || [])
-
-      // Build leaderboard
+      // Build leaderboard using userInfoMap
       leaderboard = Array.from(countsByUser.entries())
-        .map(([user_id, count]) => ({
-          user_id,
-          user_name: userMap.get(user_id) || 'Unknown',
-          knock_count: count,
-          avatar_url: avatarMap.get(user_id) || null
-        }))
-        .sort((a, b) => b.knock_count - a.knock_count)
+        .map(([user_id, count]) => {
+          const userInfo = userInfoMap.get(user_id)
+          return {
+            user_id,
+            user_name: userInfo?.name || 'Unknown',
+            knock_count: count,
+            avatar_url: userInfo?.avatar_url || null
+          }
+        })
+        .sort((a, b) => (b.knock_count || 0) - (a.knock_count || 0))
         .slice(0, limit)
 
-      userCount = countsByUser.get(user?.id || '') || 0
-      if (user && userCount > 0) {
+      userCount = countsByUser.get(user.id) || 0
+      if (userCount > 0) {
         const usersWithMoreKnocks = Array.from(countsByUser.values()).filter(count => count > userCount).length
         userRank = usersWithMoreKnocks + 1
       }
     } else if (type === 'sales') {
-      // Count won projects by user
+      // Count won projects by user within tenant
       const { data: salesCounts, error } = await supabase
         .from('projects')
-        .select('created_by, tenant_id')
+        .select('created_by')
+        .eq('tenant_id', tenantId)
         .eq('status', 'won')
         .gte('updated_at', getDateByPeriod(period))
 
@@ -110,24 +177,22 @@ export async function GET(request: Request) {
         }
       })
 
-      // Get user names from profiles table
-      const { data: users } = await supabase.from('profiles').select('id, full_name, avatar_url')
-      const userMap = new Map(users?.map(u => [u.id, u.full_name || 'Unknown']) || [])
-      const avatarMap = new Map(users?.map(u => [u.id, u.avatar_url]) || [])
-
-      // Build leaderboard
+      // Build leaderboard using userInfoMap
       leaderboard = Array.from(countsByUser.entries())
-        .map(([user_id, count]) => ({
-          user_id,
-          user_name: userMap.get(user_id) || 'Unknown',
-          sales_count: count,
-          avatar_url: avatarMap.get(user_id) || null
-        }))
-        .sort((a, b) => b.sales_count - a.sales_count)
+        .map(([user_id, count]) => {
+          const userInfo = userInfoMap.get(user_id)
+          return {
+            user_id,
+            user_name: userInfo?.name || 'Unknown',
+            sales_count: count,
+            avatar_url: userInfo?.avatar_url || null
+          }
+        })
+        .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
         .slice(0, limit)
 
-      userCount = countsByUser.get(user?.id || '') || 0
-      if (user && userCount > 0) {
+      userCount = countsByUser.get(user.id) || 0
+      if (userCount > 0) {
         const usersWithMoreSales = Array.from(countsByUser.values()).filter(count => count > userCount).length
         userRank = usersWithMoreSales + 1
       }
@@ -179,7 +244,7 @@ export async function GET(request: Request) {
         role: null,
         points: count,
         level: Math.floor(count / 100) + 1,
-        isCurrentUser: entry.user_id === user?.id
+        isCurrentUser: entry.user_id === user.id
       }
     }) || []
 

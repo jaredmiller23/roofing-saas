@@ -1,5 +1,7 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { IntelligenceClient } from './intelligence-client'
 
 export const metadata = {
@@ -17,6 +19,15 @@ export default async function ClaimsIntelligencePage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Back Link */}
+        <Link
+          href="/claims"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to Claims
+        </Link>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">

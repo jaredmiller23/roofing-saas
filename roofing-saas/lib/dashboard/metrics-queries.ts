@@ -42,13 +42,13 @@ export async function getFieldMetrics(
 
   const [knocksResult, recentWinsResult] = await Promise.all([
     // Personal knock count (7 days)
+    // Note: activities table does not have is_deleted column
     supabase
       .from('activities')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('type', 'door_knock')
       .eq('created_by', userId)
-      .eq('is_deleted', false)
       .gte('created_at', last7Days.toISOString()),
 
     // Personal recent wins (30 days, limit 5)

@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet, CloudLightning } from 'lucide-react'
+import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet, CloudLightning, Brain } from 'lucide-react'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 
@@ -247,9 +248,17 @@ export default function ClaimsPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Claims Management</h1>
-        <p className="text-muted-foreground mt-1">View and manage all insurance claims across all projects</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Claims Management</h1>
+          <p className="text-muted-foreground mt-1">View and manage all insurance claims across all projects</p>
+        </div>
+        <Button asChild>
+          <Link href="/claims/intelligence">
+            <Brain className="h-4 w-4 mr-2" />
+            Intelligence
+          </Link>
+        </Button>
       </div>
 
       {/* Statistics Cards */}
