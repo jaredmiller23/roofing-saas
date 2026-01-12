@@ -135,12 +135,56 @@ export async function GET(_request: NextRequest) {
       )
     }
 
-    // TODO: Implement fetching active storm predictions from database
-    // For now, return empty array
+    // Get recent storm events (last 14 days)
+    const fourteenDaysAgo = new Date()
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+
+    const { data: events, error: eventsError } = await supabase
+      .from('storm_events')
+      .select('*')
+      .gte('event_date', fourteenDaysAgo.toISOString().split('T')[0])
+      .order('event_date', { ascending: false })
+      .limit(20)
+
+    if (eventsError) {
+      console.error('Error fetching storm events:', eventsError)
+      return NextResponse.json(
+        { success: false, error: 'Failed to fetch storm events' },
+        { status: 500 }
+      )
+    }
+
+    // Enhance each event with intelligence metadata
+    const predictions = (events || []).map(event => {
+      const stormEventData: StormEventData = {
+        id: event.id,
+        event_date: event.event_date,
+        event_type: event.event_type,
+        magnitude: event.magnitude,
+        state: event.state,
+        county: event.county,
+        city: event.city,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        path_length: event.path_length,
+        path_width: event.path_width,
+        property_damage: event.property_damage,
+        event_narrative: event.event_narrative,
+      }
+
+      // Determine status based on event date
+      const eventDate = new Date(event.event_date)
+      const now = new Date()
+      const daysDiff = Math.floor((now.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24))
+      const status = daysDiff <= 1 ? 'active' : daysDiff <= 3 ? 'passed' : 'dissipated'
+
+      return enhanceStormEvent(stormEventData, status as 'approaching' | 'active' | 'passed' | 'dissipated')
+    })
 
     return NextResponse.json({
       success: true,
-      predictions: [],
+      predictions,
+      generatedAt: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Get predictions error:', error)

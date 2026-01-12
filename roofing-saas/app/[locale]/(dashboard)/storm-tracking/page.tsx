@@ -56,18 +56,39 @@ export default function StormTrackingPage() {
   const loadStormData = async () => {
     setLoading(true)
     try {
-      // In a real implementation, these would be actual API calls
-      // For now, we'll use demo data
+      // Fetch alerts, predictions, and response mode in parallel
+      const [alertsRes, predictionsRes, modeRes] = await Promise.all([
+        fetch('/api/storm/alerts'),
+        fetch('/api/storm/predictions'),
+        fetch('/api/storm/response-mode'),
+      ])
 
-      // TODO: Replace with actual API calls:
-      // const predictionRes = await fetch('/api/storm/predictions')
-      // const alertsRes = await fetch('/api/storm/alerts')
-      // const customersRes = await fetch('/api/storm/affected-customers')
+      // Process alerts
+      if (alertsRes.ok) {
+        const alertsData = await alertsRes.json()
+        if (alertsData.success && alertsData.alerts) {
+          setAlerts(alertsData.alerts)
+        }
+      }
 
-      // Demo data
-      setStormEvents([])
-      setAlerts([])
-      setAffectedCustomers([])
+      // Process predictions (storm events)
+      if (predictionsRes.ok) {
+        const predictionsData = await predictionsRes.json()
+        if (predictionsData.success && predictionsData.predictions) {
+          setStormEvents(predictionsData.predictions)
+        }
+      }
+
+      // Process response mode config
+      if (modeRes.ok) {
+        const modeData = await modeRes.json()
+        if (modeData.success && modeData.config) {
+          setResponseConfig(modeData.config)
+        }
+      }
+
+      // Note: Affected customers will be populated when we have storm events
+      // For now, they come from the alert data or predictions API
     } catch (error) {
       console.error('Failed to load storm data:', error)
     } finally {
@@ -82,55 +103,103 @@ export default function StormTrackingPage() {
   }
 
   const handleAcknowledgeAlert = async (alertId: string) => {
-    // TODO: Implement alert acknowledgment API call
-    console.log('Acknowledging alert:', alertId)
+    try {
+      const res = await fetch(`/api/storm/alerts/${alertId}/acknowledge`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          // Update local state to reflect acknowledgment
+          setAlerts(alerts.map(a =>
+            a.id === alertId
+              ? { ...a, acknowledgedBy: data.acknowledgedBy }
+              : a
+          ))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error)
+    }
   }
 
   const handleDismissAlert = async (alertId: string) => {
-    // TODO: Implement alert dismissal API call
-    setAlerts(alerts.filter(a => a.id !== alertId))
+    try {
+      const res = await fetch(`/api/storm/alerts/${alertId}/dismiss`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          // Remove dismissed alert from local state
+          setAlerts(alerts.filter(a => a.id !== alertId))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to dismiss alert:', error)
+    }
   }
 
   const handleActivateResponse = async (settings: Partial<StormResponseConfig['settings']>) => {
-    // TODO: Implement response mode activation API call
-    setResponseConfig({
-      ...responseConfig,
-      mode: 'storm_response',
-      activatedAt: new Date().toISOString(),
-      activatedBy: 'current-user-id', // Replace with actual user ID
-      settings: {
-        ...responseConfig.settings,
-        ...settings,
-      },
-    })
+    try {
+      const res = await fetch('/api/storm/response-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'storm_response',
+          settings: { ...responseConfig.settings, ...settings },
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success && data.config) {
+          setResponseConfig(data.config)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to activate response mode:', error)
+    }
   }
 
   const handleDeactivateResponse = async () => {
-    // TODO: Implement response mode deactivation API call
-    setResponseConfig({
-      mode: 'normal',
-      activatedAt: null,
-      activatedBy: null,
-      stormEventId: null,
-      settings: {
-        autoNotifications: false,
-        autoLeadGeneration: false,
-        priorityRouting: false,
-        crewPrePositioning: false,
-        extendedHours: false,
-      },
-      metrics: {
-        leadsGenerated: 0,
-        customersNotified: 0,
-        appointmentsScheduled: 0,
-        estimatedRevenue: 0,
-      },
-    })
+    try {
+      const res = await fetch('/api/storm/response-mode', {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success) {
+          // Reset to normal mode
+          setResponseConfig({
+            mode: 'normal',
+            activatedAt: null,
+            activatedBy: null,
+            stormEventId: null,
+            settings: {
+              autoNotifications: false,
+              autoLeadGeneration: false,
+              priorityRouting: false,
+              crewPrePositioning: false,
+              extendedHours: false,
+            },
+            metrics: {
+              leadsGenerated: 0,
+              customersNotified: 0,
+              appointmentsScheduled: 0,
+              estimatedRevenue: 0,
+            },
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Failed to deactivate response mode:', error)
+    }
   }
 
   const handleContactCustomer = async (customerId: string, method: 'phone' | 'email' | 'sms') => {
-    // TODO: Implement customer contact action
+    // Contact action - can be expanded later
     console.log('Contacting customer:', customerId, 'via', method)
+    // Could open phone dialer, email client, or SMS composer
   }
 
   if (loading) {
