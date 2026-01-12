@@ -8,11 +8,19 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, FileText, Calendar, DollarSign, AlertCircle, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
+import { WeatherEvidence } from '@/components/claims/WeatherEvidence'
 
 interface Project {
   id: string
   name: string
   contact_id: string
+  start_date?: string
+  storm_event_id?: string
+}
+
+interface Contact {
+  latitude?: number
+  longitude?: number
 }
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
@@ -45,6 +53,7 @@ export default function ProjectClaimsPage() {
   const projectId = params.id as string
 
   const [project, setProject] = useState<Project | null>(null)
+  const [contact, setContact] = useState<Contact | null>(null)
   const [claims, setClaims] = useState<ClaimData[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -55,6 +64,18 @@ export default function ProjectClaimsPage() {
       if (projectRes.ok) {
         const projectData = await projectRes.json()
         setProject(projectData.project)
+
+        // Fetch contact for lat/lng (for weather evidence)
+        if (projectData.project?.contact_id) {
+          const contactRes = await fetch(`/api/contacts/${projectData.project.contact_id}`)
+          if (contactRes.ok) {
+            const contactData = await contactRes.json()
+            setContact({
+              latitude: contactData.contact?.latitude,
+              longitude: contactData.contact?.longitude,
+            })
+          }
+        }
       }
 
       // Fetch claims for this project
@@ -203,6 +224,15 @@ export default function ProjectClaimsPage() {
           ))}
         </div>
       )}
+
+      {/* Weather Documentation */}
+      <WeatherEvidence
+        projectId={projectId}
+        dateOfLoss={claims[0]?.date_of_loss || project?.start_date}
+        latitude={contact?.latitude}
+        longitude={contact?.longitude}
+        stormEventId={project?.storm_event_id}
+      />
 
       {/* Quick Actions */}
       <Card>

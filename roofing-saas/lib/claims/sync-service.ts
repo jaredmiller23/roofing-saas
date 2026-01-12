@@ -30,7 +30,7 @@ export async function gatherProjectSyncData(
   supabase: SupabaseClient,
   projectId: string
 ): Promise<ProjectToClaimSync | null> {
-  // Fetch project with contact
+  // Fetch project with contact (including lat/lng for storm event lookup)
   const { data: project, error: projectError } = await supabase
     .from('projects')
     .select(`
@@ -47,10 +47,12 @@ export async function gatherProjectSyncData(
         last_name,
         email,
         phone,
-        address,
-        city,
-        state,
-        zip,
+        address_street,
+        address_city,
+        address_state,
+        address_zip,
+        latitude,
+        longitude,
         custom_fields
       )
     `)
@@ -71,6 +73,42 @@ export async function gatherProjectSyncData(
     return null
   }
 
+  // Auto-link storm event if not already linked and we have location + date
+  let stormEventId = project.storm_event_id
+  if (!stormEventId && project.start_date && contact.latitude && contact.longitude) {
+    logger.info('Auto-linking storm event for project', { projectId })
+
+    // Search for the best matching storm event
+    const bestEvent = await findBestMatchingStormEvent(
+      supabase,
+      contact.latitude,
+      contact.longitude,
+      project.start_date,
+      contact.address_state || 'TN'
+    )
+
+    if (bestEvent) {
+      // Update the project with the linked storm event
+      const { error: updateError } = await supabase
+        .from('projects')
+        .update({ storm_event_id: bestEvent.id })
+        .eq('id', projectId)
+
+      if (updateError) {
+        logger.warn('Failed to auto-link storm event', { projectId, error: updateError })
+      } else {
+        stormEventId = bestEvent.id
+        logger.info('Auto-linked storm event to project', {
+          projectId,
+          stormEventId: bestEvent.id,
+          eventType: bestEvent.event_type,
+          eventDate: bestEvent.event_date,
+          distanceMiles: bestEvent.distance_miles,
+        })
+      }
+    }
+  }
+
   // Extract insurance info from contact custom_fields if available
   const customFields = (contact.custom_fields || {}) as Record<string, unknown>
   const insuranceCarrier = customFields.insurance_carrier as string | undefined
@@ -79,13 +117,13 @@ export async function gatherProjectSyncData(
   return {
     project_id: project.id,
     contact_id: project.contact_id,
-    storm_event_id: project.storm_event_id || undefined,
+    storm_event_id: stormEventId || undefined,
 
     // Property address from contact
-    property_address: contact.address || '',
-    property_city: contact.city || '',
-    property_state: contact.state || 'TN',
-    property_zip: contact.zip || '',
+    property_address: contact.address_street || '',
+    property_city: contact.address_city || '',
+    property_state: contact.address_state || 'TN',
+    property_zip: contact.address_zip || '',
 
     // Financial from project
     estimated_value: project.estimated_value || undefined,
@@ -100,6 +138,79 @@ export async function gatherProjectSyncData(
     // Insurance info
     insurance_carrier: insuranceCarrier,
     policy_number: policyNumber,
+  }
+}
+
+/**
+ * Find the best matching storm event for a property location and date
+ * Returns the closest event within 25 miles and 7 days before the date_of_loss
+ */
+async function findBestMatchingStormEvent(
+  supabase: SupabaseClient,
+  latitude: number,
+  longitude: number,
+  dateOfLoss: string,
+  state: string
+): Promise<(StormEventData & { distance_miles: number }) | null> {
+  // Calculate date range (7 days before to 1 day after the date of loss)
+  const startDate = new Date(dateOfLoss)
+  startDate.setDate(startDate.getDate() - 7)
+  const endDate = new Date(dateOfLoss)
+  endDate.setDate(endDate.getDate() + 1)
+
+  // Query storm events in the date range
+  const { data: events, error } = await supabase
+    .from('storm_events')
+    .select('*')
+    .gte('event_date', startDate.toISOString().split('T')[0])
+    .lte('event_date', endDate.toISOString().split('T')[0])
+    .eq('state', state)
+    .order('event_date', { ascending: false })
+    .limit(20)
+
+  if (error || !events || events.length === 0) {
+    return null
+  }
+
+  // Calculate distances and filter to within 25 miles
+  const radiusMiles = 25
+  const eventsWithDistance = events
+    .map(event => ({
+      ...event,
+      distance_miles: event.latitude && event.longitude
+        ? haversineDistance(latitude, longitude, event.latitude, event.longitude)
+        : 999,
+    }))
+    .filter(e => e.distance_miles <= radiusMiles)
+    .sort((a, b) => {
+      // Sort by distance first, then by magnitude (prefer larger hail/wind)
+      if (Math.abs(a.distance_miles - b.distance_miles) < 1) {
+        return (b.magnitude || 0) - (a.magnitude || 0)
+      }
+      return a.distance_miles - b.distance_miles
+    })
+
+  if (eventsWithDistance.length === 0) {
+    return null
+  }
+
+  // Return the best match
+  const best = eventsWithDistance[0]
+  return {
+    id: best.id,
+    event_date: best.event_date,
+    event_type: best.event_type,
+    magnitude: best.magnitude,
+    state: best.state,
+    county: best.county,
+    city: best.city,
+    latitude: best.latitude,
+    longitude: best.longitude,
+    path_length: best.path_length,
+    path_width: best.path_width,
+    property_damage: best.property_damage,
+    event_narrative: best.event_narrative,
+    distance_miles: best.distance_miles,
   }
 }
 

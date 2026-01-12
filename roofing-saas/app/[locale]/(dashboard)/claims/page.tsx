@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet } from 'lucide-react'
+import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet, CloudLightning } from 'lucide-react'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 
@@ -451,6 +451,12 @@ export default function ClaimsPage() {
                         <Badge className={STATUS_COLORS[claim.status]}>
                           {STATUS_LABELS[claim.status]}
                         </Badge>
+                        {claim.storm_event_id && (
+                          <Badge variant="outline" className="text-cyan-600 border-cyan-600">
+                            <CloudLightning className="h-3 w-3 mr-1" />
+                            Weather Documented
+                          </Badge>
+                        )}
                       </div>
                       <CardDescription className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
