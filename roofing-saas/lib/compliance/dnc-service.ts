@@ -43,13 +43,14 @@ export async function checkDNC(
 
     logger.debug('Checking DNC registry', { phoneNumber, tenantId, phone_hash })
 
-    // Query DNC registry for this phone hash
+    // Query DNC registry by phone number
+    // Note: NAS schema uses phone_number directly (not phone_hash) and is_active (not is_deleted)
     const { data: entries, error } = await supabase
       .from('dnc_registry')
-      .select('source, listed_date, expires_at')
+      .select('source, reason, expires_at')
       .eq('tenant_id', tenantId)
-      .eq('phone_hash', phone_hash)
-      .eq('is_deleted', false)
+      .eq('phone_number', phoneNumber)
+      .eq('is_active', true)
 
     if (error) {
       logger.error('Error querying DNC registry', { error, phoneNumber })
@@ -78,17 +79,17 @@ export async function checkDNC(
 
     // Return first active entry
     const entry = activeEntries[0]
+    // Determine source display name (NAS uses 'source' for type, 'reason' for category)
+    const sourceDisplay = entry.reason === 'state_dnc' ? 'state_tn' : entry.source
     logger.info('Phone number found in DNC registry', {
       phoneNumber,
-      source: entry.source,
-      listedDate: entry.listed_date,
+      source: sourceDisplay,
     })
 
     return {
       isListed: true,
-      source: entry.source as DNCSource,
-      listedDate: entry.listed_date ? new Date(entry.listed_date) : undefined,
-      reason: `Phone number is on ${entry.source} DNC list`,
+      source: sourceDisplay as DNCSource,
+      reason: `Phone number is on ${sourceDisplay} DNC list`,
     }
   } catch (error) {
     logger.error('Error in checkDNC', { error, phoneNumber })
@@ -115,10 +116,6 @@ export async function addToInternalDNC(
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     const supabase = await createClient()
-    const phone_hash = hashPhoneNumber(phoneNumber)
-
-    // Extract area code from phone number (+1 423 555 1234 -> 423)
-    const areaCode = phoneNumber.replace(/^\+1(\d{3}).*$/, '$1')
 
     logger.info('Adding phone to internal DNC list', {
       phoneNumber,
@@ -126,16 +123,15 @@ export async function addToInternalDNC(
       reason,
     })
 
+    // NAS schema: uses phone_number directly, reason field, is_active
     const { data, error } = await supabase
       .from('dnc_registry')
       .insert({
         tenant_id: tenantId,
         phone_number: phoneNumber,
-        phone_hash,
         source: 'internal',
-        area_code: areaCode.length === 3 ? areaCode : null,
-        listed_date: new Date().toISOString().split('T')[0],
-        metadata: reason ? { reason } : null,
+        reason: reason || 'customer_request',
+        is_active: true,
       })
       .select('id')
       .single()
@@ -191,19 +187,18 @@ export async function removeFromInternalDNC(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient()
-    const phone_hash = hashPhoneNumber(phoneNumber)
 
     logger.info('Removing phone from internal DNC list', {
       phoneNumber,
       tenantId,
     })
 
-    // Soft delete from DNC registry
+    // Soft delete from DNC registry (NAS schema uses is_active, not is_deleted)
     const { error: dncError } = await supabase
       .from('dnc_registry')
-      .update({ is_deleted: true })
+      .update({ is_active: false })
       .eq('tenant_id', tenantId)
-      .eq('phone_hash', phone_hash)
+      .eq('phone_number', phoneNumber)
       .eq('source', 'internal')
 
     if (dncError) {
