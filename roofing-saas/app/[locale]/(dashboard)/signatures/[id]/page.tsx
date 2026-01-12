@@ -138,9 +138,14 @@ export default function ViewSignatureDocumentPage() {
       setError(null)
       setResendSuccess(null)
 
-      const res = await fetch('/api/signature-documents/' + documentId + '/resend', {
+      const url = `/api/signature-documents/${documentId}/resend`
+      console.log('Resend: Making request to:', url)
+
+      const res = await fetch(url, {
         method: 'POST',
       })
+
+      console.log('Resend: Response status:', res.status)
 
       const result = await res.json()
 
