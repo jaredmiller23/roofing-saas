@@ -17,8 +17,10 @@ import { useRealtimeSubscription } from '@/lib/hooks/useRealtimeSubscription'
 import { RealtimeToast } from '@/components/collaboration/RealtimeToast'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { hexToTailwindBg, stageNameToSlug } from '@/lib/utils/colors'
 
-const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
+// Default stages - used as fallback if DB fetch fails
+const DEFAULT_STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },
   { id: 'qualified', name: 'Qualified', color: 'bg-blue-500' },
   { id: 'quote_sent', name: 'Quote Sent', color: 'bg-purple-500' },
@@ -29,15 +31,29 @@ const STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
   { id: 'lost', name: 'Lost', color: 'bg-red-500' },
 ]
 
+// Valid pipeline stage IDs for type checking
+const VALID_STAGE_IDS: PipelineStage[] = [
+  'prospect', 'qualified', 'quote_sent', 'negotiation',
+  'won', 'production', 'complete', 'lost'
+]
+
 // Quick filter categories
 type QuickFilter = 'all' | 'active' | 'production' | 'closed'
 
-const QUICK_FILTERS: Array<{ id: QuickFilter; name: string; stages: PipelineStage[] }> = [
-  { id: 'all', name: 'All', stages: STAGES.map(s => s.id) },
-  { id: 'active', name: 'Active Sales', stages: ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won'] },
-  { id: 'production', name: 'In Production', stages: ['production'] },
-  { id: 'closed', name: 'Closed', stages: ['complete', 'lost'] },
-]
+// Quick filter definitions with stage mappings
+const QUICK_FILTER_STAGES: Record<QuickFilter, PipelineStage[]> = {
+  all: VALID_STAGE_IDS,
+  active: ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won'],
+  production: ['production'],
+  closed: ['complete', 'lost'],
+}
+
+const QUICK_FILTER_NAMES: Record<QuickFilter, string> = {
+  all: 'All',
+  active: 'Active Sales',
+  production: 'In Production',
+  closed: 'Closed',
+}
 
 const PROJECTS_PER_COLUMN = 50 // Limit for performance
 
@@ -58,11 +74,22 @@ interface ValidationError {
   toStage: string
 }
 
+// Database stage configuration type
+interface DBPipelineStage {
+  id: string
+  name: string
+  color: string
+  stage_order: number
+  stage_type: string
+  is_active: boolean
+}
+
 export function PipelineBoard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(STAGES.map(s => s.id))
+  const [stages, setStages] = useState<Array<{ id: PipelineStage; name: string; color: string }>>(DEFAULT_STAGES)
+  const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(VALID_STAGE_IDS)
   const [validationError, setValidationError] = useState<ValidationError | null>(null)
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -71,7 +98,53 @@ export function PipelineBoard() {
 
   useEffect(() => {
     fetchProjects()
+    fetchStages()
   }, [])
+
+  // Fetch pipeline stages from database
+  async function fetchStages() {
+    try {
+      const response = await fetch('/api/settings/pipeline-stages')
+      if (response.ok) {
+        const result = await response.json()
+        const dbStages: DBPipelineStage[] = result.data?.stages || result.stages || []
+
+        if (dbStages.length > 0) {
+          // Map DB stages to our format, filtering to only valid stage IDs
+          const mappedStages = dbStages
+            .filter(s => s.is_active !== false) // Only active stages
+            .map(s => {
+              const slug = stageNameToSlug(s.name) as PipelineStage
+              // Only include if it's a valid stage ID
+              if (VALID_STAGE_IDS.includes(slug)) {
+                return {
+                  id: slug,
+                  name: s.name,
+                  color: hexToTailwindBg(s.color),
+                }
+              }
+              return null
+            })
+            .filter((s): s is { id: PipelineStage; name: string; color: string } => s !== null)
+
+          // Sort by the order defined in DEFAULT_STAGES to maintain consistent ordering
+          const stageOrderMap = new Map(DEFAULT_STAGES.map((s, i) => [s.id, i]))
+          mappedStages.sort((a, b) => {
+            const orderA = stageOrderMap.get(a.id) ?? 999
+            const orderB = stageOrderMap.get(b.id) ?? 999
+            return orderA - orderB
+          })
+
+          if (mappedStages.length > 0) {
+            setStages(mappedStages)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch pipeline stages:', error)
+      // Keep using default stages on error
+    }
+  }
 
   // Get current user on mount
   useEffect(() => {
@@ -278,7 +351,7 @@ export function PipelineBoard() {
     )
   }
 
-  const projectsByStage = STAGES.reduce(
+  const projectsByStage = stages.reduce(
     (acc, stage) => {
       if (!selectedStages.includes(stage.id)) {
         acc[stage.id] = []
@@ -305,9 +378,9 @@ export function PipelineBoard() {
 
   const handleQuickFilter = (filterId: QuickFilter) => {
     setQuickFilter(filterId)
-    const filter = QUICK_FILTERS.find(f => f.id === filterId)
-    if (filter) {
-      setSelectedStages(filter.stages)
+    const filterStages = QUICK_FILTER_STAGES[filterId]
+    if (filterStages) {
+      setSelectedStages(filterStages)
     }
   }
 
@@ -370,21 +443,21 @@ export function PipelineBoard() {
 
             {/* Quick Filter Chips */}
             <div className="flex items-center gap-2">
-              {QUICK_FILTERS.map((filter) => (
+              {(Object.keys(QUICK_FILTER_NAMES) as QuickFilter[]).map((filterId) => (
                 <button
-                  key={filter.id}
-                  onClick={() => handleQuickFilter(filter.id)}
+                  key={filterId}
+                  onClick={() => handleQuickFilter(filterId)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
-                    quickFilter === filter.id
+                    quickFilter === filterId
                       ? 'bg-primary text-white shadow-sm'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
-                  {filter.name}
+                  {QUICK_FILTER_NAMES[filterId]}
                   <span className={`ml-1.5 text-xs ${
-                    quickFilter === filter.id ? 'text-white/70' : 'text-muted-foreground'
+                    quickFilter === filterId ? 'text-white/70' : 'text-muted-foreground'
                   }`}>
-                    ({projects.filter(p => filter.stages.includes(p.pipeline_stage)).length})
+                    ({projects.filter(p => QUICK_FILTER_STAGES[filterId].includes(p.pipeline_stage)).length})
                   </span>
                 </button>
               ))}
@@ -395,7 +468,7 @@ export function PipelineBoard() {
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground mr-1">Stages:</span>
-            {STAGES.map((stage) => (
+            {stages.map((stage) => (
               <button
                 key={stage.id}
                 onClick={() => toggleStage(stage.id)}
@@ -409,11 +482,11 @@ export function PipelineBoard() {
               </button>
             ))}
             {/* Reset filters button */}
-            {(searchQuery || selectedStages.length !== STAGES.length) && (
+            {(searchQuery || selectedStages.length !== stages.length) && (
               <button
                 onClick={() => {
                   setSearchQuery('')
-                  setSelectedStages(STAGES.map(s => s.id))
+                  setSelectedStages(stages.map(s => s.id))
                   setQuickFilter('all')
                 }}
                 className="px-2 py-1 text-xs text-primary hover:text-primary font-medium underline ml-1"
@@ -441,7 +514,7 @@ export function PipelineBoard() {
 
       {/* Pipeline Board */}
       <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
-        {STAGES.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
+        {stages.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
           const stageProjects = projectsByStage[stage.id] as Project[]
           const totalInStage = projectsByStage[`${stage.id}_total`] as number
 
