@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getAppBaseUrl } from '@/lib/utils'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
 export default function ResetPasswordPage() {
+  const params = useParams()
+  const locale = params.locale as string || 'en'
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -19,7 +22,7 @@ export default function ResetPasswordPage() {
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${getAppBaseUrl()}/auth/update-password`,
+        redirectTo: `${getAppBaseUrl()}/${locale}/auth/update-password`,
       })
 
       if (resetError) {
