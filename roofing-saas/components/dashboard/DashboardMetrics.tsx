@@ -1,9 +1,18 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useUIMode } from '@/hooks/useUIMode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, DollarSign, Target, Users, Phone } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Target, Users, Phone, Trophy } from 'lucide-react'
+import {
+  type MetricsTier,
+  type TieredMetrics,
+  type MetricCardType,
+  TIER_CONFIGS,
+  hasManagerMetrics,
+  hasFullMetrics,
+} from '@/lib/dashboard/metrics-types'
 
 export type DashboardScope = 'company' | 'team' | 'personal'
 
@@ -11,46 +20,73 @@ interface DashboardMetricsProps {
   scope: DashboardScope
 }
 
-interface MetricsData {
+/**
+ * Metric card configuration
+ */
+interface MetricCardConfig {
+  title: string
+  icon: typeof DollarSign
+  valueType: 'currency' | 'number' | 'percentage'
+  description: string
+}
+
+const METRIC_CARD_CONFIGS: Record<MetricCardType, MetricCardConfig> = {
   revenue: {
-    value: number
-    change: number
-    trend: 'up' | 'down'
-  }
+    title: 'Revenue',
+    icon: DollarSign,
+    valueType: 'currency',
+    description: 'This month',
+  },
   pipeline: {
-    value: number
-    change: number
-    trend: 'up' | 'down'
-  }
+    title: 'Pipeline Value',
+    icon: Target,
+    valueType: 'currency',
+    description: 'Active opportunities',
+  },
   knocks: {
-    value: number
-    change: number
-    trend: 'up' | 'down'
-  }
+    title: 'Door Knocks',
+    icon: Phone,
+    valueType: 'number',
+    description: 'This week',
+  },
   conversion: {
-    value: number
-    change: number
-    trend: 'up' | 'down'
-  }
+    title: 'Conversion Rate',
+    icon: Users,
+    valueType: 'percentage',
+    description: 'All time',
+  },
 }
 
 export function DashboardMetrics({ scope }: DashboardMetricsProps) {
-  const [metrics, setMetrics] = useState<MetricsData | null>(null)
+  const { isFieldMode, isManagerMode } = useUIMode()
+  const [metrics, setMetrics] = useState<TieredMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Map UI mode to metrics tier
+  const tier: MetricsTier = useMemo(() => {
+    if (isFieldMode) return 'field'
+    if (isManagerMode) return 'manager'
+    return 'full'
+  }, [isFieldMode, isManagerMode])
+
+  // Get visible metrics for current tier
+  const visibleMetrics = useMemo(() => {
+    return TIER_CONFIGS[tier].visibleMetrics
+  }, [tier])
 
   const fetchMetrics = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
-    // Create abort controller for timeout
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
+    const timeoutId = setTimeout(() => abortController.abort(), 30000)
 
     try {
-      const response = await fetch(`/api/dashboard/metrics?scope=${scope}`, {
-        signal: abortController.signal
-      })
+      const response = await fetch(
+        `/api/dashboard/metrics?scope=${scope}&mode=${tier}`,
+        { signal: abortController.signal }
+      )
 
       clearTimeout(timeoutId)
 
@@ -64,13 +100,13 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
       } else {
         setError('Failed to load metrics data')
       }
-    } catch (error) {
+    } catch (err) {
       clearTimeout(timeoutId)
-      console.error('Failed to fetch dashboard metrics:', error)
+      console.error('Failed to fetch dashboard metrics:', err)
 
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         setError('Request timeout - please try again')
-      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+      } else if (err instanceof Error && err.message?.includes('Server error:')) {
         setError('Server error - please try again')
       } else {
         setError('Failed to connect to server')
@@ -78,7 +114,7 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [scope])
+  }, [scope, tier])
 
   useEffect(() => {
     fetchMetrics()
@@ -89,7 +125,7 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 0,
       }).format(value)
     }
     if (type === 'percentage') {
@@ -98,11 +134,41 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     return new Intl.NumberFormat('en-US').format(value)
   }
 
-  // Show loading skeleton
+  // Get metric value from tiered metrics
+  const getMetricValue = (
+    metricType: MetricCardType
+  ): { value: number; change: number; trend: 'up' | 'down' } | null => {
+    if (!metrics) return null
+
+    switch (metricType) {
+      case 'knocks':
+        return metrics.knocks
+      case 'pipeline':
+        return hasManagerMetrics(metrics) ? metrics.pipeline : null
+      case 'conversion':
+        return hasManagerMetrics(metrics) ? metrics.conversion : null
+      case 'revenue':
+        return hasFullMetrics(metrics) ? metrics.revenue : null
+      default:
+        return null
+    }
+  }
+
+  // Loading skeleton - adapts to tier
   if (isLoading) {
+    const skeletonCount = visibleMetrics.length
+    const gridCols =
+      skeletonCount === 1
+        ? 'grid-cols-1'
+        : skeletonCount === 2
+          ? 'grid-cols-1 md:grid-cols-2'
+          : skeletonCount === 3
+            ? 'grid-cols-1 md:grid-cols-3'
+            : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-        {[...Array(4)].map((_, i) => (
+      <div className={`grid ${gridCols} gap-6 animate-pulse`}>
+        {visibleMetrics.map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="h-4 bg-muted rounded w-24" />
@@ -119,19 +185,15 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     )
   }
 
-  // Show error state with retry
+  // Error state
   if (error) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="md:col-span-2 lg:col-span-4">
+      <div className={`grid grid-cols-1 gap-6`}>
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="text-center">
               <div className="text-muted-foreground mb-4">{error}</div>
-              <Button
-                onClick={() => fetchMetrics()}
-                variant="outline"
-                size="sm"
-              >
+              <Button onClick={() => fetchMetrics()} variant="outline" size="sm">
                 Retry
               </Button>
             </div>
@@ -141,11 +203,11 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     )
   }
 
-  // Show no data state - also check if metrics has expected structure
-  if (!metrics || !metrics.revenue || !metrics.pipeline || !metrics.knocks || !metrics.conversion) {
+  // No data state
+  if (!metrics) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="md:col-span-2 lg:col-span-4">
+      <div className="grid grid-cols-1 gap-6">
+        <Card>
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-muted-foreground">No metrics data available</div>
           </CardContent>
@@ -154,68 +216,90 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
     )
   }
 
-  const metricCards = [
-    {
-      title: 'Revenue',
-      value: formatValue(metrics.revenue?.value ?? 0, 'currency'),
-      change: metrics.revenue?.change ?? 0,
-      trend: metrics.revenue?.trend ?? 'up',
-      icon: DollarSign,
-      description: 'This month'
-    },
-    {
-      title: 'Pipeline Value',
-      value: formatValue(metrics.pipeline?.value ?? 0, 'currency'),
-      change: metrics.pipeline?.change ?? 0,
-      trend: metrics.pipeline?.trend ?? 'up',
-      icon: Target,
-      description: 'Active opportunities'
-    },
-    {
-      title: 'Door Knocks',
-      value: formatValue(metrics.knocks?.value ?? 0, 'number'),
-      change: metrics.knocks?.change ?? 0,
-      trend: metrics.knocks?.trend ?? 'up',
-      icon: Phone,
-      description: 'This week'
-    },
-    {
-      title: 'Conversion Rate',
-      value: formatValue(metrics.conversion?.value ?? 0, 'percentage'),
-      change: metrics.conversion?.change ?? 0,
-      trend: metrics.conversion?.trend ?? 'up',
-      icon: Users,
-      description: 'Last 30 days'
-    }
-  ]
+  // Field mode: Special compact layout with recent wins
+  if (tier === 'field' && metrics.recentWins) {
+    return (
+      <div className="space-y-4">
+        {/* Knock count card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Your Knocks This Week</CardTitle>
+            <Phone className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{metrics.knocks.value}</div>
+            <p className="text-xs text-muted-foreground mt-1">Keep up the great work!</p>
+          </CardContent>
+        </Card>
+
+        {/* Recent wins */}
+        {metrics.recentWins.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Wins</CardTitle>
+              <Trophy className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {metrics.recentWins.slice(0, 3).map((win) => (
+                  <div
+                    key={win.id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="truncate max-w-[60%]">{win.name}</span>
+                    <span className="font-medium text-primary">
+                      {formatValue(win.value, 'currency')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    )
+  }
+
+  // Manager and Full mode: Grid layout
+  const gridCols =
+    visibleMetrics.length <= 2
+      ? 'grid-cols-1 md:grid-cols-2'
+      : visibleMetrics.length === 3
+        ? 'grid-cols-1 md:grid-cols-3'
+        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {metricCards.map((metric) => {
-        const Icon = metric.icon
-        const isPositive = metric.change > 0
-        const TrendIcon = metric.trend === 'up' ? TrendingUp : TrendingDown
+    <div className={`grid ${gridCols} gap-6`}>
+      {visibleMetrics.map((metricType) => {
+        const config = METRIC_CARD_CONFIGS[metricType]
+        const metricData = getMetricValue(metricType)
+
+        if (!metricData) return null
+
+        const Icon = config.icon
+        const isPositive = metricData.change >= 0
+        const TrendIcon = metricData.trend === 'up' ? TrendingUp : TrendingDown
 
         return (
-          <Card key={metric.title}>
+          <Card key={metricType}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {metric.title}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{config.title}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
+              <div className="text-2xl font-bold">
+                {formatValue(metricData.value, config.valueType)}
+              </div>
               <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                <TrendIcon className={`h-3 w-3 ${isPositive ? 'text-green-600' : 'text-red-600'}`} />
+                <TrendIcon
+                  className={`h-3 w-3 ${isPositive ? 'text-green-600' : 'text-red-600'}`}
+                />
                 <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
-                  {Math.abs(metric.change)}%
+                  {Math.abs(metricData.change)}%
                 </span>
                 <span>from last period</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {metric.description}
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             </CardContent>
           </Card>
         )
