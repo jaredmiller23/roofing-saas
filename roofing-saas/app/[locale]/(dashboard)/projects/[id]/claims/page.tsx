@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, FileText, Calendar, DollarSign, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Plus, FileText, Calendar, DollarSign, AlertCircle, ArrowLeft, Package, Download, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 import { WeatherEvidence } from '@/components/claims/WeatherEvidence'
@@ -56,6 +56,9 @@ export default function ProjectClaimsPage() {
   const [contact, setContact] = useState<Contact | null>(null)
   const [claims, setClaims] = useState<ClaimData[]>([])
   const [loading, setLoading] = useState(true)
+  const [generatingPacket, setGeneratingPacket] = useState(false)
+  const [packetGenerated, setPacketGenerated] = useState(false)
+  const [packetError, setPacketError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -101,6 +104,59 @@ export default function ProjectClaimsPage() {
 
   const handleViewClaim = (claimId: string) => {
     router.push(`/projects/${projectId}/claims/${claimId}`)
+  }
+
+  const handleGeneratePacket = async () => {
+    setGeneratingPacket(true)
+    setPacketError(null)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/claims/packet`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          include_weather: true,
+          include_codes: true,
+          include_manufacturer_specs: true,
+          include_policy_provisions: true,
+        }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.message || 'Failed to generate packet')
+      }
+
+      setPacketGenerated(true)
+    } catch (error) {
+      console.error('Error generating packet:', error)
+      setPacketError(error instanceof Error ? error.message : 'Failed to generate packet')
+    } finally {
+      setGeneratingPacket(false)
+    }
+  }
+
+  const handleDownloadPacketPdf = async () => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/claims/packet/pdf`)
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.message || 'Failed to download PDF')
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `claims-packet-${projectId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error downloading packet PDF:', error)
+      setPacketError(error instanceof Error ? error.message : 'Failed to download PDF')
+    }
   }
 
   if (loading) {
@@ -234,6 +290,73 @@ export default function ProjectClaimsPage() {
         stormEventId={project?.storm_event_id}
       />
 
+      {/* THE PACKET - Claims Documentation Package */}
+      <Card className="border-primary/50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                THE PACKET
+              </CardTitle>
+              <CardDescription>
+                Complete claims documentation package with building codes, manufacturer specs, and policy provisions
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              {packetGenerated && (
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadPacketPdf}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </Button>
+              )}
+              <Button
+                onClick={handleGeneratePacket}
+                disabled={generatingPacket}
+              >
+                {generatingPacket ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : packetGenerated ? (
+                  <>
+                    <Package className="h-4 w-4 mr-2" />
+                    Regenerate Packet
+                  </>
+                ) : (
+                  <>
+                    <Package className="h-4 w-4 mr-2" />
+                    Generate Packet
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        {packetError && (
+          <CardContent>
+            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">{packetError}</span>
+            </div>
+          </CardContent>
+        )}
+        {packetGenerated && !packetError && (
+          <CardContent>
+            <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+              <FileText className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                Packet generated successfully. Click Download PDF to save the complete claims documentation package.
+              </span>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Quick Actions */}
       <Card>
         <CardHeader>
@@ -242,7 +365,7 @@ export default function ProjectClaimsPage() {
             Common tasks for managing insurance claims
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Button
             variant="outline"
             className="h-auto flex-col items-start p-4"
@@ -259,13 +382,27 @@ export default function ProjectClaimsPage() {
           <Button
             variant="outline"
             className="h-auto flex-col items-start p-4"
+            onClick={handleGeneratePacket}
+            disabled={generatingPacket}
+          >
+            <Package className="h-6 w-6 mb-2" />
+            <div className="text-left">
+              <div className="font-semibold">Generate Packet</div>
+              <div className="text-xs text-muted-foreground">
+                Build complete claims package
+              </div>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-auto flex-col items-start p-4"
             onClick={() => router.push(`/projects/${projectId}/claims/export`)}
           >
             <DollarSign className="h-6 w-6 mb-2" />
             <div className="text-left">
-              <div className="font-semibold">Export Claim Package</div>
+              <div className="font-semibold">Export Claim</div>
               <div className="text-xs text-muted-foreground">
-                Generate submission docs
+                Legacy export format
               </div>
             </div>
           </Button>
