@@ -104,6 +104,7 @@ export interface Contact {
   text_consent: boolean
   auto_text_consent: boolean
   auto_call_consent: boolean
+  recording_consent: boolean
   timezone: string | null
 
   // Flexible
@@ -148,6 +149,7 @@ export interface CreateContactInput {
   text_consent?: boolean
   auto_text_consent?: boolean
   auto_call_consent?: boolean
+  recording_consent?: boolean
   priority?: ContactPriority
   tags?: string[]
   custom_fields?: Record<string, unknown>

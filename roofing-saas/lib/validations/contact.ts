@@ -63,10 +63,11 @@ export const createContactSchema = z.object({
   job_type: z.string().optional(),
   // Note: Empty string for customer_type is handled in form submission
   customer_type: z.enum(['insurance', 'retail']).optional(),
-  // Communication Consent
+  // Communication Consent (TCPA Compliance)
   text_consent: z.boolean().optional(),
   auto_text_consent: z.boolean().optional(),
   auto_call_consent: z.boolean().optional(),
+  recording_consent: z.boolean().optional(),
   // Other
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   tags: z.array(z.string()).optional(),

@@ -89,6 +89,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       insurance_carrier: contact?.insurance_carrier || '',
       policy_number: contact?.policy_number || '',
       priority: contact?.priority || 'normal',
+      recording_consent: contact?.recording_consent || false,
     },
   })
 
@@ -673,36 +674,117 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         </div>
       </div>
 
-      {/* Communication Consent */}
+      {/* Communication Consent - TCPA Compliant */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-4">Communication Consent</h2>
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              {...register('text_consent')}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            <span className="text-sm text-foreground">Customer consents to receive text messages</span>
-          </label>
+        <p className="text-sm text-muted-foreground mb-4">
+          TCPA requires documented consent before making automated calls or texts.
+          Check the boxes below to indicate which consents have been obtained.
+        </p>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              {...register('auto_text_consent')}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            <span className="text-sm text-foreground">Customer consents to automated text messages</span>
-          </label>
+        <div className="space-y-4">
+          {/* SMS Consent */}
+          <div className="p-4 rounded-lg border border-border bg-muted/30">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('text_consent')}
+                className="h-4 w-4 mt-1 rounded border-border text-primary focus:ring-primary"
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">SMS Consent</span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Customer has agreed to the following disclosure:
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 p-2 bg-background rounded border border-border italic">
+                  &ldquo;By providing my phone number, I consent to receive text messages from
+                  [Company Name]. Message and data rates may apply. Message frequency varies.
+                  Reply STOP to opt out at any time. Reply HELP for help. My consent is not
+                  a condition of purchase.&rdquo;
+                </p>
+              </div>
+            </label>
+          </div>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              {...register('auto_call_consent')}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            <span className="text-sm text-foreground">Customer consents to automated calls</span>
-          </label>
+          {/* Automated SMS Consent */}
+          <div className="p-4 rounded-lg border border-border bg-muted/30">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('auto_text_consent')}
+                className="h-4 w-4 mt-1 rounded border-border text-primary focus:ring-primary"
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">Automated SMS Consent (PEWC)</span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Customer has provided Prior Express Written Consent for automated texts:
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 p-2 bg-background rounded border border-border italic">
+                  &ldquo;By providing my phone number, I consent to receive automated text messages
+                  from [Company Name] regarding my inquiry, including messages sent using an
+                  automatic telephone dialing system. I understand my consent is not a condition
+                  of purchase. I may revoke consent at any time by replying STOP.&rdquo;
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {/* Automated Call Consent */}
+          <div className="p-4 rounded-lg border border-border bg-muted/30">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('auto_call_consent')}
+                className="h-4 w-4 mt-1 rounded border-border text-primary focus:ring-primary"
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">Automated Call Consent (PEWC)</span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Customer has provided Prior Express Written Consent for automated calls:
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 p-2 bg-background rounded border border-border italic">
+                  &ldquo;By providing my phone number, I consent to receive calls from [Company Name]
+                  regarding my inquiry, including calls made using an automatic telephone dialing
+                  system or pre-recorded messages. I understand that my consent is not a condition
+                  of purchase and that I may revoke my consent at any time.&rdquo;
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {/* Recording Consent */}
+          <div className="p-4 rounded-lg border border-border bg-muted/30">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register('recording_consent')}
+                className="h-4 w-4 mt-1 rounded border-border text-primary focus:ring-primary"
+              />
+              <div>
+                <span className="text-sm font-medium text-foreground">Call Recording Consent</span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Customer has consented to call recording:
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 p-2 bg-background rounded border border-border italic">
+                  &ldquo;This call may be recorded for quality assurance and training purposes.
+                  By continuing with this call, you consent to being recorded.&rdquo;
+                </p>
+                <p className="text-xs text-amber-600 mt-2">
+                  Note: Some states (CA, FL, PA, WA, etc.) require all-party consent for recording.
+                  The system will detect these states and request verbal consent when calling.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Consent Documentation Notice */}
+        <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <p className="text-xs text-foreground">
+            <strong>Important:</strong> When consent is captured, the system records the IP address,
+            timestamp, method of consent, and the exact legal text shown to the customer. This proof
+            is retained for litigation defense as required by TCPA regulations.
+          </p>
         </div>
       </div>
 

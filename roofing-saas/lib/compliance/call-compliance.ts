@@ -3,10 +3,16 @@
  * Main entry point for TCPA/TSR call compliance checks
  *
  * Performs comprehensive compliance validation:
- * 1. Opt-out check (has contact opted out of calls?)
- * 2. DNC check (is number on federal/state/internal DNC list?)
- * 3. Time check (within 9am-8pm calling hours?)
- * 4. Consent check (has contact given explicit consent?)
+ * 1. Opt-out check (has contact opted out of calls?) - BLOCKS
+ * 2. DNC check (is number on federal/state/internal DNC list?) - BLOCKS
+ * 3. Time check (within 9am-8pm calling hours?) - BLOCKS
+ * 4. Consent check (has contact given explicit PEWC?) - BLOCKS
+ *
+ * Legal Requirements (as of April 2025):
+ * - TCPA requires Prior Express Written Consent (PEWC) for autodialed calls
+ * - FTC Telemarketing Sales Rule (TSR) requires DNC scrubbing every 31 days
+ * - Calling hours: 9am-8pm in recipient's local time
+ * - Opt-out must be honored within 10 business days
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -22,13 +28,13 @@ import type {
 
 /**
  * Comprehensive compliance check before making a call
- * Validates all TCPA/TSR requirements
+ * Validates all TCPA/TSR requirements - ALL checks BLOCK if failed
  *
- * Check order:
- * 1. Opt-out (immediate fail if opted out)
- * 2. DNC registry (immediate fail if listed)
- * 3. Time restrictions (immediate fail if outside hours)
- * 4. Consent (warning if not obtained, but allow call)
+ * Check order (all blocking):
+ * 1. Opt-out - BLOCKS if contact has opted out
+ * 2. DNC registry - BLOCKS if on federal/state/internal list
+ * 3. Time restrictions - BLOCKS if outside 9am-8pm local time
+ * 4. Consent - BLOCKS if no explicit PEWC recorded (changed April 2025)
  *
  * @param params - Phone number, contact ID, tenant ID, user ID
  * @returns ComplianceCheckResult indicating if call is allowed
@@ -243,30 +249,31 @@ export async function canMakeCall(
       },
     }
 
-    // STEP 4: Check consent (warning only, not blocking)
-    if (!contact?.call_consent) {
+    // STEP 4: Check consent (BLOCKING - TCPA requires PEWC for autodialed calls)
+    // As of April 2025, explicit consent is required before making calls
+    if (!contact?.call_consent || contact.call_consent === 'none') {
       const consentCheck: ComplianceCheck = {
         type: 'consent',
         passed: false,
-        reason: 'No explicit call consent recorded',
+        reason: 'No explicit call consent recorded - TCPA requires prior express written consent',
       }
       checks.consent = consentCheck
 
-      // Log as warning
+      // Log as FAIL (not warning) - this is a compliance block
       await logComplianceCheck({
         tenantId,
         contactId,
         userId,
         phoneNumber,
         checkType: 'consent_check',
-        result: 'warning',
+        result: 'fail',
         reason: consentCheck.reason,
       })
 
-      logger.warn('Call consent not recorded', { contactId, phoneNumber })
+      logger.warn('Call blocked: No consent recorded', { contactId, phoneNumber })
       return {
-        canCall: true,
-        warning: 'No explicit call consent recorded. Consider obtaining consent.',
+        canCall: false,
+        reason: 'Explicit consent required before calling. Obtain prior express written consent (PEWC) first.',
         checks,
       }
     }

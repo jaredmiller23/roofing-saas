@@ -251,37 +251,49 @@ export async function getDNCStats(tenantId: string): Promise<{
   try {
     const supabase = await createClient()
 
+    // Note: NAS schema uses is_active (not is_deleted)
     const { count: total } = await supabase
       .from('dnc_registry')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
     const { count: federal } = await supabase
       .from('dnc_registry')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('source', 'federal')
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
-    const { count: state } = await supabase
+    // State DNC: check both source='state_tn' and reason='state_dnc' for compatibility
+    const { count: stateBySource } = await supabase
       .from('dnc_registry')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('source', 'state_tn')
-      .eq('is_deleted', false)
+      .eq('is_active', true)
+
+    const { count: stateByReason } = await supabase
+      .from('dnc_registry')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('reason', 'state_dnc')
+      .eq('is_active', true)
+
+    // Use whichever has records (avoid double-counting)
+    const state = Math.max(stateBySource || 0, stateByReason || 0)
 
     const { count: internal } = await supabase
       .from('dnc_registry')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('source', 'internal')
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
     return {
       total: total || 0,
       federal: federal || 0,
-      state: state || 0,
+      state,
       internal: internal || 0,
     }
   } catch (error) {

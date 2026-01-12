@@ -28,6 +28,7 @@
     "diagnose-netlify-ssl": "tsx scripts/diagnose-netlify-ssl.ts",
     "fix-netlify-dns": "tsx scripts/fix-netlify-dns.ts",
     "migrate-proline": "tsx scripts/migrate-proline-data.ts",
+    "import-tn-dnc": "tsx scripts/import-tn-dnc.ts",
     "smoke-test": "tsx scripts/smoke-test.ts",
     "smoke-test:local": "tsx scripts/smoke-test.ts --local",
     "ops:verify": "tsx scripts/ops/verify.ts",
