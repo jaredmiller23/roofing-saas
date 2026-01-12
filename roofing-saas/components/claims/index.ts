@@ -4,6 +4,22 @@
 
 // Intelligence components
 export { AdjusterList } from './AdjusterList'
+export { IntelligenceSummary } from './IntelligenceSummary'
+export { CarrierIntelligence } from './CarrierIntelligence'
+export { PatternAnalytics } from './PatternAnalytics'
+export { OutcomeAnalytics } from './OutcomeAnalytics'
+
+// Shared intelligence components
+export {
+  StatCard,
+  ApprovalRateBadge,
+  getApprovalRateColor,
+  PatternBadge,
+  FrequencyBadge,
+  getPatternLabel,
+  TopItemsTable,
+  TopArgumentsTable,
+} from './shared'
 
 // Inspection components
 export { InspectionWizard } from './InspectionWizard'
