@@ -9,6 +9,16 @@ import { createContactSchema, type CreateContactInput } from '@/lib/validations/
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 // Helper to clean form data before Zod validation
 // Converts NaN from empty number inputs to undefined, and empty string enums to undefined
@@ -53,6 +63,10 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false)
   const [_isCheckingDuplicates, setIsCheckingDuplicates] = useState(false)
   const [duplicateCheckPending, setDuplicateCheckPending] = useState<string | null>(null)
+
+  // Project creation prompt state
+  const [showProjectPrompt, setShowProjectPrompt] = useState(false)
+  const [createdContactInfo, setCreatedContactInfo] = useState<{ id: string; name: string } | null>(null)
 
   const {
     register,
@@ -207,6 +221,17 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       }
 
       const result = await response.json()
+
+      // Check if we should prompt for project creation
+      if (result.data.prompt_for_project && mode === 'create') {
+        const newContact = result.data.contact
+        setCreatedContactInfo({
+          id: newContact.id,
+          name: `${newContact.first_name} ${newContact.last_name}`.trim()
+        })
+        setShowProjectPrompt(true)
+        return // Don't navigate yet - wait for user decision
+      }
 
       // Redirect to contact detail page
       // API returns { success, data: { contact } } structure
@@ -813,6 +838,46 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         onClose={handleDuplicateDialogClose}
         onContinue={handleContinueCreating}
       />
+
+      {/* Project Creation Prompt Dialog */}
+      <AlertDialog open={showProjectPrompt} onOpenChange={setShowProjectPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Create Project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {createdContactInfo?.name
+                ? `Would you like to create a project for ${createdContactInfo.name}?`
+                : 'Would you like to create a project for this contact?'}
+              {' '}This will add them to your pipeline board.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                // Navigate to contact detail page without creating project
+                if (createdContactInfo) {
+                  router.push(`/contacts/${createdContactInfo.id}`)
+                  router.refresh()
+                }
+              }}
+            >
+              No, just save contact
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                // Navigate to projects/new with contact pre-filled
+                if (createdContactInfo) {
+                  const projectName = encodeURIComponent(`${createdContactInfo.name} - Roofing Project`)
+                  router.push(`/projects/new?contact_id=${createdContactInfo.id}&name=${projectName}`)
+                  router.refresh()
+                }
+              }}
+            >
+              Yes, create project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   )
 }
