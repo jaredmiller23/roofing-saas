@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
+import { CreateProjectDialog } from '@/components/contacts/CreateProjectDialog'
 
 /**
  * Contact detail page
@@ -76,9 +77,13 @@ export default async function ContactDetailPage({
           </div>
 
           <div className="flex gap-2">
+            <CreateProjectDialog
+              contactId={contact.id}
+              contactName={`${contact.first_name} ${contact.last_name}`}
+            />
             <Link
               href={`/contacts/${contact.id}/edit`}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90"
             >
               Edit
             </Link>
