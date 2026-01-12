@@ -133,7 +133,7 @@ export default function LandingPage() {
               Loved by Contractors
             </h2>
             <p className="text-xl text-muted-foreground">
-              See what roofing professionals are saying about Ridgeline.
+              See what roofing professionals are saying about Job Clarity.
             </p>
           </div>
 
@@ -230,7 +230,7 @@ export default function LandingPage() {
             Ready to Grow Your Roofing Business?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join hundreds of contractors who have transformed their operations with Ridgeline.
+            Join hundreds of contractors who have transformed their operations with Job Clarity.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
@@ -308,7 +308,7 @@ const stats = [
 
 const testimonials = [
   {
-    quote: 'Ridgeline replaced three different apps we were using. The AI assistant alone saves me 2 hours a day.',
+    quote: 'Job Clarity replaced three different apps we were using. The AI assistant alone saves me 2 hours a day.',
     name: 'Mike Johnson',
     company: 'Johnson Roofing Co.',
   },

@@ -48,7 +48,7 @@ export function Footer() {
                   <path d="M9 21v-6h6v6" />
                 </svg>
               </div>
-              <span className="text-xl font-bold">Ridgeline</span>
+              <span className="text-xl font-bold">Job Clarity</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               The complete CRM platform for roofing contractors.
@@ -78,7 +78,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} Ridgeline CRM. All rights reserved.
+            &copy; {currentYear} Job Clarity CRM. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <Link

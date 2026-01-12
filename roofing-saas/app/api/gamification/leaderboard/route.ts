@@ -36,49 +36,27 @@ function getDateByPeriod(period: string): string {
 
 /**
  * Get user info (name, avatar) from tenant_users joined with auth.users
+ * Uses RPC function since PostgREST can't resolve cross-schema relationships
  * Returns a map of user_id -> {name, avatar_url}
  */
 async function getUserInfoMap(
   supabase: Awaited<ReturnType<typeof createClient>>,
   tenantId: string
 ): Promise<Map<string, UserInfo>> {
-  const { data: tenantUsers } = await supabase
-    .from('tenant_users')
-    .select(`
-      user_id,
-      users:user_id (
-        email,
-        raw_user_meta_data
-      )
-    `)
-    .eq('tenant_id', tenantId)
+  const { data: users, error } = await supabase.rpc('get_tenant_users_with_info', {
+    p_tenant_id: tenantId
+  })
+
+  if (error) {
+    logger.error('Error fetching user info:', { error })
+  }
 
   const userMap = new Map<string, UserInfo>()
 
-  tenantUsers?.forEach((tu) => {
-    const userData = tu.users as {
-      email?: string
-      raw_user_meta_data?: {
-        first_name?: string
-        last_name?: string
-        full_name?: string
-        name?: string
-        avatar_url?: string
-      }
-    } | null
-
-    const metadata = userData?.raw_user_meta_data || {}
-    const firstName = metadata.first_name || ''
-    const lastName = metadata.last_name || ''
-    const fullName = metadata.full_name ||
-                     metadata.name ||
-                     `${firstName} ${lastName}`.trim() ||
-                     userData?.email ||
-                     'Unknown'
-
-    userMap.set(tu.user_id, {
-      name: fullName,
-      avatar_url: metadata.avatar_url || null
+  users?.forEach((u: { user_id: string; full_name: string; avatar_url: string | null }) => {
+    userMap.set(u.user_id, {
+      name: u.full_name || 'Unknown',
+      avatar_url: u.avatar_url
     })
   })
 

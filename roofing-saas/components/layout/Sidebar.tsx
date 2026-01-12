@@ -122,22 +122,24 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Menu Button - hidden when ig-nav-active via CSS */}
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 mt-safe-top ml-safe-left p-2 bg-sidebar text-sidebar-foreground rounded-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        aria-label={isMobileOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isMobileOpen}
-        aria-controls="sidebar-navigation"
-        data-sidebar-mobile-trigger
-      >
-        {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-      </button>
+      {/* Mobile Menu Button - Only shown when sidebar is closed */}
+      {!isMobileOpen && (
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 mt-safe-top ml-safe-left p-2 bg-sidebar text-sidebar-foreground rounded-lg shadow-lg hover:bg-sidebar/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label="Open menu"
+          aria-expanded={false}
+          aria-controls="sidebar-navigation"
+          data-sidebar-mobile-trigger
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+      )}
 
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop - More opaque to prevent text bleed-through */}
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/80 z-30 backdrop-blur-sm"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -151,13 +153,23 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Logo */}
+        {/* Logo with mobile close button */}
         <div className="p-6 border-b border-sidebar-border">
-          <Link href="/dashboard" className="block">
-            <h1 className="text-4xl font-bold text-sidebar-foreground" style={{ fontFamily: "'Pacifico', cursive" }}>
-              Job Clarity
-            </h1>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/dashboard" className="block">
+              <h1 className="text-4xl font-bold text-sidebar-foreground" style={{ fontFamily: "'Pacifico', cursive" }}>
+                Job Clarity
+              </h1>
+            </Link>
+            {/* Mobile close button - inside header to avoid overlap */}
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="lg:hidden p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar/80 rounded-lg transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}

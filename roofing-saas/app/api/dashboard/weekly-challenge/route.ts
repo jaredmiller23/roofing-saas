@@ -34,8 +34,8 @@ export async function GET() {
     weekEnd.setDate(weekStart.getDate() + 6) // Sunday
     weekEnd.setHours(23, 59, 59, 999)
 
-    // Query door knock activities for current week
-    const { data: knockActivities, error } = await supabase
+    // Query door knock activities for current week (tenant-wide for participant count)
+    const { data: allKnockActivities, error: allError } = await supabase
       .from('activities')
       .select('created_by')
       .eq('tenant_id', tenantId)
@@ -43,34 +43,52 @@ export async function GET() {
       .gte('created_at', weekStart.toISOString())
       .lte('created_at', weekEnd.toISOString())
 
-    if (error) {
-      console.error('Error fetching knock activities:', error)
+    if (allError) {
+      console.error('Error fetching knock activities:', allError)
       throw new Error('Failed to fetch weekly challenge data')
     }
 
-    // Count total knocks
-    const totalKnocks = knockActivities?.length || 0
+    // Query current user's personal knock count
+    const { count: userKnockCount, error: userError } = await supabase
+      .from('activities')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('type', 'door_knock')
+      .eq('created_by', user.id)
+      .gte('created_at', weekStart.toISOString())
+      .lte('created_at', weekEnd.toISOString())
+
+    if (userError) {
+      console.error('Error fetching user knock count:', userError)
+    }
 
     // Count distinct participants (users who have knocked)
-    const uniqueUsers = new Set(knockActivities?.map(a => a.created_by).filter(Boolean))
+    const uniqueUsers = new Set(allKnockActivities?.map(a => a.created_by).filter(Boolean))
     const participantCount = uniqueUsers.size
 
-    // Target (configurable - default 50)
+    // Target (configurable - default 50 per user)
     const target = 50
+
+    // Calculate time remaining
+    const msRemaining = weekEnd.getTime() - now.getTime()
+    const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24))
+    const timeRemaining = daysRemaining === 1 ? '1 day' : `${daysRemaining} days`
 
     return NextResponse.json({
       success: true,
       data: {
         challenge: {
-          id: '1',
-          title: 'Door Knock Challenge',
-          description: 'Complete 50 door knocks this week',
+          id: 'weekly-knock-challenge',
+          title: 'Weekly Knock Challenge',
+          description: `Complete ${target} door knocks this week to earn the bonus!`,
           startDate: weekStart.toISOString(),
           endDate: weekEnd.toISOString(),
           target,
-          current: totalKnocks,
+          current: userKnockCount || 0,
+          unit: 'knocks',
+          timeRemaining,
           participants: participantCount,
-          prize: '$500 bonus',
+          reward: '$500 bonus for hitting the target',
           status: 'active',
         },
       },

@@ -33,7 +33,7 @@ export function Navbar() {
               </svg>
             </div>
             <span className="text-xl font-bold text-foreground">
-              Ridgeline
+              Job Clarity
             </span>
           </Link>
 

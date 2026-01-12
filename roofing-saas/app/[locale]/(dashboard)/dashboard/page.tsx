@@ -42,12 +42,12 @@ export default function DashboardPage() {
   const [scope, setScope] = useState<DashboardScope>('company')
 
   return (
-    <div className="p-8">
+    <div className="p-4 pt-16 lg:p-8 lg:pt-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header with Scope Filter */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
               Welcome back!
             </h1>
           </div>
