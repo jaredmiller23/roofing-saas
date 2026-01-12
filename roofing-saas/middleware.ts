@@ -122,6 +122,7 @@ export async function middleware(request: NextRequest) {
     '/reset-password',
     '/auth/callback',
     '/auth/update-password',
+    '/auth/confirm', // Password reset token verification
     '/sign', // E-signature signing pages (public access with token)
     // Test endpoints (development only)
     '/api/sms/test',

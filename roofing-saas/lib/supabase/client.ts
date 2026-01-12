@@ -50,14 +50,5 @@ export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
 
-  return createBrowserClient(supabaseUrl, supabaseKey, {
-    auth: {
-      // Use implicit flow to support cross-device password reset
-      // PKCE requires the reset link to be opened on the same device/browser
-      // Implicit flow sends tokens directly in URL hash, no code exchange needed
-      flowType: 'implicit',
-      detectSessionInUrl: true,
-      persistSession: true,
-    }
-  })
+  return createBrowserClient(supabaseUrl, supabaseKey)
 }
