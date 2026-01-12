@@ -16,6 +16,9 @@ import { errorResponse } from '@/lib/api/response'
  * - Crew utilization
  * - Gross margin by job type
  * - Customer acquisition cost
+ *
+ * PERFORMANCE: All queries run in parallel using Promise.all() to minimize latency.
+ * This reduces response time from 11+ sequential queries to a single parallel batch.
  */
 export async function GET() {
   try {
@@ -34,50 +37,138 @@ export async function GET() {
     // Get current date ranges
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    // Note: startOfLastMonth and endOfLastMonth defined later for revenue comparison
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
 
-    // === Total Contacts ===
-    const { count: totalContacts } = await supabase
-      .from('contacts')
-      .select('*', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+    // === Run all queries in parallel for performance ===
+    const [
+      contactsResult,
+      activeProjectsResult,
+      wonProjectsThisMonthResult,
+      wonProjectsLastMonthResult,
+      revenueDataResult,
+      allProjectsResult,
+      wonProjectsResult,
+      wonProjectsWithDatesResult,
+      activities30DaysResult,
+      activities7DaysResult,
+      pipelineDataResult,
+    ] = await Promise.all([
+      // Total Contacts
+      supabase
+        .from('contacts')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false),
 
-    // === Active Projects (in pipeline) ===
-    const { count: activeProjects } = await supabase
-      .from('projects')
-      .select('*', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .neq('status', 'won')
-      .neq('status', 'lost')
+      // Active Projects (in pipeline)
+      supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .neq('status', 'won')
+        .neq('status', 'lost'),
 
-    // === Won Projects (this month) ===
-    const { data: wonProjectsThisMonth } = await supabase
-      .from('projects')
-      .select('final_value, approved_value, estimated_value')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .eq('status', 'won')
-      .gte('updated_at', startOfMonth.toISOString())
+      // Won Projects (this month)
+      supabase
+        .from('projects')
+        .select('final_value, approved_value, estimated_value')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won')
+        .gte('updated_at', startOfMonth.toISOString()),
 
+      // Won Projects (last month for comparison)
+      supabase
+        .from('projects')
+        .select('final_value, approved_value, estimated_value')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won')
+        .gte('updated_at', startOfLastMonth.toISOString())
+        .lte('updated_at', endOfLastMonth.toISOString()),
+
+      // Revenue Trend (last 6 months)
+      supabase
+        .from('projects')
+        .select('final_value, approved_value, estimated_value, updated_at')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won')
+        .gte('updated_at', sixMonthsAgo.toISOString())
+        .order('updated_at', { ascending: true }),
+
+      // All Projects (for conversion rate)
+      supabase
+        .from('projects')
+        .select('status')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false),
+
+      // Won Projects (for avg job value)
+      supabase
+        .from('projects')
+        .select('final_value, approved_value, estimated_value')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won'),
+
+      // Won Projects with dates (for sales cycle)
+      supabase
+        .from('projects')
+        .select('created_at, updated_at')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won')
+        .limit(50),
+
+      // Activities (last 30 days)
+      supabase
+        .from('activities')
+        .select('type, created_at')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', last30Days.toISOString()),
+
+      // Activities (last 7 days)
+      supabase
+        .from('activities')
+        .select('type, created_at')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', last7Days.toISOString()),
+
+      // Pipeline Data
+      supabase
+        .from('projects')
+        .select('status, final_value, approved_value, estimated_value')
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .neq('status', 'won')
+        .neq('status', 'lost'),
+    ])
+
+    // Extract results
+    const totalContacts = contactsResult.count
+    const activeProjects = activeProjectsResult.count
+    const wonProjectsThisMonth = wonProjectsThisMonthResult.data
+    const wonProjectsLastMonth = wonProjectsLastMonthResult.data
+    const revenueData = revenueDataResult.data
+    const allProjects = allProjectsResult.data
+    const wonProjects = wonProjectsResult.data
+    const wonProjectsWithDates = wonProjectsWithDatesResult.data
+    const activities30Days = activities30DaysResult.data
+    const activities7Days = activities7DaysResult.data
+    const pipelineData = pipelineDataResult.data
+
+    // === Calculate metrics from parallel results ===
+
+    // Monthly Revenue
     const monthlyRevenue = wonProjectsThisMonth?.reduce((sum, p) =>
       sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
     ) || 0
-
-    // === Last Month Revenue (for comparison) ===
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-    const { data: wonProjectsLastMonth } = await supabase
-      .from('projects')
-      .select('final_value, approved_value, estimated_value')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .eq('status', 'won')
-      .gte('updated_at', startOfLastMonth.toISOString())
-      .lte('updated_at', endOfLastMonth.toISOString())
 
     const lastMonthRevenue = wonProjectsLastMonth?.reduce((sum, p) =>
       sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
@@ -86,16 +177,6 @@ export async function GET() {
     const revenueChange = lastMonthRevenue > 0
       ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
       : 0
-
-    // === Revenue Trend (last 6 months) ===
-    const { data: revenueData } = await supabase
-      .from('projects')
-      .select('final_value, approved_value, estimated_value, updated_at')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .eq('status', 'won')
-      .gte('updated_at', new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString())
-      .order('updated_at', { ascending: true })
 
     // Group revenue by month
     const revenueByMonth: { [key: string]: number } = {}
@@ -119,40 +200,19 @@ export async function GET() {
       revenue
     }))
 
-    // === Lead Conversion Rate ===
-    const { data: allProjects } = await supabase
-      .from('projects')
-      .select('status')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-
+    // Lead Conversion Rate
     const totalLeads = allProjects?.length || 0
     const wonLeads = allProjects?.filter(p => p.status === 'won').length || 0
     const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100) : 0
 
-    // === Average Job Value ===
-    const { data: wonProjects } = await supabase
-      .from('projects')
-      .select('final_value, approved_value, estimated_value')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .eq('status', 'won')
-
+    // Average Job Value
     const avgJobValue = wonProjects && wonProjects.length > 0
       ? wonProjects.reduce((sum, p) =>
           sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
         ) / wonProjects.length
       : 0
 
-    // === Sales Cycle Length ===
-    const { data: wonProjectsWithDates } = await supabase
-      .from('projects')
-      .select('created_at, updated_at')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .eq('status', 'won')
-      .limit(50)
-
+    // Sales Cycle Length
     const avgSalesCycle = wonProjectsWithDates && wonProjectsWithDates.length > 0
       ? wonProjectsWithDates.reduce((sum, p) => {
           const days = (new Date(p.updated_at).getTime() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24)
@@ -160,33 +220,12 @@ export async function GET() {
         }, 0) / wonProjectsWithDates.length
       : 0
 
-    // === Activities (Doors Knocked) ===
-    const { data: activities30Days } = await supabase
-      .from('activities')
-      .select('type, created_at')
-      .eq('tenant_id', tenantId)
-      .gte('created_at', last30Days.toISOString())
-
-    const { data: activities7Days } = await supabase
-      .from('activities')
-      .select('type, created_at')
-      .eq('tenant_id', tenantId)
-      .gte('created_at', last7Days.toISOString())
-
+    // Activities metrics
     const doorsKnocked30Days = activities30Days?.filter(a => a.type === 'door_knock').length || 0
     const doorsKnockedPerDay = doorsKnocked30Days / 30
-
     const doorsKnocked7Days = activities7Days?.filter(a => a.type === 'door_knock').length || 0
 
-    // === Pipeline by Status ===
-    const { data: pipelineData } = await supabase
-      .from('projects')
-      .select('status, final_value, approved_value, estimated_value')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .neq('status', 'won')
-      .neq('status', 'lost')
-
+    // Pipeline by Status
     const pipelineByStatus: { [key: string]: { count: number; value: number } } = {}
     pipelineData?.forEach(project => {
       if (!pipelineByStatus[project.status]) {
@@ -208,7 +247,7 @@ export async function GET() {
       sum + (p.final_value || p.approved_value || p.estimated_value || 0), 0
     ) || 0
 
-    // === Activity Trend (last 7 days) ===
+    // Activity Trend (last 7 days)
     const activityTrend = Array.from({ length: 7 }, (_, i) => {
       const date = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000)
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
