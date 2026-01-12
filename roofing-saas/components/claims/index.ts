@@ -1,19 +1,20 @@
 /**
  * Claims Components
- *
- * Components for insurance claim documentation and inspection workflows.
  */
 
-export { ClaimPhotoCapture } from './ClaimPhotoCapture'
-export {
-  DamageTypeSelector,
-  SeveritySelector,
-  DAMAGE_TYPES,
-  SEVERITY_LEVELS,
-  type DamageType,
-  type SeverityLevel,
-} from './DamageTypeSelector'
+// Intelligence components
+export { AdjusterList } from './AdjusterList'
+
+// Inspection components
 export { InspectionWizard } from './InspectionWizard'
-export { LocationVerifier } from './LocationVerifier'
-export { DamageChecklist } from './DamageChecklist'
 export { InspectionSummary } from './InspectionSummary'
+export { DamageChecklist } from './DamageChecklist'
+export { DamageTypeSelector } from './DamageTypeSelector'
+export { LocationVerifier } from './LocationVerifier'
+
+// Claim workflow components
+export { ClaimApprovalWorkflow } from './ClaimApprovalWorkflow'
+export { ClaimDocuments } from './ClaimDocuments'
+export { ClaimPhotoCapture } from './ClaimPhotoCapture'
+export { ClaimStatusWorkflow } from './ClaimStatusWorkflow'
+export { WeatherEvidence } from './WeatherEvidence'
