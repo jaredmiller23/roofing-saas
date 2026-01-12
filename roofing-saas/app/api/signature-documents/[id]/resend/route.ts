@@ -76,11 +76,10 @@ export async function POST(
     }
 
     // Use admin client to bypass RLS for reading document
-    // This ensures we can find the document regardless of RLS policy issues
     const adminSupabase = await createAdminClient()
     const supabase = await createClient()
 
-    // Get document with contact info (using admin to bypass any RLS issues)
+    // First, find document by ID only (without tenant filter) to debug
     const { data: rawDocument, error: fetchError } = await adminSupabase
       .from('signature_documents')
       .select(`
@@ -95,11 +94,26 @@ export async function POST(
         project:projects(id, name)
       `)
       .eq('id', id)
-      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !rawDocument) {
-      logger.error('Resend: Document not found', { id, tenantId, error: fetchError?.message })
+      logger.error('Resend: Document not found by ID', {
+        documentId: id,
+        userTenantId: tenantId,
+        error: fetchError?.message
+      })
+      throw NotFoundError('Signature document')
+    }
+
+    // Now verify tenant access
+    if (rawDocument.tenant_id !== tenantId) {
+      logger.error('Resend: Tenant mismatch', {
+        documentId: id,
+        documentTenantId: rawDocument.tenant_id,
+        userTenantId: tenantId,
+        userId: user.id,
+        userEmail: user.email
+      })
       throw NotFoundError('Signature document')
     }
 
