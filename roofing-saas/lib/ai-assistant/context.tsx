@@ -88,10 +88,12 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
         try {
           const response = await fetch('/api/ai/conversations')
           if (response.ok) {
-            const data: ListConversationsResponse = await response.json()
+            const result = await response.json()
+            // Handle wrapped response {success: true, data: {...}}
+            const data: ListConversationsResponse = result.data || result
             setState(prev => ({
               ...prev,
-              conversations: data.conversations,
+              conversations: data.conversations || [],
               isLoadingConversations: false,
             }))
           } else {
@@ -108,10 +110,12 @@ export function AIAssistantProvider({ children }: { children: ReactNode }) {
           try {
             const response = await fetch(`/api/ai/conversations/${activeConversationId}/messages`)
             if (response.ok) {
-              const data: ListMessagesResponse = await response.json()
+              const result = await response.json()
+              // Handle wrapped response {success: true, data: {...}}
+              const data: ListMessagesResponse = result.data || result
               setState(prev => ({
                 ...prev,
-                messages: data.messages,
+                messages: data.messages || [],
                 isLoadingMessages: false,
               }))
             } else {
