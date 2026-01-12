@@ -19,51 +19,88 @@ function UpdatePasswordForm() {
 
   // Handle auth callback - supports both PKCE (code) and implicit (hash) flows
   useEffect(() => {
+    let isSubscribed = true
     const code = searchParams.get('code')
 
-    // Set up auth state listener to catch session from hash fragments (implicit flow)
+    // Set up auth state listener FIRST - this catches tokens from hash fragments
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+      console.log('Auth state change:', event, !!session)
+      if (!isSubscribed) return
+
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        // Password recovery flow - session established from tokens
+        setSessionReady(true)
+        setInitializing(false)
+      } else if (event === 'SIGNED_IN' && session) {
         setSessionReady(true)
         setInitializing(false)
       }
     })
 
     async function handleAuthCallback() {
-      if (code) {
-        // PKCE flow - exchange code for session
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          setError('Invalid or expired reset link. Please request a new password reset.')
-          setInitializing(false)
-          return
-        }
-        setSessionReady(true)
-        setInitializing(false)
-      } else {
-        // Check for existing session or wait for hash fragments to be processed
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
+      // First, check if we already have a session (from hash fragments processed by client)
+      const { data: { session: existingSession } } = await supabase.auth.getSession()
+      if (existingSession) {
+        console.log('Found existing session')
+        if (isSubscribed) {
           setSessionReady(true)
           setInitializing(false)
-        } else {
-          // Give the client a moment to process hash fragments
-          setTimeout(async () => {
-            const { data: { session: delayedSession } } = await supabase.auth.getSession()
-            if (delayedSession) {
-              setSessionReady(true)
-            } else if (!sessionReady) {
-              setError('No valid session found. Please request a new password reset.')
-            }
-            setInitializing(false)
-          }, 1000)
         }
+        return
       }
+
+      // If there's a code parameter, try PKCE exchange
+      if (code) {
+        console.log('Attempting PKCE code exchange')
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error) {
+          console.log('PKCE exchange succeeded')
+          if (isSubscribed) {
+            setSessionReady(true)
+            setInitializing(false)
+          }
+          return
+        }
+        // PKCE failed - this happens when opening link on different device
+        console.log('PKCE exchange failed:', error.message)
+      }
+
+      // Wait for auth state change from hash fragments
+      // The Supabase client processes hash fragments asynchronously
+      setTimeout(async () => {
+        if (!isSubscribed) return
+
+        const { data: { session: delayedSession } } = await supabase.auth.getSession()
+        if (delayedSession) {
+          console.log('Found session after delay')
+          setSessionReady(true)
+        } else if (!sessionReady) {
+          // Check URL hash for tokens that weren't processed
+          const hash = window.location.hash
+          if (hash && hash.includes('access_token')) {
+            console.log('Found tokens in hash, waiting for processing...')
+            // Give more time for hash processing
+            setTimeout(async () => {
+              const { data: { session: finalSession } } = await supabase.auth.getSession()
+              if (finalSession) {
+                setSessionReady(true)
+              } else {
+                setError('Unable to verify your session. Please try requesting a new password reset from the same device you will use to set your new password.')
+              }
+              setInitializing(false)
+            }, 2000)
+            return
+          }
+          setError('Unable to verify your session. Please try requesting a new password reset from the same device you will use to set your new password.')
+        }
+        setInitializing(false)
+      }, 1500)
     }
 
     handleAuthCallback()
 
     return () => {
+      isSubscribed = false
       subscription.unsubscribe()
     }
   }, [searchParams, supabase.auth, sessionReady])
