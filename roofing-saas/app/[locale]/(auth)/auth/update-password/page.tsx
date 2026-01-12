@@ -17,13 +17,21 @@ function UpdatePasswordForm() {
   const locale = params.locale as string
   const supabase = createClient()
 
-  // Handle PKCE code exchange when page loads
+  // Handle auth callback - supports both PKCE (code) and implicit (hash) flows
   useEffect(() => {
-    async function handleAuthCallback() {
-      const code = searchParams.get('code')
+    const code = searchParams.get('code')
 
+    // Set up auth state listener to catch session from hash fragments (implicit flow)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setSessionReady(true)
+        setInitializing(false)
+      }
+    })
+
+    async function handleAuthCallback() {
       if (code) {
-        // Exchange the code for a session (PKCE flow)
+        // PKCE flow - exchange code for session
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
           setError('Invalid or expired reset link. Please request a new password reset.')
@@ -33,19 +41,32 @@ function UpdatePasswordForm() {
         setSessionReady(true)
         setInitializing(false)
       } else {
-        // Check if we already have a session (maybe from hash fragments in implicit flow)
+        // Check for existing session or wait for hash fragments to be processed
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
           setSessionReady(true)
+          setInitializing(false)
         } else {
-          setError('No valid session found. Please request a new password reset.')
+          // Give the client a moment to process hash fragments
+          setTimeout(async () => {
+            const { data: { session: delayedSession } } = await supabase.auth.getSession()
+            if (delayedSession) {
+              setSessionReady(true)
+            } else if (!sessionReady) {
+              setError('No valid session found. Please request a new password reset.')
+            }
+            setInitializing(false)
+          }, 1000)
         }
-        setInitializing(false)
       }
     }
 
     handleAuthCallback()
-  }, [searchParams, supabase.auth])
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [searchParams, supabase.auth, sessionReady])
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()

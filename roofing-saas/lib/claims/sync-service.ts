@@ -12,6 +12,11 @@ import type {
   ClaimSyncResponse,
   ClaimExportPackage,
 } from './types'
+import {
+  type StormEventData,
+  generateCausationNarrative,
+  calculateEvidenceScore,
+} from '@/lib/weather/causation-generator'
 
 // Claims Agent API configuration
 // In production, this would be an environment variable
@@ -266,6 +271,7 @@ export async function generateClaimExportPackage(
         estimated_value,
         pipeline_stage,
         storm_event_id,
+        start_date,
         created_at,
         contacts:contact_id (
           id,
@@ -273,10 +279,12 @@ export async function generateClaimExportPackage(
           last_name,
           email,
           phone,
-          address,
-          city,
-          state,
-          zip,
+          address_street,
+          address_city,
+          address_state,
+          address_zip,
+          latitude,
+          longitude,
           custom_fields
         )
       `)
@@ -313,9 +321,14 @@ export async function generateClaimExportPackage(
       .eq('is_deleted', false)
       .order('created_at', { ascending: true })
 
-    // Fetch storm causation if storm_event_id is set
+    // Fetch storm causation - either from linked event or by searching nearby events
     let stormCausation = undefined
+    const dateOfLoss = project.start_date
+    const contactLat = contact.latitude
+    const contactLng = contact.longitude
+
     if (project.storm_event_id) {
+      // If explicitly linked to a storm event, fetch it and generate causation
       const { data: stormEvent } = await supabase
         .from('storm_events')
         .select('*')
@@ -323,16 +336,117 @@ export async function generateClaimExportPackage(
         .single()
 
       if (stormEvent) {
+        const eventData: StormEventData = {
+          id: stormEvent.id,
+          event_date: stormEvent.event_date,
+          event_type: stormEvent.event_type,
+          magnitude: stormEvent.magnitude,
+          state: stormEvent.state,
+          county: stormEvent.county,
+          city: stormEvent.city,
+          latitude: stormEvent.latitude,
+          longitude: stormEvent.longitude,
+          path_length: stormEvent.path_length,
+          path_width: stormEvent.path_width,
+          property_damage: stormEvent.property_damage,
+          event_narrative: stormEvent.event_narrative,
+          distance_miles: contactLat && contactLng && stormEvent.latitude && stormEvent.longitude
+            ? haversineDistance(contactLat, contactLng, stormEvent.latitude, stormEvent.longitude)
+            : undefined,
+        }
+
+        const narrative = generateCausationNarrative([eventData], {
+          city: contact.address_city || undefined,
+          state: contact.address_state || undefined,
+        })
+        const score = calculateEvidenceScore([eventData])
+
         stormCausation = {
-          events: [
-            {
-              event_date: stormEvent.event_date,
-              event_type: stormEvent.event_type,
-              magnitude: stormEvent.magnitude,
-            },
-          ],
-          causation_narrative: stormEvent.event_narrative || 'Storm event documented',
-          evidence_score: 70, // Default score for linked event
+          events: [{
+            event_date: eventData.event_date,
+            event_type: eventData.event_type,
+            magnitude: eventData.magnitude ?? undefined,
+            distance_miles: eventData.distance_miles,
+          }],
+          causation_narrative: narrative,
+          evidence_score: score,
+        }
+      }
+    } else if (dateOfLoss && contactLat && contactLng) {
+      // No linked storm event, but we have date and location - search for nearby events
+      logger.info('Searching for storm events near property', {
+        projectId,
+        dateOfLoss,
+        lat: contactLat,
+        lng: contactLng,
+      })
+
+      // Calculate date range (7 days before to 1 day after the date of loss)
+      const startDate = new Date(dateOfLoss)
+      startDate.setDate(startDate.getDate() - 7)
+      const endDate = new Date(dateOfLoss)
+      endDate.setDate(endDate.getDate() + 1)
+
+      // Query storm events in the date range (state-level filter, then distance filter in app)
+      const { data: nearbyEvents, error: eventsError } = await supabase
+        .from('storm_events')
+        .select('*')
+        .gte('event_date', startDate.toISOString().split('T')[0])
+        .lte('event_date', endDate.toISOString().split('T')[0])
+        .eq('state', contact.address_state || 'TN')
+        .order('event_date', { ascending: false })
+        .limit(20)
+
+      if (eventsError) {
+        logger.warn('Failed to query storm events for causation', { error: eventsError })
+      } else if (nearbyEvents && nearbyEvents.length > 0) {
+        // Calculate distances and filter to within 25 miles
+        const radiusMiles = 25
+        const eventsWithDistance: StormEventData[] = nearbyEvents
+          .map(event => ({
+            id: event.id,
+            event_date: event.event_date,
+            event_type: event.event_type,
+            magnitude: event.magnitude,
+            state: event.state,
+            county: event.county,
+            city: event.city,
+            latitude: event.latitude,
+            longitude: event.longitude,
+            path_length: event.path_length,
+            path_width: event.path_width,
+            property_damage: event.property_damage,
+            event_narrative: event.event_narrative,
+            distance_miles: event.latitude && event.longitude
+              ? haversineDistance(contactLat, contactLng, event.latitude, event.longitude)
+              : undefined,
+          }))
+          .filter(e => e.distance_miles === undefined || e.distance_miles <= radiusMiles)
+          .sort((a, b) => (a.distance_miles ?? 999) - (b.distance_miles ?? 999))
+
+        if (eventsWithDistance.length > 0) {
+          const narrative = generateCausationNarrative(eventsWithDistance, {
+            city: contact.address_city || undefined,
+            state: contact.address_state || undefined,
+          })
+          const score = calculateEvidenceScore(eventsWithDistance)
+
+          stormCausation = {
+            events: eventsWithDistance.map(e => ({
+              event_date: e.event_date,
+              event_type: e.event_type,
+              magnitude: e.magnitude ?? undefined,
+              distance_miles: e.distance_miles,
+            })),
+            causation_narrative: narrative,
+            evidence_score: score,
+          }
+
+          logger.info('Found storm events for causation', {
+            projectId,
+            eventCount: eventsWithDistance.length,
+            evidenceScore: score,
+          })
         }
       }
     }
@@ -389,10 +503,10 @@ export async function generateClaimExportPackage(
         last_name: contact.last_name,
         email: contact.email || undefined,
         phone: contact.phone || undefined,
-        address: contact.address || undefined,
-        city: contact.city || undefined,
-        state: contact.state || undefined,
-        zip: contact.zip || undefined,
+        address: contact.address_street || undefined,
+        city: contact.address_city || undefined,
+        state: contact.address_state || undefined,
+        zip: contact.address_zip || undefined,
         insurance_carrier: customFields.insurance_carrier as string | undefined,
         policy_number: customFields.policy_number as string | undefined,
       },
@@ -405,4 +519,29 @@ export async function generateClaimExportPackage(
     logger.error('Error generating claim export package', { projectId, error })
     return null
   }
+}
+
+/**
+ * Calculate distance between two points using Haversine formula
+ * Returns distance in miles
+ */
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 3959 // Earth's radius in miles
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+function toRad(deg: number): number {
+  return deg * (Math.PI / 180)
 }
