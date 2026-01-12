@@ -13,7 +13,7 @@ import {
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend/email'
 import { isResendConfigured } from '@/lib/resend/client'
 import {
@@ -62,9 +62,12 @@ export async function POST(
 
     const { id } = await params
 
-    logger.apiRequest('POST', '/api/signature-documents/' + id + '/resend', {
+    logger.info('Resend request started', {
+      documentId: id,
+      userId: user.id,
+      userEmail: user.email,
       tenantId,
-      id
+      tenantIdType: typeof tenantId
     })
 
     // Check if email is configured
@@ -72,10 +75,13 @@ export async function POST(
       throw ValidationError('Email is not configured. Please configure Resend to send reminders.')
     }
 
+    // Use admin client to bypass RLS for reading document
+    // This ensures we can find the document regardless of RLS policy issues
+    const adminSupabase = await createAdminClient()
     const supabase = await createClient()
 
-    // Get document with contact info
-    const { data: rawDocument, error: fetchError } = await supabase
+    // Get document with contact info (using admin to bypass any RLS issues)
+    const { data: rawDocument, error: fetchError } = await adminSupabase
       .from('signature_documents')
       .select(`
         id,
@@ -93,6 +99,7 @@ export async function POST(
       .single()
 
     if (fetchError || !rawDocument) {
+      logger.error('Resend: Document not found', { id, tenantId, error: fetchError?.message })
       throw NotFoundError('Signature document')
     }
 
