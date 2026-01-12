@@ -90,14 +90,27 @@ export async function PATCH(
     // Allow updating specific fields
     const allowedFields = [
       'status',
+      'claim_number',
+      'policy_number',
+      'insurance_carrier',
+      'carrier_id',
+      'adjuster_id',
+      'adjuster_name',
+      'adjuster_email',
+      'adjuster_phone',
+      'date_of_loss',
+      'date_filed',
+      'acknowledgment_date',
+      'inspection_scheduled_at',
+      'inspection_completed_at',
+      'decision_date',
+      'estimated_damage',
+      'insurance_estimate',
       'approved_amount',
       'paid_amount',
-      'policy_number',
-      'date_filed',
-      'acknowledgment_received',
-      'inspection_scheduled',
-      'inspection_completed',
-      'decision_date',
+      'deductible',
+      'recovered_amount',
+      'notes',
     ]
 
     for (const field of allowedFields) {

@@ -5,6 +5,14 @@
  * The packet is designed to be so complete that denial is unreasonable.
  */
 
+import type {
+  PatternWarning,
+  PacketIntelligence,
+} from '@/lib/claims/intelligence-types'
+
+// Re-export intelligence types for convenience
+export type { PatternWarning, PacketIntelligence }
+
 /**
  * Building code reference from database
  */
@@ -210,6 +218,9 @@ export interface ClaimsPacket {
   // Estimate/scope
   xactimate_punch_list?: XactPunchListItem[]
 
+  // Intelligence warnings (from adjuster/carrier pattern tracking)
+  intelligence?: PacketIntelligence
+
   // Executive summary
   summary: {
     loss_date: string
@@ -234,7 +245,10 @@ export interface PacketGenerationInput {
   include_codes?: boolean
   include_manufacturer_specs?: boolean
   include_policy_provisions?: boolean
+  include_intelligence?: boolean // Include adjuster/carrier pattern warnings
   carrier?: string // To filter policy provisions
+  carrier_id?: string // For intelligence lookup
+  adjuster_id?: string // For intelligence lookup
   roof_manufacturer?: string // To filter manufacturer specs
   jurisdiction?: {
     state: string

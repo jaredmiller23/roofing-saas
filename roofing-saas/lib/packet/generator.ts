@@ -16,6 +16,7 @@ import {
   generatePunchList,
   type InspectionData as XactInspectionData,
 } from '@/lib/xactimate'
+import { getPacketIntelligence } from './intelligence'
 import type {
   ClaimsPacket,
   PacketGenerationInput,
@@ -25,6 +26,7 @@ import type {
   PropertyInfo,
   ContactInfo,
   XactPunchListItem,
+  PacketIntelligence,
 } from './types'
 
 /**
@@ -40,7 +42,10 @@ export async function generatePacket(
     include_codes = true,
     include_manufacturer_specs = true,
     include_policy_provisions = true,
+    include_intelligence = true,
     carrier,
+    carrier_id,
+    adjuster_id,
     roof_manufacturer,
     jurisdiction,
   } = input
@@ -59,6 +64,12 @@ export async function generatePacket(
           phone,
           insurance_carrier,
           insurance_policy_number
+        ),
+        claims (
+          id,
+          adjuster_id,
+          carrier_id,
+          insurance_carrier
         )
       `)
       .eq('id', project_id)
@@ -67,6 +78,9 @@ export async function generatePacket(
     if (projectError || !project) {
       return { success: false, error: `Project not found: ${projectError?.message}` }
     }
+
+    // Extract claim data if available
+    const claim = Array.isArray(project.claims) ? project.claims[0] : project.claims
 
     // 2. Get inspection data (photos and damage documentation)
     const damage = await getInspectionData(project_id)
@@ -99,12 +113,29 @@ export async function generatePacket(
       : []
 
     // 7. Get policy provisions
-    const insuranceCarrier = carrier || project.contacts?.insurance_carrier
+    const insuranceCarrier = carrier || claim?.insurance_carrier || project.contacts?.insurance_carrier
     const policy_provisions = include_policy_provisions && insuranceCarrier
       ? await getPolicyProvisions({ carrier: insuranceCarrier })
       : []
 
-    // 8. Check discontinued shingle status
+    // 8. Get intelligence data (adjuster/carrier patterns)
+    let intelligence: PacketIntelligence | undefined
+    if (include_intelligence) {
+      const resolvedAdjusterId = adjuster_id || claim?.adjuster_id
+      const resolvedCarrierId = carrier_id || claim?.carrier_id
+      const resolvedCarrierName = insuranceCarrier
+
+      if (resolvedAdjusterId || resolvedCarrierId || resolvedCarrierName) {
+        intelligence = await getPacketIntelligence({
+          tenant_id: project.tenant_id,
+          adjuster_id: resolvedAdjusterId,
+          carrier_id: resolvedCarrierId,
+          carrier_name: resolvedCarrierName,
+        })
+      }
+    }
+
+    // 9. Check discontinued shingle status
     const shingle_analysis = await analyzeShingleStatus({
       manufacturer,
       productLine: project.roof_product_line,
@@ -112,7 +143,7 @@ export async function generatePacket(
       color: project.roof_color,
     })
 
-    // 9. Generate Xactimate punch list with project measurements
+    // 10. Generate Xactimate punch list with project measurements
     const xactimate_punch_list = generateXactPunchList(damage, {
       roof_squares: project.roof_squares,
       ridge_linear_feet: project.ridge_linear_feet,
@@ -134,7 +165,7 @@ export async function generatePacket(
       has_steep_sections: project.has_steep_sections,
     })
 
-    // 10. Build property info
+    // 11. Build property info
     const property: PropertyInfo = {
       address: project.property_address || '',
       city: project.property_city || '',
@@ -148,7 +179,7 @@ export async function generatePacket(
       roof_age_years: project.roof_age,
     }
 
-    // 11. Build contact info
+    // 12. Build contact info
     const contact: ContactInfo = {
       id: project.contacts?.id || project.contact_id,
       first_name: project.contacts?.first_name || '',
@@ -159,14 +190,14 @@ export async function generatePacket(
       policy_number: project.contacts?.insurance_policy_number,
     }
 
-    // 12. Determine recommended action
+    // 13. Determine recommended action
     const recommendedAction = determineRecommendedAction(
       damage,
       shingle_analysis,
       applicable_codes
     )
 
-    // 13. Assemble THE PACKET
+    // 14. Assemble THE PACKET
     const packet: ClaimsPacket = {
       id: crypto.randomUUID(),
       generated_at: new Date().toISOString(),
@@ -185,6 +216,7 @@ export async function generatePacket(
       policy_provisions,
       shingle_analysis,
       xactimate_punch_list,
+      intelligence,
       summary: {
         loss_date: project.date_of_loss || project.created_at,
         claim_type: project.claim_type || 'roof',
@@ -195,7 +227,7 @@ export async function generatePacket(
       },
     }
 
-    // 14. Store packet in database
+    // 15. Store packet in database
     const { error: saveError } = await supabase.from('packets').insert({
       tenant_id: project.tenant_id,
       project_id,
