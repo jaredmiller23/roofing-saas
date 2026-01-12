@@ -6,45 +6,59 @@
 
 ---
 
-## Session Handoff (2025-12-18 Evening)
+## NAS Supabase Access (PRODUCTION DATABASE)
 
-### What Was Done This Session
+**Claude has direct SQL access to NAS.** Use this for schema changes, data fixes, and queries.
 
-**HTML content added to all document templates** (`0b79e94`)
+### Connection Details
 
-| Template | Before | After |
-|----------|--------|-------|
-| Pre-Roofing Inspection Form | 0 chars | 4066 chars |
-| Project Completion Certificate | 0 chars | 3127 chars |
-| Roof Inspection Report | 0 chars | 5228 chars |
+| Setting | Value |
+|---------|-------|
+| **API URL** | `https://api.jobclarity.io` |
+| **Service Role Key** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NjgxNTM0OTYsImV4cCI6MjA4MzUxMzQ5Nn0.LrwZtkvBuHPDTNVsBROk8KEdSuJpUVpDVsOmdbSgbSU` |
+| **Tenant (Production)** | `00000000-0000-0000-0000-000000000000` (Appalachian Storm) |
 
-All 12 document templates now have HTML content for PDF generation.
+### SQL Execution Functions
 
-### Current State
+**`exec_sql(sql)`** - Execute DDL/DML (CREATE, ALTER, INSERT, UPDATE, DELETE):
+```bash
+curl -X POST "https://api.jobclarity.io/rest/v1/rpc/exec_sql" \
+  -H "apikey: SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"sql": "ALTER TABLE contacts ADD COLUMN foo TEXT"}'
+```
 
-| Source | Status |
-|--------|--------|
-| Git | Commit `0b79e94` pushed to main |
-| Archon | Task `b6caa27a` marked done |
-| Database | All templates verified via REST API |
+**`query_sql(sql_text)`** - Execute SELECT queries (returns JSONB):
+```bash
+curl -X POST "https://api.jobclarity.io/rest/v1/rpc/query_sql" \
+  -H "apikey: SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"sql_text": "SELECT * FROM contacts LIMIT 5"}'
+```
 
-### Key Learnings from Migration Debugging
+### Schema Notes (NAS vs Cloud)
 
-1. **INSERT vs UPDATE**: Templates existed - needed UPDATE, not INSERT
-2. **REST API auth**: Supabase REST requires BOTH `apikey` AND `Authorization` headers
-3. **Schema drift**: Remote schema differs from expectations (no `is_default`, `slug` columns)
-4. **VEST infrastructure**: Uses `python` but macOS has `python3` - needs fix
+NAS uses a **simpler schema** than cloud migrations. Key differences:
 
-### Templates Still Without Content
+| Table | NAS Uses | Cloud Migration Expected |
+|-------|----------|-------------------------|
+| `dnc_registry` | `is_active`, `phone_number` | `is_deleted`, `phone_hash` |
+| Soft deletes | Mixed (`is_active` for DNC) | `is_deleted` everywhere |
 
-- `Contract ` (trailing space) - orphaned/duplicate entry
-- `Test Template Direct` - test placeholder
+**After schema changes:** Refresh PostgREST cache:
+```sql
+NOTIFY pgrst, 'reload schema'
+```
 
-These appear to be test artifacts, not real templates.
+### Current Data (as of 2026-01-12)
 
-### VEST Note
-
-VEST harness failed with `python` not found error. Task was executed directly. Future fix needed in VEST to use `python3` on macOS.
+| Table | Records |
+|-------|---------|
+| `dnc_registry` | 5,950,509 (TN state DNC) |
+| `call_compliance_log` | Created, ready for audit entries |
+| `call_opt_out_queue` | Ready for April 2025 TCPA rules |
 
 ---
 
