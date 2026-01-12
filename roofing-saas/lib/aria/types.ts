@@ -17,6 +17,7 @@ export type ARIAFunctionCategory =
   | 'calendar'      // Appointments
   | 'knowledge'     // Roofing KB, Perplexity
   | 'weather'       // Job safety
+  | 'reporting'     // Sales reports, analytics
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 

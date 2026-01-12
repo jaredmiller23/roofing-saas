@@ -860,6 +860,533 @@ ariaFunctionRegistry.register({
   },
 })
 
+ariaFunctionRegistry.register({
+  name: 'update_project',
+  category: 'crm',
+  description: 'Update project details like value, description, priority, or custom fields',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'update_project',
+    description: 'Update project details such as estimated value, description, priority, or other fields',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'UUID of the project to update',
+        },
+        name: {
+          type: 'string',
+          description: 'Updated project name',
+        },
+        estimated_value: {
+          type: 'number',
+          description: 'Updated estimated value in dollars',
+        },
+        priority: {
+          type: 'string',
+          enum: ['low', 'normal', 'high', 'urgent'],
+          description: 'Updated priority level',
+        },
+        description: {
+          type: 'string',
+          description: 'Updated project description or notes',
+        },
+        type: {
+          type: 'string',
+          enum: ['roofing', 'siding', 'gutters', 'windows', 'other'],
+          description: 'Updated project type',
+        },
+      },
+      required: ['project_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, ...updates } = args as { project_id: string; [key: string]: unknown }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    // Filter out undefined values
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, v]) => v !== undefined && v !== null)
+    )
+
+    if (Object.keys(cleanUpdates).length === 0) {
+      return { success: false, error: 'No fields provided to update.' }
+    }
+
+    const { data, error } = await context.supabase
+      .from('projects')
+      .update(cleanUpdates)
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .select('id, name, estimated_value, priority, status')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    const updatedFields = Object.keys(cleanUpdates).join(', ')
+
+    return {
+      success: true,
+      data,
+      message: `Updated "${data.name}" - changed: ${updatedFields}.`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'reactivate_project',
+  category: 'crm',
+  description: 'Reactivate a lost project (bring it back into the pipeline)',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'reactivate_project',
+    description: 'Reactivate a project that was marked as lost - bring it back into the active pipeline',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'UUID of the project to reactivate',
+        },
+        new_stage: {
+          type: 'string',
+          enum: ['prospect', 'qualified', 'quote_sent', 'negotiation'],
+          description: 'Which pipeline stage to move it to (default: prospect)',
+        },
+        reason: {
+          type: 'string',
+          description: 'Why is this project being reactivated?',
+        },
+      },
+      required: ['project_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, new_stage = 'prospect', reason } = args as {
+      project_id: string
+      new_stage?: string
+      reason?: string
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    const { data, error } = await context.supabase
+      .from('projects')
+      .update({
+        pipeline_stage: new_stage,
+        status: 'active',
+        stage_changed_at: new Date().toISOString(),
+      })
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .select('id, name, pipeline_stage')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Log the reactivation
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: reason
+        ? `Project REACTIVATED: ${reason}`
+        : `Project reactivated - moved to ${new_stage}`,
+      created_by: context.userId,
+      metadata: { via: 'aria', event: 'project_reactivated', new_stage },
+    })
+
+    return {
+      success: true,
+      data,
+      message: `"${data.name}" has been reactivated and moved to ${new_stage} stage.`,
+    }
+  },
+})
+
+// =============================================================================
+// Reporting & Analytics Functions
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'get_sales_summary',
+  category: 'reporting',
+  description: 'Get a summary of sales performance - revenue, close rate, pipeline value',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_sales_summary',
+    description: 'Get a summary of sales performance including closed deals, revenue, close rate, and pipeline value. Can filter by time period.',
+    parameters: {
+      type: 'object',
+      properties: {
+        period: {
+          type: 'string',
+          enum: ['today', 'this_week', 'this_month', 'this_quarter', 'this_year', 'all_time'],
+          description: 'Time period for the report (default: this_month)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const { period = 'this_month' } = args as { period?: string }
+
+    // Calculate date range
+    const now = new Date()
+    let startDate: Date
+
+    switch (period) {
+      case 'today':
+        startDate = new Date(now.setHours(0, 0, 0, 0))
+        break
+      case 'this_week':
+        startDate = new Date(now)
+        startDate.setDate(startDate.getDate() - startDate.getDay())
+        startDate.setHours(0, 0, 0, 0)
+        break
+      case 'this_month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        break
+      case 'this_quarter':
+        const quarter = Math.floor(now.getMonth() / 3)
+        startDate = new Date(now.getFullYear(), quarter * 3, 1)
+        break
+      case 'this_year':
+        startDate = new Date(now.getFullYear(), 0, 1)
+        break
+      default:
+        startDate = new Date(0) // all time
+    }
+
+    // Get won deals in period
+    const { data: wonDeals, error: wonError } = await context.supabase
+      .from('projects')
+      .select('id, name, final_value, estimated_value, stage_changed_at')
+      .eq('tenant_id', context.tenantId)
+      .eq('pipeline_stage', 'won')
+      .gte('stage_changed_at', startDate.toISOString())
+
+    if (wonError) {
+      return { success: false, error: wonError.message }
+    }
+
+    // Get lost deals in period (for close rate calculation)
+    const { data: lostDeals, error: lostError } = await context.supabase
+      .from('projects')
+      .select('id')
+      .eq('tenant_id', context.tenantId)
+      .eq('pipeline_stage', 'lost')
+      .gte('stage_changed_at', startDate.toISOString())
+
+    if (lostError) {
+      return { success: false, error: lostError.message }
+    }
+
+    // Get active pipeline value
+    const { data: activeDeals, error: activeError } = await context.supabase
+      .from('projects')
+      .select('id, estimated_value, pipeline_stage')
+      .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
+      .not('pipeline_stage', 'in', '(won,lost)')
+
+    if (activeError) {
+      return { success: false, error: activeError.message }
+    }
+
+    // Calculate metrics
+    const wonCount = wonDeals?.length || 0
+    const lostCount = lostDeals?.length || 0
+    const totalDecisions = wonCount + lostCount
+    const closeRate = totalDecisions > 0 ? Math.round((wonCount / totalDecisions) * 100) : 0
+
+    const revenue = wonDeals?.reduce((sum, d) => sum + (d.final_value || d.estimated_value || 0), 0) || 0
+    const pipelineValue = activeDeals?.reduce((sum, d) => sum + (d.estimated_value || 0), 0) || 0
+    const activeCount = activeDeals?.length || 0
+
+    // Pipeline breakdown
+    const stageBreakdown: Record<string, number> = {}
+    activeDeals?.forEach((d) => {
+      const stage = d.pipeline_stage || 'unknown'
+      stageBreakdown[stage] = (stageBreakdown[stage] || 0) + 1
+    })
+
+    const periodLabel = period.replace('_', ' ')
+    const message = [
+      `📊 Sales Summary (${periodLabel}):`,
+      ``,
+      `💰 Revenue: $${revenue.toLocaleString()} (${wonCount} deals won)`,
+      `📈 Close Rate: ${closeRate}%`,
+      `📋 Active Pipeline: $${pipelineValue.toLocaleString()} (${activeCount} deals)`,
+      ``,
+      `Stage breakdown: ${Object.entries(stageBreakdown).map(([s, c]) => `${s}: ${c}`).join(', ')}`,
+    ].join('\n')
+
+    return {
+      success: true,
+      data: {
+        period,
+        revenue,
+        wonCount,
+        lostCount,
+        closeRate,
+        pipelineValue,
+        activeCount,
+        stageBreakdown,
+      },
+      message,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_lead_source_stats',
+  category: 'reporting',
+  description: 'See where leads are coming from and their conversion rates',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_lead_source_stats',
+    description: 'Get statistics on lead sources - which sources bring in the most leads and which convert best',
+    parameters: {
+      type: 'object',
+      properties: {
+        period: {
+          type: 'string',
+          enum: ['this_month', 'this_quarter', 'this_year', 'all_time'],
+          description: 'Time period for the report (default: this_month)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const { period = 'this_month' } = args as { period?: string }
+
+    // Calculate date range
+    const now = new Date()
+    let startDate: Date
+
+    switch (period) {
+      case 'this_month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        break
+      case 'this_quarter':
+        const quarter = Math.floor(now.getMonth() / 3)
+        startDate = new Date(now.getFullYear(), quarter * 3, 1)
+        break
+      case 'this_year':
+        startDate = new Date(now.getFullYear(), 0, 1)
+        break
+      default:
+        startDate = new Date(0)
+    }
+
+    // Get all projects with lead source
+    const { data: projects, error } = await context.supabase
+      .from('projects')
+      .select('id, lead_source, pipeline_stage, estimated_value, final_value')
+      .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
+      .gte('created_at', startDate.toISOString())
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Aggregate by lead source
+    const sourceStats: Record<string, {
+      count: number
+      won: number
+      lost: number
+      active: number
+      revenue: number
+    }> = {}
+
+    projects?.forEach((p) => {
+      const source = p.lead_source || 'unknown'
+      if (!sourceStats[source]) {
+        sourceStats[source] = { count: 0, won: 0, lost: 0, active: 0, revenue: 0 }
+      }
+      sourceStats[source].count++
+
+      if (p.pipeline_stage === 'won') {
+        sourceStats[source].won++
+        sourceStats[source].revenue += p.final_value || p.estimated_value || 0
+      } else if (p.pipeline_stage === 'lost') {
+        sourceStats[source].lost++
+      } else {
+        sourceStats[source].active++
+      }
+    })
+
+    // Sort by count descending
+    const sorted = Object.entries(sourceStats)
+      .sort(([, a], [, b]) => b.count - a.count)
+
+    // Format message
+    const lines = sorted.map(([source, stats]) => {
+      const closeRate = (stats.won + stats.lost) > 0
+        ? Math.round((stats.won / (stats.won + stats.lost)) * 100)
+        : 0
+      return `• ${source}: ${stats.count} leads, ${stats.won} won (${closeRate}% close rate), $${stats.revenue.toLocaleString()}`
+    })
+
+    const totalLeads = projects?.length || 0
+    const message = [
+      `📊 Lead Source Report (${period.replace('_', ' ')}):`,
+      `Total: ${totalLeads} leads`,
+      ``,
+      ...lines,
+    ].join('\n')
+
+    return {
+      success: true,
+      data: { period, totalLeads, sourceStats },
+      message,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_communication_history',
+  category: 'crm',
+  description: 'Get past communications (calls, texts, emails) with a contact',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_communication_history',
+    description: 'Get the history of communications with a contact - calls, texts, emails, and notes',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'Contact ID to get history for',
+        },
+        type: {
+          type: 'string',
+          enum: ['all', 'call', 'sms', 'email', 'note'],
+          description: 'Filter by communication type (default: all)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 20)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, type = 'all', limit = 20 } = args as {
+      contact_id?: string
+      type?: string
+      limit?: number
+    }
+
+    const finalContactId = contact_id || context.contact?.id
+
+    if (!finalContactId) {
+      return { success: false, error: 'A contact_id is required.' }
+    }
+
+    // Get contact name first
+    const { data: contact } = await context.supabase
+      .from('contacts')
+      .select('first_name, last_name')
+      .eq('id', finalContactId)
+      .single()
+
+    const contactName = contact
+      ? `${contact.first_name} ${contact.last_name}`.trim()
+      : 'Unknown'
+
+    // Build query for activities
+    let query = context.supabase
+      .from('activities')
+      .select('id, type, description, created_at, metadata')
+      .eq('tenant_id', context.tenantId)
+      .eq('contact_id', finalContactId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    // Filter by type if not 'all'
+    if (type !== 'all') {
+      query = query.eq('type', type)
+    } else {
+      // Get communication-related types
+      query = query.in('type', ['call', 'sms', 'email', 'note', 'meeting'])
+    }
+
+    const { data: activities, error } = await query
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!activities || activities.length === 0) {
+      return {
+        success: true,
+        data: [],
+        message: `No communication history found for ${contactName}.`,
+      }
+    }
+
+    // Format the history
+    const formatDate = (dateStr: string) => {
+      const date = new Date(dateStr)
+      const now = new Date()
+      const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) return 'Today'
+      if (diffDays === 1) return 'Yesterday'
+      if (diffDays < 7) return `${diffDays} days ago`
+      return date.toLocaleDateString()
+    }
+
+    const emojiMap: Record<string, string> = { call: '📞', sms: '💬', email: '📧', note: '📝', meeting: '🤝' }
+    const lines = activities.map((a) => {
+      const emoji = emojiMap[a.type as string] || '•'
+      return `${emoji} ${formatDate(a.created_at)} [${a.type}]: ${a.description?.substring(0, 60)}${(a.description?.length || 0) > 60 ? '...' : ''}`
+    })
+
+    const message = [
+      `📋 Communication History for ${contactName}:`,
+      `(${activities.length} records)`,
+      ``,
+      ...lines,
+    ].join('\n')
+
+    return {
+      success: true,
+      data: activities,
+      message,
+    }
+  },
+})
+
 // =============================================================================
 // Contact Management Functions
 // =============================================================================
