@@ -35,15 +35,13 @@ export function generatePdfFilename(userId: string, originalFilename: string): s
 }
 
 /**
- * Upload a PDF file to Supabase Storage
+ * Upload a PDF file via API route (server-side upload bypasses RLS)
  */
 export async function uploadSignaturePdf(
   file: File,
-  userId: string
+  _userId: string // userId is extracted from auth on server
 ): Promise<PdfUploadResult> {
   try {
-    const supabase = createClient()
-
     // Validate file type
     if (file.type !== 'application/pdf') {
       return {
@@ -61,36 +59,28 @@ export async function uploadSignaturePdf(
       }
     }
 
-    // Generate unique filename
-    const filePath = generatePdfFilename(userId, file.name)
+    // Upload via API route (uses service role, bypasses RLS)
+    const formData = new FormData()
+    formData.append('file', file)
 
-    // Upload to Supabase Storage
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(filePath, file, {
-        contentType: 'application/pdf',
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const response = await fetch('/api/signature-pdfs/upload', {
+      method: 'POST',
+      body: formData,
+    })
 
-    if (error) {
-      console.error('Storage upload error:', error)
+    const result = await response.json()
+
+    if (!response.ok || !result.success) {
+      console.error('Storage upload error:', result.error)
       return {
         success: false,
-        error: error.message,
+        error: result.error || 'Upload failed',
       }
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath)
-
     return {
       success: true,
-      data: {
-        path: filePath,
-        url: urlData.publicUrl,
-        size: file.size,
-      },
+      data: result.data,
     }
   } catch (error) {
     console.error('PDF upload error:', error)
