@@ -44,8 +44,8 @@ const nextConfig: NextConfig = {
     // Production builds don't need eval and this improves security
     const isDev = process.env.NODE_ENV === 'development'
     const scriptSrc = isDev
-      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com"
-      : "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com"
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://unpkg.com"
+      : "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://unpkg.com"
 
     const securityHeaders = [
       {
@@ -57,7 +57,7 @@ const nextConfig: NextConfig = {
           "img-src 'self' data: blob: https://api.jobclarity.io https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
           "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self' https://api.jobclarity.io wss://api.jobclarity.io https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API
-          "worker-src 'self' blob:", // Service workers
+          "worker-src 'self' blob: https://unpkg.com", // Service workers + PDF.js worker
           "child-src 'self' blob:", // Web workers and service workers
           "frame-src https://*.google.com", // Google Maps iframes if needed
           "object-src 'none'", // No plugins
