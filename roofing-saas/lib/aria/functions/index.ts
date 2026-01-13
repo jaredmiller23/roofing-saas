@@ -17,5 +17,8 @@ import './knowledge'
 // Calendar functions (check_availability, book_appointment_v2, get_schedule, reschedule, cancel)
 import './calendar'
 
+// Intelligence functions (customer history, sentiment, value, predictions, similar customers)
+import './intelligence'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'

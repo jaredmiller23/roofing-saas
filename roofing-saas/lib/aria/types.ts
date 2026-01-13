@@ -14,7 +14,8 @@ export type ARIAFunctionCategory =
   | 'crm'           // Contact/project lookups, notes
   | 'quickbooks'    // Financial queries
   | 'actions'       // SMS, email, tasks
-  | 'calendar'      // Appointments
+  | 'calendar'      // Appointments, scheduling
+  | 'intelligence'  // Customer insights, predictions
   | 'knowledge'     // Roofing KB, Perplexity
   | 'weather'       // Job safety
   | 'reporting'     // Sales reports, analytics
