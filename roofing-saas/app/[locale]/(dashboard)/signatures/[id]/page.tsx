@@ -24,8 +24,15 @@ import {
   MapPin,
   RefreshCw,
   Copy,
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react'
+import {
+  getDisplayStatus,
+  getStatusBadgeClasses,
+  getStatusIconColor,
+  type StatusColor
+} from '@/lib/signatures/status'
 
 interface SignatureDocument {
   id: string
@@ -165,38 +172,39 @@ export default function ViewSignatureDocumentPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return <FileText className="h-5 w-5 text-muted-foreground" />
-      case 'sent':
-        return <Send className="h-5 w-5 text-primary" />
-      case 'viewed':
-        return <Eye className="h-5 w-5 text-secondary" />
-      case 'signed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case 'expired':
-        return <Clock className="h-5 w-5 text-yellow-500" />
-      case 'declined':
-        return <XCircle className="h-5 w-5 text-red-500" />
-      default:
-        return <FileText className="h-5 w-5 text-muted-foreground" />
+  // Get icon based on computed display status
+  const getStatusIcon = () => {
+    if (!document) return <FileText className="h-5 w-5 text-muted-foreground" />
+
+    const displayStatus = getDisplayStatus(document)
+    const iconColorClass = getStatusIconColor(displayStatus.color)
+
+    const iconMap: Record<StatusColor, React.ReactNode> = {
+      gray: <FileText className={`h-5 w-5 ${iconColorClass}`} />,
+      blue: <Send className={`h-5 w-5 ${iconColorClass}`} />,
+      amber: <AlertCircle className={`h-5 w-5 ${iconColorClass}`} />,
+      teal: <Eye className={`h-5 w-5 ${iconColorClass}`} />,
+      green: <CheckCircle className={`h-5 w-5 ${iconColorClass}`} />,
+      yellow: <Clock className={`h-5 w-5 ${iconColorClass}`} />,
+      red: <XCircle className={`h-5 w-5 ${iconColorClass}`} />
     }
+
+    return iconMap[displayStatus.color]
   }
 
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      draft: 'bg-muted text-muted-foreground',
-      sent: 'bg-primary/10 text-primary',
-      viewed: 'bg-secondary/10 text-secondary',
-      signed: 'bg-green-100 text-green-700',
-      expired: 'bg-yellow-100 text-yellow-700',
-      declined: 'bg-red-100 text-red-700'
-    }
+  // Get badge based on computed display status
+  const getStatusBadge = () => {
+    if (!document) return null
+
+    const displayStatus = getDisplayStatus(document)
+    const badgeClasses = getStatusBadgeClasses(displayStatus.color)
 
     return (
-      <span className={'px-3 py-1 rounded-full text-sm font-medium ' + (colors[status] || colors.draft)}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span
+        className={`px-3 py-1 rounded-full text-sm font-medium ${badgeClasses}`}
+        title={displayStatus.description}
+      >
+        {displayStatus.label}
       </span>
     )
   }
@@ -280,12 +288,12 @@ export default function ViewSignatureDocumentPage() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary rounded-lg">
-                {getStatusIcon(document.status)}
+                {getStatusIcon()}
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">{document.title}</h1>
                 <div className="flex items-center gap-3 mt-2">
-                  {getStatusBadge(document.status)}
+                  {getStatusBadge()}
                   <span className="text-sm text-muted-foreground capitalize">
                     {document.document_type.replace('_', ' ')}
                   </span>

@@ -113,17 +113,20 @@ export async function POST(
 
       // Send decline notification email to document owner
       try {
-        // Get the document owner's email
+        // Get the document owner's email from users table
         const { data: owner } = await supabase
-          .from('profiles')
-          .select('email, full_name')
+          .from('users')
+          .select('email, raw_user_meta_data')
           .eq('id', document.created_by)
           .single()
 
-        if (owner?.email) {
+        const ownerEmail = owner?.email
+        const ownerName = (owner?.raw_user_meta_data as { full_name?: string })?.full_name || 'there'
+
+        if (ownerEmail) {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
           const emailData = {
-            ownerName: owner.full_name || 'there',
+            ownerName,
             documentTitle: document.title,
             projectName: document.project?.name,
             declinedBy: signer_name || 'Anonymous',
@@ -137,14 +140,14 @@ export async function POST(
           const subject = getDeclineNotificationSubject(emailData)
 
           await sendEmail({
-            to: owner.email,
+            to: ownerEmail,
             subject,
             html: emailHtml
           })
 
-          logger.info('Decline notification email sent', { 
-            documentId: id, 
-            to: owner.email 
+          logger.info('Decline notification email sent', {
+            documentId: id,
+            to: ownerEmail
           })
         }
       } catch (emailError) {
@@ -320,12 +323,15 @@ export async function POST(
       // Send signed notification email to document owner
       try {
         const { data: owner } = await supabase
-          .from('profiles')
-          .select('email, full_name')
+          .from('users')
+          .select('email, raw_user_meta_data')
           .eq('id', document.created_by)
           .single()
 
-        if (owner?.email) {
+        const ownerEmail = owner?.email
+        const ownerName = (owner?.raw_user_meta_data as { full_name?: string })?.full_name || 'there'
+
+        if (ownerEmail) {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
           // Get all signatures for the document
@@ -335,7 +341,7 @@ export async function POST(
             .eq('document_id', id)
 
           const emailData = {
-            ownerName: owner.full_name || 'there',
+            ownerName,
             documentTitle: document.title,
             projectName: document.project?.name,
             signers: allSignatures || [],
@@ -348,20 +354,20 @@ export async function POST(
           const subject = getSignedNotificationSubject(emailData)
 
           await sendEmail({
-            to: owner.email,
+            to: ownerEmail,
             subject,
             html: emailHtml
           })
 
           logger.info('Signed notification email sent', {
             documentId: id,
-            to: owner.email
+            to: ownerEmail
           })
 
           // Notify other signers if notify_signers_on_complete is enabled
           if (document.notify_signers_on_complete !== false && allSignatures) {
             const otherSignerEmails = allSignatures
-              .filter(s => s.signer_email && s.signer_email !== owner.email)
+              .filter(s => s.signer_email && s.signer_email !== ownerEmail)
               .map(s => s.signer_email)
 
             for (const signerEmail of otherSignerEmails) {
@@ -405,16 +411,19 @@ export async function POST(
       if (signer_type === 'customer' && document.requires_company_signature) {
         try {
           const { data: owner } = await supabase
-            .from('profiles')
-            .select('email, full_name')
+            .from('users')
+            .select('email, raw_user_meta_data')
             .eq('id', document.created_by)
             .single()
 
-          if (owner?.email) {
+          const ownerEmail = owner?.email
+          const ownerName = (owner?.raw_user_meta_data as { full_name?: string })?.full_name || 'there'
+
+          if (ownerEmail) {
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
             const companyTurnData: CompanyTurnNotificationData = {
-              ownerName: owner.full_name || 'there',
+              ownerName,
               documentTitle: document.title,
               projectName: document.project?.name,
               customerName: signer_name,
@@ -428,14 +437,14 @@ export async function POST(
             const subject = getCompanyTurnSubject(companyTurnData)
 
             await sendEmail({
-              to: owner.email,
+              to: ownerEmail,
               subject,
               html: emailHtml
             })
 
             logger.info('Company turn notification sent', {
               documentId: id,
-              to: owner.email,
+              to: ownerEmail,
               customerName: signer_name
             })
           }

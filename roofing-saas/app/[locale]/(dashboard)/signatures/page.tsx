@@ -15,8 +15,15 @@ import {
   Download,
   Search,
   LayoutTemplate,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react'
+import {
+  getDisplayStatus,
+  getStatusBadgeClasses,
+  getStatusIconColor,
+  type StatusColor
+} from '@/lib/signatures/status'
 
 interface SignatureDocument {
   id: string
@@ -28,6 +35,9 @@ interface SignatureDocument {
   sent_at: string | null
   signed_at: string | null
   expires_at: string | null
+  requires_customer_signature?: boolean
+  requires_company_signature?: boolean
+  decline_reason?: string | null
   project?: { id: string; name: string }
   contact?: { id: string; first_name: string; last_name: string }
   signatures?: Array<{ signer_type: string }>
@@ -70,38 +80,36 @@ export default function SignaturesPage() {
     loadDocuments()
   }, [loadDocuments])
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return <FileText className="h-5 w-5 text-muted-foreground" />
-      case 'sent':
-        return <Send className="h-5 w-5 text-primary" />
-      case 'viewed':
-        return <Eye className="h-5 w-5 text-secondary" />
-      case 'signed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
-      case 'expired':
-        return <Clock className="h-5 w-5 text-yellow-500" />
-      case 'declined':
-        return <XCircle className="h-5 w-5 text-red-500" />
-      default:
-        return <FileText className="h-5 w-5 text-muted-foreground" />
+  // Get icon based on computed display status
+  const getStatusIcon = (doc: SignatureDocument) => {
+    const displayStatus = getDisplayStatus(doc)
+    const iconColorClass = getStatusIconColor(displayStatus.color)
+
+    // Map display status to appropriate icon
+    const iconMap: Record<StatusColor, React.ReactNode> = {
+      gray: <FileText className={`h-5 w-5 ${iconColorClass}`} />,
+      blue: <Send className={`h-5 w-5 ${iconColorClass}`} />,
+      amber: <AlertCircle className={`h-5 w-5 ${iconColorClass}`} />,
+      teal: <Eye className={`h-5 w-5 ${iconColorClass}`} />,
+      green: <CheckCircle className={`h-5 w-5 ${iconColorClass}`} />,
+      yellow: <Clock className={`h-5 w-5 ${iconColorClass}`} />,
+      red: <XCircle className={`h-5 w-5 ${iconColorClass}`} />
     }
+
+    return iconMap[displayStatus.color]
   }
 
-  const getStatusBadge = (status: string) => {
-    const colors = {
-      draft: 'bg-muted text-muted-foreground',
-      sent: 'bg-primary/10 text-primary',
-      viewed: 'bg-secondary/10 text-secondary',
-      signed: 'bg-green-100 text-green-700',
-      expired: 'bg-yellow-100 text-yellow-700',
-      declined: 'bg-red-100 text-red-700'
-    }
+  // Get badge based on computed display status
+  const getStatusBadge = (doc: SignatureDocument) => {
+    const displayStatus = getDisplayStatus(doc)
+    const badgeClasses = getStatusBadgeClasses(displayStatus.color)
 
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[status as keyof typeof colors] || colors.draft}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${badgeClasses}`}
+        title={displayStatus.description}
+      >
+        {displayStatus.label}
       </span>
     )
   }
@@ -226,7 +234,7 @@ export default function SignaturesPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="mt-1">
-                      {getStatusIcon(doc.status)}
+                      {getStatusIcon(doc)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
@@ -236,7 +244,7 @@ export default function SignaturesPage() {
                         >
                           {doc.title}
                         </h3>
-                        {getStatusBadge(doc.status)}
+                        {getStatusBadge(doc)}
                       </div>
                       {doc.description && (
                         <p className="text-muted-foreground text-sm mb-3">{doc.description}</p>
