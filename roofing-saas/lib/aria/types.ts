@@ -19,6 +19,10 @@ export type ARIAFunctionCategory =
   | 'knowledge'     // Roofing KB, Perplexity
   | 'weather'       // Job safety
   | 'reporting'     // Sales reports, analytics
+  | 'financial'     // AR, invoices, payment tracking
+  | 'documents'     // Estimates, reports, summaries
+  | 'workflows'     // Automation orchestration
+  | 'vision'        // Photo analysis, damage detection
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 

@@ -29,5 +29,8 @@ import './documents'
 // Workflow orchestration (start, list, check status, pause, stats)
 import './workflows'
 
+// Vision/Photo intelligence (analyze photos, detect damage, compare before/after, estimates)
+import './vision'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'

@@ -153,7 +153,7 @@ export async function createCommitmentTask(
 export async function notifyTeamOfCommitment(
   params: NotifyTeamParams
 ): Promise<void> {
-  const { tenantId, taskId, commitment, contactName, phone, assigneeId } = params
+  const { tenantId: _tenantId, taskId, commitment, contactName, phone, assigneeId } = params
 
   if (!assigneeId) {
     logger.warn('No assignee to notify about commitment', { taskId })

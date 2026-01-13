@@ -10,7 +10,8 @@
  */
 
 import { ariaFunctionRegistry } from '../function-registry'
-import { logger } from '@/lib/logger'
+// Logger available if needed for debugging
+import { logger as _logger } from '@/lib/logger'
 
 // =============================================================================
 // generate_estimate - Create an estimate summary from project data
