@@ -1902,6 +1902,501 @@ ariaFunctionRegistry.register({
 })
 
 // =============================================================================
+// Production & Job Management Functions
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'start_production',
+  category: 'crm',
+  description: 'Start production on a won project',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'start_production',
+    description: 'Start production/work on a project that has been won. Sets status to in_progress and records start date.',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID to start production on',
+        },
+        start_date: {
+          type: 'string',
+          description: 'When production starts (default: today). Can be "today", "tomorrow", or a date.',
+        },
+        assigned_to: {
+          type: 'string',
+          description: 'Name or ID of team member to assign (optional)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes about the job start',
+        },
+      },
+      required: ['project_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, start_date, assigned_to, notes } = args as {
+      project_id: string
+      start_date?: string
+      assigned_to?: string
+      notes?: string
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    // Parse start date
+    let productionStartDate = new Date()
+    if (start_date) {
+      const lowerDate = start_date.toLowerCase()
+      if (lowerDate === 'tomorrow') {
+        productionStartDate.setDate(productionStartDate.getDate() + 1)
+      } else if (lowerDate !== 'today') {
+        const parsed = new Date(start_date)
+        if (!isNaN(parsed.getTime())) {
+          productionStartDate = parsed
+        }
+      }
+    }
+
+    const updateData: Record<string, unknown> = {
+      status: 'in_progress',
+      start_date: productionStartDate.toISOString(),
+    }
+
+    if (assigned_to) {
+      updateData.assigned_to = assigned_to
+    }
+
+    const { data, error } = await context.supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .select('id, name, status, start_date, assigned_to')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Log the production start
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: notes
+        ? `Production STARTED: ${notes}`
+        : `Production started${assigned_to ? ` - assigned to ${assigned_to}` : ''}`,
+      created_by: context.userId,
+      metadata: { via: 'aria', event: 'production_started', assigned_to },
+    })
+
+    const dateStr = productionStartDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    let message = `🚀 Production started on "${data.name}"!\n`
+    message += `Start Date: ${dateStr}\n`
+    if (data.assigned_to) {
+      message += `Assigned to: ${data.assigned_to}`
+    }
+
+    return { success: true, data, message }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'update_job_progress',
+  category: 'crm',
+  description: 'Update progress on an in-progress job',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'update_job_progress',
+    description: 'Log progress update on a job - what was done, any issues, completion percentage',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID to update',
+        },
+        progress_note: {
+          type: 'string',
+          description: 'What was accomplished or update on the job',
+        },
+        completion_percentage: {
+          type: 'number',
+          description: 'Estimated completion percentage (0-100)',
+        },
+        issues: {
+          type: 'string',
+          description: 'Any issues or blockers encountered',
+        },
+      },
+      required: ['project_id', 'progress_note'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, progress_note, completion_percentage, issues } = args as {
+      project_id: string
+      progress_note: string
+      completion_percentage?: number
+      issues?: string
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    // Get project name
+    const { data: project } = await context.supabase
+      .from('projects')
+      .select('name')
+      .eq('id', finalProjectId)
+      .single()
+
+    // Build the progress note
+    let fullNote = `📋 Progress Update: ${progress_note}`
+    if (completion_percentage !== undefined) {
+      fullNote += `\n📊 Completion: ${completion_percentage}%`
+    }
+    if (issues) {
+      fullNote += `\n⚠️ Issues: ${issues}`
+    }
+
+    // Log the progress
+    const { error } = await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: fullNote,
+      created_by: context.userId,
+      metadata: {
+        via: 'aria',
+        event: 'progress_update',
+        completion_percentage,
+        has_issues: !!issues,
+      },
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Update project custom_fields with completion if provided
+    if (completion_percentage !== undefined) {
+      await context.supabase
+        .from('projects')
+        .update({
+          custom_fields: context.supabase.rpc('jsonb_set_nested', {
+            target: 'custom_fields',
+            path: '{completion_percentage}',
+            value: completion_percentage,
+          }),
+        })
+        .eq('id', finalProjectId)
+    }
+
+    let message = `✅ Progress logged for "${project?.name || 'project'}":\n${progress_note}`
+    if (completion_percentage !== undefined) {
+      message += `\n📊 ${completion_percentage}% complete`
+    }
+    if (issues) {
+      message += `\n⚠️ Issues noted: ${issues}`
+    }
+
+    return { success: true, message }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'complete_project',
+  category: 'crm',
+  description: 'Mark a project as completed',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'complete_project',
+    description: 'Mark a project as completed - work is done',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID to complete',
+        },
+        completion_date: {
+          type: 'string',
+          description: 'When the project was completed (default: today)',
+        },
+        final_notes: {
+          type: 'string',
+          description: 'Final notes about the completed job',
+        },
+        final_value: {
+          type: 'number',
+          description: 'Final job value if different from estimate',
+        },
+      },
+      required: ['project_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, completion_date, final_notes, final_value } = args as {
+      project_id: string
+      completion_date?: string
+      final_notes?: string
+      final_value?: number
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    // Parse completion date
+    let endDate = new Date()
+    if (completion_date && completion_date.toLowerCase() !== 'today') {
+      const parsed = new Date(completion_date)
+      if (!isNaN(parsed.getTime())) {
+        endDate = parsed
+      }
+    }
+
+    const updateData: Record<string, unknown> = {
+      status: 'completed',
+      end_date: endDate.toISOString(),
+    }
+
+    if (final_value !== undefined) {
+      updateData.final_value = final_value
+    }
+
+    const { data, error } = await context.supabase
+      .from('projects')
+      .update(updateData)
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .select('id, name, status, start_date, end_date, final_value, estimated_value')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Calculate job duration if we have start date
+    let durationStr = ''
+    if (data.start_date) {
+      const startDate = new Date(data.start_date)
+      const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+      durationStr = `${days} day${days !== 1 ? 's' : ''}`
+    }
+
+    // Log the completion
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: final_notes
+        ? `🎉 Project COMPLETED: ${final_notes}`
+        : '🎉 Project marked as COMPLETED',
+      created_by: context.userId,
+      metadata: { via: 'aria', event: 'project_completed', duration_days: durationStr },
+    })
+
+    const value = data.final_value || data.estimated_value
+    let message = `🎉 "${data.name}" is COMPLETE!\n`
+    if (durationStr) {
+      message += `Duration: ${durationStr}\n`
+    }
+    if (value) {
+      message += `Value: $${value.toLocaleString()}`
+    }
+
+    return { success: true, data, message }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'assign_project',
+  category: 'crm',
+  description: 'Assign a project to a team member',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'assign_project',
+    description: 'Assign a project to a team member',
+    parameters: {
+      type: 'object',
+      properties: {
+        project_id: {
+          type: 'string',
+          description: 'Project ID to assign',
+        },
+        assigned_to: {
+          type: 'string',
+          description: 'Name of the team member to assign to',
+        },
+        notify: {
+          type: 'boolean',
+          description: 'Whether to notify the team member (default: false)',
+        },
+      },
+      required: ['project_id', 'assigned_to'],
+    },
+  },
+  execute: async (args, context) => {
+    const { project_id, assigned_to, notify = false } = args as {
+      project_id: string
+      assigned_to: string
+      notify?: boolean
+    }
+
+    const finalProjectId = project_id || context.project?.id
+
+    if (!finalProjectId) {
+      return { success: false, error: 'A project_id is required.' }
+    }
+
+    const { data, error } = await context.supabase
+      .from('projects')
+      .update({ assigned_to })
+      .eq('id', finalProjectId)
+      .eq('tenant_id', context.tenantId)
+      .select('id, name, assigned_to')
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Log the assignment
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      project_id: finalProjectId,
+      type: 'note',
+      description: `Project assigned to ${assigned_to}`,
+      created_by: context.userId,
+      metadata: { via: 'aria', event: 'project_assigned', assigned_to },
+    })
+
+    let message = `✅ "${data.name}" assigned to ${assigned_to}`
+    if (notify) {
+      message += '\n(Notification would be sent)'
+      // TODO: Actually send notification
+    }
+
+    return { success: true, data, message }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_team_workload',
+  category: 'reporting',
+  description: 'See how many projects each team member has',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_team_workload',
+    description: 'Get a summary of how many active projects each team member has assigned',
+    parameters: {
+      type: 'object',
+      properties: {
+        include_completed: {
+          type: 'boolean',
+          description: 'Include completed projects in count (default: false)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const { include_completed = false } = args as { include_completed?: boolean }
+
+    // Get all projects with assignments
+    let query = context.supabase
+      .from('projects')
+      .select('id, name, assigned_to, status, pipeline_stage, estimated_value')
+      .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
+
+    if (!include_completed) {
+      query = query.not('status', 'in', '(completed,cancelled)')
+      query = query.not('pipeline_stage', 'eq', 'lost')
+    }
+
+    const { data: projects, error } = await query
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Aggregate by assigned_to
+    const workload: Record<string, {
+      count: number
+      in_progress: number
+      pipeline: number
+      value: number
+    }> = {}
+
+    projects?.forEach((p) => {
+      const assignee = p.assigned_to || 'Unassigned'
+      if (!workload[assignee]) {
+        workload[assignee] = { count: 0, in_progress: 0, pipeline: 0, value: 0 }
+      }
+      workload[assignee].count++
+      workload[assignee].value += p.estimated_value || 0
+
+      if (p.status === 'in_progress') {
+        workload[assignee].in_progress++
+      } else if (!['completed', 'cancelled'].includes(p.status || '')) {
+        workload[assignee].pipeline++
+      }
+    })
+
+    // Sort by count descending
+    const sorted = Object.entries(workload)
+      .sort(([, a], [, b]) => b.count - a.count)
+
+    const lines = sorted.map(([name, stats]) => {
+      return `• ${name}: ${stats.count} projects (${stats.in_progress} active, ${stats.pipeline} pipeline) - $${stats.value.toLocaleString()}`
+    })
+
+    const totalProjects = projects?.length || 0
+    const message = [
+      `👥 Team Workload:`,
+      `Total: ${totalProjects} projects`,
+      ``,
+      ...lines,
+    ].join('\n')
+
+    return {
+      success: true,
+      data: { totalProjects, workload },
+      message,
+    }
+  },
+})
+
+// =============================================================================
 // Contact Management Functions
 // =============================================================================
 

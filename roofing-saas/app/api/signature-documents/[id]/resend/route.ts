@@ -52,12 +52,12 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      throw AuthenticationError('User not authenticated')
+      throw AuthenticationError('User not authenticated (debug: getCurrentUser returned null)')
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
+      throw AuthorizationError(`User is not associated with a tenant (debug: userId=${user.id}, email=${user.email})`)
     }
 
     const { id } = await params
@@ -102,7 +102,8 @@ export async function POST(
         userTenantId: tenantId,
         error: fetchError?.message
       })
-      throw NotFoundError('Signature document')
+      // Return diagnostic info in development
+      throw NotFoundError(`Signature document (debug: query_error=${fetchError?.message || 'no document'}, tenantId=${tenantId}, docId=${id})`)
     }
 
     // Now verify tenant access
@@ -114,7 +115,8 @@ export async function POST(
         userId: user.id,
         userEmail: user.email
       })
-      throw NotFoundError('Signature document')
+      // Return diagnostic info in development
+      throw NotFoundError(`Signature document (debug: tenant_mismatch, doc_tenant=${rawDocument.tenant_id}, user_tenant=${tenantId})`)
     }
 
     const document = rawDocument as unknown as DocumentRecord
