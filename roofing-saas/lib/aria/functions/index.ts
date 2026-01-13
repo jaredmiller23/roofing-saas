@@ -23,5 +23,8 @@ import './intelligence'
 // Financial functions (AR summary, overdue invoices, payment history, reminders, morning briefing)
 import './financial'
 
+// Document generation (estimates, inspection reports, claim summaries, project summaries)
+import './documents'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
