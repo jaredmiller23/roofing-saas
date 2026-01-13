@@ -232,6 +232,200 @@ ariaFunctionRegistry.register({
   },
 })
 
+// =============================================================================
+// Contact Management Functions (Girl Friday Phase 1 - Omnicompetence)
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'update_contact',
+  category: 'crm',
+  description: 'Update an existing contact\'s information',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'update_contact',
+    description: 'Update an existing contact\'s information. Can update name, phone, email, address, or other fields.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'UUID of the contact to update (required)',
+        },
+        first_name: { type: 'string', description: 'New first name' },
+        last_name: { type: 'string', description: 'New last name' },
+        email: { type: 'string', description: 'New email address' },
+        phone: { type: 'string', description: 'New phone number' },
+        mobile_phone: { type: 'string', description: 'New mobile phone number' },
+        address_street: { type: 'string', description: 'New street address' },
+        address_city: { type: 'string', description: 'New city' },
+        address_state: { type: 'string', description: 'New state' },
+        address_zip: { type: 'string', description: 'New ZIP code' },
+        source: { type: 'string', description: 'Update lead source' },
+        stage: { type: 'string', description: 'Update pipeline stage' },
+      },
+      required: ['contact_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, ...updates } = args as {
+      contact_id: string
+      first_name?: string
+      last_name?: string
+      email?: string
+      phone?: string
+      mobile_phone?: string
+      address_street?: string
+      address_city?: string
+      address_state?: string
+      address_zip?: string
+      source?: string
+      stage?: string
+    }
+
+    // Filter out undefined values
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    )
+
+    if (Object.keys(cleanUpdates).length === 0) {
+      return { success: false, error: 'No fields to update provided' }
+    }
+
+    // Verify contact exists and belongs to tenant
+    const { data: existingContact, error: findError } = await context.supabase
+      .from('contacts')
+      .select('id, first_name, last_name')
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
+      .single()
+
+    if (findError || !existingContact) {
+      return { success: false, error: 'Contact not found' }
+    }
+
+    // Update the contact
+    const { data, error } = await context.supabase
+      .from('contacts')
+      .update({
+        ...cleanUpdates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+      .select()
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Log the update as an activity
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      contact_id: contact_id,
+      type: 'note',
+      subject: 'Contact Updated',
+      content: `Contact information updated by ARIA. Fields changed: ${Object.keys(cleanUpdates).join(', ')}`,
+      created_by: context.userId,
+      metadata: { updated_fields: Object.keys(cleanUpdates), via: 'aria' },
+    })
+
+    return {
+      success: true,
+      data,
+      message: `Updated contact: ${data.first_name} ${data.last_name}`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'delete_contact',
+  category: 'crm',
+  description: 'Soft delete a contact (can be recovered later)',
+  riskLevel: 'medium',
+  requiresConfirmation: true,
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'delete_contact',
+    description: 'Soft delete a contact. The contact can be recovered later if needed. Use this to remove duplicates or contacts that should no longer be in the system.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'UUID of the contact to delete (required)',
+        },
+        reason: {
+          type: 'string',
+          description: 'Reason for deleting the contact (e.g., "duplicate", "requested removal", "wrong number")',
+        },
+      },
+      required: ['contact_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, reason = 'No reason provided' } = args as {
+      contact_id: string
+      reason?: string
+    }
+
+    // Verify contact exists and belongs to tenant
+    const { data: existingContact, error: findError } = await context.supabase
+      .from('contacts')
+      .select('id, first_name, last_name, email, phone')
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
+      .single()
+
+    if (findError || !existingContact) {
+      return { success: false, error: 'Contact not found' }
+    }
+
+    // Soft delete the contact
+    const { error } = await context.supabase
+      .from('contacts')
+      .update({
+        is_deleted: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Log the deletion as an activity
+    await context.supabase.from('activities').insert({
+      tenant_id: context.tenantId,
+      contact_id: contact_id,
+      type: 'note',
+      subject: 'Contact Deleted',
+      content: `Contact soft-deleted by ARIA. Reason: ${reason}`,
+      created_by: context.userId,
+      metadata: {
+        deleted_contact: {
+          name: `${existingContact.first_name} ${existingContact.last_name}`,
+          email: existingContact.email,
+          phone: existingContact.phone,
+        },
+        reason,
+        via: 'aria',
+      },
+    })
+
+    return {
+      success: true,
+      message: `Deleted contact: ${existingContact.first_name} ${existingContact.last_name}. Reason: ${reason}`,
+    }
+  },
+})
+
 ariaFunctionRegistry.register({
   name: 'create_project',
   category: 'crm',
@@ -441,6 +635,261 @@ ariaFunctionRegistry.register({
     }
 
     return { success: true, message: 'Note added successfully' }
+  },
+})
+
+// =============================================================================
+// Activity History Functions (Girl Friday Phase 1 - Omniscience)
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'get_activities',
+  category: 'crm',
+  description: 'Get activity history for a contact or project. Shows calls, emails, SMS, notes, tasks, and meetings.',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_activities',
+    description: 'Get activity history for a contact or project. Shows calls, emails, SMS, notes, tasks, and meetings. Use this to understand what has happened with a customer.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'UUID of the contact to get activities for',
+        },
+        project_id: {
+          type: 'string',
+          description: 'UUID of the project to get activities for',
+        },
+        types: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Filter by activity types: call, sms, email, note, task, meeting, knock',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of activities to return (default: 10, max: 50)',
+        },
+        include_content: {
+          type: 'boolean',
+          description: 'Include full content of activities (default: true)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const {
+      contact_id,
+      project_id,
+      types,
+      limit = 10,
+      include_content = true,
+    } = args as {
+      contact_id?: string
+      project_id?: string
+      types?: string[]
+      limit?: number
+      include_content?: boolean
+    }
+
+    // Use context entity if no explicit ID provided
+    const finalContactId = contact_id || (context.entityType === 'contact' ? context.entityId : undefined)
+    const finalProjectId = project_id || (context.entityType === 'project' ? context.entityId : undefined)
+
+    if (!finalContactId && !finalProjectId) {
+      return { success: false, error: 'Provide contact_id or project_id, or call in context of a contact/project' }
+    }
+
+    // Query activities
+    let query = context.supabase
+      .from('activities')
+      .select('id, type, subject, content, direction, created_at, metadata')
+      .eq('tenant_id', context.tenantId)
+      .order('created_at', { ascending: false })
+      .limit(Math.min(limit, 50))
+
+    // Apply contact/project filters
+    if (finalContactId) {
+      query = query.eq('contact_id', finalContactId)
+    }
+    if (finalProjectId) {
+      query = query.eq('project_id', finalProjectId)
+    }
+
+    // Apply type filter
+    if (types && types.length > 0) {
+      query = query.in('type', types)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Format activities for readability
+    const formattedActivities = (data || []).map((activity) => ({
+      id: activity.id,
+      type: activity.type,
+      subject: activity.subject,
+      content: include_content ? activity.content : undefined,
+      direction: activity.direction,
+      when: activity.created_at,
+      metadata: include_content ? activity.metadata : undefined,
+    }))
+
+    // Generate summary
+    const activityTypes = [...new Set(formattedActivities.map((a) => a.type))]
+    const summary = formattedActivities.length > 0
+      ? `Found ${formattedActivities.length} activities (${activityTypes.join(', ')})`
+      : 'No activities found'
+
+    return {
+      success: true,
+      data: formattedActivities,
+      count: formattedActivities.length,
+      message: summary,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'search_activities',
+  category: 'crm',
+  description: 'Search activities across all contacts by content, type, or date range',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'search_activities',
+    description: 'Search activities across all contacts by content, type, or date range. Useful for finding specific conversations or events.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search text to find in activity content or subject',
+        },
+        type: {
+          type: 'string',
+          enum: ['call', 'sms', 'email', 'note', 'task', 'meeting', 'knock'],
+          description: 'Filter by activity type',
+        },
+        date_from: {
+          type: 'string',
+          description: 'Start date in ISO format (e.g., 2026-01-01)',
+        },
+        date_to: {
+          type: 'string',
+          description: 'End date in ISO format (e.g., 2026-01-31)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results (default: 10, max: 25)',
+        },
+      },
+      required: [],
+    },
+  },
+  execute: async (args, context) => {
+    const {
+      query,
+      type,
+      date_from,
+      date_to,
+      limit = 10,
+    } = args as {
+      query?: string
+      type?: string
+      date_from?: string
+      date_to?: string
+      limit?: number
+    }
+
+    // Need at least one filter
+    if (!query && !type && !date_from) {
+      return { success: false, error: 'Provide at least one filter: query, type, or date_from' }
+    }
+
+    let dbQuery = context.supabase
+      .from('activities')
+      .select('id, type, subject, content, direction, created_at, metadata, contact_id')
+      .eq('tenant_id', context.tenantId)
+      .order('created_at', { ascending: false })
+      .limit(Math.min(limit, 25))
+
+    // Text search on content and subject
+    if (query) {
+      dbQuery = dbQuery.or(`content.ilike.%${query}%,subject.ilike.%${query}%`)
+    }
+
+    // Type filter
+    if (type) {
+      dbQuery = dbQuery.eq('type', type)
+    }
+
+    // Date range
+    if (date_from) {
+      dbQuery = dbQuery.gte('created_at', date_from)
+    }
+    if (date_to) {
+      dbQuery = dbQuery.lte('created_at', date_to)
+    }
+
+    const { data, error } = await dbQuery
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Get unique contact IDs to fetch contact info
+    const contactIds = [...new Set((data || []).map((a) => a.contact_id).filter(Boolean))]
+    let contactsMap: Record<string, { id: string; first_name: string; last_name: string; phone: string; email: string }> = {}
+
+    if (contactIds.length > 0) {
+      const { data: contacts } = await context.supabase
+        .from('contacts')
+        .select('id, first_name, last_name, phone, email')
+        .in('id', contactIds)
+        .eq('tenant_id', context.tenantId)
+
+      contactsMap = (contacts || []).reduce((acc, c) => {
+        acc[c.id] = c
+        return acc
+      }, {} as typeof contactsMap)
+    }
+
+    // Format results with contact info
+    const results = (data || []).map((activity) => {
+      const contact = activity.contact_id ? contactsMap[activity.contact_id] : null
+      const contentStr = activity.content || ''
+      return {
+        id: activity.id,
+        type: activity.type,
+        subject: activity.subject,
+        content: contentStr.substring(0, 200) + (contentStr.length > 200 ? '...' : ''),
+        direction: activity.direction,
+        when: activity.created_at,
+        contact: contact ? {
+          id: contact.id,
+          name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+          phone: contact.phone,
+          email: contact.email,
+        } : null,
+      }
+    })
+
+    return {
+      success: true,
+      data: results,
+      count: results.length,
+      message: results.length > 0
+        ? `Found ${results.length} matching activities`
+        : 'No activities found matching your criteria',
+    }
   },
 })
 

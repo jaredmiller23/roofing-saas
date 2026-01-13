@@ -56,6 +56,10 @@ const _HUMAN_REVIEW_CATEGORIES = [
 
 /**
  * Classify the intent of an inbound message
+ *
+ * Philosophy: Auto-send by default, only queue truly sensitive messages.
+ * ARIA is an AI assistant - it should respond to normal conversation.
+ * Only escalate to humans for: complaints, pricing, cancellations, reschedules.
  */
 function classifyMessageIntent(message: string): {
   category: string
@@ -64,8 +68,29 @@ function classifyMessageIntent(message: string): {
 } {
   const lowerMessage = message.toLowerCase().trim()
 
-  // Simple pattern matching for common intents
-  // In production, this could use a classifier model
+  // === SENSITIVE CATEGORIES - Require human review ===
+
+  // Complaints (negative sentiment - could escalate)
+  if (/upset|angry|frustrated|terrible|horrible|worst|sue|lawyer|bbb|attorney|complain|rip\s*off|scam/i.test(lowerMessage)) {
+    return { category: 'complaint', shouldAutoSend: false, confidence: 0.9 }
+  }
+
+  // Pricing/payment questions (could make promises we can't keep)
+  if (/how\s*much|price|cost|quote|estimate|payment|invoice|bill|pay|financing|money/i.test(lowerMessage)) {
+    return { category: 'pricing', shouldAutoSend: false, confidence: 0.8 }
+  }
+
+  // Cancellation requests (need human judgment)
+  if (/cancel|don('t|t)\s*want|not\s*interested|stop\s*service|changed\s*my\s*mind/i.test(lowerMessage)) {
+    return { category: 'cancel', shouldAutoSend: false, confidence: 0.85 }
+  }
+
+  // Reschedule requests (affects calendar/commitments)
+  if (/reschedule|change.*time|different\s*(day|time)|can('t|not)\s*make\s*it|something\s*came\s*up|move\s*(the|my)\s*(appointment|meeting)/i.test(lowerMessage)) {
+    return { category: 'reschedule', shouldAutoSend: false, confidence: 0.85 }
+  }
+
+  // === AUTO-SEND CATEGORIES - Safe for AI to respond ===
 
   // Greetings
   if (/^(hi|hello|hey|good\s*(morning|afternoon|evening))[\s!.]*$/i.test(lowerMessage)) {
@@ -73,37 +98,18 @@ function classifyMessageIntent(message: string): {
   }
 
   // Confirmations
-  if (/^(yes|yeah|yep|ok|okay|sure|sounds?\s*good|perfect|great)[\s!.]*$/i.test(lowerMessage)) {
+  if (/^(yes|yeah|yep|ok|okay|sure|sounds?\s*good|perfect|great|absolutely|definitely)[\s!.]*$/i.test(lowerMessage)) {
     return { category: 'confirmation', shouldAutoSend: true, confidence: 0.9 }
   }
 
   // Thanks
-  if (/^(thanks?|thank\s*you|thx|ty)[\s!.]*$/i.test(lowerMessage)) {
+  if (/^(thanks?|thank\s*you|thx|ty|appreciate)[\s!.]*$/i.test(lowerMessage)) {
     return { category: 'thanks', shouldAutoSend: true, confidence: 0.95 }
   }
 
-  // Reschedule requests
-  if (/reschedule|change.*time|different\s*(day|time)|can('t|not)\s*make\s*it|something\s*came\s*up/i.test(lowerMessage)) {
-    return { category: 'reschedule', shouldAutoSend: false, confidence: 0.85 }
-  }
-
-  // Pricing/payment questions
-  if (/how\s*much|price|cost|payment|invoice|bill|pay/i.test(lowerMessage)) {
-    return { category: 'pricing', shouldAutoSend: false, confidence: 0.8 }
-  }
-
-  // Cancellation
-  if (/cancel|don('t|t)\s*want|not\s*interested|stop\s*service/i.test(lowerMessage)) {
-    return { category: 'cancel', shouldAutoSend: false, confidence: 0.85 }
-  }
-
-  // Complaints (negative sentiment indicators)
-  if (/upset|angry|frustrated|terrible|horrible|worst|sue|lawyer|bbb|attorney/i.test(lowerMessage)) {
-    return { category: 'complaint', shouldAutoSend: false, confidence: 0.9 }
-  }
-
-  // Default: complex/unknown - needs human review
-  return { category: 'complex', shouldAutoSend: false, confidence: 0.5 }
+  // General questions and conversation - AUTO-SEND
+  // This is the key change: normal conversation should get responses
+  return { category: 'conversation', shouldAutoSend: true, confidence: 0.7 }
 }
 
 /**
