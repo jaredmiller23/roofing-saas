@@ -45,7 +45,8 @@ export function PipelineSettings() {
       setLoading(true)
       const res = await fetch('/api/settings/pipeline-stages')
       const data = await res.json()
-      setStages(data.stages || [])
+      // API returns { success: true, data: { stages: [...] } }
+      setStages(data.data?.stages || [])
     } catch (err) {
       console.error('Error loading pipeline stages:', err)
       setError('Failed to load pipeline stages')

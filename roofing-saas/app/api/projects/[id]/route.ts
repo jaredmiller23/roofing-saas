@@ -6,6 +6,7 @@ import {
   getStatusForPipelineStage,
 } from '@/lib/pipeline/validation'
 import { triggerWorkflow } from '@/lib/automation/engine'
+import { handleStageChange } from '@/lib/campaigns/trigger-handler'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -277,6 +278,19 @@ export async function PATCH(
               logger.error('[API] Workflow trigger (project_won) failed:', { error })
             })
           }
+
+          // Fire campaign triggers for stage changes (async - don't block response)
+          handleStageChange({
+            tenantId,
+            projectId: id,
+            contactId: result?.contact_id || null,
+            fromStage: previousStage,
+            toStage: newStage,
+            changedBy: user.id,
+            changedAt: new Date().toISOString(),
+          }).catch((error) => {
+            logger.error('[API] Campaign trigger (stage_change) failed:', { error })
+          })
         }
 
         return result

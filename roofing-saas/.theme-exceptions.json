@@ -43,7 +43,7 @@
     "app/(auth)/reset-password/page.tsx:106:text-white",
     "app/(auth)/auth/update-password/page.tsx:110:text-white",
     "app/(dashboard)/voice-assistant/page.tsx:33:text-white",
-    "components/settings/PipelineSettings.tsx:196:text-white",
+    "components/settings/PipelineSettings.tsx:*:text-white",
     "components/tasks/TaskBoard.tsx:154:text-white",
     "components/territories/TerritoryForm.tsx:249:text-white",
     "components/territories/PinPopup.tsx:*:text-white",
