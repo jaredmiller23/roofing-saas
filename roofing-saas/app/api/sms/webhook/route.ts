@@ -4,6 +4,8 @@ import { logger } from '@/lib/logger'
 import twilio from 'twilio'
 import { verifyTwilioSignature, parseTwilioFormData } from '@/lib/webhooks/security'
 import { handleInboundSMS, queueSMSForApproval } from '@/lib/aria/sms-handler'
+import { detectCommitment } from '@/lib/aria/commitment-detector'
+import { createCommitmentTask } from '@/lib/aria/commitment-actions'
 
 /**
  * POST /api/sms/webhook
@@ -139,6 +141,38 @@ export async function POST(request: NextRequest) {
             contactName: ariaResult.contactName,
             reason: ariaResult.reason,
           })
+
+          // Check if ARIA made a commitment that needs follow-up
+          const commitment = detectCommitment(ariaResult.response)
+          if (commitment.hasCommitment) {
+            logger.info('ARIA commitment detected', {
+              type: commitment.type,
+              urgency: commitment.urgency,
+              pattern: commitment.matchedPattern,
+            })
+
+            // Create a task and notify the team
+            const taskResult = await createCommitmentTask({
+              tenantId,
+              contactId: ariaResult.contactId,
+              contactName: ariaResult.contactName,
+              phone: from,
+              commitment,
+              originalMessage: body,
+              ariaResponse: ariaResult.response,
+            })
+
+            if (taskResult.success) {
+              logger.info('Commitment task created', {
+                taskId: taskResult.taskId,
+                type: commitment.type,
+              })
+            } else {
+              logger.warn('Failed to create commitment task', {
+                error: taskResult.error,
+              })
+            }
+          }
         } else {
           // Queue for human approval - don't respond yet
           const queueResult = await queueSMSForApproval({
