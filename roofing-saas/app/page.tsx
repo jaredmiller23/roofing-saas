@@ -41,7 +41,7 @@ export default function LandingPage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up">
-            <Link href="/en/register">
+            <Link href="/register">
               <Button size="lg" className="glow-purple text-lg px-8 h-12">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -176,7 +176,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/login">
+                <Link href="/register">
                   <Button
                     className={`w-full ${plan.featured ? 'glow-purple' : ''}`}
                     variant={plan.featured ? 'default' : 'outline'}
@@ -200,7 +200,7 @@ export default function LandingPage() {
             See how Job Clarity can work for your roofing business.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/en/register">
+            <Link href="/register">
               <Button size="lg" className="glow-purple text-lg px-8 h-12">
                 Start Your Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />

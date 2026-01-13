@@ -56,7 +56,7 @@ export function Navbar() {
               <Link href="/login">Sign In</Link>
             </Button>
             <Button className="glow-purple" asChild>
-              <Link href="/login">Start Free Trial</Link>
+              <Link href="/register">Start Free Trial</Link>
             </Button>
           </div>
 
@@ -89,7 +89,7 @@ export function Navbar() {
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button className="w-full glow-purple" asChild>
-                  <Link href="/login">Start Free Trial</Link>
+                  <Link href="/register">Start Free Trial</Link>
                 </Button>
               </div>
             </div>
