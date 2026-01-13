@@ -32,5 +32,8 @@ import './workflows'
 // Vision/Photo intelligence (analyze photos, detect damage, compare before/after, estimates)
 import './vision'
 
+// Weather/Storm intelligence (forecasts, storm impact, alerts, storm mode)
+import './weather'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
