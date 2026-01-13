@@ -47,6 +47,7 @@ export async function GET() {
         final_value,
         created_at,
         updated_at,
+        created_by,
         contact_id,
         contacts:contact_id (
           first_name,
@@ -59,6 +60,70 @@ export async function GET() {
       .order('updated_at', { ascending: false })
       .limit(20)
 
+    // Get recent contacts (last 7 days)
+    const { data: recentContacts } = await supabase
+      .from('contacts')
+      .select('id, first_name, last_name, created_at, created_by, stage')
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    // Collect all unique user IDs for batch lookup
+    const userIds = new Set<string>()
+    if (recentProjects) {
+      for (const project of recentProjects) {
+        if (project.created_by) userIds.add(project.created_by)
+      }
+    }
+    if (recentContacts) {
+      for (const contact of recentContacts) {
+        if (contact.created_by) userIds.add(contact.created_by)
+      }
+    }
+
+    // Batch lookup user names from tenant_users -> auth.users
+    const userMap = new Map<string, string>()
+    if (userIds.size > 0) {
+      const { data: users } = await supabase
+        .from('tenant_users')
+        .select(`
+          user_id,
+          users:user_id (
+            email,
+            raw_user_meta_data
+          )
+        `)
+        .eq('tenant_id', tenantId)
+        .in('user_id', Array.from(userIds))
+
+      if (users) {
+        for (const tu of users) {
+          const userData = tu.users as {
+            email?: string
+            raw_user_meta_data?: {
+              first_name?: string
+              last_name?: string
+              name?: string
+              full_name?: string
+            }
+          } | null
+          const metadata = userData?.raw_user_meta_data || {}
+          const firstName = metadata.first_name || metadata.name?.split(' ')[0] || ''
+          const lastName = metadata.last_name || metadata.name?.split(' ').slice(1).join(' ') || ''
+          const fullName = metadata.full_name || `${firstName} ${lastName}`.trim() || userData?.email?.split('@')[0] || 'Team Member'
+          userMap.set(tu.user_id, fullName)
+        }
+      }
+    }
+
+    // Helper to get user name from map
+    const getUserName = (userId: string | null | undefined): string => {
+      if (!userId) return 'Team Member'
+      return userMap.get(userId) || 'Team Member'
+    }
+
     // Process projects into activity items
     if (recentProjects) {
       for (const project of recentProjects) {
@@ -67,6 +132,7 @@ export async function GET() {
         const contactName = contactData
           ? `${contactData.first_name} ${contactData.last_name}`.trim()
           : project.name
+        const userName = getUserName(project.created_by)
 
         if (project.status === 'won') {
           activities.push({
@@ -76,6 +142,7 @@ export async function GET() {
             description: `Closed deal with ${contactName}`,
             timestamp: project.updated_at,
             metadata: {
+              user: userName,
               project_name: project.name,
               contact_name: contactName,
               value: project.final_value || project.approved_value || project.estimated_value || 0
@@ -89,6 +156,7 @@ export async function GET() {
             description: `${contactName} - ${project.name}`,
             timestamp: project.updated_at,
             metadata: {
+              user: userName,
               project_name: project.name,
               contact_name: contactName
             }
@@ -102,6 +170,7 @@ export async function GET() {
             description: `${project.name} added to pipeline`,
             timestamp: project.created_at,
             metadata: {
+              user: userName,
               project_name: project.name,
               value: project.estimated_value || 0
             }
@@ -110,19 +179,11 @@ export async function GET() {
       }
     }
 
-    // Get recent contacts (last 7 days)
-    const { data: recentContacts } = await supabase
-      .from('contacts')
-      .select('id, first_name, last_name, created_at, stage')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(10)
-
+    // Process contacts into activity items
     if (recentContacts) {
       for (const contact of recentContacts) {
         const contactName = `${contact.first_name} ${contact.last_name}`.trim()
+        const userName = getUserName(contact.created_by)
         activities.push({
           id: `contact_added_${contact.id}`,
           type: 'contact_added',
@@ -130,6 +191,7 @@ export async function GET() {
           description: `${contactName} added to ${contact.stage || 'pipeline'}`,
           timestamp: contact.created_at,
           metadata: {
+            user: userName,
             contact_name: contactName
           }
         })

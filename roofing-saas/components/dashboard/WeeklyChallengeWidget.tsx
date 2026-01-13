@@ -6,6 +6,13 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Leaderboard } from '@/components/gamification/Leaderboard'
+import {
   Trophy,
   Target,
   Calendar,
@@ -31,6 +38,7 @@ export function WeeklyChallengeWidget() {
   const [challenge, setChallenge] = useState<Challenge | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
 
   const fetchWeeklyChallenge = async () => {
     setIsLoading(true)
@@ -268,15 +276,28 @@ export function WeeklyChallengeWidget() {
         </div>
 
         <div className="flex gap-2">
-          <Button size="sm" className="flex-1">
+          <Button size="sm" className="flex-1" onClick={() => setShowLeaderboard(true)}>
             <TrendingUp className="h-4 w-4 mr-2" />
             View Leaderboard
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.location.href = '/events'}>
             <Calendar className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
+
+      {/* Leaderboard Dialog */}
+      <Dialog open={showLeaderboard} onOpenChange={setShowLeaderboard}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Leaderboard
+            </DialogTitle>
+          </DialogHeader>
+          <Leaderboard />
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

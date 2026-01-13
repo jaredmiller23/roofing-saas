@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -84,7 +85,7 @@ export function ActivityFeed() {
             title: item.title,
             description: item.description,
             user: {
-              name: item.metadata?.contact_name || item.metadata?.user || 'Team Member',
+              name: item.metadata?.user || 'Team Member',
               avatar: undefined
             },
             timestamp: new Date(item.timestamp),
@@ -133,6 +134,22 @@ export function ActivityFeed() {
       default:
         return Clock
     }
+  }
+
+  // Get the URL for an activity based on its ID pattern
+  const getActivityUrl = (activityId: string): string | null => {
+    // ID patterns: project_won_{id}, project_lost_{id}, project_created_{id}, contact_added_{id}
+    if (activityId.startsWith('project_won_') ||
+        activityId.startsWith('project_lost_') ||
+        activityId.startsWith('project_created_')) {
+      const projectId = activityId.replace(/^project_(won|lost|created)_/, '')
+      return `/projects/${projectId}`
+    }
+    if (activityId.startsWith('contact_added_')) {
+      const contactId = activityId.replace('contact_added_', '')
+      return `/contacts/${contactId}`
+    }
+    return null
   }
 
   const getActivityColor = (type: Activity['type']) => {
@@ -230,9 +247,10 @@ export function ActivityFeed() {
             {activities.map((activity) => {
               const Icon = getIcon(activity.type)
               const colorClass = getActivityColor(activity.type)
+              const activityUrl = getActivityUrl(activity.id)
 
-              return (
-                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+              const ActivityContent = (
+                <>
                   <div className={`p-2 rounded-full ${colorClass}`}>
                     <Icon className="h-4 w-4" />
                   </div>
@@ -266,6 +284,25 @@ export function ActivityFeed() {
                       <span>{formatDistanceToNow(activity.timestamp, { addSuffix: true })}</span>
                     </div>
                   </div>
+                </>
+              )
+
+              // Wrap in Link if we have a URL, otherwise render as div
+              if (activityUrl) {
+                return (
+                  <Link
+                    key={activity.id}
+                    href={activityUrl}
+                    className="flex items-start gap-3 pb-3 border-b border-border last:border-0 hover:bg-muted/50 -mx-2 px-2 py-2 rounded-lg transition-colors cursor-pointer"
+                  >
+                    {ActivityContent}
+                  </Link>
+                )
+              }
+
+              return (
+                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                  {ActivityContent}
                 </div>
               )
             })}

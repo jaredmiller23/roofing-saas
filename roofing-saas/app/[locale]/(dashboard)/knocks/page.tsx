@@ -120,7 +120,7 @@ export default function KnocksPage() {
       }
 
       const result = await response.json()
-      setKnocks(result.pins || [])
+      setKnocks(result.data || [])
     } catch (err) {
       console.error('Knocks fetch error:', err)
       setKnocksError(err instanceof Error ? err.message : 'Failed to load activity')
