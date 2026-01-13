@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getCurrentUserFromRequest, getUserTenantId, getUserTenantIdAdmin } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
@@ -46,12 +46,17 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
+    // Support both Bearer token (programmatic) and cookie (browser) auth
+    const bearerUser = await getCurrentUserFromRequest(request)
+    const user = bearerUser ?? await getCurrentUser()
     if (!user) {
       throw AuthenticationError('User not authenticated')
     }
 
-    const tenantId = await getUserTenantId(user.id)
+    // Use admin lookup for Bearer auth (RLS bypass), regular for cookie auth
+    const tenantId = bearerUser
+      ? await getUserTenantIdAdmin(user.id)
+      : await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
     }

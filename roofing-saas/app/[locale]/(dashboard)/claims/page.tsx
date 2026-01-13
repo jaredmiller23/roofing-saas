@@ -11,6 +11,8 @@ import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsh
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
+import { useFeatureAccess } from '@/lib/billing/hooks'
+import { FeatureGate } from '@/components/billing/FeatureGate'
 
 interface Project {
   id: string
@@ -43,6 +45,7 @@ const STATUS_LABELS: Record<ClaimStatus, string> = {
 
 export default function ClaimsPage() {
   const router = useRouter()
+  const { features, isLoading: featuresLoading } = useFeatureAccess()
   const [claims, setClaims] = useState<ClaimData[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [filteredClaims, setFilteredClaims] = useState<ClaimData[]>([])
@@ -124,6 +127,21 @@ export default function ClaimsPage() {
   useEffect(() => {
     filterClaims()
   }, [filterClaims])
+
+  // Feature gate check - must be after all hooks
+  if (!featuresLoading && !features.claimsTracking) {
+    return (
+      <div className="container mx-auto p-6">
+        <FeatureGate
+          allowed={false}
+          featureName="Claims Tracking"
+          requiredPlan="Professional"
+        >
+          <div />
+        </FeatureGate>
+      </div>
+    )
+  }
 
   const handleViewClaim = (claim: ClaimData) => {
     router.push(`/projects/${claim.project_id}/claims/${claim.id}`)

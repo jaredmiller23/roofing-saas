@@ -22,8 +22,11 @@ import type {
 } from '@/lib/storm/storm-types'
 import { createClient } from '@/lib/supabase/client'
 import { CloudLightning, RefreshCw, Loader2 } from 'lucide-react'
+import { useFeatureAccess } from '@/lib/billing/hooks'
+import { FeatureGate } from '@/components/billing/FeatureGate'
 
 export default function StormTrackingPage() {
+  const { features, isLoading: featuresLoading } = useFeatureAccess()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -62,6 +65,21 @@ export default function StormTrackingPage() {
     fetchUser()
     loadStormData()
   }, [])
+
+  // Feature gate check - must be after all hooks
+  if (!featuresLoading && !features.stormData) {
+    return (
+      <div className="container mx-auto p-6">
+        <FeatureGate
+          allowed={false}
+          featureName="Storm Intel"
+          requiredPlan="Professional"
+        >
+          <div />
+        </FeatureGate>
+      </div>
+    )
+  }
 
   const loadStormData = async () => {
     setLoading(true)

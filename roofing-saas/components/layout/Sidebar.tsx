@@ -24,15 +24,20 @@ import {
   Users,
   Mail,
   RefreshCw,
+  Lock,
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
+import { useFeatureAccess } from '@/lib/billing/hooks'
+import type { PlanFeatures } from '@/lib/billing/types'
 
 interface NavLink {
   href: string
   label: string
   icon: React.ElementType
+  /** Feature required to access this nav item */
+  feature?: keyof PlanFeatures
 }
 
 interface NavSection {
@@ -63,9 +68,9 @@ const navSections: NavSection[] = [
     label: 'SELL',
     items: [
       { href: '/knocks', label: 'Knock', icon: Map },
-      { href: '/storm-targeting', label: 'Lead Gen', icon: Target },
-      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
-      { href: '/claims', label: 'Claims', icon: FileText },
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Target, feature: 'stormData' },
+      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning, feature: 'stormData' },
+      { href: '/claims', label: 'Claims', icon: FileText, feature: 'claimsTracking' },
       { href: '/incentives', label: 'Incentives', icon: Trophy },
       { href: '/insights', label: 'Business Intel', icon: Sparkles },
     ]
@@ -75,7 +80,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/call-logs', label: 'Call Log', icon: Phone },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/campaigns', label: 'Campaigns', icon: Mail },
+      { href: '/campaigns', label: 'Campaigns', icon: Mail, feature: 'campaigns' },
       { href: '/automations', label: 'Automations', icon: RefreshCw },
     ]
   },
@@ -92,9 +97,21 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
   const [selectedUser, setSelectedUser] = useState<UserForImpersonation | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const pathname = usePathname()
+  const { features, isLoading: featuresLoading } = useFeatureAccess()
 
   const isActive = (href: string) => pathname === href
   const isAdmin = userRole === 'admin'
+
+  /**
+   * Check if a nav item should be accessible based on feature requirements
+   */
+  const hasFeatureAccess = (feature: keyof PlanFeatures | undefined): boolean => {
+    // No feature requirement = always accessible
+    if (!feature) return true
+    // While loading features, show all items (don't hide during load)
+    if (featuresLoading) return true
+    return features[feature]
+  }
 
   const handleUserSelect = (user: UserForImpersonation) => {
     setSelectedUser(user)
@@ -192,6 +209,25 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
                 {section.items.map((link) => {
                   const Icon = link.icon
                   const active = isActive(link.href)
+                  const hasAccess = hasFeatureAccess(link.feature)
+
+                  // For items without access, show locked state
+                  if (!hasAccess) {
+                    return (
+                      <Link
+                        key={link.href}
+                        href="/settings?tab=billing"
+                        onClick={() => setIsMobileOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sidebar-foreground/40 hover:text-sidebar-foreground/60 hover:bg-sidebar/40"
+                        title={`Upgrade to Professional to access ${link.label}`}
+                        role="listitem"
+                      >
+                        <Icon className="h-5 w-5 text-sidebar-foreground/40" aria-hidden="true" />
+                        <span className="text-sm font-medium flex-1">{link.label}</span>
+                        <Lock className="h-4 w-4 text-sidebar-foreground/40" aria-hidden="true" />
+                      </Link>
+                    )
+                  }
 
                   return (
                     <Link

@@ -15,9 +15,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Campaign, CampaignType, CampaignStatus } from '@/lib/campaigns/types'
+import { useFeatureAccess } from '@/lib/billing/hooks'
+import { FeatureGate } from '@/components/billing/FeatureGate'
 
 export default function CampaignsPage() {
   const router = useRouter()
+  const { features, isLoading: featuresLoading } = useFeatureAccess()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all')
@@ -26,6 +29,21 @@ export default function CampaignsPage() {
     fetchCampaigns()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter])
+
+  // Feature gate check - must be after all hooks
+  if (!featuresLoading && !features.campaigns) {
+    return (
+      <div className="container mx-auto p-6">
+        <FeatureGate
+          allowed={false}
+          featureName="Campaigns"
+          requiredPlan="Professional"
+        >
+          <div />
+        </FeatureGate>
+      </div>
+    )
+  }
 
   const fetchCampaigns = async () => {
     setLoading(true)

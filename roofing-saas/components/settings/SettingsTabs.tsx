@@ -14,6 +14,7 @@ import { SecuritySettings } from './SecuritySettings'
 import { CallComplianceSettings } from './CallComplianceSettings'
 import { GamificationSettings } from './GamificationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
+import { BillingSettings } from '@/components/billing/BillingSettings'
 import {
   Settings,
   Palette,
@@ -25,7 +26,8 @@ import {
   Zap,
   PhoneOff,
   Trophy,
-  Plug
+  Plug,
+  CreditCard
 } from 'lucide-react'
 
 export function SettingsTabs() {
@@ -125,6 +127,13 @@ export function SettingsTabs() {
               <Plug className="h-4 w-4" />
               Integrations
             </TabsTrigger>
+            <TabsTrigger
+              value="billing"
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Billing
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -203,6 +212,10 @@ export function SettingsTabs() {
 
           <TabsContent value="integrations">
             <IntegrationsSettings />
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <BillingSettings />
           </TabsContent>
         </Tabs>
       </div>

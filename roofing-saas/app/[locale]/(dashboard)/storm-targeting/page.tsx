@@ -20,6 +20,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, MapPin, Zap, Download, Users } from 'lucide-react';
 import type { ExtractedAddress } from '@/lib/address-extraction/types';
+import { useFeatureAccess } from '@/lib/billing/hooks';
+import { FeatureGate } from '@/components/billing/FeatureGate';
 
 // =====================================================
 // TYPES
@@ -118,6 +120,9 @@ const getDrawingManagerOptions = (): google.maps.drawing.DrawingManagerOptions =
 // =====================================================
 
 export default function StormTargetingPage() {
+  // Feature access
+  const { features, isLoading: featuresLoading } = useFeatureAccess();
+
   // Google Maps API
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -215,6 +220,21 @@ export default function StormTargetingPage() {
     },
     [currentOverlay]
   );
+
+  // Feature gate check - must be after all hooks
+  if (!featuresLoading && !features.stormData) {
+    return (
+      <div className="container mx-auto p-6">
+        <FeatureGate
+          allowed={false}
+          featureName="Lead Gen"
+          requiredPlan="Professional"
+        >
+          <div />
+        </FeatureGate>
+      </div>
+    );
+  }
 
   // =====================================================
   // ZIP CODE TO POLYGON

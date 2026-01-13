@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
+import type { NextRequest } from 'next/server'
 
 /**
  * Get the current authenticated user
@@ -15,6 +16,47 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   return user
+}
+
+/**
+ * Get user from Authorization Bearer token
+ * Supports programmatic API access (CLI, scripts, tests)
+ *
+ * Usage in API routes:
+ * ```typescript
+ * const user = await getCurrentUserFromRequest(request) ?? await getCurrentUser()
+ * ```
+ */
+export async function getCurrentUserFromRequest(request: NextRequest): Promise<User | null> {
+  const authHeader = request.headers.get('authorization')
+
+  if (!authHeader?.toLowerCase().startsWith('bearer ')) {
+    return null
+  }
+
+  const token = authHeader.substring(7)
+
+  // Validate token directly against Supabase auth endpoint
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
+
+  try {
+    const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: supabaseKey,
+      },
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const user = await response.json()
+    return user as User
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -71,6 +113,47 @@ export async function getUserTenantId(userId: string): Promise<string | null> {
   }
 
   return data[0].tenant_id
+}
+
+/**
+ * Get user's tenant ID using service role (bypasses RLS)
+ * Use this when authenticating via Bearer token where RLS won't work
+ */
+export async function getUserTenantIdAdmin(userId: string): Promise<string | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || ''
+
+  if (!serviceKey) {
+    console.error('[Auth] Service role key not configured')
+    return null
+  }
+
+  try {
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/tenant_users?select=tenant_id&user_id=eq.${userId}&status=eq.active&order=joined_at.desc&limit=1`,
+      {
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      console.error('[Auth] Tenant lookup failed:', response.status)
+      return null
+    }
+
+    const data = await response.json()
+    if (!data || data.length === 0) {
+      return null
+    }
+
+    return data[0].tenant_id
+  } catch (err) {
+    console.error('[Auth] Tenant lookup error:', err)
+    return null
+  }
 }
 
 /**

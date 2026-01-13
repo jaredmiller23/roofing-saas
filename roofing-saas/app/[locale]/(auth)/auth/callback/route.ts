@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server'
  * - Email verification confirmations
  * - Password reset confirmations
  * - OAuth provider callbacks
+ * - Initial trial subscription setup
  */
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -21,6 +22,28 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // Setup trial subscription for new users
+      try {
+        const response = await fetch(
+          new URL('/api/billing/setup-trial', requestUrl.origin),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Forward the cookies for auth
+              Cookie: request.headers.get('Cookie') || '',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error('Failed to setup trial:', await response.text());
+        }
+      } catch (setupError) {
+        // Log but don't block - user can still access the app
+        console.error('Trial setup error:', setupError);
+      }
+
       // Successful verification - redirect to dashboard or specified page
       return NextResponse.redirect(new URL(next, requestUrl.origin))
     }

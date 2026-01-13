@@ -2,8 +2,12 @@
 
 import { QuickBooksIntegration } from './QuickBooksIntegration'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useFeatureAccess } from '@/lib/billing/hooks'
+import { FeatureGate } from '@/components/billing/FeatureGate'
 
 export function IntegrationsSettings() {
+  const { features, isLoading: featuresLoading } = useFeatureAccess()
+
   return (
     <div className="space-y-6">
       <div>
@@ -13,8 +17,22 @@ export function IntegrationsSettings() {
         </p>
       </div>
 
-      {/* QuickBooks Integration */}
-      <QuickBooksIntegration />
+      {/* QuickBooks Integration - Gated to Professional+ */}
+      {featuresLoading ? (
+        <Card>
+          <CardContent className="py-8">
+            <div className="animate-pulse h-32 bg-muted rounded" />
+          </CardContent>
+        </Card>
+      ) : (
+        <FeatureGate
+          allowed={features.quickbooksIntegration}
+          featureName="QuickBooks Integration"
+          requiredPlan="Professional"
+        >
+          <QuickBooksIntegration />
+        </FeatureGate>
+      )}
 
       {/* Future integrations can be added here */}
       <Card>

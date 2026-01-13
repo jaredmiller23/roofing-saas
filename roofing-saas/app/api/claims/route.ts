@@ -11,6 +11,7 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { ClaimData } from '@/lib/claims/types'
 import type { CreateClaimInput } from '@/lib/claims/intelligence-types'
+import { requireFeature } from '@/lib/billing/feature-gates'
 
 /**
  * GET /api/claims
@@ -30,6 +31,13 @@ export async function GET(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User not associated with any tenant')
+    }
+
+    // Check feature access
+    try {
+      await requireFeature(tenantId, 'claimsTracking')
+    } catch {
+      throw AuthorizationError('Claims Tracking requires Professional plan or higher')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -115,6 +123,13 @@ export async function POST(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User not associated with any tenant')
+    }
+
+    // Check feature access
+    try {
+      await requireFeature(tenantId, 'claimsTracking')
+    } catch {
+      throw AuthorizationError('Claims Tracking requires Professional plan or higher')
     }
 
     const body: CreateClaimInput = await request.json()

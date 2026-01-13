@@ -4,6 +4,7 @@ import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import type {
   Campaign,
   GetCampaignsResponse,
@@ -32,6 +33,13 @@ export async function GET(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User not associated with any tenant')
+    }
+
+    // Check feature access
+    try {
+      await requireFeature(tenantId, 'campaigns')
+    } catch {
+      throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -98,6 +106,13 @@ export async function POST(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User not associated with any tenant')
+    }
+
+    // Check feature access
+    try {
+      await requireFeature(tenantId, 'campaigns')
+    } catch {
+      throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
     const userIsAdmin = await isAdmin(user.id)
