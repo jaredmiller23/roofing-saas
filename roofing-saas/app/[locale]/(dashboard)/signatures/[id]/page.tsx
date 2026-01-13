@@ -556,15 +556,15 @@ export default function ViewSignatureDocumentPage() {
                         className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
                       >
                         <div className="flex items-center gap-3">
-                          <CheckCircle className="h-5 w-5 text-green-500" />
+                          <CheckCircle className="h-5 w-5 text-green-600" />
                           <div>
-                            <div className="font-medium text-foreground">{sig.signer_name}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="font-medium text-green-900">{sig.signer_name}</div>
+                            <div className="text-sm text-green-700">
                               {sig.signer_email} ({sig.signer_type})
                             </div>
                           </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-green-700">
                           {new Date(sig.signed_at).toLocaleString()}
                         </div>
                       </div>
