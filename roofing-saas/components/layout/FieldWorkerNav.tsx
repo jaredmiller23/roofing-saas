@@ -14,28 +14,17 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard,
   Workflow,
   CheckSquare,
-  Phone,
   Settings,
-  Trophy,
   Calendar,
   Map,
-  Zap,
   Menu,
   LogOut,
-  FileText,
-  MessageSquare,
   PenTool,
-  Sparkles,
-  CloudLightning,
-  Monitor,
   Users,
-  Mail
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
-import { useUIMode } from '@/hooks/useUIMode'
 import {
   Sheet,
   SheetContent,
@@ -63,42 +52,18 @@ interface FieldWorkerNavProps {
   userRole?: string
 }
 
-// Navigation structure per owner specification
-// Source of truth: docs/specs/SIDEBAR_NAVIGATION.md
+// Simplified navigation for field workers (7 essential items)
+// Field workers need: knock, contacts, pipeline, signatures, tasks, events, settings
 const navSections: NavSection[] = [
   {
-    label: 'SELL',
+    // No section label - flat list for simplicity
     items: [
       { href: '/knocks', label: 'Knock', icon: Map },
-      { href: '/signatures', label: 'Signatures', icon: PenTool },
-      { href: '/claims', label: 'Claims', icon: FileText },
-      { href: '/incentives', label: 'Incentives', icon: Trophy },
-      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
-      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
-    ]
-  },
-  {
-    label: 'CORE',
-    items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/projects', label: 'Pipeline', icon: Workflow },
-      { href: '/insights', label: 'Business Intel', icon: Sparkles },
-      { href: '/events', label: 'Events', icon: Calendar },
-      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-    ]
-  },
-  {
-    label: 'COMMUNICATIONS',
-    items: [
-      { href: '/call-logs', label: 'Call Log', icon: Phone },
-      { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/campaigns', label: 'Emails', icon: Mail },
       { href: '/contacts', label: 'Contacts', icon: Users },
-    ]
-  },
-  {
-    label: 'SETTINGS',
-    items: [
+      { href: '/projects', label: 'Pipeline', icon: Workflow },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
+      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
+      { href: '/events', label: 'Events', icon: Calendar },
       { href: '/settings', label: 'Settings', icon: Settings },
     ]
   },
@@ -110,7 +75,6 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [navItemsVisible, setNavItemsVisible] = useState(false)
   const pathname = usePathname()
-  const { setMode } = useUIMode()
 
   // Check for reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -169,11 +133,6 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
       console.error('Error starting impersonation:', error)
       alert('Failed to start impersonation. Please try again.')
     }
-  }
-
-  const handleSwitchToFullView = () => {
-    setMode('full', true)
-    setIsDrawerOpen(false)
   }
 
   return (
@@ -311,22 +270,6 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                       <UserPicker onUserSelect={handleUserSelect} />
                     </div>
                   )}
-
-                  {/* Switch to Full View */}
-                  <button
-                    onClick={handleSwitchToFullView}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-2 rounded-lg",
-                      "text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground",
-                      "transition-all duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                      !prefersReducedMotion && "active:scale-[0.98]"
-                    )}
-                    aria-label="Switch to full desktop view"
-                  >
-                    <Monitor className="h-4 w-4" aria-hidden="true" />
-                    <span className="text-sm font-medium">Switch to Full View</span>
-                  </button>
 
                   {/* Sign Out */}
                   <form action={signOut} className="w-full">

@@ -17,9 +17,9 @@ import { Button } from '@/components/ui/button'
 import { useUIMode } from '@/hooks/useUIMode'
 import {
   UserPlus,
-  Calendar,
-  FileText,
-  Camera
+  Map,
+  Workflow,
+  CheckSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -71,32 +71,32 @@ export function FieldWorkerHome({ className }: FieldWorkerHomeProps) {
 
   const actions: FieldWorkerAction[] = [
     {
-      id: 'new-lead',
+      id: 'knock',
+      icon: Map,
+      label: 'Knock',
+      href: '/knocks',
+      ariaLabel: 'Start door knocking session'
+    },
+    {
+      id: 'new-contact',
       icon: UserPlus,
-      label: 'New Lead',
-      href: '/storm-targeting',
-      ariaLabel: 'Add new customer lead'
+      label: 'New Contact',
+      href: '/contacts/new',
+      ariaLabel: 'Add new contact'
     },
     {
-      id: 'schedule',
-      icon: Calendar,
-      label: 'Schedule',
-      href: '/events',
-      ariaLabel: 'View schedule and appointments'
-    },
-    {
-      id: 'estimates',
-      icon: FileText,
-      label: 'Estimates',
+      id: 'pipeline',
+      icon: Workflow,
+      label: 'Pipeline',
       href: '/projects',
-      ariaLabel: 'Create or view estimates and quotes'
+      ariaLabel: 'View sales pipeline and projects'
     },
     {
-      id: 'reports',
-      icon: Camera,
-      label: 'Reports',
-      href: '/field/today',
-      ariaLabel: 'Capture photos and create reports'
+      id: 'tasks',
+      icon: CheckSquare,
+      label: 'Tasks',
+      href: '/tasks',
+      ariaLabel: 'View and manage tasks'
     }
   ]
 
