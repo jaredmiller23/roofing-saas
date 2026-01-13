@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -138,6 +138,8 @@ const getSteps = (hasHtmlTemplate: boolean) => [
 export default function NewSignatureDocumentPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const params = useParams()
+  const locale = params.locale as string || 'en'
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -504,7 +506,7 @@ export default function NewSignatureDocumentPage() {
 
       setSuccess(true)
       setTimeout(() => {
-        router.push('/signatures')
+        router.push(`/${locale}/signatures`)
       }, 1500)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create document')
@@ -534,7 +536,7 @@ export default function NewSignatureDocumentPage() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <Button
             variant="ghost"
-            onClick={() => router.push('/signatures')}
+            onClick={() => router.push(`/${locale}/signatures`)}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1045,7 +1047,7 @@ export default function NewSignatureDocumentPage() {
           <div className="flex gap-3">
             <Button
               variant="ghost"
-              onClick={() => router.push('/signatures')}
+              onClick={() => router.push(`/${locale}/signatures`)}
             >
               Cancel
             </Button>
