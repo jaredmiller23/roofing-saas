@@ -2868,6 +2868,670 @@ ariaFunctionRegistry.register({
 })
 
 // =============================================================================
+// SMS/Email Functions (Human-in-the-Loop)
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'draft_sms',
+  category: 'actions',
+  description: 'Draft an SMS message for user approval before sending',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'draft_sms',
+    description:
+      'Draft an SMS message for a contact. The message will be shown to the user for approval before sending. Use this when the user wants to text someone.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'ID of the contact to send SMS to',
+        },
+        phone: {
+          type: 'string',
+          description: 'Phone number if contact_id not provided',
+        },
+        message: {
+          type: 'string',
+          description: 'The SMS message content (keep under 160 chars)',
+        },
+        context: {
+          type: 'string',
+          description: 'Why this message is being sent (for approval context)',
+        },
+      },
+      required: ['message'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, phone, message, context: msgContext } = args as {
+      contact_id?: string
+      phone?: string
+      message: string
+      context?: string
+    }
+
+    let recipientPhone = phone
+    let recipientName = 'Unknown'
+
+    // If contact_id provided, look up their phone
+    if (contact_id) {
+      const { data: contact } = await context.supabase
+        .from('contacts')
+        .select('first_name, last_name, phone')
+        .eq('id', contact_id)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+      if (contact) {
+        recipientName = `${contact.first_name} ${contact.last_name}`.trim()
+        recipientPhone = contact.phone || phone
+      }
+    }
+
+    if (!recipientPhone) {
+      return {
+        success: false,
+        error: 'No phone number available for this contact',
+      }
+    }
+
+    // Return draft for approval (HITL pattern)
+    return {
+      success: true,
+      awaitingApproval: true,
+      draft: {
+        type: 'sms' as const,
+        recipient: recipientPhone,
+        body: message,
+        metadata: {
+          contact_id,
+          contact_name: recipientName,
+          context: msgContext,
+        },
+      },
+      message: `Draft SMS to ${recipientName} (${recipientPhone}): "${message}"`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'draft_email',
+  category: 'actions',
+  description: 'Draft an email for user approval before sending',
+  riskLevel: 'medium',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'draft_email',
+    description:
+      'Draft an email for a contact. The email will be shown to the user for approval before sending. Use this when the user wants to email someone.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'ID of the contact to email',
+        },
+        email: {
+          type: 'string',
+          description: 'Email address if contact_id not provided',
+        },
+        subject: {
+          type: 'string',
+          description: 'Email subject line',
+        },
+        body: {
+          type: 'string',
+          description: 'Email body content',
+        },
+        context: {
+          type: 'string',
+          description: 'Why this email is being sent (for approval context)',
+        },
+      },
+      required: ['subject', 'body'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, email, subject, body, context: emailContext } = args as {
+      contact_id?: string
+      email?: string
+      subject: string
+      body: string
+      context?: string
+    }
+
+    let recipientEmail = email
+    let recipientName = 'Unknown'
+
+    // If contact_id provided, look up their email
+    if (contact_id) {
+      const { data: contact } = await context.supabase
+        .from('contacts')
+        .select('first_name, last_name, email')
+        .eq('id', contact_id)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+      if (contact) {
+        recipientName = `${contact.first_name} ${contact.last_name}`.trim()
+        recipientEmail = contact.email || email
+      }
+    }
+
+    if (!recipientEmail) {
+      return {
+        success: false,
+        error: 'No email address available for this contact',
+      }
+    }
+
+    // Return draft for approval (HITL pattern)
+    return {
+      success: true,
+      awaitingApproval: true,
+      draft: {
+        type: 'email' as const,
+        recipient: recipientEmail,
+        subject,
+        body,
+        metadata: {
+          contact_id,
+          contact_name: recipientName,
+          context: emailContext,
+        },
+      },
+      message: `Draft email to ${recipientName} (${recipientEmail})\nSubject: ${subject}\n\n${body}`,
+    }
+  },
+})
+
+// =============================================================================
+// Task Management Functions
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'create_task',
+  category: 'actions',
+  description: 'Create a follow-up task or reminder',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'create_task',
+    description:
+      'Create a task or follow-up reminder. Can be linked to a contact or project. Use for scheduling callbacks, follow-ups, or any action items.',
+    parameters: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Task title/description',
+        },
+        due_date: {
+          type: 'string',
+          description: 'Due date (YYYY-MM-DD or relative like "tomorrow", "next week")',
+        },
+        contact_id: {
+          type: 'string',
+          description: 'Link task to a contact',
+        },
+        project_id: {
+          type: 'string',
+          description: 'Link task to a project',
+        },
+        priority: {
+          type: 'string',
+          enum: ['low', 'medium', 'high'],
+          description: 'Task priority level',
+        },
+        assigned_to: {
+          type: 'string',
+          description: 'User ID to assign the task to',
+        },
+      },
+      required: ['title'],
+    },
+  },
+  execute: async (args, context) => {
+    const { title, due_date, contact_id, project_id, priority, assigned_to } = args as {
+      title: string
+      due_date?: string
+      contact_id?: string
+      project_id?: string
+      priority?: 'low' | 'medium' | 'high'
+      assigned_to?: string
+    }
+
+    // Parse relative dates
+    let parsedDueDate: Date | null = null
+    if (due_date) {
+      const today = new Date()
+      const lower = due_date.toLowerCase()
+
+      if (lower === 'today') {
+        parsedDueDate = today
+      } else if (lower === 'tomorrow') {
+        parsedDueDate = new Date(today.setDate(today.getDate() + 1))
+      } else if (lower === 'next week') {
+        parsedDueDate = new Date(today.setDate(today.getDate() + 7))
+      } else if (lower.includes('day')) {
+        const days = parseInt(lower) || 1
+        parsedDueDate = new Date(today.setDate(today.getDate() + days))
+      } else {
+        // Try parsing as date string
+        parsedDueDate = new Date(due_date)
+        if (isNaN(parsedDueDate.getTime())) {
+          parsedDueDate = null
+        }
+      }
+    }
+
+    // Create task as activity with type 'task'
+    const { data, error } = await context.supabase
+      .from('activities')
+      .insert({
+        tenant_id: context.tenantId,
+        contact_id: contact_id || null,
+        project_id: project_id || null,
+        type: 'task',
+        title,
+        description: JSON.stringify({
+          priority: priority || 'medium',
+          assigned_to: assigned_to || context.userId,
+          status: 'pending',
+        }),
+        due_date: parsedDueDate?.toISOString() || null,
+        created_by: context.userId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    const dueDateStr = parsedDueDate
+      ? parsedDueDate.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'no due date'
+
+    return {
+      success: true,
+      data,
+      message: `Task created: "${title}" (${dueDateStr}, ${priority || 'medium'} priority)`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_pending_tasks',
+  category: 'actions',
+  description: 'Get pending and overdue tasks',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_pending_tasks',
+    description:
+      'Get all pending tasks, optionally filtered by assignee or overdue status. Shows tasks that need attention.',
+    parameters: {
+      type: 'object',
+      properties: {
+        assigned_to: {
+          type: 'string',
+          description: 'Filter by assigned user ID (use "me" for current user)',
+        },
+        overdue_only: {
+          type: 'boolean',
+          description: 'Only show overdue tasks',
+        },
+        contact_id: {
+          type: 'string',
+          description: 'Filter by contact',
+        },
+        project_id: {
+          type: 'string',
+          description: 'Filter by project',
+        },
+      },
+    },
+  },
+  execute: async (args, context) => {
+    const { assigned_to, overdue_only, contact_id, project_id } = args as {
+      assigned_to?: string
+      overdue_only?: boolean
+      contact_id?: string
+      project_id?: string
+    }
+
+    let query = context.supabase
+      .from('activities')
+      .select(
+        `
+        id,
+        title,
+        description,
+        due_date,
+        contact_id,
+        project_id,
+        created_at,
+        contact:contacts(first_name, last_name),
+        project:projects(name)
+      `
+      )
+      .eq('tenant_id', context.tenantId)
+      .eq('type', 'task')
+      .order('due_date', { ascending: true, nullsFirst: false })
+
+    if (contact_id) {
+      query = query.eq('contact_id', contact_id)
+    }
+    if (project_id) {
+      query = query.eq('project_id', project_id)
+    }
+
+    const { data: tasks, error } = await query.limit(20)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Filter for pending tasks (status in description JSON)
+    const now = new Date()
+    interface TaskWithRelations {
+      id: string
+      title: string
+      description: string | null
+      due_date: string | null
+      contact_id: string | null
+      project_id: string | null
+      created_at: string
+      contact: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null
+      project: { name: string } | { name: string }[] | null
+    }
+
+    const pendingTasks = (tasks as TaskWithRelations[])?.filter((task) => {
+      try {
+        const desc = task.description ? JSON.parse(task.description) : {}
+        if (desc.status === 'completed') return false
+
+        // Filter by assignee
+        if (assigned_to) {
+          const assigneeId = assigned_to === 'me' ? context.userId : assigned_to
+          if (desc.assigned_to !== assigneeId) return false
+        }
+
+        // Filter overdue only
+        if (overdue_only && task.due_date) {
+          const dueDate = new Date(task.due_date)
+          if (dueDate >= now) return false
+        }
+
+        return true
+      } catch {
+        return true // Include tasks with non-JSON descriptions
+      }
+    })
+
+    if (!pendingTasks?.length) {
+      return {
+        success: true,
+        data: [],
+        message: overdue_only ? 'No overdue tasks found.' : 'No pending tasks found.',
+      }
+    }
+
+    // Format response
+    const formatted = pendingTasks.map((task) => {
+      const contactData = Array.isArray(task.contact) ? task.contact[0] : task.contact
+      const projectData = Array.isArray(task.project) ? task.project[0] : task.project
+      const dueDate = task.due_date ? new Date(task.due_date) : null
+      const isOverdue = dueDate && dueDate < now
+
+      let desc
+      try {
+        desc = task.description ? JSON.parse(task.description) : {}
+      } catch {
+        desc = {}
+      }
+
+      return {
+        id: task.id,
+        title: task.title,
+        priority: desc.priority || 'medium',
+        due_date: dueDate?.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        }),
+        is_overdue: isOverdue,
+        contact: contactData
+          ? `${contactData.first_name} ${contactData.last_name}`.trim()
+          : null,
+        project: projectData?.name || null,
+      }
+    })
+
+    const overdueCount = formatted.filter((t) => t.is_overdue).length
+
+    return {
+      success: true,
+      data: formatted,
+      message: `Found ${formatted.length} pending task(s)${
+        overdueCount > 0 ? ` (${overdueCount} overdue)` : ''
+      }.`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'complete_task',
+  category: 'actions',
+  description: 'Mark a task as completed',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'complete_task',
+    description: 'Mark a task as completed. Use after a task has been done.',
+    parameters: {
+      type: 'object',
+      properties: {
+        task_id: {
+          type: 'string',
+          description: 'ID of the task to complete',
+        },
+        notes: {
+          type: 'string',
+          description: 'Completion notes',
+        },
+      },
+      required: ['task_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { task_id, notes } = args as { task_id: string; notes?: string }
+
+    // Get current task
+    const { data: task, error: fetchError } = await context.supabase
+      .from('activities')
+      .select('title, description')
+      .eq('id', task_id)
+      .eq('tenant_id', context.tenantId)
+      .eq('type', 'task')
+      .single()
+
+    if (fetchError || !task) {
+      return { success: false, error: 'Task not found' }
+    }
+
+    // Update description to mark as completed
+    let desc
+    try {
+      desc = task.description ? JSON.parse(task.description) : {}
+    } catch {
+      desc = {}
+    }
+
+    desc.status = 'completed'
+    desc.completed_at = new Date().toISOString()
+    desc.completed_by = context.userId
+    if (notes) desc.completion_notes = notes
+
+    const { error: updateError } = await context.supabase
+      .from('activities')
+      .update({ description: JSON.stringify(desc) })
+      .eq('id', task_id)
+      .eq('tenant_id', context.tenantId)
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
+
+    return {
+      success: true,
+      message: `Task "${task.title}" marked as completed.`,
+    }
+  },
+})
+
+// =============================================================================
+// Location-Based Search
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'search_by_address',
+  category: 'crm',
+  description: 'Search contacts and projects by address or city',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'search_by_address',
+    description:
+      'Search for contacts and projects by address, city, or zip code. Useful for finding customers in a specific area.',
+    parameters: {
+      type: 'object',
+      properties: {
+        city: {
+          type: 'string',
+          description: 'City name to search',
+        },
+        zip: {
+          type: 'string',
+          description: 'ZIP code to search',
+        },
+        street: {
+          type: 'string',
+          description: 'Street name or partial address',
+        },
+      },
+    },
+  },
+  execute: async (args, context) => {
+    const { city, zip, street } = args as {
+      city?: string
+      zip?: string
+      street?: string
+    }
+
+    if (!city && !zip && !street) {
+      return {
+        success: false,
+        error: 'Please provide at least one search criteria: city, zip, or street',
+      }
+    }
+
+    let query = context.supabase
+      .from('contacts')
+      .select(
+        `
+        id,
+        first_name,
+        last_name,
+        phone,
+        address_street,
+        address_city,
+        address_state,
+        address_zip,
+        projects(id, name, status, pipeline_stage)
+      `
+      )
+      .eq('tenant_id', context.tenantId)
+
+    if (city) {
+      query = query.ilike('address_city', `%${city}%`)
+    }
+    if (zip) {
+      query = query.eq('address_zip', zip)
+    }
+    if (street) {
+      query = query.ilike('address_street', `%${street}%`)
+    }
+
+    const { data: contacts, error } = await query.limit(20)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!contacts?.length) {
+      const criteria = [city && `city "${city}"`, zip && `ZIP ${zip}`, street && `"${street}"`]
+        .filter(Boolean)
+        .join(', ')
+      return {
+        success: true,
+        data: [],
+        message: `No contacts found matching ${criteria}.`,
+      }
+    }
+
+    interface ContactWithProjects {
+      id: string
+      first_name: string
+      last_name: string
+      phone: string | null
+      address_street: string | null
+      address_city: string | null
+      address_state: string | null
+      address_zip: string | null
+      projects: Array<{
+        id: string
+        name: string
+        status: string | null
+        pipeline_stage: string | null
+      }> | null
+    }
+
+    const formatted = (contacts as ContactWithProjects[]).map((c) => ({
+      id: c.id,
+      name: `${c.first_name} ${c.last_name}`.trim(),
+      phone: c.phone,
+      address: [c.address_street, c.address_city, c.address_state, c.address_zip]
+        .filter(Boolean)
+        .join(', '),
+      project_count: c.projects?.length || 0,
+      has_active_project: c.projects?.some(
+        (p) => p.status === 'active' || !['won', 'lost', 'completed'].includes(p.pipeline_stage || '')
+      ),
+    }))
+
+    return {
+      success: true,
+      data: formatted,
+      message: `Found ${contacts.length} contact(s) in the specified area.`,
+    }
+  },
+})
+
+// =============================================================================
 // Export registry
 // =============================================================================
 
