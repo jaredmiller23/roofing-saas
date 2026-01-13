@@ -2,14 +2,13 @@
 
 import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import heic2any from 'heic2any'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { withTimeout, validateHeicFile } from '@/lib/utils'
+import { validateHeicFile } from '@/lib/utils'
 
-// Timeout for HEIC conversion (30 seconds)
-const HEIC_CONVERSION_TIMEOUT = 30000
+// Note: HEIC conversion now happens server-side for reliability
+// Client only validates the file and uploads it raw
 
 interface PhotoUploadProps {
   contactId?: string
@@ -87,8 +86,6 @@ export function PhotoUpload({
       cancelledRef.current = false
 
       try {
-        let processedFile = file
-
         // Helper to check if cancelled
         const checkCancelled = () => {
           if (cancelledRef.current) {
@@ -96,8 +93,14 @@ export function PhotoUpload({
           }
         }
 
-        // Convert HEIC to JPEG if needed
+        // Detect if this is a HEIC file
         const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+
+        // For HEIC files: validate then upload raw (server will convert)
+        // For other images: compress client-side then upload
+        let fileToUpload: File
+        let compressionInfo = { originalSize: file.size, compressedSize: file.size, compressionRatio: 0 }
+
         if (isHeic) {
           setUploadState({
             status: 'compressing',
@@ -105,64 +108,56 @@ export function PhotoUpload({
             message: 'Validating HEIC file...',
           })
 
-          // Validate HEIC magic bytes before attempting conversion
+          // Validate HEIC magic bytes before uploading
           const isValidHeic = await validateHeicFile(file)
           if (!isValidHeic) {
             throw new Error('File appears to have an invalid format. It may be corrupted or mislabeled as HEIC.')
           }
 
+          checkCancelled()
+
+          // Show preview (best effort - Safari can display HEIC, others may not)
+          setPreviewUrl(URL.createObjectURL(file))
+
           setUploadState({
-            status: 'compressing',
-            progress: 15,
-            message: 'Converting HEIC to JPEG...',
+            status: 'uploading',
+            progress: 25,
+            message: 'Uploading HEIC (server will convert)...',
           })
 
-          // Convert with timeout to prevent infinite hang
-          const convertedBlob = await withTimeout(
-            heic2any({
-              blob: file,
-              toType: 'image/jpeg',
-              quality: 0.9,
-            }),
-            HEIC_CONVERSION_TIMEOUT,
-            'HEIC conversion timed out after 30 seconds. The file may be too large or corrupted. Try uploading a smaller image or a different format.'
-          )
+          // Upload raw HEIC - server handles conversion
+          fileToUpload = file
+        } else {
+          // Show preview
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            setPreviewUrl(reader.result as string)
+          }
+          reader.readAsDataURL(file)
 
-          // heic2any can return a single blob or array of blobs
-          const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
-          processedFile = new File(
-            [blob],
-            file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
-            { type: 'image/jpeg' }
-          )
+          // Compress non-HEIC images client-side
+          setUploadState({
+            status: 'compressing',
+            progress: 25,
+            message: 'Compressing image...',
+          })
+
+          const compressed = await compressImage(file)
+          fileToUpload = compressed.file
+          compressionInfo = {
+            originalSize: compressed.originalSize,
+            compressedSize: compressed.compressedSize,
+            compressionRatio: compressed.compressionRatio,
+          }
+
+          setUploadState({
+            status: 'compressing',
+            progress: 50,
+            message: `Compressed ${compressionInfo.compressionRatio.toFixed(0)}% (${(compressionInfo.originalSize / 1024 / 1024).toFixed(1)}MB → ${(compressionInfo.compressedSize / 1024 / 1024).toFixed(1)}MB)`,
+          })
         }
 
-        // Check if cancelled after HEIC conversion
-        checkCancelled()
-
-        // Show preview
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setPreviewUrl(reader.result as string)
-        }
-        reader.readAsDataURL(processedFile)
-
-        // Compress image
-        setUploadState({
-          status: 'compressing',
-          progress: 25,
-          message: 'Compressing image...',
-        })
-
-        const compressed = await compressImage(processedFile)
-
-        setUploadState({
-          status: 'compressing',
-          progress: 50,
-          message: `Compressed ${compressed.compressionRatio}% (${(compressed.originalSize / 1024 / 1024).toFixed(1)}MB → ${(compressed.compressedSize / 1024 / 1024).toFixed(1)}MB)`,
-        })
-
-        // Check if cancelled after compression
+        // Check if cancelled
         checkCancelled()
 
         // Check if online or offline
@@ -196,13 +191,15 @@ export function PhotoUpload({
           }
 
           await addPhotoToQueue(
-            compressed.file,
+            fileToUpload,
             contactId || '',
             {
               capturedAt: new Date().toISOString(),
               latitude,
               longitude,
-              notes: `Original: ${(compressed.originalSize / 1024 / 1024).toFixed(1)}MB, Compressed: ${(compressed.compressedSize / 1024 / 1024).toFixed(1)}MB (${compressed.compressionRatio}% reduction)`,
+              notes: isHeic
+                ? 'HEIC file - will be converted on server'
+                : `Original: ${(compressionInfo.originalSize / 1024 / 1024).toFixed(1)}MB, Compressed: ${(compressionInfo.compressedSize / 1024 / 1024).toFixed(1)}MB (${compressionInfo.compressionRatio.toFixed(0)}% reduction)`,
             },
             tenantId,
             projectId
@@ -224,19 +221,20 @@ export function PhotoUpload({
           setUploadState({
             status: 'uploading',
             progress: 75,
-            message: 'Uploading to server...',
+            message: isHeic ? 'Uploading HEIC (server converting)...' : 'Uploading to server...',
           })
 
           const formData = new FormData()
-          formData.append('file', compressed.file, file.name)
+          formData.append('file', fileToUpload, file.name)
           if (contactId) formData.append('contact_id', contactId)
           if (projectId) formData.append('project_id', projectId)
           formData.append(
             'metadata',
             JSON.stringify({
-              originalSize: compressed.originalSize,
-              compressedSize: compressed.compressedSize,
-              compressionRatio: compressed.compressionRatio,
+              originalSize: compressionInfo.originalSize,
+              compressedSize: compressionInfo.compressedSize,
+              compressionRatio: compressionInfo.compressionRatio,
+              isHeic,
             })
           )
 
@@ -285,18 +283,7 @@ export function PhotoUpload({
           return
         }
 
-        // Log timeout events for observability
-        const isTimeout = error instanceof Error && error.message.includes('timed out')
-        if (isTimeout) {
-          console.warn('[PhotoUpload] Operation timed out:', {
-            message: error instanceof Error ? error.message : 'Unknown timeout',
-            fileName: file.name,
-            fileSize: file.size,
-            fileType: file.type,
-          })
-        } else {
-          console.error('[PhotoUpload] Upload error:', error)
-        }
+        console.error('[PhotoUpload] Upload error:', error)
 
         const errorMessage = error instanceof Error ? error.message : 'Upload failed'
         setUploadState({

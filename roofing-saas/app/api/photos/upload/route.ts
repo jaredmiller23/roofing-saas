@@ -104,7 +104,8 @@ export async function POST(request: NextRequest) {
     // Server-Side HEIC Conversion
     // ========================================
     // Convert HEIC to JPEG on server - much more reliable than client-side heic2any
-    let processedBuffer: Buffer = buffer
+    // Use ArrayBufferLike to accept both original buffer and converted buffer types
+    let processedBuffer: Buffer<ArrayBufferLike> = buffer
     let finalMime = actualMime
     let wasHeicConverted = false
 
