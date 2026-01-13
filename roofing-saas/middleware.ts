@@ -35,9 +35,10 @@ export async function middleware(request: NextRequest) {
   const method = request.method
 
   // Handle i18n routing first (locale detection, redirects)
-  // Skip for API routes, static assets, root landing page
+  // Skip for API routes, static assets, root landing page, marketing pages
   // Auth routes are now under [locale] so they need i18n middleware
   const isRootPath = pathname === '/'
+  const isMarketingPage = pathname === '/demo' // Marketing pages outside [locale]
   const hasLocalePrefix = locales.some(locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`)
 
   // Only run i18n middleware for paths that need locale prefix added
@@ -48,6 +49,7 @@ export async function middleware(request: NextRequest) {
       !pathname.startsWith('/_next/') &&
       !isSigningPage &&
       !isRootPath &&
+      !isMarketingPage &&
       !hasLocalePrefix) {
     const intlResponse = intlMiddleware(request)
     // If intl middleware wants to redirect, return that response
@@ -121,6 +123,7 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require authentication
   const publicRoutes = [
     '/', // Marketing landing page
+    '/demo', // Demo scheduling page
     '/login',
     '/register',
     '/reset-password',
