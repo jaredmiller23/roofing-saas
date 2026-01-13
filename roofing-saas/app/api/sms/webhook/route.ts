@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
 import twilio from 'twilio'
 import { verifyTwilioSignature, parseTwilioFormData } from '@/lib/webhooks/security'
+import { handleInboundSMS, queueSMSForApproval } from '@/lib/aria/sms-handler'
 
 /**
  * POST /api/sms/webhook
@@ -116,10 +117,63 @@ export async function POST(request: NextRequest) {
       } else {
         logger.error('Failed to process opt-in', { from, error: result.error })
       }
-    }
+    } else {
+      // Process with ARIA for intelligent response
+      logger.info('Processing message with ARIA', { from, tenantId })
 
-    // TODO: Trigger automation workflows for other messages
-    // TODO: Notify users of new inbound messages
+      const ariaResult = await handleInboundSMS({
+        from,
+        to,
+        body,
+        tenantId,
+        contactId: contact?.id,
+      })
+
+      if (ariaResult.success && ariaResult.response) {
+        if (ariaResult.shouldAutoSend) {
+          // Auto-send response via TwiML
+          twiml.message(ariaResult.response)
+          logger.info('ARIA auto-response added to TwiML', {
+            from,
+            contactName: ariaResult.contactName,
+            reason: ariaResult.reason,
+          })
+        } else {
+          // Queue for human approval - don't respond yet
+          const queueResult = await queueSMSForApproval({
+            tenantId,
+            from,
+            inboundMessage: body,
+            suggestedResponse: ariaResult.response,
+            contactId: ariaResult.contactId,
+            contactName: ariaResult.contactName,
+            category: ariaResult.reason?.split(':')[1]?.trim() || 'complex',
+          })
+
+          if (queueResult.success) {
+            logger.info('SMS queued for human approval', {
+              from,
+              queueId: queueResult.queueId,
+              reason: ariaResult.reason,
+            })
+          } else {
+            logger.warn('Failed to queue SMS for approval', {
+              from,
+              error: queueResult.error,
+            })
+          }
+
+          // Optionally send an acknowledgment (can be removed if silent queue preferred)
+          // twiml.message("Thanks for your message! We'll get back to you shortly.")
+        }
+      } else if (!ariaResult.success) {
+        logger.error('ARIA failed to process message', {
+          from,
+          error: ariaResult.error,
+        })
+        // Don't respond if ARIA failed - let humans handle it
+      }
+    }
 
     const duration = Date.now() - startTime
     logger.info('SMS webhook processed', { duration })
