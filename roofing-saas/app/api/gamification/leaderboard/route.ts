@@ -91,88 +91,64 @@ export async function GET(request: Request) {
     let userCount = 0
 
     if (type === 'knocks') {
-      // Count door knock activities by user within tenant
-      const { data: knockCounts, error } = await supabase
-        .from('activities')
-        .select('created_by')
-        .eq('tenant_id', tenantId)
-        .eq('type', 'door_knock')
-        .gte('created_at', getDateByPeriod(period))
+      // Use RPC for efficient database-side aggregation
+      const { data: knockData, error } = await supabase.rpc('get_knock_leaderboard', {
+        p_tenant_id: tenantId,
+        p_since: getDateByPeriod(period),
+        p_limit: limit
+      })
 
       if (error) {
-        logger.error('Error fetching knock activities:', { error })
+        logger.error('Error fetching knock leaderboard:', { error })
         throw InternalError('Failed to fetch knock leaderboard')
       }
 
-      // Aggregate counts by user
-      const countsByUser = new Map<string, number>()
-      knockCounts?.forEach((activity) => {
-        const userId = activity.created_by
-        if (userId) {
-          countsByUser.set(userId, (countsByUser.get(userId) || 0) + 1)
+      // Build leaderboard with user info
+      leaderboard = (knockData || []).map((row: { user_id: string; knock_count: number }) => {
+        const userInfo = userInfoMap.get(row.user_id)
+        return {
+          user_id: row.user_id,
+          user_name: userInfo?.name || 'Unknown',
+          knock_count: Number(row.knock_count),
+          avatar_url: userInfo?.avatar_url || null
         }
       })
 
-      // Build leaderboard using userInfoMap
-      leaderboard = Array.from(countsByUser.entries())
-        .map(([user_id, count]) => {
-          const userInfo = userInfoMap.get(user_id)
-          return {
-            user_id,
-            user_name: userInfo?.name || 'Unknown',
-            knock_count: count,
-            avatar_url: userInfo?.avatar_url || null
-          }
-        })
-        .sort((a, b) => (b.knock_count || 0) - (a.knock_count || 0))
-        .slice(0, limit)
-
-      userCount = countsByUser.get(user.id) || 0
-      if (userCount > 0) {
-        const usersWithMoreKnocks = Array.from(countsByUser.values()).filter(count => count > userCount).length
-        userRank = usersWithMoreKnocks + 1
+      // Get current user's rank efficiently
+      const userEntry = knockData?.find((row: { user_id: string }) => row.user_id === user.id)
+      if (userEntry) {
+        userCount = Number(userEntry.knock_count)
+        userRank = knockData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
       }
     } else if (type === 'sales') {
-      // Count won projects by user within tenant
-      const { data: salesCounts, error } = await supabase
-        .from('projects')
-        .select('created_by')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'won')
-        .gte('updated_at', getDateByPeriod(period))
+      // Use RPC for efficient database-side aggregation
+      const { data: salesData, error } = await supabase.rpc('get_sales_leaderboard', {
+        p_tenant_id: tenantId,
+        p_since: getDateByPeriod(period),
+        p_limit: limit
+      })
 
       if (error) {
-        logger.error('Error fetching sales:', { error })
+        logger.error('Error fetching sales leaderboard:', { error })
         throw InternalError('Failed to fetch sales leaderboard')
       }
 
-      // Aggregate counts by user
-      const countsByUser = new Map<string, number>()
-      salesCounts?.forEach((project) => {
-        const userId = project.created_by
-        if (userId) {
-          countsByUser.set(userId, (countsByUser.get(userId) || 0) + 1)
+      // Build leaderboard with user info
+      leaderboard = (salesData || []).map((row: { user_id: string; sales_count: number }) => {
+        const userInfo = userInfoMap.get(row.user_id)
+        return {
+          user_id: row.user_id,
+          user_name: userInfo?.name || 'Unknown',
+          sales_count: Number(row.sales_count),
+          avatar_url: userInfo?.avatar_url || null
         }
       })
 
-      // Build leaderboard using userInfoMap
-      leaderboard = Array.from(countsByUser.entries())
-        .map(([user_id, count]) => {
-          const userInfo = userInfoMap.get(user_id)
-          return {
-            user_id,
-            user_name: userInfo?.name || 'Unknown',
-            sales_count: count,
-            avatar_url: userInfo?.avatar_url || null
-          }
-        })
-        .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
-        .slice(0, limit)
-
-      userCount = countsByUser.get(user.id) || 0
-      if (userCount > 0) {
-        const usersWithMoreSales = Array.from(countsByUser.values()).filter(count => count > userCount).length
-        userRank = usersWithMoreSales + 1
+      // Get current user's rank efficiently
+      const userEntry = salesData?.find((row: { user_id: string }) => row.user_id === user.id)
+      if (userEntry) {
+        userCount = Number(userEntry.sales_count)
+        userRank = salesData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
       }
     } else {
       // Default: Get leaderboard from view (points)
@@ -231,6 +207,8 @@ export async function GET(request: Request) {
       type,
       leaderboard: formattedLeaderboard,
       currentUserRank: userRank
+    }, 200, {
+      'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
     })
   } catch (error) {
     logger.error('Leaderboard API error:', { error })

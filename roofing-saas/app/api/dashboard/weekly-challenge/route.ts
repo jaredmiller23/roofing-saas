@@ -32,37 +32,20 @@ export async function GET() {
     const weekEnd = new Date(now)
     weekEnd.setHours(23, 59, 59, 999)
 
-    // Query door knock activities for current week (tenant-wide for participant count)
-    const { data: allKnockActivities, error: allError } = await supabase
-      .from('activities')
-      .select('created_by')
-      .eq('tenant_id', tenantId)
-      .eq('type', 'door_knock')
-      .gte('created_at', weekStart.toISOString())
-      .lte('created_at', weekEnd.toISOString())
+    // Use RPC for efficient database-side aggregation (single query instead of 2 unbounded queries)
+    const { data: stats, error: statsError } = await supabase.rpc('get_weekly_challenge_stats', {
+      p_tenant_id: tenantId,
+      p_user_id: user.id,
+      p_since: weekStart.toISOString()
+    })
 
-    if (allError) {
-      console.error('Error fetching knock activities:', allError)
+    if (statsError) {
+      console.error('Error fetching weekly challenge stats:', statsError)
       throw new Error('Failed to fetch weekly challenge data')
     }
 
-    // Query current user's personal knock count
-    const { count: userKnockCount, error: userError } = await supabase
-      .from('activities')
-      .select('*', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .eq('type', 'door_knock')
-      .eq('created_by', user.id)
-      .gte('created_at', weekStart.toISOString())
-      .lte('created_at', weekEnd.toISOString())
-
-    if (userError) {
-      console.error('Error fetching user knock count:', userError)
-    }
-
-    // Count distinct participants (users who have knocked)
-    const uniqueUsers = new Set(allKnockActivities?.map(a => a.created_by).filter(Boolean))
-    const participantCount = uniqueUsers.size
+    const userKnockCount = Number(stats?.[0]?.user_knock_count || 0)
+    const participantCount = Number(stats?.[0]?.participant_count || 0)
 
     // Target (configurable - default 50 per user)
     const target = 50
@@ -88,6 +71,10 @@ export async function GET() {
           status: 'active',
         },
       },
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
+      }
     })
   } catch (error) {
     console.error('Weekly challenge API error:', error)

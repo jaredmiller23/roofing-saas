@@ -210,6 +210,10 @@ export async function GET() {
         activities: limitedActivities,
         count: limitedActivities.length
       }
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
+      }
     })
   } catch (error) {
     console.error('Error fetching activity feed:', error)

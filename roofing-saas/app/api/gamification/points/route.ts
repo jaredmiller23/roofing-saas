@@ -38,6 +38,10 @@ export async function GET(request: Request) {
         all_time_best_daily: 0,
         all_time_best_weekly: 0,
         all_time_best_monthly: 0
+      },
+      200,
+      {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
       }
     )
   } catch (error) {

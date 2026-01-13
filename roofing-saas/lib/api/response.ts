@@ -34,14 +34,15 @@ export interface PaginationParams {
  */
 export function successResponse<T>(
   data: T,
-  status = 200
+  status = 200,
+  headers?: HeadersInit
 ): NextResponse<ApiResponse<T>> {
   return NextResponse.json(
     {
       success: true,
       data,
     },
-    { status }
+    { status, headers }
   )
 }
 
