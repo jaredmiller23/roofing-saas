@@ -35,13 +35,21 @@ export async function incrementSmsUsage(
   });
 
   if (error) {
-    // Fallback to direct update if RPC doesn't exist
-    logger.warn('RPC not available, using direct update', { error });
+    // Fallback: fetch current value and update with new total
+    // This is not atomic but works as a fallback if RPC doesn't exist
+    logger.warn('RPC increment failed, using fetch-and-update fallback', { error });
+
+    const { data: current } = await supabase
+      .from('subscriptions')
+      .select('sms_used_this_month')
+      .eq('tenant_id', tenantId)
+      .single();
+
+    const newTotal = (current?.sms_used_this_month || 0) + count;
+
     await supabase
       .from('subscriptions')
-      .update({
-        sms_used_this_month: supabase.rpc('', {}), // This won't work, need raw SQL
-      })
+      .update({ sms_used_this_month: newTotal })
       .eq('tenant_id', tenantId);
   }
 
@@ -59,13 +67,30 @@ export async function incrementEmailUsage(
 
   await resetUsageIfNeeded(tenantId);
 
-  // Direct update with increment
-  await supabase
-    .from('subscriptions')
-    .update({
-      emails_used_this_month: count, // Will be replaced with proper increment
-    })
-    .eq('tenant_id', tenantId);
+  // Try atomic increment via RPC
+  const { error } = await supabase.rpc('increment_subscription_usage', {
+    p_tenant_id: tenantId,
+    p_field: 'emails_used_this_month',
+    p_amount: count,
+  });
+
+  if (error) {
+    // Fallback: fetch current value and update with new total
+    logger.warn('RPC increment failed, using fetch-and-update fallback', { error });
+
+    const { data: current } = await supabase
+      .from('subscriptions')
+      .select('emails_used_this_month')
+      .eq('tenant_id', tenantId)
+      .single();
+
+    const newTotal = (current?.emails_used_this_month || 0) + count;
+
+    await supabase
+      .from('subscriptions')
+      .update({ emails_used_this_month: newTotal })
+      .eq('tenant_id', tenantId);
+  }
 
   logger.debug('Incremented email usage', { tenantId, count });
 }
@@ -202,23 +227,10 @@ export async function getCurrentUsage(tenantId: string): Promise<{
 }
 
 // =============================================================================
-// Database Function (to be added via migration)
+// Database Function
 // =============================================================================
-
-/*
--- Add this function to increment usage atomically
-
-CREATE OR REPLACE FUNCTION increment_subscription_usage(
-  p_tenant_id UUID,
-  p_field TEXT,
-  p_amount INTEGER DEFAULT 1
-)
-RETURNS VOID AS $$
-BEGIN
-  EXECUTE format(
-    'UPDATE subscriptions SET %I = COALESCE(%I, 0) + $1 WHERE tenant_id = $2',
-    p_field, p_field
-  ) USING p_amount, p_tenant_id;
-END;
-$$ LANGUAGE plpgsql;
-*/
+// The increment_subscription_usage() function is defined in:
+// supabase/migrations/20260113210000_usage_increment_function.sql
+//
+// It provides atomic increment to prevent race conditions when
+// multiple SMS/emails are sent concurrently.
