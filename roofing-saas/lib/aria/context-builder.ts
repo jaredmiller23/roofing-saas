@@ -5,7 +5,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import type { ARIAContext } from './types'
+import type { ARIAContext, ARIAActivity, ARIATask, ARIAMessage } from './types'
 
 /**
  * Build enriched ARIA context from base context
@@ -40,6 +40,10 @@ export async function buildARIAContext(
   if (context.channel === 'voice_inbound' && context.callSid) {
     await enrichFromCallerId(context)
   }
+
+  // Girl Friday Enrichment (Phase 1 - Omniscience)
+  // ARIA should know the recent history automatically
+  await enrichGirlFridayContext(context)
 
   return context
 }
@@ -223,8 +227,230 @@ export async function findContactByPhone(
   return null
 }
 
+// =============================================================================
+// Girl Friday Context Enrichment (Phase 1 - Omniscience)
+// =============================================================================
+
+/**
+ * Enrich context with Girl Friday data: activities, tasks, message thread
+ * This gives ARIA automatic knowledge of the customer situation
+ */
+async function enrichGirlFridayContext(context: ARIAContext): Promise<void> {
+  // Only enrich if we have a contact or project
+  if (!context.contact && !context.project) {
+    return
+  }
+
+  try {
+    // Fetch recent activities (last 5)
+    const contactId = context.contact?.id
+    const projectId = context.project?.id
+
+    if (contactId || projectId) {
+      context.recentActivities = await getRecentActivities(context, {
+        contactId,
+        projectId,
+        limit: 5,
+      })
+    }
+
+    // Fetch upcoming tasks and callbacks
+    if (contactId) {
+      context.upcomingTasks = await getUpcomingTasks(context, contactId)
+    }
+
+    // Fetch message thread for SMS channel
+    if (context.channel === 'sms' && context.contact?.phone) {
+      context.messageThread = await getRecentMessages(context, context.contact.phone)
+    }
+  } catch (error) {
+    // Don't fail context building on enrichment errors
+    logger.error('Error enriching Girl Friday context:', { error })
+  }
+}
+
+/**
+ * Get recent activities for a contact or project
+ */
+async function getRecentActivities(
+  context: ARIAContext,
+  options: { contactId?: string; projectId?: string; limit?: number }
+): Promise<ARIAActivity[]> {
+  const { contactId, projectId, limit = 5 } = options
+
+  let query = context.supabase
+    .from('activities')
+    .select('id, type, subject, content, direction, created_at, metadata')
+    .eq('tenant_id', context.tenantId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (contactId) {
+    query = query.eq('contact_id', contactId)
+  } else if (projectId) {
+    query = query.eq('project_id', projectId)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    logger.error('Error fetching recent activities:', { error })
+    return []
+  }
+
+  return (data || []).map((activity) => ({
+    id: activity.id,
+    type: activity.type || 'other',
+    subject: activity.subject,
+    content: activity.content,
+    direction: activity.direction,
+    created_at: activity.created_at,
+    metadata: activity.metadata,
+  }))
+}
+
+/**
+ * Get upcoming tasks and callbacks for a contact
+ */
+async function getUpcomingTasks(
+  context: ARIAContext,
+  contactId: string
+): Promise<ARIATask[]> {
+  // Fetch from tasks table
+  const { data: tasks, error: tasksError } = await context.supabase
+    .from('tasks')
+    .select('id, title, description, due_date, priority, status')
+    .eq('tenant_id', context.tenantId)
+    .eq('contact_id', contactId)
+    .eq('status', 'pending')
+    .order('due_date', { ascending: true })
+    .limit(5)
+
+  if (tasksError) {
+    logger.error('Error fetching tasks:', { error: tasksError })
+  }
+
+  // Fetch from callback_requests table
+  const { data: callbacks, error: callbacksError } = await context.supabase
+    .from('callback_requests')
+    .select('id, reason, scheduled_time, status')
+    .eq('tenant_id', context.tenantId)
+    .eq('contact_id', contactId)
+    .in('status', ['pending', 'scheduled'])
+    .order('scheduled_time', { ascending: true })
+    .limit(3)
+
+  if (callbacksError) {
+    logger.error('Error fetching callbacks:', { error: callbacksError })
+  }
+
+  const result: ARIATask[] = []
+
+  // Add tasks
+  if (tasks) {
+    for (const task of tasks) {
+      result.push({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        due_date: task.due_date,
+        priority: task.priority,
+        type: 'task',
+        status: task.status,
+      })
+    }
+  }
+
+  // Add callbacks as tasks
+  if (callbacks) {
+    for (const callback of callbacks) {
+      result.push({
+        id: callback.id,
+        title: `Callback: ${callback.reason || 'No reason specified'}`,
+        due_date: callback.scheduled_time,
+        type: 'callback',
+        status: callback.status === 'scheduled' ? 'pending' : callback.status,
+      })
+    }
+  }
+
+  // Sort by due date
+  result.sort((a, b) => {
+    if (!a.due_date) return 1
+    if (!b.due_date) return -1
+    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+  })
+
+  return result.slice(0, 5)
+}
+
+/**
+ * Get recent SMS messages for conversation threading
+ */
+async function getRecentMessages(
+  context: ARIAContext,
+  phone: string
+): Promise<ARIAMessage[]> {
+  // Normalize phone for matching
+  const normalizedPhone = phone.replace(/\D/g, '')
+  const phoneVariants = [
+    normalizedPhone,
+    `+1${normalizedPhone}`,
+    normalizedPhone.slice(-10),
+  ]
+
+  // Try sms_messages table first (if it exists)
+  const { data: messages, error } = await context.supabase
+    .from('sms_messages')
+    .select('id, direction, body, created_at, status')
+    .eq('tenant_id', context.tenantId)
+    .or(
+      phoneVariants.map((p) => `to_number.ilike.%${p}%`).join(',') +
+        ',' +
+        phoneVariants.map((p) => `from_number.ilike.%${p}%`).join(',')
+    )
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (error) {
+    // Table might not exist or other error, try activities
+    logger.debug('SMS messages table query failed, trying activities:', { error })
+
+    const { data: smsActivities } = await context.supabase
+      .from('activities')
+      .select('id, direction, content, created_at, metadata')
+      .eq('tenant_id', context.tenantId)
+      .eq('type', 'sms')
+      .or(
+        phoneVariants.map((p) => `metadata->>phone.ilike.%${p}%`).join(',')
+      )
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (smsActivities) {
+      return smsActivities.map((a) => ({
+        id: a.id,
+        direction: a.direction || 'outbound',
+        body: a.content || '',
+        sent_at: a.created_at,
+      }))
+    }
+
+    return []
+  }
+
+  return (messages || []).map((m) => ({
+    id: m.id,
+    direction: m.direction,
+    body: m.body,
+    sent_at: m.created_at,
+    status: m.status,
+  }))
+}
+
 /**
  * Get context summary for system prompt
+ * This is what ARIA "knows" automatically about the current situation
  */
 export function getContextSummary(context: ARIAContext): string {
   const parts: string[] = []
@@ -247,15 +473,85 @@ export function getContextSummary(context: ARIAContext): string {
     )
   }
 
+  // Girl Friday: Recent Activities (Omniscience)
+  if (context.recentActivities && context.recentActivities.length > 0) {
+    parts.push('\nRecent activity history:')
+    for (const activity of context.recentActivities) {
+      const timeAgo = formatTimeAgo(activity.created_at)
+      const direction = activity.direction ? ` (${activity.direction})` : ''
+      const summary = activity.subject || activity.content?.slice(0, 50) || 'No details'
+      parts.push(`- ${timeAgo}: ${activity.type}${direction} - ${summary}`)
+    }
+  }
+
+  // Girl Friday: Upcoming Tasks (Awareness)
+  if (context.upcomingTasks && context.upcomingTasks.length > 0) {
+    parts.push('\nUpcoming tasks/callbacks:')
+    for (const task of context.upcomingTasks) {
+      const dueInfo = task.due_date ? ` (due: ${formatDueDate(task.due_date)})` : ''
+      const priority = task.priority ? ` [${task.priority}]` : ''
+      parts.push(`- ${task.type === 'callback' ? '📞' : '✓'} ${task.title}${dueInfo}${priority}`)
+    }
+  }
+
+  // Girl Friday: Message Thread (Conversation Context)
+  if (context.messageThread && context.messageThread.length > 0) {
+    parts.push('\nRecent messages in this conversation:')
+    // Show oldest first for reading order
+    const orderedMessages = [...context.messageThread].reverse()
+    for (const msg of orderedMessages) {
+      const who = msg.direction === 'inbound' ? 'Customer' : 'Us'
+      const preview = msg.body.length > 60 ? msg.body.slice(0, 60) + '...' : msg.body
+      parts.push(`- ${who}: "${preview}"`)
+    }
+  }
+
   if (context.page) {
-    parts.push(`User is on page: ${context.page}`)
+    parts.push(`\nUser is on page: ${context.page}`)
   }
 
   if (context.channel === 'voice_inbound') {
     parts.push('This is an inbound phone call.')
   } else if (context.channel === 'voice_outbound') {
     parts.push('This is an outbound phone call.')
+  } else if (context.channel === 'sms') {
+    parts.push('This is an SMS conversation.')
   }
 
   return parts.join('\n')
+}
+
+/**
+ * Format a timestamp as relative time (e.g., "2 hours ago", "yesterday")
+ */
+function formatTimeAgo(timestamp: string): string {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins} min ago`
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+  if (diffDays === 1) return 'yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  return date.toLocaleDateString()
+}
+
+/**
+ * Format a due date for display
+ */
+function formatDueDate(dueDate: string): string {
+  const date = new Date(dueDate)
+  const now = new Date()
+  const diffMs = date.getTime() - now.getTime()
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffDays < 0) return `overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''}`
+  if (diffDays === 0) return 'today'
+  if (diffDays === 1) return 'tomorrow'
+  if (diffDays < 7) return `in ${diffDays} days`
+  return date.toLocaleDateString()
 }

@@ -6,6 +6,8 @@ import { logger } from '@/lib/logger'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
+import { convertHeicToJpeg, isHeicBuffer, isHeicMimeType } from '@/lib/images/heic-converter'
+import { generateThumbnail } from '@/lib/images/thumbnail'
 
 // Allowed image MIME types based on magic bytes (server-side validation)
 const ALLOWED_IMAGE_TYPES = [
@@ -98,51 +100,142 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ========================================
+    // Server-Side HEIC Conversion
+    // ========================================
+    // Convert HEIC to JPEG on server - much more reliable than client-side heic2any
+    let processedBuffer: Buffer = buffer
+    let finalMime = actualMime
+    let wasHeicConverted = false
+
+    if (isHeicMimeType(actualMime) || isHeicBuffer(buffer)) {
+      logger.info('[PhotoUpload] HEIC file detected, converting server-side', {
+        fileName: file.name,
+        originalSize: buffer.length,
+        detectedMime: actualMime,
+      })
+
+      try {
+        const conversion = await convertHeicToJpeg(buffer, 0.9)
+        processedBuffer = conversion.buffer
+        finalMime = 'image/jpeg'
+        wasHeicConverted = true
+
+        logger.info('[PhotoUpload] HEIC conversion successful', {
+          originalSize: buffer.length,
+          convertedSize: processedBuffer.length,
+          compressionRatio: Math.round((1 - processedBuffer.length / buffer.length) * 100),
+        })
+      } catch (conversionError) {
+        logger.error('[PhotoUpload] HEIC conversion failed', {
+          error: conversionError instanceof Error ? conversionError.message : 'Unknown error',
+          fileName: file.name,
+        })
+        throw new Error(
+          'Failed to convert HEIC image. The file may be corrupted or in an unsupported format.'
+        )
+      }
+    }
+
+    // ========================================
+    // Thumbnail Generation
+    // ========================================
+    // Generate thumbnail for fast gallery loading
+    let thumbnailBuffer: Buffer
+    let thumbnailWidth = 0
+    let thumbnailHeight = 0
+
+    try {
+      const thumbnail = await generateThumbnail(processedBuffer, {
+        maxDimension: 400,
+        quality: 80,
+        format: 'jpeg',
+      })
+      thumbnailBuffer = thumbnail.buffer
+      thumbnailWidth = thumbnail.width
+      thumbnailHeight = thumbnail.height
+
+      logger.info('[PhotoUpload] Thumbnail generated', {
+        mainSize: processedBuffer.length,
+        thumbSize: thumbnailBuffer.length,
+        dimensions: `${thumbnailWidth}x${thumbnailHeight}`,
+      })
+    } catch (thumbnailError) {
+      logger.warn('[PhotoUpload] Thumbnail generation failed, using main image', {
+        error: thumbnailError instanceof Error ? thumbnailError.message : 'Unknown error',
+      })
+      // Fallback: use processed buffer as thumbnail (not ideal but ensures upload succeeds)
+      thumbnailBuffer = processedBuffer
+    }
+
     const supabase = await createClient()
 
-    // Generate unique filename
+    // Generate unique filenames for main image and thumbnail
     const now = new Date()
     const year = now.getFullYear()
     const month = String(now.getMonth() + 1).padStart(2, '0')
     const timestamp = now.getTime()
     const random = Math.random().toString(36).substring(2, 8)
-    const ext = file.name.split('.').pop() || 'jpg'
-    const filePath = `${user.id}/${year}/${month}/IMG_${timestamp}_${random}.${ext}`
 
-    // Upload to Supabase Storage
-    const { data: storageData, error: storageError } = await supabase.storage
+    // Always use .jpg extension since we convert HEIC to JPEG
+    const mainFilePath = `${user.id}/${year}/${month}/IMG_${timestamp}_${random}.jpg`
+    const thumbFilePath = `${user.id}/${year}/${month}/thumb_${timestamp}_${random}.jpg`
+
+    // Upload main image to Supabase Storage
+    const { data: mainStorageData, error: mainStorageError } = await supabase.storage
       .from('property-photos')
-      .upload(filePath, buffer, {
-        contentType: actualMime, // Use server-detected MIME type
+      .upload(mainFilePath, processedBuffer, {
+        contentType: finalMime,
         cacheControl: '3600',
         upsert: false,
       })
 
-    if (storageError) {
-      logger.error('Storage upload error', {
-        error: storageError,
-        message: storageError.message
+    if (mainStorageError) {
+      logger.error('Main image storage upload error', {
+        error: mainStorageError,
+        message: mainStorageError.message,
       })
-      throw new Error(`Failed to upload photo: ${storageError.message}`)
+      throw new Error(`Failed to upload photo: ${mainStorageError.message}`)
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage.from('property-photos').getPublicUrl(filePath)
+    // Upload thumbnail to Supabase Storage
+    const { error: thumbStorageError } = await supabase.storage
+      .from('property-photos')
+      .upload(thumbFilePath, thumbnailBuffer, {
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (thumbStorageError) {
+      // Non-fatal: log warning but continue (we have the main image)
+      logger.warn('Thumbnail storage upload error', {
+        error: thumbStorageError,
+        message: thumbStorageError.message,
+      })
+    }
+
+    // Get public URLs
+    const { data: mainUrlData } = supabase.storage.from('property-photos').getPublicUrl(mainFilePath)
+    const { data: thumbUrlData } = supabase.storage.from('property-photos').getPublicUrl(thumbFilePath)
 
     // Save photo metadata to database
-    // Use server-detected MIME type for security
     const photoData = {
       tenant_id: tenantId,
       contact_id: contactId || null,
       project_id: projectId || null,
-      file_path: storageData.path,
-      file_url: urlData.publicUrl,
-      thumbnail_url: urlData.publicUrl, // TODO: Generate thumbnail in future
+      file_path: mainStorageData.path,
+      file_url: mainUrlData.publicUrl,
+      thumbnail_url: thumbStorageError ? mainUrlData.publicUrl : thumbUrlData.publicUrl,
       metadata: {
         original_name: file.name,
-        mime_type: actualMime, // Server-detected MIME type (more reliable than browser)
-        browser_mime_type: file.type, // Keep original for debugging
-        size: file.size,
+        original_mime_type: actualMime,
+        final_mime_type: finalMime,
+        browser_mime_type: file.type,
+        original_size: file.size,
+        processed_size: processedBuffer.length,
+        was_heic_converted: wasHeicConverted,
+        thumbnail_dimensions: thumbnailWidth > 0 ? { width: thumbnailWidth, height: thumbnailHeight } : null,
         ...metadata,
       },
       uploaded_by: user.id,
@@ -151,8 +244,8 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.from('photos').insert(photoData).select().single()
 
     if (error) {
-      // Rollback: Delete uploaded file if database insert fails
-      await supabase.storage.from('property-photos').remove([storageData.path])
+      // Rollback: Delete uploaded files if database insert fails
+      await supabase.storage.from('property-photos').remove([mainFilePath, thumbFilePath])
       logger.error('Database insert error', { error })
       throw new Error(`Failed to save photo metadata: ${error.message}`)
     }

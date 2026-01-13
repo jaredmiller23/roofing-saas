@@ -54,18 +54,86 @@ const _HUMAN_REVIEW_CATEGORIES = [
   'complex',         // Multi-part questions
 ]
 
-/**
- * Classify the intent of an inbound message
- *
- * Philosophy: Auto-send by default, only queue truly sensitive messages.
- * ARIA is an AI assistant - it should respond to normal conversation.
- * Only escalate to humans for: complaints, pricing, cancellations, reschedules.
- */
-function classifyMessageIntent(message: string): {
+// =============================================================================
+// Girl Friday Phase 1: Enhanced Intent Classification (ML + Regex Fallback)
+// =============================================================================
+
+interface IntentClassification {
   category: string
   shouldAutoSend: boolean
   confidence: number
-} {
+  reasoning?: string
+}
+
+/**
+ * ML-based intent classification using OpenAI
+ * Falls back to regex if ML fails
+ */
+async function classifyMessageIntentML(message: string): Promise<IntentClassification> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // Fast and cheap for classification
+      messages: [
+        {
+          role: 'system',
+          content: `You are an intent classifier for a roofing business SMS system.
+Classify the customer message into one of these categories:
+- greeting: Simple hello/hi messages
+- confirmation: Yes/OK/sounds good responses
+- thanks: Thank you messages
+- question: General questions about services
+- status: Checking on project/appointment status
+- pricing: Questions about cost, quotes, payment
+- reschedule: Wants to change appointment time
+- cancel: Wants to cancel service/appointment
+- complaint: Unhappy, frustrated, negative sentiment
+- conversation: General back-and-forth chat
+
+Also determine if the message can be auto-responded by AI or needs human review.
+Auto-respond: greeting, confirmation, thanks, question, status, conversation
+Human review: pricing, reschedule, cancel, complaint
+
+Respond in JSON format:
+{
+  "category": "string",
+  "shouldAutoSend": boolean,
+  "confidence": number (0-1),
+  "reasoning": "brief explanation"
+}`
+        },
+        {
+          role: 'user',
+          content: `Classify: "${message}"`
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 150,
+      response_format: { type: 'json_object' }
+    })
+
+    const content = response.choices[0]?.message?.content
+    if (content) {
+      const result = JSON.parse(content) as IntentClassification
+      logger.debug('ML intent classification result', { message: message.slice(0, 50), result })
+      return {
+        category: result.category || 'conversation',
+        shouldAutoSend: result.shouldAutoSend !== false,
+        confidence: typeof result.confidence === 'number' ? result.confidence : 0.8,
+        reasoning: result.reasoning,
+      }
+    }
+  } catch (error) {
+    logger.warn('ML intent classification failed, using regex fallback', { error })
+  }
+
+  // Fallback to regex-based classification
+  return classifyMessageIntentRegex(message)
+}
+
+/**
+ * Regex-based intent classification (fast fallback)
+ */
+function classifyMessageIntentRegex(message: string): IntentClassification {
   const lowerMessage = message.toLowerCase().trim()
 
   // === SENSITIVE CATEGORIES - Require human review ===
@@ -108,38 +176,64 @@ function classifyMessageIntent(message: string): {
   }
 
   // General questions and conversation - AUTO-SEND
-  // This is the key change: normal conversation should get responses
   return { category: 'conversation', shouldAutoSend: true, confidence: 0.7 }
+}
+
+// =============================================================================
+// Girl Friday Phase 1: Graceful Error Handling
+// =============================================================================
+
+const FALLBACK_RESPONSE = "Thanks for your message! Someone from our team will get back to you shortly."
+
+/**
+ * Generate a safe fallback response when ARIA encounters errors
+ */
+function generateFallbackResponse(error: unknown, contactName?: string): SMSHandlerResult {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+  logger.error('ARIA SMS handler error - returning fallback', { error: errorMessage })
+
+  return {
+    success: true, // Return success so the webhook doesn't fail
+    response: contactName
+      ? `Hi ${contactName}! Thanks for reaching out. Someone from our team will get back to you shortly.`
+      : FALLBACK_RESPONSE,
+    shouldAutoSend: true, // Safe fallback can be auto-sent
+    reason: 'Fallback response due to error',
+    error: errorMessage,
+  }
 }
 
 /**
  * Process an inbound SMS with ARIA and generate a response
+ * Girl Friday Phase 1: Enhanced with ML classification, error handling, threading
  */
 export async function handleInboundSMS(params: InboundSMSParams): Promise<SMSHandlerResult> {
   const { from, body, tenantId, contactId: providedContactId } = params
 
   logger.info('ARIA processing inbound SMS', { from, tenantId, bodyLength: body.length })
 
+  let contact: ARIAContext['contact'] | null = null
+  let contactId = providedContactId
+
   try {
     const supabase = await createAdminClient()
 
     // Find or use provided contact
-    let contactId = providedContactId
-    let contact: ARIAContext['contact'] | null = null
-
     if (!contactId) {
       contact = await findContactByPhone(from, { tenantId, supabase })
       contactId = contact?.id
     }
 
-    // Classify the message intent
-    const { category, shouldAutoSend, confidence } = classifyMessageIntent(body)
+    // Girl Friday: ML-based intent classification (with regex fallback)
+    const { category, shouldAutoSend, confidence, reasoning } = await classifyMessageIntentML(body)
 
     logger.info('SMS classified', {
       category,
       shouldAutoSend,
       confidence,
-      contactFound: !!contact
+      reasoning,
+      contactFound: !!contact,
+      method: reasoning ? 'ML' : 'regex',
     })
 
     // Build ARIA context
@@ -335,12 +429,12 @@ ${shouldAutoSend ? 'This is a simple message - response can be sent automaticall
     }
 
   } catch (error) {
-    logger.error('ARIA SMS handler error', { error, from, tenantId })
-    return {
-      success: false,
-      shouldAutoSend: false,
-      error: error instanceof Error ? error.message : 'Failed to generate response',
-    }
+    // Girl Friday: Graceful error handling - return a safe fallback response
+    // instead of failing the webhook entirely
+    return generateFallbackResponse(
+      error,
+      contact?.first_name || undefined
+    )
   }
 }
 
@@ -390,5 +484,93 @@ export async function queueSMSForApproval(params: {
       success: false,
       error: error instanceof Error ? error.message : 'Queue failed'
     }
+  }
+}
+
+// =============================================================================
+// Girl Friday Phase 1: Conversation Threading
+// =============================================================================
+
+/**
+ * Log an SMS message as an activity for conversation tracking
+ * This enables ARIA to see the conversation history via context enrichment
+ */
+export async function logSMSActivity(params: {
+  tenantId: string
+  contactId?: string
+  phone: string
+  body: string
+  direction: 'inbound' | 'outbound'
+  metadata?: Record<string, unknown>
+}): Promise<void> {
+  try {
+    const supabase = await createAdminClient()
+
+    await supabase.from('activities').insert({
+      tenant_id: params.tenantId,
+      contact_id: params.contactId,
+      type: 'sms',
+      subject: params.direction === 'inbound' ? 'SMS Received' : 'SMS Sent',
+      content: params.body,
+      direction: params.direction,
+      metadata: {
+        phone: params.phone,
+        channel: 'sms',
+        aria_generated: params.direction === 'outbound',
+        ...params.metadata,
+      },
+    })
+
+    logger.debug('SMS activity logged', {
+      direction: params.direction,
+      contactId: params.contactId,
+      phone: params.phone,
+    })
+  } catch (error) {
+    // Don't fail the main flow if activity logging fails
+    logger.warn('Failed to log SMS activity', { error })
+  }
+}
+
+/**
+ * Get recent conversation context for a phone number
+ * Used to maintain conversation continuity
+ */
+export async function getConversationThread(params: {
+  tenantId: string
+  phone: string
+  limit?: number
+}): Promise<Array<{ direction: 'inbound' | 'outbound'; body: string; timestamp: string }>> {
+  try {
+    const supabase = await createAdminClient()
+    const { phone, tenantId, limit = 5 } = params
+
+    // Normalize phone for matching
+    const normalizedPhone = phone.replace(/\D/g, '')
+    const phoneVariants = [
+      normalizedPhone,
+      `+1${normalizedPhone}`,
+      normalizedPhone.slice(-10),
+    ]
+
+    const { data: activities } = await supabase
+      .from('activities')
+      .select('content, direction, created_at')
+      .eq('tenant_id', tenantId)
+      .eq('type', 'sms')
+      .or(phoneVariants.map((p) => `metadata->>phone.ilike.%${p}%`).join(','))
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (!activities) return []
+
+    return activities.map((a) => ({
+      direction: (a.direction as 'inbound' | 'outbound') || 'outbound',
+      body: a.content || '',
+      timestamp: a.created_at,
+    })).reverse() // Oldest first for reading order
+  } catch (error) {
+    logger.warn('Failed to get conversation thread', { error })
+    return []
   }
 }

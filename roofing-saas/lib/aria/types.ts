@@ -69,8 +69,45 @@ export interface ARIAContext {
   sessionId?: string
   callSid?: string
 
+  // Girl Friday Enrichment (Phase 1 - Omniscience)
+  recentActivities?: ARIAActivity[]
+  upcomingTasks?: ARIATask[]
+  messageThread?: ARIAMessage[]
+
   // Authorization
   requiresConfirmation?: boolean
+}
+
+// =============================================================================
+// Girl Friday Context Types (Phase 1)
+// =============================================================================
+
+export interface ARIAActivity {
+  id: string
+  type: 'call' | 'sms' | 'email' | 'note' | 'task' | 'status_change' | 'other'
+  subject?: string
+  content?: string
+  direction?: 'inbound' | 'outbound'
+  created_at: string
+  metadata?: Record<string, unknown>
+}
+
+export interface ARIATask {
+  id: string
+  title: string
+  description?: string
+  due_date?: string
+  priority?: 'low' | 'medium' | 'high'
+  type?: 'task' | 'callback'
+  status: 'pending' | 'completed' | 'cancelled'
+}
+
+export interface ARIAMessage {
+  id: string
+  direction: 'inbound' | 'outbound'
+  body: string
+  sent_at: string
+  status?: string
 }
 
 // =============================================================================
