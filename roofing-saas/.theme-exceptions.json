@@ -242,7 +242,8 @@
     "components/claims/OutcomeAnalytics.tsx:*:text-green-500",
     "components/claims/OutcomeAnalytics.tsx:*:text-red-500",
     "components/claims/OutcomeAnalytics.tsx:*:bg-green-",
-    "components/claims/OutcomeAnalytics.tsx:*:bg-red-"
+    "components/claims/OutcomeAnalytics.tsx:*:bg-red-",
+    "components/photos/PhotoViewer.tsx:*:text-white"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",

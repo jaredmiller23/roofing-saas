@@ -40,10 +40,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build query
+    // Build query - select only fields needed for gallery display
+    // Reduces payload size significantly (metadata JSONB can be large)
     let query = supabase
       .from('photos')
-      .select('*')
+      .select('id, file_url, thumbnail_url, created_at, contact_id, project_id, metadata')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })

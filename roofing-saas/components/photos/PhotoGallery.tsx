@@ -12,6 +12,10 @@ interface Photo {
     originalSize?: number
     compressedSize?: number
     compressionRatio?: number
+    photoType?: string
+    damageCause?: string
+    damageType?: string
+    severity?: string
   }
   created_at: string
   contact_id?: string
@@ -197,9 +201,12 @@ export function PhotoGallery({
                   onClick={() => onPhotoClick?.(photo, index, photos)}
                 >
                   <Image
-                    src={photo.file_url}
+                    src={photo.thumbnail_url || photo.file_url}
                     alt={`Photo ${index + 1}`}
                     fill
+                    sizes="(max-width: 768px) 50vw, 200px"
+                    quality={75}
+                    loading="lazy"
                     style={{
                       objectFit: 'cover'
                     }}

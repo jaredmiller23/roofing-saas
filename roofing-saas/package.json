@@ -37,7 +37,8 @@
     "ops:verify": "tsx scripts/ops/verify.ts",
     "ops:verify:local": "tsx scripts/ops/verify.ts --local",
     "ops:auth": "tsx scripts/ops/auth.ts",
-    "ops:debug-tenant": "tsx scripts/debug-tenant.ts"
+    "ops:debug-tenant": "tsx scripts/debug-tenant.ts",
+    "generate-thumbnails": "tsx scripts/generate-missing-thumbnails.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

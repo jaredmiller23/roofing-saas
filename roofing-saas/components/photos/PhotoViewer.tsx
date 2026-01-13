@@ -27,6 +27,7 @@ interface PhotoViewerProps {
 export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: PhotoViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [isLoading, setIsLoading] = useState(true)
+  const [fullResLoaded, setFullResLoaded] = useState(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [showInfo, setShowInfo] = useState(false)
@@ -39,12 +40,14 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
   // Navigate to previous photo
   const goToPrevious = useCallback(() => {
     setIsLoading(true)
+    setFullResLoaded(false)
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : photos.length - 1))
   }, [photos.length])
 
   // Navigate to next photo
   const goToNext = useCallback(() => {
     setIsLoading(true)
+    setFullResLoaded(false)
     setCurrentIndex(prev => (prev < photos.length - 1 ? prev + 1 : 0))
   }, [photos.length])
 
@@ -225,14 +228,31 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
           </div>
         )}
 
-        {/* Image */}
+        {/* Progressive Image Loading: Thumbnail first, then full-res */}
         <div className="relative w-full h-full flex items-center justify-center">
+          {/* Thumbnail - shown immediately */}
+          {currentPhoto.thumbnail_url && !fullResLoaded && (
+            <Image
+              src={currentPhoto.thumbnail_url}
+              alt={`Photo ${currentIndex + 1}`}
+              fill
+              style={{ objectFit: 'contain' }}
+              priority
+              onLoad={handleImageLoad}
+            />
+          )}
+
+          {/* Full resolution - loads in background, shown when ready */}
           <Image
             src={currentPhoto.file_url}
             alt={`Photo ${currentIndex + 1}`}
             fill
             style={{ objectFit: 'contain' }}
-            onLoad={handleImageLoad}
+            className={`transition-opacity duration-300 ${fullResLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => {
+              setFullResLoaded(true)
+              setIsLoading(false)
+            }}
           />
         </div>
 

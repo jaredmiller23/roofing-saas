@@ -20,5 +20,8 @@ import './calendar'
 // Intelligence functions (customer history, sentiment, value, predictions, similar customers)
 import './intelligence'
 
+// Financial functions (AR summary, overdue invoices, payment history, reminders, morning briefing)
+import './financial'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
