@@ -73,6 +73,9 @@ export const AuthenticationError = (message = 'Authentication required', details
 export const AuthorizationError = (message = 'Access denied', details?: unknown) =>
   new ApiError(ErrorCode.FORBIDDEN, message, 403, details)
 
+export const ForbiddenError = (message = 'Access forbidden', details?: unknown) =>
+  new ApiError(ErrorCode.FORBIDDEN, message, 403, details)
+
 export const ValidationError = (message = 'Invalid input', details?: unknown) =>
   new ApiError(ErrorCode.VALIDATION_ERROR, message, 400, details)
 
