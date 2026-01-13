@@ -3532,6 +3532,526 @@ ariaFunctionRegistry.register({
 })
 
 // =============================================================================
+// Phone Lookup and Call Logging
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'search_by_phone',
+  category: 'crm',
+  description: 'Find a contact by phone number',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'search_by_phone',
+    description:
+      'Find a contact by their phone number. Useful when someone calls and you need to look them up. Handles various phone formats.',
+    parameters: {
+      type: 'object',
+      properties: {
+        phone: {
+          type: 'string',
+          description: 'Phone number to search (any format)',
+        },
+      },
+      required: ['phone'],
+    },
+  },
+  execute: async (args, context) => {
+    const { phone } = args as { phone: string }
+
+    // Normalize phone number - remove all non-digits
+    const normalized = phone.replace(/\D/g, '')
+    const last10 = normalized.slice(-10) // Get last 10 digits
+
+    // Search with various patterns
+    const { data: contacts, error } = await context.supabase
+      .from('contacts')
+      .select(
+        `
+        id,
+        first_name,
+        last_name,
+        phone,
+        email,
+        address_city,
+        address_state,
+        stage,
+        projects(id, name, pipeline_stage, status)
+      `
+      )
+      .eq('tenant_id', context.tenantId)
+      .or(`phone.ilike.%${last10}%,phone.ilike.%${normalized}%`)
+      .limit(5)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!contacts?.length) {
+      return {
+        success: true,
+        data: null,
+        message: `No contact found with phone number "${phone}". Would you like me to create a new contact?`,
+      }
+    }
+
+    interface ContactWithProjects {
+      id: string
+      first_name: string
+      last_name: string
+      phone: string | null
+      email: string | null
+      address_city: string | null
+      address_state: string | null
+      stage: string | null
+      projects: Array<{
+        id: string
+        name: string
+        pipeline_stage: string | null
+        status: string | null
+      }> | null
+    }
+
+    const formatted = (contacts as ContactWithProjects[]).map((c) => ({
+      id: c.id,
+      name: `${c.first_name} ${c.last_name}`.trim(),
+      phone: c.phone,
+      email: c.email,
+      location: [c.address_city, c.address_state].filter(Boolean).join(', '),
+      stage: c.stage,
+      active_projects: c.projects?.filter(
+        (p) => !['won', 'lost', 'completed'].includes(p.pipeline_stage || '')
+      ).length || 0,
+    }))
+
+    if (formatted.length === 1) {
+      const c = formatted[0]
+      return {
+        success: true,
+        data: formatted[0],
+        message: `Found: ${c.name}${c.location ? ` (${c.location})` : ''}${
+          c.active_projects ? ` - ${c.active_projects} active project(s)` : ''
+        }`,
+      }
+    }
+
+    return {
+      success: true,
+      data: formatted,
+      message: `Found ${formatted.length} contacts matching that phone number.`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'log_phone_call',
+  category: 'crm',
+  description: 'Log a phone call with a contact',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'log_phone_call',
+    description:
+      'Log a phone call with a contact. Records call direction, duration, and notes. Use after completing a call.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'ID of the contact called',
+        },
+        direction: {
+          type: 'string',
+          enum: ['inbound', 'outbound'],
+          description: 'Whether the call was inbound or outbound',
+        },
+        duration_minutes: {
+          type: 'number',
+          description: 'Call duration in minutes (approximate)',
+        },
+        notes: {
+          type: 'string',
+          description: 'Notes about the call - what was discussed',
+        },
+        outcome: {
+          type: 'string',
+          enum: ['answered', 'voicemail', 'no_answer', 'busy', 'wrong_number'],
+          description: 'Call outcome',
+        },
+        follow_up_needed: {
+          type: 'boolean',
+          description: 'Whether a follow-up is needed',
+        },
+        follow_up_date: {
+          type: 'string',
+          description: 'When to follow up (if needed)',
+        },
+      },
+      required: ['contact_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const {
+      contact_id,
+      direction,
+      duration_minutes,
+      notes,
+      outcome,
+      follow_up_needed,
+      follow_up_date,
+    } = args as {
+      contact_id: string
+      direction?: 'inbound' | 'outbound'
+      duration_minutes?: number
+      notes?: string
+      outcome?: string
+      follow_up_needed?: boolean
+      follow_up_date?: string
+    }
+
+    // Verify contact exists
+    const { data: contact, error: contactError } = await context.supabase
+      .from('contacts')
+      .select('first_name, last_name')
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+      .single()
+
+    if (contactError || !contact) {
+      return { success: false, error: 'Contact not found' }
+    }
+
+    // Log the call as an activity
+    const { data, error } = await context.supabase
+      .from('activities')
+      .insert({
+        tenant_id: context.tenantId,
+        contact_id,
+        type: 'call',
+        title: `Phone call (${direction || 'call'})${outcome ? ` - ${outcome}` : ''}`,
+        description: JSON.stringify({
+          direction: direction || 'unknown',
+          duration_minutes,
+          outcome: outcome || 'answered',
+          notes,
+          follow_up_needed,
+          follow_up_date,
+        }),
+        created_by: context.userId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    // Create follow-up task if needed
+    if (follow_up_needed && follow_up_date) {
+      const parsedDate = new Date(follow_up_date)
+      if (!isNaN(parsedDate.getTime())) {
+        await context.supabase.from('activities').insert({
+          tenant_id: context.tenantId,
+          contact_id,
+          type: 'task',
+          title: `Follow up with ${contact.first_name} ${contact.last_name}`,
+          description: JSON.stringify({
+            priority: 'medium',
+            assigned_to: context.userId,
+            status: 'pending',
+            related_call_id: data.id,
+          }),
+          due_date: parsedDate.toISOString(),
+          created_by: context.userId,
+        })
+      }
+    }
+
+    const contactName = `${contact.first_name} ${contact.last_name}`.trim()
+    return {
+      success: true,
+      data,
+      message: `Call logged for ${contactName}${
+        follow_up_needed ? ` (follow-up scheduled)` : ''
+      }.`,
+    }
+  },
+})
+
+// =============================================================================
+// Contact Timeline and Recent Activity
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'get_contact_timeline',
+  category: 'crm',
+  description: 'Get complete history/timeline for a contact',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_contact_timeline',
+    description:
+      'Get the complete timeline of interactions with a contact - calls, notes, emails, appointments, project updates. Shows full history.',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'ID of the contact',
+        },
+        limit: {
+          type: 'number',
+          description: 'Max number of events to return (default 20)',
+        },
+      },
+      required: ['contact_id'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, limit = 20 } = args as { contact_id: string; limit?: number }
+
+    // Get contact info
+    const { data: contact, error: contactError } = await context.supabase
+      .from('contacts')
+      .select('first_name, last_name, created_at')
+      .eq('id', contact_id)
+      .eq('tenant_id', context.tenantId)
+      .single()
+
+    if (contactError || !contact) {
+      return { success: false, error: 'Contact not found' }
+    }
+
+    // Get all activities for this contact
+    const { data: activities, error } = await context.supabase
+      .from('activities')
+      .select(
+        `
+        id,
+        type,
+        title,
+        description,
+        created_at,
+        due_date,
+        project:projects(name)
+      `
+      )
+      .eq('tenant_id', context.tenantId)
+      .eq('contact_id', contact_id)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    const typeLabels: Record<string, string> = {
+      call: 'Phone Call',
+      note: 'Note',
+      email: 'Email',
+      task: 'Task',
+      meeting: 'Meeting',
+      appointment: 'Appointment',
+      stage_change: 'Stage Change',
+    }
+
+    interface ActivityWithProject {
+      id: string
+      type: string
+      title: string
+      description: string | null
+      created_at: string
+      due_date: string | null
+      project: { name: string } | { name: string }[] | null
+    }
+
+    const timeline = (activities as ActivityWithProject[])?.map((a) => {
+      const projectData = Array.isArray(a.project) ? a.project[0] : a.project
+      let details = ''
+      try {
+        const desc = a.description ? JSON.parse(a.description) : {}
+        if (desc.notes) details = desc.notes
+        if (desc.outcome) details = `${desc.outcome}${details ? ': ' + details : ''}`
+      } catch {
+        details = a.description || ''
+      }
+
+      return {
+        id: a.id,
+        type: typeLabels[a.type] || a.type,
+        title: a.title,
+        details: details.substring(0, 100) + (details.length > 100 ? '...' : ''),
+        date: new Date(a.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+        project: projectData?.name || null,
+      }
+    }) || []
+
+    const contactName = `${contact.first_name} ${contact.last_name}`.trim()
+    const createdDate = new Date(contact.created_at).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+
+    return {
+      success: true,
+      data: {
+        contact_name: contactName,
+        contact_since: createdDate,
+        events: timeline,
+      },
+      message: `Timeline for ${contactName}: ${timeline.length} event(s) recorded since ${createdDate}.`,
+    }
+  },
+})
+
+ariaFunctionRegistry.register({
+  name: 'get_recent_activity',
+  category: 'crm',
+  description: 'Get recent activity across all contacts and projects',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'get_recent_activity',
+    description:
+      'Get recent activity across the entire CRM - calls, notes, project updates, etc. Great for seeing what happened today or this week.',
+    parameters: {
+      type: 'object',
+      properties: {
+        days: {
+          type: 'number',
+          description: 'Number of days to look back (default 1 = today)',
+        },
+        type: {
+          type: 'string',
+          enum: ['call', 'note', 'email', 'task', 'meeting', 'all'],
+          description: 'Filter by activity type',
+        },
+        limit: {
+          type: 'number',
+          description: 'Max number of activities (default 20)',
+        },
+      },
+    },
+  },
+  execute: async (args, context) => {
+    const { days = 1, type, limit = 20 } = args as {
+      days?: number
+      type?: string
+      limit?: number
+    }
+
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
+    let query = context.supabase
+      .from('activities')
+      .select(
+        `
+        id,
+        type,
+        title,
+        description,
+        created_at,
+        contact:contacts(first_name, last_name),
+        project:projects(name)
+      `
+      )
+      .eq('tenant_id', context.tenantId)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (type && type !== 'all') {
+      query = query.eq('type', type)
+    }
+
+    const { data: activities, error } = await query
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!activities?.length) {
+      const timeframe = days === 1 ? 'today' : `the past ${days} days`
+      return {
+        success: true,
+        data: [],
+        message: `No activity recorded ${timeframe}.`,
+      }
+    }
+
+    const typeEmoji: Record<string, string> = {
+      call: 'Phone',
+      note: 'Note',
+      email: 'Email',
+      task: 'Task',
+      meeting: 'Meeting',
+      appointment: 'Apt',
+    }
+
+    interface ActivityWithRelations {
+      id: string
+      type: string
+      title: string
+      description: string | null
+      created_at: string
+      contact: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null
+      project: { name: string } | { name: string }[] | null
+    }
+
+    const formatted = (activities as ActivityWithRelations[]).map((a) => {
+      const contactData = Array.isArray(a.contact) ? a.contact[0] : a.contact
+      const projectData = Array.isArray(a.project) ? a.project[0] : a.project
+
+      return {
+        id: a.id,
+        type: typeEmoji[a.type] || a.type,
+        title: a.title,
+        contact: contactData
+          ? `${contactData.first_name} ${contactData.last_name}`.trim()
+          : null,
+        project: projectData?.name || null,
+        time: new Date(a.created_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+        date: new Date(a.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+      }
+    })
+
+    const timeframe = days === 1 ? 'today' : `the past ${days} days`
+    const typeSummary: Record<string, number> = {}
+    activities.forEach((a) => {
+      typeSummary[a.type] = (typeSummary[a.type] || 0) + 1
+    })
+
+    const summaryParts = Object.entries(typeSummary)
+      .map(([t, count]) => `${count} ${t}${count > 1 ? 's' : ''}`)
+      .join(', ')
+
+    return {
+      success: true,
+      data: formatted,
+      message: `Activity ${timeframe}: ${summaryParts}.`,
+    }
+  },
+})
+
+// =============================================================================
 // Export registry
 // =============================================================================
 
