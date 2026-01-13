@@ -122,9 +122,9 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
 
     console.log(`📤 Uploading ${fileName}...`);
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage (use property-photos bucket)
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('photos')
+      .from('property-photos')
       .upload(fileName, photo.file, {
         cacheControl: '3600',
         upsert: false,
@@ -134,9 +134,9 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
       throw new Error(`Storage upload failed: ${uploadError.message}`);
     }
 
-    // Get public URL
+    // Get public URL (use property-photos bucket)
     const { data: { publicUrl } } = supabase.storage
-      .from('photos')
+      .from('property-photos')
       .getPublicUrl(uploadData.path);
 
     // Insert into photos table

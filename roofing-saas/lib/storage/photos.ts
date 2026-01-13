@@ -5,11 +5,13 @@
 
 import { createClient } from '@/lib/supabase/client'
 import imageCompression from 'browser-image-compression'
+import { withTimeout } from '@/lib/utils'
 
 const BUCKET_NAME = 'property-photos'
 const MAX_FILE_SIZE_MB = 10
 const MAX_DIMENSION = 1920 // Max width or height in pixels
 const COMPRESSION_QUALITY = 0.8 // 0-1, higher = better quality
+const COMPRESSION_TIMEOUT = 60000 // 60 seconds timeout for compression
 
 export interface PhotoUploadOptions {
   file: File
@@ -49,7 +51,12 @@ export async function compressImage(file: File): Promise<CompressedPhotoResult> 
   }
 
   try {
-    const compressedFile = await imageCompression(file, options)
+    // Wrap compression with timeout to prevent infinite hang on problematic files
+    const compressedFile = await withTimeout(
+      imageCompression(file, options),
+      COMPRESSION_TIMEOUT,
+      'Image compression timed out after 60 seconds. The file may be too large or in an unsupported format.'
+    )
     const compressedSize = compressedFile.size
 
     return {
@@ -60,7 +67,7 @@ export async function compressImage(file: File): Promise<CompressedPhotoResult> 
     }
   } catch (error) {
     console.error('Image compression failed:', error)
-    // If compression fails, return original file
+    // If compression fails or times out, return original file as fallback
     return {
       file,
       originalSize,

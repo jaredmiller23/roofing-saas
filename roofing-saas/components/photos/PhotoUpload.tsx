@@ -6,6 +6,31 @@ import heic2any from 'heic2any'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { withTimeout } from '@/lib/utils'
+
+// Timeout for HEIC conversion (30 seconds)
+const HEIC_CONVERSION_TIMEOUT = 30000
+
+/**
+ * Validate HEIC file by checking magic bytes
+ * HEIC files have 'ftyp' at offset 4 followed by a valid brand
+ */
+async function validateHeicFile(file: File): Promise<boolean> {
+  try {
+    const buffer = await file.slice(0, 12).arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+
+    // HEIC files have 'ftyp' at offset 4
+    const ftyp = String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7])
+    if (ftyp !== 'ftyp') return false
+
+    // Valid brands: heic, heix, hevc, hevx, mif1, msf1
+    const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11])
+    return ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1'].includes(brand)
+  } catch {
+    return false
+  }
+}
 
 interface PhotoUploadProps {
   contactId?: string
@@ -39,6 +64,18 @@ export function PhotoUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
+  const cancelledRef = useRef(false)
+
+  // Cancel handler - resets state and sets cancelled flag
+  const handleCancel = useCallback(() => {
+    cancelledRef.current = true
+    setUploadState({ status: 'idle', progress: 0, message: 'Upload cancelled' })
+    setPreviewUrl(null)
+    // Reset cancelled flag after a short delay so next upload works
+    setTimeout(() => {
+      cancelledRef.current = false
+    }, 100)
+  }, [])
 
   // Validate file type and size
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
@@ -61,8 +98,18 @@ export function PhotoUpload({
   // Process and upload file
   const processFile = useCallback(
     async (file: File) => {
+      // Reset cancelled flag at start of new upload
+      cancelledRef.current = false
+
       try {
         let processedFile = file
+
+        // Helper to check if cancelled
+        const checkCancelled = () => {
+          if (cancelledRef.current) {
+            throw new Error('Upload cancelled')
+          }
+        }
 
         // Convert HEIC to JPEG if needed
         const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
@@ -70,14 +117,31 @@ export function PhotoUpload({
           setUploadState({
             status: 'compressing',
             progress: 10,
+            message: 'Validating HEIC file...',
+          })
+
+          // Validate HEIC magic bytes before attempting conversion
+          const isValidHeic = await validateHeicFile(file)
+          if (!isValidHeic) {
+            throw new Error('File appears to have an invalid format. It may be corrupted or mislabeled as HEIC.')
+          }
+
+          setUploadState({
+            status: 'compressing',
+            progress: 15,
             message: 'Converting HEIC to JPEG...',
           })
 
-          const convertedBlob = await heic2any({
-            blob: file,
-            toType: 'image/jpeg',
-            quality: 0.9,
-          })
+          // Convert with timeout to prevent infinite hang
+          const convertedBlob = await withTimeout(
+            heic2any({
+              blob: file,
+              toType: 'image/jpeg',
+              quality: 0.9,
+            }),
+            HEIC_CONVERSION_TIMEOUT,
+            'HEIC conversion timed out after 30 seconds. The file may be too large or corrupted. Try uploading a smaller image or a different format.'
+          )
 
           // heic2any can return a single blob or array of blobs
           const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
@@ -87,6 +151,9 @@ export function PhotoUpload({
             { type: 'image/jpeg' }
           )
         }
+
+        // Check if cancelled after HEIC conversion
+        checkCancelled()
 
         // Show preview
         const reader = new FileReader()
@@ -109,6 +176,9 @@ export function PhotoUpload({
           progress: 50,
           message: `Compressed ${compressed.compressionRatio}% (${(compressed.originalSize / 1024 / 1024).toFixed(1)}MB → ${(compressed.compressedSize / 1024 / 1024).toFixed(1)}MB)`,
         })
+
+        // Check if cancelled after compression
+        checkCancelled()
 
         // Check if online or offline
         const isOnline = navigator.onLine
@@ -217,6 +287,11 @@ export function PhotoUpload({
           }, 2000)
         }
       } catch (error) {
+        // Don't show error if it was a cancellation
+        if (cancelledRef.current || (error instanceof Error && error.message === 'Upload cancelled')) {
+          return
+        }
+
         console.error('Photo upload error:', error)
         const errorMessage = error instanceof Error ? error.message : 'Upload failed'
         setUploadState({
@@ -465,7 +540,15 @@ export function PhotoUpload({
                   style={{ width: `${uploadState.progress}%` }}
                 />
               </div>
-              <p className="text-sm text-muted-foreground">{uploadState.message}</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{uploadState.message}</p>
+                <button
+                  onClick={handleCancel}
+                  className="px-3 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 

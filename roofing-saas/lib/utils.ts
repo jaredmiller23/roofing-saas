@@ -24,3 +24,32 @@ export function getAppBaseUrl(): string {
   // Final fallback for SSR/build time
   return 'http://localhost:3000'
 }
+
+/**
+ * Wrap a promise with a timeout
+ * Rejects if the promise doesn't resolve within the specified time
+ * @param promise - The promise to wrap
+ * @param timeoutMs - Timeout in milliseconds
+ * @param errorMessage - Custom error message on timeout
+ */
+export function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage = 'Operation timed out'
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(errorMessage))
+    }, timeoutMs)
+
+    promise
+      .then(result => {
+        clearTimeout(timer)
+        resolve(result)
+      })
+      .catch(error => {
+        clearTimeout(timer)
+        reject(error)
+      })
+  })
+}
