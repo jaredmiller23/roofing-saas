@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Phone, PhoneIncoming, PhoneOutgoing, Clock, FileText, Mic } from 'lucide-react'
 import { AudioPlayer } from '@/components/call-logs/audio-player'
 import { CallTranscription } from '@/components/call-logs/call-transcription'
+import { ManualTranscribeButton } from '@/components/call-logs/manual-transcribe-button'
 
 /**
  * View call log details page
@@ -143,6 +144,13 @@ export default async function CallLogDetailPage({
         {/* Transcription Card */}
         {call.recording_url && (
           <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-foreground">Transcription</h2>
+              <ManualTranscribeButton
+                callId={call.id}
+                hasTranscription={!!call.transcription}
+              />
+            </div>
             <CallTranscription
               transcription={call.transcription}
               summary={call.summary}
