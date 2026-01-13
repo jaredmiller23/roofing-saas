@@ -9,7 +9,6 @@ import {
   Mic,
   CheckCircle2,
   ArrowRight,
-  Star,
 } from 'lucide-react';
 import { Navbar } from '@/components/marketing/Navbar';
 import { Footer } from '@/components/marketing/Footer';
@@ -26,14 +25,6 @@ export default function LandingPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl" />
 
         <div className="relative max-w-7xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/50 backdrop-blur mb-8 animate-fade-in-up">
-            <span className="w-2 h-2 rounded-full bg-cyan animate-pulse-glow" />
-            <span className="text-sm text-muted-foreground">
-              Now with AI Voice Assistant
-            </span>
-          </div>
-
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up">
             The Complete CRM for
@@ -63,17 +54,6 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Social proof */}
-          <div className="mt-16 flex flex-col items-center gap-4 animate-fade-in-up">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-yellow-500 text-yellow-500" />
-              ))}
-            </div>
-            <p className="text-muted-foreground">
-              Trusted by <span className="text-foreground font-semibold">500+</span> roofing contractors
-            </p>
-          </div>
         </div>
       </section>
 
@@ -109,59 +89,46 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Differentiators Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
+            {differentiators.map((item) => (
+              <div key={item.label} className="text-center">
                 <div className="text-4xl sm:text-5xl font-bold text-gradient-purple mb-2">
-                  {stat.value}
+                  {item.value}
                 </div>
-                <div className="text-muted-foreground">{stat.label}</div>
+                <div className="text-muted-foreground">{item.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 px-4 sm:px-6 lg:px-8 bg-card/50">
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8 bg-card/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Loved by Contractors
+              How It Works
             </h2>
             <p className="text-xl text-muted-foreground">
-              See what roofing professionals are saying about Job Clarity.
+              From lead to close in three simple steps.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
+            {howItWorksSteps.map((step) => (
               <div
-                key={index}
-                className="p-6 rounded-2xl bg-card border border-border"
+                key={step.step}
+                className="p-6 rounded-2xl bg-card border border-border text-center"
               >
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                  ))}
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-primary font-bold text-xl">{step.step}</span>
                 </div>
-                <p className="text-foreground mb-6">&ldquo;{testimonial.quote}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary font-semibold">
-                      {testimonial.name[0]}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-semibold">{testimonial.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {testimonial.company}
-                    </div>
-                  </div>
-                </div>
+                <step.icon className="w-10 h-10 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
               </div>
             ))}
           </div>
@@ -230,7 +197,7 @@ export default function LandingPage() {
             Ready to Grow Your Roofing Business?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join hundreds of contractors who have transformed their operations with Job Clarity.
+            See how Job Clarity can work for your roofing business.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
@@ -292,35 +259,38 @@ const features = [
   },
   {
     title: 'AI Voice Assistant',
-    description: 'Ask questions, create contacts, and update deals using natural voice commands. Hands-free CRM.',
+    description: 'Voice-enabled contact creation and deal updates. Hands-free when you are on the job.',
     icon: Mic,
     iconBg: 'bg-primary/10',
     iconColor: 'text-primary',
   },
 ];
 
-const stats = [
-  { value: '500+', label: 'Active Contractors' },
-  { value: '$2.4M', label: 'Deals Tracked Monthly' },
-  { value: '98%', label: 'Customer Satisfaction' },
-  { value: '4.9', label: 'App Store Rating' },
+const differentiators = [
+  { value: 'Storm', label: 'Restoration Focus' },
+  { value: 'Offline', label: 'Capable PWA' },
+  { value: 'QuickBooks', label: 'Integrated' },
+  { value: 'Claims', label: 'Tracking Built-In' },
 ];
 
-const testimonials = [
+const howItWorksSteps = [
   {
-    quote: 'Job Clarity replaced three different apps we were using. The AI assistant alone saves me 2 hours a day.',
-    name: 'Mike Johnson',
-    company: 'Johnson Roofing Co.',
+    step: '1',
+    title: 'Capture Leads in the Field',
+    description: 'Log door knocks, take photos, and add contacts from your phone—even offline.',
+    icon: MapPin,
   },
   {
-    quote: 'Finally a CRM that understands roofing. The pipeline view is exactly how I think about my deals.',
-    name: 'Sarah Martinez',
-    company: 'Peak Performance Roofing',
+    step: '2',
+    title: 'Track Every Deal',
+    description: 'Visual pipeline shows exactly where each job stands, from first contact to completion.',
+    icon: BarChart3,
   },
   {
-    quote: 'My door knockers love the mobile app. They can log visits and take photos even without cell service.',
-    name: 'David Chen',
-    company: 'Apex Storm Services',
+    step: '3',
+    title: 'Close with E-Signatures',
+    description: 'Send contracts, collect signatures, and get paid—all from one platform.',
+    icon: FileSignature,
   },
 ];
 
