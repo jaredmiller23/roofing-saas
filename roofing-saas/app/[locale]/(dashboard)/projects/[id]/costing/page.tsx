@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
 import { AddExpenseButton } from './add-expense-button'
 import { ExpensesList } from './expenses-list'
+import { SetRevenueButton } from './set-revenue-button'
 
 interface CostingPageProps {
   params: Promise<{ id: string }>
@@ -172,7 +173,16 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
           <div className="bg-card rounded-lg shadow p-6 border-l-4 border-primary">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-muted-foreground">Revenue</h3>
-              <DollarSign className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-1">
+                <SetRevenueButton
+                  projectId={id}
+                  currentRevenue={revenue}
+                  estimatedValue={project.estimated_value}
+                  approvedValue={project.approved_value}
+                  finalValue={project.final_value}
+                />
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(revenue)}</p>
           </div>

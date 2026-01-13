@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { PenLine, Send, Loader2, LayoutTemplate, AlertCircle, Upload, FileCheck } from 'lucide-react'
+import { PenLine, Send, Loader2, LayoutTemplate, AlertCircle, Upload, FileCheck, UserCheck } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { createClient } from '@/lib/supabase/client'
@@ -53,6 +53,7 @@ export function SendSignatureDialog({
   const [templates, setTemplates] = useState<Template[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isSigningNow, setIsSigningNow] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('template')
@@ -167,6 +168,48 @@ export function SendSignatureDialog({
     }
   }, [handleFileSelect])
 
+  // Helper to create document from template
+  const createDocumentFromTemplate = async () => {
+    if (!selectedTemplateId || !title) return null
+
+    const template = templates.find(t => t.id === selectedTemplateId)
+    if (!template) throw new Error('Template not found')
+
+    // Calculate expiration date
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + template.expiration_days)
+
+    // Create signature document
+    const createRes = await fetch('/api/signature-documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description: message || null,
+        document_type: template.category || 'contract',
+        project_id: projectId,
+        contact_id: contactId || null,
+        template_id: selectedTemplateId,
+        requires_customer_signature: template.requires_customer_signature,
+        requires_company_signature: template.requires_company_signature,
+        expires_at: expiresAt.toISOString(),
+      }),
+    })
+
+    const createData = await createRes.json()
+
+    if (!createRes.ok) {
+      throw new Error(createData.error || 'Failed to create document')
+    }
+
+    const documentId = createData.document?.id
+    if (!documentId) {
+      throw new Error('Document ID not returned')
+    }
+
+    return documentId
+  }
+
   const handleTemplateMode = async () => {
     if (!selectedTemplateId || !title) return
 
@@ -174,41 +217,8 @@ export function SendSignatureDialog({
       setIsSending(true)
       setError(null)
 
-      const template = templates.find(t => t.id === selectedTemplateId)
-      if (!template) throw new Error('Template not found')
-
-      // Calculate expiration date
-      const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + template.expiration_days)
-
-      // Create signature document
-      const createRes = await fetch('/api/signature-documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description: message || null,
-          document_type: template.category || 'contract',
-          project_id: projectId,
-          contact_id: contactId || null,
-          template_id: selectedTemplateId,
-          requires_customer_signature: template.requires_customer_signature,
-          requires_company_signature: template.requires_company_signature,
-          expires_at: expiresAt.toISOString(),
-        }),
-      })
-
-      const createData = await createRes.json()
-
-      if (!createRes.ok) {
-        throw new Error(createData.error || 'Failed to create document')
-      }
-
-      const documentId = createData.document?.id
-
-      if (!documentId) {
-        throw new Error('Document ID not returned')
-      }
+      const documentId = await createDocumentFromTemplate()
+      if (!documentId) return
 
       // Send for signature if contact has email
       if (contactEmail) {
@@ -235,6 +245,31 @@ export function SendSignatureDialog({
       setError(err instanceof Error ? err.message : 'Failed to send document')
     } finally {
       setIsSending(false)
+    }
+  }
+
+  // Handle "Sign Now" - create document and open signing page for in-person signing
+  const handleSignNow = async () => {
+    if (!selectedTemplateId || !title) return
+
+    try {
+      setIsSigningNow(true)
+      setError(null)
+
+      const documentId = await createDocumentFromTemplate()
+      if (!documentId) return
+
+      // Close dialog and navigate to signing page
+      setOpen(false)
+
+      // Open the signing page - customer will sign in-person with company rep present
+      window.open(`/sign/${documentId}`, '_blank')
+
+      onSuccess?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create document')
+    } finally {
+      setIsSigningNow(false)
     }
   }
 
@@ -502,28 +537,50 @@ export function SendSignatureDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           {activeTab === 'template' ? (
-            <Button
-              onClick={handleTemplateMode}
-              disabled={!canSendTemplate || isSending}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {isSending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  {contactEmail ? 'Send Document' : 'Create Draft'}
-                </>
-              )}
-            </Button>
+            <>
+              {/* Sign Now button - for in-person signing */}
+              <Button
+                variant="outline"
+                onClick={handleSignNow}
+                disabled={!canSendTemplate || isSigningNow || isSending}
+                className="border-primary text-primary hover:bg-primary/10"
+              >
+                {isSigningNow ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Sign Now (In-Person)
+                  </>
+                )}
+              </Button>
+              {/* Send via email button */}
+              <Button
+                onClick={handleTemplateMode}
+                disabled={!canSendTemplate || isSending || isSigningNow}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isSending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    {contactEmail ? 'Send via Email' : 'Create Draft'}
+                  </>
+                )}
+              </Button>
+            </>
           ) : (
             <Button
               onClick={handleUploadMode}

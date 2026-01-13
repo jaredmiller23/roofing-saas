@@ -82,6 +82,7 @@ interface SignatureDocument {
   requires_customer_signature: boolean
   requires_company_signature: boolean
   signature_fields?: SignatureFieldPlacement[]
+  project_id?: string | null
   project?: { name: string }
   signatures?: Array<{ signer_type: string }>
 }
@@ -659,6 +660,23 @@ export default function SignDocumentPage() {
     }
 
     // Online success screen
+    // Determine redirect based on context
+    const getRedirectPath = () => {
+      // If company rep signed and document has a project, redirect to project signatures
+      if (signerType === 'company' && document?.project_id) {
+        return `/projects/${document.project_id}#signatures`
+      }
+      // If company rep signed without project, go to signatures list
+      if (signerType === 'company') {
+        return '/signatures'
+      }
+      // For customers, just go home (they likely don't have CRM access)
+      return '/'
+    }
+
+    const redirectPath = getRedirectPath()
+    const isCompanyRep = signerType === 'company'
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
@@ -671,13 +689,19 @@ export default function SignDocumentPage() {
             Document Signed Successfully!
           </h1>
           <p className="text-muted-foreground mb-6">
-            Your signature has been recorded. You will receive a confirmation email shortly.
+            {isCompanyRep
+              ? 'Your signature has been recorded. The document is now complete.'
+              : 'Your signature has been recorded. You will receive a confirmation email shortly.'}
           </p>
           <Button
-            onClick={() => router.push('/')}
+            onClick={() => router.push(redirectPath)}
             className="w-full min-h-[44px]"
           >
-            Done
+            {isCompanyRep && document?.project_id
+              ? 'Back to Project'
+              : isCompanyRep
+                ? 'View Signatures'
+                : 'Done'}
           </Button>
         </div>
       </div>

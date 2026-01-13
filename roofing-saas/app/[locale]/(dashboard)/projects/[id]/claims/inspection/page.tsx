@@ -37,8 +37,10 @@ export default function InspectionPage() {
     try {
       const res = await fetch(`/api/projects/${projectId}`)
       if (res.ok) {
-        const data = await res.json()
-        setProject(data.project)
+        const result = await res.json()
+        // API returns { success: true, data: { project: {...} } }
+        const projectData = result.data?.project || result.project
+        setProject(projectData)
       } else {
         console.error('Failed to fetch project')
         router.push(`/projects/${projectId}/claims`)

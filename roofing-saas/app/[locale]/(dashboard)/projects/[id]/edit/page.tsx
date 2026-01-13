@@ -121,8 +121,9 @@ export default function EditProjectPage() {
         throw new Error('Failed to fetch project')
       }
 
-      const data = await response.json()
-      const projectData = data.project || data
+      const result = await response.json()
+      // API returns { success: true, data: { project: {...} } }
+      const projectData = result.data?.project || result.project || result
 
       setProject(projectData)
 
@@ -204,7 +205,8 @@ export default function EditProjectPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to update project')
+        // API returns { success: false, error: { message: '...' } }
+        throw new Error(errorData.error?.message || errorData.message || 'Failed to update project')
       }
 
       toast.success('Project updated successfully')

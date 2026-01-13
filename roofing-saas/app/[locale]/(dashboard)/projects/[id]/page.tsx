@@ -14,6 +14,7 @@ import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 import type { QuoteOption } from '@/lib/types/quote-option'
 import { PresenceIndicator } from '@/components/collaboration/PresenceIndicator'
+import { ProjectFilesTable } from '@/components/project-files/project-files-table'
 import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
 import { usePresence, type PresenceUser } from '@/lib/hooks/usePresence'
 import { createClient } from '@/lib/supabase/client'
@@ -779,20 +780,20 @@ export default function ProjectDetailPage() {
 
           {/* Files Tab */}
           <TabsContent value="files" className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground mb-2">Project Files & Photos</h2>
-              <p className="text-sm text-muted-foreground">Documents, photos, and attachments</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-2">Project Files & Photos</h2>
+                <p className="text-sm text-muted-foreground">Documents, photos, and attachments</p>
+              </div>
+              <Link href={`/project-files/new?project_id=${projectId}`}>
+                <Button>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Upload File
+                </Button>
+              </Link>
             </div>
 
-            <Card>
-              <CardContent className="py-12 text-center">
-                <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                <h3 className="text-lg font-medium text-foreground mb-1">Files integration coming soon</h3>
-                <p className="text-sm text-muted-foreground">
-                  Upload and manage project documents, photos, and files
-                </p>
-              </CardContent>
-            </Card>
+            <ProjectFilesTable params={{ project_id: projectId }} />
           </TabsContent>
 
           {/* Contact Tab */}

@@ -67,6 +67,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   // Project creation prompt state
   const [showProjectPrompt, setShowProjectPrompt] = useState(false)
   const [createdContactInfo, setCreatedContactInfo] = useState<{ id: string; name: string } | null>(null)
+  const [isCreatingProject, setIsCreatingProject] = useState(false)
 
   const {
     register,
@@ -864,16 +865,46 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               No, just save contact
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                // Navigate to projects/new with contact pre-filled
-                if (createdContactInfo) {
-                  const projectName = encodeURIComponent(`${createdContactInfo.name} - Roofing Project`)
-                  router.push(`/projects/new?contact_id=${createdContactInfo.id}&name=${projectName}`)
+              disabled={isCreatingProject}
+              onClick={async () => {
+                if (!createdContactInfo) return
+
+                setIsCreatingProject(true)
+                try {
+                  const projectName = `${createdContactInfo.name} - Roofing Project`
+                  const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: projectName,
+                      contact_id: createdContactInfo.id,
+                      pipeline_stage: 'prospect',
+                      type: 'roofing',
+                      lead_source: 'homeowner_contact',
+                      priority: 'normal',
+                    }),
+                  })
+
+                  if (response.ok) {
+                    const result = await response.json()
+                    router.push(`/projects/${result.data.id}`)
+                    router.refresh()
+                  } else {
+                    // If project creation fails, navigate to contact page
+                    console.error('Failed to create project')
+                    router.push(`/contacts/${createdContactInfo.id}`)
+                    router.refresh()
+                  }
+                } catch (error) {
+                  console.error('Error creating project:', error)
+                  router.push(`/contacts/${createdContactInfo.id}`)
                   router.refresh()
+                } finally {
+                  setIsCreatingProject(false)
                 }
               }}
             >
-              Yes, create project
+              {isCreatingProject ? 'Creating...' : 'Yes, create project'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -17,6 +17,7 @@ import {
   getCompanyTurnSubject,
   type CompanyTurnNotificationData
 } from '@/lib/email/signature-reminder-templates'
+import { generateSignedPDF, uploadPDFToStorage } from '@/lib/pdf/signature-pdf-generator'
 
 /**
  * POST /api/signature-documents/[id]/sign
@@ -320,6 +321,94 @@ export async function POST(
 
       logger.info('Signature document completed', { documentId: id })
 
+      // Auto-store signed document to project files (if project linked)
+      if (document.project_id && document.tenant_id) {
+        try {
+          // Fetch all signatures for PDF generation
+          const { data: docSignatures } = await supabase
+            .from('signatures')
+            .select('*')
+            .eq('document_id', id)
+
+          // Generate signed PDF
+          const pdfBytes = await generateSignedPDF(
+            {
+              title: document.title,
+              description: document.description,
+              document_type: document.document_type,
+              project: document.project,
+              contact: document.contact
+            },
+            docSignatures || [],
+            document.file_url || undefined
+          )
+
+          // Upload to storage
+          const fileName = `signed-documents/${document.tenant_id}/${id}_signed_${Date.now()}.pdf`
+          const signedPdfUrl = await uploadPDFToStorage(
+            pdfBytes,
+            fileName,
+            'documents',
+            supabase
+          )
+
+          // Update signature document with signed PDF URL
+          await supabase
+            .from('signature_documents')
+            .update({ file_url: signedPdfUrl })
+            .eq('id', id)
+
+          // Map document type to file category
+          const categoryMap: Record<string, string> = {
+            'contract': 'contracts',
+            'estimate': 'estimates',
+            'waiver': 'waivers',
+            'change_order': 'change_orders',
+            'other': 'other'
+          }
+          const fileCategory = categoryMap[document.document_type] || 'contracts'
+
+          // Create project file record
+          await supabase
+            .from('project_files')
+            .insert({
+              file_name: `${document.title} - Signed.pdf`,
+              file_type: 'document',
+              file_category: fileCategory,
+              file_url: signedPdfUrl,
+              file_size: pdfBytes.length,
+              file_extension: 'pdf',
+              mime_type: 'application/pdf',
+              project_id: document.project_id,
+              folder_path: 'Signed Documents',
+              description: `Auto-generated signed document from signature request`,
+              tenant_id: document.tenant_id,
+              uploaded_by: document.created_by,
+              status: 'active',
+              version: 1,
+              is_deleted: false,
+              metadata: {
+                signature_document_id: id,
+                auto_stored: true,
+                signed_at: new Date().toISOString()
+              }
+            })
+
+          logger.info('Signed document auto-stored to project files', {
+            documentId: id,
+            projectId: document.project_id,
+            fileUrl: signedPdfUrl
+          })
+        } catch (autoStoreError) {
+          // Log but don't fail the signing if auto-store fails
+          logger.error('Failed to auto-store signed document', {
+            error: autoStoreError,
+            documentId: id,
+            projectId: document.project_id
+          })
+        }
+      }
+
       // Send signed notification email to document owner
       try {
         const { data: owner } = await supabase
@@ -506,6 +595,7 @@ export async function GET(
         requires_customer_signature,
         requires_company_signature,
         signature_fields,
+        project_id,
         project:projects(name),
         signatures(signer_type)
       `)

@@ -83,7 +83,8 @@ export function JobForm({ job }: JobFormProps) {
         throw new Error('Failed to save job')
       }
 
-      router.push('/jobs')
+      // Add timestamp to force jobs table to refetch (params change triggers useEffect)
+      router.push(`/jobs?_t=${Date.now()}`)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -366,7 +367,7 @@ export function JobForm({ job }: JobFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? 'Saving...' : job ? 'Update Job' : 'Schedule Job'}
         </button>

@@ -78,6 +78,9 @@ export function JobsTable({ params }: JobsTableProps) {
         throw new Error('Failed to delete job')
       }
 
+      // Remove deleted job from local state immediately (optimistic update)
+      setJobs(prev => prev.filter(job => job.id !== id))
+      setTotal(prev => prev - 1)
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete job')
@@ -152,7 +155,7 @@ export function JobsTable({ params }: JobsTableProps) {
         <div className="mt-6">
           <Link
             href="/jobs/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
           >
             + Schedule Job
           </Link>

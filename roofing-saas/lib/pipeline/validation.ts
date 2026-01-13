@@ -21,17 +21,20 @@ export const PIPELINE_STAGE_ORDER: PipelineStage[] = [
 
 /**
  * Define valid transitions from each stage
- * Each stage can only transition to specific next stages
+ * Allows both forward and backward movement for sales stages (prospect through won)
+ * Production and Complete are restricted to prevent accidental regression during active work
  */
 export const VALID_STAGE_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
+  // Sales stages - allow backward movement for flexibility
   prospect: ['qualified', 'lost'],
-  qualified: ['quote_sent', 'lost'],
-  quote_sent: ['negotiation', 'lost'],
-  negotiation: ['won', 'lost'],
-  won: ['production', 'lost'],
-  production: ['complete', 'lost'],
-  complete: [], // Terminal stage - no further progression
-  lost: [], // Terminal stage - no further progression
+  qualified: ['prospect', 'quote_sent', 'lost'], // Can go back to prospect
+  quote_sent: ['qualified', 'negotiation', 'lost'], // Can go back to qualified
+  negotiation: ['quote_sent', 'won', 'lost'], // Can go back to quote_sent
+  won: ['negotiation', 'production', 'lost'], // Can go back to negotiation
+  // Work stages - restricted movement
+  production: ['won', 'complete', 'lost'], // Can go back to won if work hasn't started
+  complete: [], // Terminal stage - job is done
+  lost: [], // Terminal stage - deal is closed
 }
 
 /**

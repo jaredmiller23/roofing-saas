@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { DocumentEditor } from '@/components/signatures/DocumentEditor'
-import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { createClient } from '@/lib/supabase/client'
 import type { SignatureFieldPlacement } from '@/components/signatures/PlacedField'
 import type { FieldType } from '@/components/signatures/FieldPalette'
@@ -18,7 +17,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Save,
-  Upload,
   Check,
   FileCheck,
   Loader2,
@@ -127,12 +125,12 @@ interface FormData {
   signatureFields: SignatureFieldPlacement[]
 }
 
-const getSteps = (hasHtmlTemplate: boolean) => [
+// Simplified steps - PDF upload is now handled within the DocumentEditor
+const getSteps = () => [
   { number: 1, title: 'Template Selection', icon: LayoutTemplate },
   { number: 2, title: 'Document Info', icon: FileText },
-  ...(hasHtmlTemplate ? [] : [{ number: 3, title: 'Upload PDF', icon: Upload }]),
-  { number: hasHtmlTemplate ? 3 : 4, title: 'Place Fields', icon: PenTool },
-  { number: hasHtmlTemplate ? 4 : 5, title: 'Review & Create', icon: Eye },
+  { number: 3, title: 'Place Fields', icon: PenTool },
+  { number: 4, title: 'Review & Create', icon: Eye },
 ]
 
 export default function NewSignatureDocumentPage() {
@@ -142,7 +140,6 @@ export default function NewSignatureDocumentPage() {
   const locale = params.locale as string || 'en'
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -170,20 +167,18 @@ export default function NewSignatureDocumentPage() {
     signatureFields: [],
   })
 
-  // Track if selected template has HTML content
-  const selectedTemplate = templates.find(t => t.id === formData.selectedTemplateId)
-  const hasHtmlTemplate = !!selectedTemplate?.html_content
-  const STEPS = getSteps(hasHtmlTemplate)
+  // Track selected template (used by template preview, commented for now)
+  const _selectedTemplate = templates.find(t => t.id === formData.selectedTemplateId)
+  const STEPS = getSteps()
   const maxSteps = STEPS.length
 
   // Data lists
   const [contacts, setContacts] = useState<Contact[]>([])
   const [projects, setProjects] = useState<Project[]>([])
-  const [userId, setUserId] = useState<string | null>(null)
+  // User ID removed - PDF upload now handled in DocumentEditor
 
   useEffect(() => {
     loadData()
-    getUserId()
     loadTemplates()
   }, [])
 
@@ -223,11 +218,6 @@ export default function NewSignatureDocumentPage() {
     }
   }, [searchParams, templates])
 
-  const getUserId = async () => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    setUserId(user?.id || null)
-  }
 
   const loadData = async () => {
     try {
@@ -297,41 +287,22 @@ export default function NewSignatureDocumentPage() {
     setFormData(prev => ({ ...prev, [key]: value }))
   }, [])
 
-  // Step validation
+  // Step validation - simplified 4-step flow
   const validateStep = (stepNumber: number): boolean => {
-    // const fieldsStep = hasHtmlTemplate ? 3 : 4
-    // const reviewStep = hasHtmlTemplate ? 4 : 5
-
     switch (stepNumber) {
       case 1:
         return true // Template selection is optional
       case 2:
         return !!formData.title.trim()
       case 3:
-        if (hasHtmlTemplate) {
-          // This is the fields step for HTML templates
-          const hasSignatureField = formData.signatureFields.some(
-            f => f.type === 'signature' || f.type === 'initials'
-          )
-          return hasSignatureField
-        } else {
-          // This is PDF upload step for non-HTML templates
-          return true // PDF is optional
-        }
+        // Fields step - require at least one signature/initials field
+        const hasSignatureField = formData.signatureFields.some(
+          f => f.type === 'signature' || f.type === 'initials'
+        )
+        return hasSignatureField
       case 4:
-        if (hasHtmlTemplate) {
-          // This is the review step for HTML templates
-          return validateStep(2) && validateStep(3)
-        } else {
-          // This is the fields step for non-HTML templates
-          const hasSignatureField = formData.signatureFields.some(
-            f => f.type === 'signature' || f.type === 'initials'
-          )
-          return hasSignatureField
-        }
-      case 5:
-        // This is only the review step for non-HTML templates
-        return validateStep(2) && validateStep(4)
+        // Review step - validate all previous steps
+        return validateStep(2) && validateStep(3)
       default:
         return true
     }
@@ -341,68 +312,17 @@ export default function NewSignatureDocumentPage() {
 
   const handleNext = () => {
     if (step < maxSteps && canProceed) {
-      let nextStep = step + 1
-
-      // Skip PDF upload step if template has HTML content
-      if (hasHtmlTemplate && step === 2) {
-        nextStep = 3 // Go directly to fields step
-      }
-
-      setStep(nextStep)
+      setStep(step + 1)
       setError(null)
     }
   }
 
   const handleBack = () => {
     if (step > 1) {
-      let prevStep = step - 1
-
-      // Skip PDF upload step if template has HTML content
-      if (hasHtmlTemplate && step === 3) {
-        prevStep = 2 // Go back to document info step
-      }
-
-      setStep(prevStep)
+      setStep(step - 1)
       setError(null)
     }
   }
-
-  // Handle PDF file selection
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!userId) {
-      setError('User not authenticated')
-      return
-    }
-
-    setIsUploading(true)
-    setError(null)
-
-    try {
-      const result = await uploadSignaturePdf(file, userId)
-
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to upload PDF')
-      }
-
-      updateFormData('pdfFile', file)
-      updateFormData('pdfUrl', result.data.url)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload PDF')
-    } finally {
-      setIsUploading(false)
-    }
-  }, [userId, updateFormData])
-
-  // Handle file drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file && file.type === 'application/pdf') {
-      handleFileSelect(file)
-    } else {
-      setError('Please upload a PDF file')
-    }
-  }, [handleFileSelect])
 
   // Template-related functions
   const handleTemplateSelect = (template: SignatureTemplate) => {
@@ -461,8 +381,8 @@ export default function NewSignatureDocumentPage() {
     if (pdfUrl && pdfUrl !== formData.pdfUrl) {
       updateFormData('pdfUrl', pdfUrl)
     }
-    // Go to review step: 4 for HTML templates, 5 for others
-    setStep(hasHtmlTemplate ? 4 : 5)
+    // Go to review step (step 4)
+    setStep(4)
   }
 
   // Submit the document
@@ -549,7 +469,7 @@ export default function NewSignatureDocumentPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Create Signature Document</h1>
-              <p className="text-muted-foreground text-sm">Step {step} of 5</p>
+              <p className="text-muted-foreground text-sm">Step {step} of {maxSteps}</p>
             </div>
           </div>
 
@@ -822,90 +742,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Step 3: Upload PDF (only shown if no HTML template) */}
-        {step === 3 && !hasHtmlTemplate && (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-card rounded-lg border border-border p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Upload Document (Optional)</h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                Upload a PDF document to add signature fields to. You can also proceed without a PDF
-                and use a blank canvas.
-              </p>
-
-              {formData.pdfUrl ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <FileCheck className="h-8 w-8 text-green-600" />
-                    <div className="flex-1">
-                      <p className="font-medium text-green-900">PDF Uploaded Successfully</p>
-                      <p className="text-sm text-green-700">{formData.pdfFile?.name}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        updateFormData('pdfFile', null)
-                        updateFormData('pdfUrl', '')
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors
-                    ${isUploading ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
-                >
-                  {isUploading ? (
-                    <div className="flex flex-col items-center">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-                      <p className="text-foreground font-medium">Uploading PDF...</p>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-foreground font-medium mb-2">
-                        Drag and drop your PDF here
-                      </p>
-                      <p className="text-muted-foreground text-sm mb-4">or</p>
-                      <Label htmlFor="pdf-input" className="cursor-pointer">
-                        <Button variant="outline" asChild>
-                          <span>Browse Files</span>
-                        </Button>
-                        <Input
-                          id="pdf-input"
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) handleFileSelect(file)
-                          }}
-                          className="hidden"
-                        />
-                      </Label>
-                      <p className="text-xs text-muted-foreground mt-4">
-                        Maximum file size: 25 MB
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Tip:</strong> If you don&apos;t have a PDF, you can skip this step and place
-                  signature fields on a blank canvas. You can also replace the PDF later.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Fields Step: Step 3 for HTML templates, Step 4 for others */}
-        {((hasHtmlTemplate && step === 3) || (!hasHtmlTemplate && step === 4)) && (
+        {/* Step 3: Place Fields - PDF upload is now handled within DocumentEditor */}
+        {step === 3 && (
           <div>
             {!validateStep(step) && (
               <Alert className="mb-4 border-orange-200 bg-orange-50">
@@ -923,8 +761,8 @@ export default function NewSignatureDocumentPage() {
           </div>
         )}
 
-        {/* Review Step: Step 4 for HTML templates, Step 5 for others */}
-        {((hasHtmlTemplate && step === 4) || (!hasHtmlTemplate && step === 5)) && (
+        {/* Step 4: Review & Create */}
+        {step === 4 && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-lg border border-border p-6 space-y-6">
               <h2 className="text-lg font-semibold text-foreground">Review Your Document</h2>
@@ -1058,7 +896,7 @@ export default function NewSignatureDocumentPage() {
                 disabled={!canProceed}
                 className="bg-primary hover:bg-primary/90"
               >
-                {(hasHtmlTemplate && step === 3) || (!hasHtmlTemplate && step === 4) ? 'Review' : 'Next'}
+                {step === 3 ? 'Review' : 'Next'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
