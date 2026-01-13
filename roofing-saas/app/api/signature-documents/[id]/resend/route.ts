@@ -13,7 +13,7 @@ import {
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend/email'
 import { isResendConfigured } from '@/lib/resend/client'
 import {
@@ -28,8 +28,6 @@ interface DocumentRecord {
   title: string
   status: string
   expires_at: string | null
-  reminder_sent_at: string | null
-  reminder_count: number | null
   tenant_id: string
   contact: {
     id: string
@@ -77,7 +75,6 @@ export async function POST(
 
     // Use admin client to bypass RLS for reading document
     const adminSupabase = await createAdminClient()
-    const supabase = await createClient()
 
     // First, find document by ID only (without tenant filter) to debug
     const { data: rawDocument, error: fetchError } = await adminSupabase
@@ -87,8 +84,6 @@ export async function POST(
         title,
         status,
         expires_at,
-        reminder_sent_at,
-        reminder_count,
         tenant_id,
         contact:contacts(id, first_name, last_name, email),
         project:projects(id, name)
@@ -194,29 +189,11 @@ export async function POST(
       ]
     })
 
-    // Update document reminder tracking
-    const currentReminderCount = document.reminder_count || 0
-    const { error: updateError } = await supabase
-      .from('signature_documents')
-      .update({
-        reminder_sent_at: new Date().toISOString(),
-        reminder_count: currentReminderCount + 1
-      })
-      .eq('id', id)
-
-    if (updateError) {
-      logger.error('Error updating reminder tracking after manual resend', {
-        documentId: id,
-        error: updateError
-      })
-    }
-
     logger.info('Manual signature reminder sent', {
       documentId: id,
       recipientEmail,
       reminderType,
-      daysRemaining,
-      reminderCount: currentReminderCount + 1
+      daysRemaining
     })
 
     const duration = Date.now() - startTime
@@ -228,8 +205,7 @@ export async function POST(
         email: recipientEmail,
         name: recipientName
       },
-      reminderType,
-      reminderCount: currentReminderCount + 1
+      reminderType
     })
 
   } catch (error) {
