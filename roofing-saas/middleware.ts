@@ -41,8 +41,10 @@ export async function middleware(request: NextRequest) {
   const hasLocalePrefix = locales.some(locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`)
 
   // Only run i18n middleware for paths that need locale prefix added
+  // Exclude /sign (public e-signature pages) from locale redirects
   if (!pathname.startsWith('/api/') &&
       !pathname.startsWith('/_next/') &&
+      !pathname.startsWith('/sign') &&
       !isRootPath &&
       !hasLocalePrefix) {
     const intlResponse = intlMiddleware(request)
