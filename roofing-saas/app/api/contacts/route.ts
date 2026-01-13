@@ -194,60 +194,61 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    // Check if we need to auto-create a project for homeowner contacts
+    // Check if we need to auto-create a project or prompt for project creation
+    // Applies to all contact categories - user can decline if not applicable
     let autoCreatedProject = null
     let promptForProject = false
 
-    if (contact.contact_category === 'homeowner') {
-      // Fetch tenant setting for auto-creating projects
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .select('auto_create_project_for_homeowners')
-        .eq('id', tenantId)
-        .single()
+    // Fetch tenant setting for auto-creating projects
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('auto_create_project_for_homeowners')
+      .eq('id', tenantId)
+      .single()
 
-      if (tenantError) {
-        logger.error('Failed to fetch tenant settings', { error: tenantError, tenantId })
-      } else {
-        const setting: AutoCreateProjectSetting = tenant?.auto_create_project_for_homeowners || 'prompt'
+    if (tenantError) {
+      logger.error('Failed to fetch tenant settings', { error: tenantError, tenantId })
+    } else {
+      const setting: AutoCreateProjectSetting = tenant?.auto_create_project_for_homeowners || 'prompt'
 
-        if (setting === 'always') {
-          // Auto-create project without prompting
-          try {
-            const { data: project, error: projectError } = await supabase
-              .from('projects')
-              .insert({
-                name: `${contact.first_name} ${contact.last_name} - Roofing Project`,
-                contact_id: contact.id,
-                tenant_id: tenantId,
-                created_by: user.id,
-                pipeline_stage: 'prospect',
-                type: 'roofing',
-                lead_source: 'homeowner_contact',
-                priority: 'normal',
-              })
-              .select()
-              .single()
+      if (setting === 'always') {
+        // Auto-create project without prompting
+        try {
+          const contactName = contact.company || `${contact.first_name} ${contact.last_name}`
+          const { data: project, error: projectError } = await supabase
+            .from('projects')
+            .insert({
+              name: `${contactName} - Roofing Project`,
+              contact_id: contact.id,
+              tenant_id: tenantId,
+              created_by: user.id,
+              pipeline_stage: 'prospect',
+              type: 'roofing',
+              lead_source: contact.contact_category || 'contact',
+              priority: 'normal',
+            })
+            .select()
+            .single()
 
-            if (projectError) {
-              logger.error('Failed to auto-create project', { error: projectError, contactId: contact.id })
-            } else {
-              autoCreatedProject = project
-              logger.info('Auto-created project for homeowner contact', {
-                projectId: project.id,
-                contactId: contact.id,
-                tenantId
-              })
-            }
-          } catch (error) {
-            logger.error('Exception during auto-project creation', { error, contactId: contact.id })
+          if (projectError) {
+            logger.error('Failed to auto-create project', { error: projectError, contactId: contact.id })
+          } else {
+            autoCreatedProject = project
+            logger.info('Auto-created project for contact', {
+              projectId: project.id,
+              contactId: contact.id,
+              contactCategory: contact.contact_category,
+              tenantId
+            })
           }
-        } else if (setting === 'prompt') {
-          // Set flag to prompt user on frontend
-          promptForProject = true
+        } catch (error) {
+          logger.error('Exception during auto-project creation', { error, contactId: contact.id })
         }
-        // 'never' - do nothing
+      } else if (setting === 'prompt') {
+        // Set flag to prompt user on frontend
+        promptForProject = true
       }
+      // 'never' - do nothing
     }
 
     // Award points for creating a contact (non-blocking)

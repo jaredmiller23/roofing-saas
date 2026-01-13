@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
 import { CreateProjectDialog } from '@/components/contacts/CreateProjectDialog'
+import { Lightbulb, ArrowRight } from 'lucide-react'
 
 /**
  * Contact detail page
@@ -28,13 +29,27 @@ export default async function ContactDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: contact, error } = await supabase
-    .from('contacts')
-    .select('*')
-    .eq('id', id)
-    .eq('tenant_id', tenantId)
-    .eq('is_deleted', false)
-    .single()
+  // Fetch contact and their projects in parallel
+  const [contactResult, projectsResult] = await Promise.all([
+    supabase
+      .from('contacts')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .single(),
+    supabase
+      .from('projects')
+      .select('id, name, pipeline_stage, status')
+      .eq('contact_id', id)
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .limit(5)
+  ])
+
+  const { data: contact, error } = contactResult
+  const { data: projects } = projectsResult
+  const hasProjects = projects && projects.length > 0
 
   if (error || !contact) {
     return (
@@ -95,6 +110,56 @@ export default async function ContactDetailPage({
             </Link>
           </div>
         </div>
+
+        {/* Workflow Guidance Banner - Shows when no projects exist */}
+        {!hasProjects && (
+          <div className="mb-6 bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Lightbulb className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-medium text-foreground">Next Step: Create a Project</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Create a project to track this opportunity through your sales pipeline,
+                  manage estimates, and collect signatures.
+                </p>
+                <div className="mt-3">
+                  <CreateProjectDialog
+                    contactId={contact.id}
+                    contactName={`${contact.first_name} ${contact.last_name}`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Linked Projects */}
+        {hasProjects && (
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Projects</h2>
+              <CreateProjectDialog
+                contactId={contact.id}
+                contactName={`${contact.first_name} ${contact.last_name}`}
+              />
+            </div>
+            <div className="space-y-2">
+              {projects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">{project.name}</p>
+                    <p className="text-sm text-muted-foreground capitalize">{project.pipeline_stage?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Contact Information */}
         <div className="bg-card rounded-lg shadow p-6 mb-6">
