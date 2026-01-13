@@ -431,7 +431,8 @@ ariaFunctionRegistry.register({
       contact_id: finalContactId,
       project_id: finalProjectId,
       type,
-      description: content,
+      subject: type === 'note' ? 'Note' : type.charAt(0).toUpperCase() + type.slice(1),
+      content,
       created_by: context.userId,
     })
 
@@ -611,7 +612,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: `Pipeline stage changed to ${new_stage}`,
+      subject: 'Stage Changed',
+      content: `Pipeline stage changed to ${new_stage}`,
       created_by: context.userId,
       metadata: { via: 'aria', previous_stage: context.project?.pipeline_stage },
     })
@@ -776,7 +778,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: notes ? `Project WON! ${notes}` : 'Project marked as WON!',
+      subject: 'Project Won',
+      content: notes ? `Project WON! ${notes}` : 'Project marked as WON!',
       created_by: context.userId,
       metadata: { via: 'aria', event: 'project_won', final_value },
     })
@@ -847,7 +850,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: reason ? `Project LOST: ${reason}` : 'Project marked as LOST',
+      subject: 'Project Lost',
+      content: reason ? `Project LOST: ${reason}` : 'Project marked as LOST',
       created_by: context.userId,
       metadata: { via: 'aria', event: 'project_lost', loss_reason: reason },
     })
@@ -1007,7 +1011,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: reason
+      subject: 'Project Reactivated',
+      content: reason
         ? `Project REACTIVATED: ${reason}`
         : `Project reactivated - moved to ${new_stage}`,
       created_by: context.userId,
@@ -1326,7 +1331,7 @@ ariaFunctionRegistry.register({
     // Build query for activities
     let query = context.supabase
       .from('activities')
-      .select('id, type, description, created_at, metadata')
+      .select('id, type, content, created_at, metadata')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', finalContactId)
       .order('created_at', { ascending: false })
@@ -1369,7 +1374,7 @@ ariaFunctionRegistry.register({
     const emojiMap: Record<string, string> = { call: '📞', sms: '💬', email: '📧', note: '📝', meeting: '🤝' }
     const lines = activities.map((a) => {
       const emoji = emojiMap[a.type as string] || '•'
-      return `${emoji} ${formatDate(a.created_at)} [${a.type}]: ${a.description?.substring(0, 60)}${(a.description?.length || 0) > 60 ? '...' : ''}`
+      return `${emoji} ${formatDate(a.created_at)} [${a.type}]: ${a.content?.substring(0, 60)}${(a.content?.length || 0) > 60 ? '...' : ''}`
     })
 
     const message = [
@@ -1580,7 +1585,8 @@ ariaFunctionRegistry.register({
       contact_id: finalContactId,
       project_id: finalProjectId,
       type: 'note',
-      description: `Insurance info updated: ${updates.join(', ')}`,
+      subject: 'Insurance Updated',
+      content: `Insurance info updated: ${updates.join(', ')}`,
       created_by: context.userId,
       metadata: { via: 'aria', event: 'insurance_update' },
     })
@@ -1847,8 +1853,8 @@ ariaFunctionRegistry.register({
         contact_id: contactData?.id,
         project_id: finalProjectId,
         type: 'meeting',
-        description: title,
-        due_date: meetingDate.toISOString(),
+        subject: title,
+        scheduled_at: meetingDate.toISOString(),
         created_by: context.userId,
         metadata: {
           appointment_type: 'adjuster_meeting',
@@ -1968,11 +1974,11 @@ ariaFunctionRegistry.register({
 
     const updateData: Record<string, unknown> = {
       status: 'in_progress',
-      start_date: productionStartDate.toISOString(),
+      scheduled_start: productionStartDate.toISOString(),
     }
 
     if (assigned_to) {
-      updateData.assigned_to = assigned_to
+      updateData.crew_assigned = assigned_to
     }
 
     const { data, error } = await context.supabase
@@ -1980,7 +1986,7 @@ ariaFunctionRegistry.register({
       .update(updateData)
       .eq('id', finalProjectId)
       .eq('tenant_id', context.tenantId)
-      .select('id, name, status, start_date, assigned_to')
+      .select('id, name, status, scheduled_start, crew_assigned')
       .single()
 
     if (error) {
@@ -1992,11 +1998,12 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: notes
+      subject: 'Production Started',
+      content: notes
         ? `Production STARTED: ${notes}`
         : `Production started${assigned_to ? ` - assigned to ${assigned_to}` : ''}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'production_started', assigned_to },
+      metadata: { via: 'aria', event: 'production_started', crew_assigned: assigned_to },
     })
 
     const dateStr = productionStartDate.toLocaleDateString('en-US', {
@@ -2007,8 +2014,8 @@ ariaFunctionRegistry.register({
 
     let message = `🚀 Production started on "${data.name}"!\n`
     message += `Start Date: ${dateStr}\n`
-    if (data.assigned_to) {
-      message += `Assigned to: ${data.assigned_to}`
+    if (data.crew_assigned) {
+      message += `Assigned to: ${data.crew_assigned}`
     }
 
     return { success: true, data, message }
@@ -2083,7 +2090,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: fullNote,
+      subject: 'Progress Update',
+      content: fullNote,
       created_by: context.userId,
       metadata: {
         via: 'aria',
@@ -2213,7 +2221,8 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: final_notes
+      subject: 'Project Completed',
+      content: final_notes
         ? `🎉 Project COMPLETED: ${final_notes}`
         : '🎉 Project marked as COMPLETED',
       created_by: context.userId,
@@ -2277,10 +2286,10 @@ ariaFunctionRegistry.register({
 
     const { data, error } = await context.supabase
       .from('projects')
-      .update({ assigned_to })
+      .update({ crew_assigned: assigned_to })
       .eq('id', finalProjectId)
       .eq('tenant_id', context.tenantId)
-      .select('id, name, assigned_to')
+      .select('id, name, crew_assigned')
       .single()
 
     if (error) {
@@ -2292,9 +2301,10 @@ ariaFunctionRegistry.register({
       tenant_id: context.tenantId,
       project_id: finalProjectId,
       type: 'note',
-      description: `Project assigned to ${assigned_to}`,
+      subject: 'Project Assigned',
+      content: `Project assigned to ${assigned_to}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_assigned', assigned_to },
+      metadata: { via: 'aria', event: 'project_assigned', crew_assigned: assigned_to },
     })
 
     let message = `✅ "${data.name}" assigned to ${assigned_to}`
@@ -2334,7 +2344,7 @@ ariaFunctionRegistry.register({
     // Get all projects with assignments
     let query = context.supabase
       .from('projects')
-      .select('id, name, assigned_to, status, pipeline_stage, estimated_value')
+      .select('id, name, crew_assigned, status, pipeline_stage, estimated_value')
       .eq('tenant_id', context.tenantId)
       .eq('is_deleted', false)
 
@@ -2358,7 +2368,7 @@ ariaFunctionRegistry.register({
     }> = {}
 
     projects?.forEach((p) => {
-      const assignee = p.assigned_to || 'Unassigned'
+      const assignee = p.crew_assigned || 'Unassigned'
       if (!workload[assignee]) {
         workload[assignee] = { count: 0, in_progress: 0, pipeline: 0, value: 0 }
       }
@@ -2523,7 +2533,7 @@ ariaFunctionRegistry.register({
     let query = context.supabase
       .from('activities')
       .select(`
-        id, type, description, created_at, due_date, metadata,
+        id, type, content, created_at, scheduled_at, metadata,
         contact:contact_id (first_name, last_name),
         project:project_id (name)
       `)
@@ -2554,7 +2564,7 @@ ariaFunctionRegistry.register({
     // Format summary
     const summaries = data.slice(0, 5).map((a) => {
       const date = new Date(a.created_at).toLocaleDateString()
-      return `${date} [${a.type}]: ${a.description?.substring(0, 50)}...`
+      return `${date} [${a.type}]: ${a.content?.substring(0, 50)}...`
     })
 
     return {
@@ -2597,20 +2607,20 @@ ariaFunctionRegistry.register({
     let query = context.supabase
       .from('activities')
       .select(`
-        id, type, description, due_date, metadata,
+        id, type, content, scheduled_at, metadata,
         contact:contact_id (first_name, last_name),
         project:project_id (name)
       `)
       .eq('tenant_id', context.tenantId)
-      .not('due_date', 'is', null)
-      .order('due_date', { ascending: true })
+      .not('scheduled_at', 'is', null)
+      .order('scheduled_at', { ascending: true })
 
     if (include_overdue) {
       // Get items due today or overdue
-      query = query.lt('due_date', tomorrow.toISOString())
+      query = query.lt('scheduled_at', tomorrow.toISOString())
     } else {
       // Only today's items
-      query = query.gte('due_date', today.toISOString()).lt('due_date', tomorrow.toISOString())
+      query = query.gte('scheduled_at', today.toISOString()).lt('scheduled_at', tomorrow.toISOString())
     }
 
     // Filter to pending tasks only
@@ -2631,8 +2641,8 @@ ariaFunctionRegistry.register({
     }
 
     // Separate overdue vs today
-    const overdue = data.filter((a) => new Date(a.due_date) < today)
-    const todayItems = data.filter((a) => new Date(a.due_date) >= today)
+    const overdue = data.filter((a) => new Date(a.scheduled_at) < today)
+    const todayItems = data.filter((a) => new Date(a.scheduled_at) >= today)
 
     let message = ''
     if (overdue.length > 0) {
@@ -2644,7 +2654,7 @@ ariaFunctionRegistry.register({
       const contactData = Array.isArray(a.contact) ? a.contact[0] : a.contact
       const projectData = Array.isArray(a.project) ? a.project[0] : a.project
       const who = contactData ? `${contactData.first_name} ${contactData.last_name}` : projectData?.name || ''
-      return `• [${a.type}] ${a.description?.substring(0, 40)}${who ? ` - ${who}` : ''}`
+      return `• [${a.type}] ${a.content?.substring(0, 40)}${who ? ` - ${who}` : ''}`
     }
 
     if (overdue.length > 0) {
@@ -2777,8 +2787,8 @@ ariaFunctionRegistry.register({
         contact_id: finalContactId,
         project_id: finalProjectId,
         type: 'meeting',
-        description: title,
-        due_date: appointmentDate.toISOString(),
+        subject: title,
+        scheduled_at: appointmentDate.toISOString(),
         created_by: context.userId,
         metadata: {
           appointment_type,
@@ -3577,7 +3587,7 @@ ariaFunctionRegistry.register({
         address_city,
         address_state,
         stage,
-        projects(id, name, pipeline_stage, status)
+        projects!contact_id(id, name, pipeline_stage, status)
       `
       )
       .eq('tenant_id', context.tenantId)
@@ -3730,8 +3740,8 @@ ariaFunctionRegistry.register({
         tenant_id: context.tenantId,
         contact_id,
         type: 'call',
-        title: `Phone call (${direction || 'call'})${outcome ? ` - ${outcome}` : ''}`,
-        description: JSON.stringify({
+        subject: `Phone call (${direction || 'call'})${outcome ? ` - ${outcome}` : ''}`,
+        content: JSON.stringify({
           direction: direction || 'unknown',
           duration_minutes,
           outcome: outcome || 'answered',
@@ -3756,14 +3766,14 @@ ariaFunctionRegistry.register({
           tenant_id: context.tenantId,
           contact_id,
           type: 'task',
-          title: `Follow up with ${contact.first_name} ${contact.last_name}`,
-          description: JSON.stringify({
+          subject: `Follow up with ${contact.first_name} ${contact.last_name}`,
+          content: JSON.stringify({
             priority: 'medium',
             assigned_to: context.userId,
             status: 'pending',
             related_call_id: data.id,
           }),
-          due_date: parsedDate.toISOString(),
+          scheduled_at: parsedDate.toISOString(),
           created_by: context.userId,
         })
       }
@@ -3832,11 +3842,11 @@ ariaFunctionRegistry.register({
         `
         id,
         type,
-        title,
-        description,
+        subject,
+        content,
         created_at,
-        due_date,
-        project:projects(name)
+        scheduled_at,
+        project:projects!project_id(name)
       `
       )
       .eq('tenant_id', context.tenantId)
@@ -3861,10 +3871,10 @@ ariaFunctionRegistry.register({
     interface ActivityWithProject {
       id: string
       type: string
-      title: string
-      description: string | null
+      subject: string
+      content: string | null
       created_at: string
-      due_date: string | null
+      scheduled_at: string | null
       project: { name: string } | { name: string }[] | null
     }
 
@@ -3872,17 +3882,17 @@ ariaFunctionRegistry.register({
       const projectData = Array.isArray(a.project) ? a.project[0] : a.project
       let details = ''
       try {
-        const desc = a.description ? JSON.parse(a.description) : {}
+        const desc = a.content ? JSON.parse(a.content) : {}
         if (desc.notes) details = desc.notes
         if (desc.outcome) details = `${desc.outcome}${details ? ': ' + details : ''}`
       } catch {
-        details = a.description || ''
+        details = a.content || ''
       }
 
       return {
         id: a.id,
         type: typeLabels[a.type] || a.type,
-        title: a.title,
+        title: a.subject,
         details: details.substring(0, 100) + (details.length > 100 ? '...' : ''),
         date: new Date(a.created_at).toLocaleDateString('en-US', {
           month: 'short',
@@ -3960,11 +3970,11 @@ ariaFunctionRegistry.register({
         `
         id,
         type,
-        title,
-        description,
+        subject,
+        content,
         created_at,
-        contact:contacts(first_name, last_name),
-        project:projects(name)
+        contact:contacts!contact_id(first_name, last_name),
+        project:projects!project_id(name)
       `
       )
       .eq('tenant_id', context.tenantId)
@@ -4003,8 +4013,8 @@ ariaFunctionRegistry.register({
     interface ActivityWithRelations {
       id: string
       type: string
-      title: string
-      description: string | null
+      subject: string
+      content: string | null
       created_at: string
       contact: { first_name: string; last_name: string } | { first_name: string; last_name: string }[] | null
       project: { name: string } | { name: string }[] | null
@@ -4017,7 +4027,7 @@ ariaFunctionRegistry.register({
       return {
         id: a.id,
         type: typeEmoji[a.type] || a.type,
-        title: a.title,
+        title: a.subject,
         contact: contactData
           ? `${contactData.first_name} ${contactData.last_name}`.trim()
           : null,
