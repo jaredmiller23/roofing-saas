@@ -2,16 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/signature-reminders",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/process-campaigns",
+      "path": "/api/cron/daily-tasks",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/billing-check",
-      "schedule": "0 10 * * *"
     }
   ]
 }

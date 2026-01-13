@@ -1,0 +1,158 @@
+/**
+ * Cron Job: Consolidated Daily Tasks
+ *
+ * Runs all daily cron jobs in sequence to stay within Vercel Hobby plan's
+ * 2 cron job limit. Each task runs independently - failures don't block others.
+ *
+ * Tasks executed:
+ * 1. Signature reminders - 9 AM style (documents expiring soon)
+ * 2. Campaign processing - 8 AM style (pending step executions)
+ * 3. Billing checks - 10 AM style (trials, grace periods, downgrades)
+ *
+ * Configure in vercel.json:
+ * {
+ *   "crons": [{
+ *     "path": "/api/cron/daily-tasks",
+ *     "schedule": "0 8 * * *"
+ *   }]
+ * }
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
+
+// Import the handlers from individual cron endpoints
+import { GET as signatureRemindersHandler } from '@/app/api/cron/signature-reminders/route'
+import { GET as processCampaignsHandler } from '@/app/api/cron/process-campaigns/route'
+import { GET as billingCheckHandler } from '@/app/api/cron/billing-check/route'
+
+// Verify cron secret for security
+function verifyCronSecret(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+
+  // If no secret is configured, only allow in development
+  if (!cronSecret) {
+    return process.env.NODE_ENV === 'development'
+  }
+
+  return authHeader === 'Bearer ' + cronSecret
+}
+
+interface TaskResult {
+  task: string
+  success: boolean
+  duration: number
+  result?: unknown
+  error?: string
+}
+
+export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+
+  // Verify authorization
+  if (!verifyCronSecret(request)) {
+    logger.warn('[Daily Tasks] Unauthorized cron request attempt')
+    return errorResponse(AuthenticationError('Unauthorized'))
+  }
+
+  logger.info('[Daily Tasks] Starting consolidated daily tasks')
+
+  const results: TaskResult[] = []
+
+  // Task 1: Signature Reminders
+  const signatureStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running signature reminders...')
+    const response = await signatureRemindersHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'signature_reminders',
+      success: response.ok,
+      duration: Date.now() - signatureStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] Signature reminders completed', { duration: Date.now() - signatureStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'signature_reminders',
+      success: false,
+      duration: Date.now() - signatureStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] Signature reminders failed', { error: errorMessage })
+  }
+
+  // Task 2: Campaign Processing
+  const campaignStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running campaign processing...')
+    const response = await processCampaignsHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'process_campaigns',
+      success: response.ok,
+      duration: Date.now() - campaignStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] Campaign processing completed', { duration: Date.now() - campaignStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'process_campaigns',
+      success: false,
+      duration: Date.now() - campaignStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] Campaign processing failed', { error: errorMessage })
+  }
+
+  // Task 3: Billing Check
+  const billingStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running billing check...')
+    const response = await billingCheckHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'billing_check',
+      success: response.ok,
+      duration: Date.now() - billingStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] Billing check completed', { duration: Date.now() - billingStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'billing_check',
+      success: false,
+      duration: Date.now() - billingStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] Billing check failed', { error: errorMessage })
+  }
+
+  const totalDuration = Date.now() - startTime
+  const successCount = results.filter(r => r.success).length
+  const failureCount = results.filter(r => !r.success).length
+
+  logger.info('[Daily Tasks] All daily tasks completed', {
+    totalDuration,
+    successCount,
+    failureCount,
+  })
+
+  return NextResponse.json({
+    success: failureCount === 0,
+    message: `Daily tasks completed: ${successCount} succeeded, ${failureCount} failed`,
+    results,
+    totalDuration,
+  })
+}
+
+// Also support POST for manual triggers
+export async function POST(request: NextRequest) {
+  return GET(request)
+}
