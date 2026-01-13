@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { getPhotoTypeLabel, getDamageCauseLabel } from '@/lib/types/photo-labels'
+import type { PhotoType, DamageCause } from '@/lib/types/photo-labels'
 
 interface Photo {
   id: string
@@ -211,6 +214,22 @@ export function PhotoGallery({
                       objectFit: 'cover'
                     }}
                   />
+
+                  {/* Label badges */}
+                  {(photo.metadata?.photoType || photo.metadata?.damageCause) && (
+                    <div className="absolute bottom-2 left-2 flex gap-1 flex-wrap">
+                      {photo.metadata?.photoType && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                          {getPhotoTypeLabel(photo.metadata.photoType as PhotoType)}
+                        </Badge>
+                      )}
+                      {photo.metadata?.damageCause && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-background/80">
+                          {getDamageCauseLabel(photo.metadata.damageCause as DamageCause)}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Simple delete button - always visible */}
