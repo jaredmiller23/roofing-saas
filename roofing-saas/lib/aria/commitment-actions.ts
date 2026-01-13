@@ -163,17 +163,22 @@ export async function notifyTeamOfCommitment(
   try {
     const supabase = await createAdminClient()
 
-    // Get assignee details
-    const { data: assignee } = await supabase
+    // Get assignee details from public.users (has id, email, raw_user_meta_data)
+    const { data: assignee, error: userError } = await supabase
       .from('users')
-      .select('id, email, phone, first_name')
+      .select('id, email, raw_user_meta_data')
       .eq('id', assigneeId)
       .single()
 
-    if (!assignee) {
-      logger.warn('Assignee not found for notification', { assigneeId })
+    if (userError || !assignee) {
+      logger.warn('Assignee not found for notification', { assigneeId, error: userError })
       return
     }
+
+    // Extract name from raw_user_meta_data
+    const userMeta = assignee.raw_user_meta_data as { full_name?: string; phone?: string } | null
+    const assigneeName = userMeta?.full_name?.split(' ')[0] || 'Team Member'
+    const assigneePhone = userMeta?.phone || null
 
     // Get notification preferences
     const { data: prefs } = await supabase
@@ -197,7 +202,7 @@ export async function notifyTeamOfCommitment(
           to: assignee.email,
           subject: `ARIA Commitment: ${commitmentDesc}`,
           html: buildEmailNotification({
-            assigneeName: assignee.first_name || 'Team Member',
+            assigneeName,
             customerName,
             phone,
             commitmentDesc,
@@ -218,10 +223,10 @@ export async function notifyTeamOfCommitment(
     }
 
     // Send SMS notification (if enabled and phone available)
-    if (shouldSMSNotify && assignee.phone) {
+    if (shouldSMSNotify && assigneePhone) {
       try {
         await sendSMS({
-          to: assignee.phone,
+          to: assigneePhone,
           body: buildSMSNotification({
             customerName,
             commitmentDesc,
@@ -230,7 +235,7 @@ export async function notifyTeamOfCommitment(
         })
 
         logger.info('Commitment SMS notification sent', {
-          to: assignee.phone,
+          to: assigneePhone,
           taskId,
         })
       } catch (smsError) {
@@ -248,6 +253,7 @@ export async function notifyTeamOfCommitment(
 
 /**
  * Find the default assignee for a tenant
+ * Uses tenant_users table for tenant/role mapping
  */
 async function findDefaultAssignee(tenantId: string): Promise<string | null> {
   try {
@@ -264,30 +270,30 @@ async function findDefaultAssignee(tenantId: string): Promise<string | null> {
       return settings.default_lead_assignee
     }
 
-    // 2. Find first owner or admin
+    // 2. Find first owner or admin from tenant_users
     const { data: adminUser } = await supabase
-      .from('users')
-      .select('id')
+      .from('tenant_users')
+      .select('user_id')
       .eq('tenant_id', tenantId)
       .in('role', ['owner', 'admin'])
-      .eq('is_active', true)
+      .eq('status', 'active')
       .limit(1)
       .single()
 
-    if (adminUser?.id) {
-      return adminUser.id
+    if (adminUser?.user_id) {
+      return adminUser.user_id
     }
 
-    // 3. Find any active user
+    // 3. Find any active user in tenant
     const { data: anyUser } = await supabase
-      .from('users')
-      .select('id')
+      .from('tenant_users')
+      .select('user_id')
       .eq('tenant_id', tenantId)
-      .eq('is_active', true)
+      .eq('status', 'active')
       .limit(1)
       .single()
 
-    return anyUser?.id || null
+    return anyUser?.user_id || null
   } catch (error) {
     logger.warn('Error finding default assignee', { error, tenantId })
     return null
