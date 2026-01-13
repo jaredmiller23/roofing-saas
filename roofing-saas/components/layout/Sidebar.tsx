@@ -74,6 +74,7 @@ const navSections: NavSection[] = [
       { href: '/call-logs', label: 'Call Log', icon: Phone },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/campaigns', label: 'Emails', icon: Mail },
+      { href: '/automations', label: 'Automations', icon: Zap },
       { href: '/contacts', label: 'Contacts', icon: Users },
     ]
   },
