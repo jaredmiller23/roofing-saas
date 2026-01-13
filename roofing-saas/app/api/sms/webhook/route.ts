@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
 import twilio from 'twilio'
@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
 
     logger.info('Twilio signature verified successfully')
 
-    const supabase = await createClient()
+    // Use admin client for webhooks - no user session means RLS would block queries
+    const supabase = await createAdminClient()
 
     // Look up tenant by the "To" number (the business's Twilio number)
     // This is stored in tenant_settings.integrations->twilio->phone_number

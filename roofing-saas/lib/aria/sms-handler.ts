@@ -3,7 +3,7 @@
  * Processes inbound SMS messages and generates AI-powered responses
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { buildARIAContext, findContactByPhone } from './context-builder'
 import { getARIASystemPrompt } from './orchestrator'
@@ -115,7 +115,7 @@ export async function handleInboundSMS(params: InboundSMSParams): Promise<SMSHan
   logger.info('ARIA processing inbound SMS', { from, tenantId, bodyLength: body.length })
 
   try {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Find or use provided contact
     let contactId = providedContactId
@@ -351,7 +351,7 @@ export async function queueSMSForApproval(params: {
   category: string
 }): Promise<{ success: boolean; queueId?: string; error?: string }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     const { data, error } = await supabase
       .from('sms_approval_queue')
