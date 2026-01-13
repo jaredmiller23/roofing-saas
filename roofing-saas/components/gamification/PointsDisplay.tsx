@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, TrendingUp, Target } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface PointsData {
   total_points: number
@@ -97,37 +103,60 @@ export function PointsDisplay() {
       </div>
 
       {/* Daily, Weekly, Monthly Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="text-center p-3 bg-muted/30 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
-            <Target className="h-4 w-4 text-muted-foreground mr-1" />
-            <span className="text-xs text-muted-foreground">Daily</span>
-          </div>
-          <p className="text-lg font-semibold text-foreground">
-            {points.daily_points}
-          </p>
-        </div>
+      <TooltipProvider>
+        <div className="grid grid-cols-3 gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-center mb-1">
+                  <Target className="h-4 w-4 text-muted-foreground mr-1" />
+                  <span className="text-xs text-muted-foreground">Daily</span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {points.daily_points}
+                </p>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Points earned today</p>
+            </TooltipContent>
+          </Tooltip>
 
-        <div className="text-center p-3 bg-muted/30 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
-            <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
-            <span className="text-xs text-muted-foreground">Weekly</span>
-          </div>
-          <p className="text-lg font-semibold text-foreground">
-            {points.weekly_points}
-          </p>
-        </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-center mb-1">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
+                  <span className="text-xs text-muted-foreground">Weekly</span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {points.weekly_points}
+                </p>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Points earned this week</p>
+            </TooltipContent>
+          </Tooltip>
 
-        <div className="text-center p-3 bg-muted/30 rounded-lg">
-          <div className="flex items-center justify-center mb-1">
-            <Trophy className="h-4 w-4 text-muted-foreground mr-1" />
-            <span className="text-xs text-muted-foreground">Monthly</span>
-          </div>
-          <p className="text-lg font-semibold text-foreground">
-            {points.monthly_points}
-          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-center mb-1">
+                  <Trophy className="h-4 w-4 text-muted-foreground mr-1" />
+                  <span className="text-xs text-muted-foreground">Monthly</span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {points.monthly_points}
+                </p>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Points earned this month</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-      </div>
+      </TooltipProvider>
     </div>
   )
 }
