@@ -24,6 +24,7 @@ export type ARIAFunctionCategory =
   | 'workflows'     // Automation orchestration
   | 'vision'        // Photo analysis, damage detection
   | 'insurance'     // Claims intelligence, adjusters, carriers
+  | 'analytics'     // Business intelligence, coaching, performance
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 

@@ -38,5 +38,8 @@ import './weather'
 // Insurance/Claims intelligence (claim status, adjusters, carriers, patterns)
 import './insurance'
 
+// Analytics & Coaching (daily summary, sales metrics, activity analytics, bottlenecks, improvements)
+import './analytics'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
