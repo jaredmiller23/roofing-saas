@@ -3138,13 +3138,13 @@ ariaFunctionRegistry.register({
         contact_id: contact_id || null,
         project_id: project_id || null,
         type: 'task',
-        title,
-        description: JSON.stringify({
+        subject: title,
+        content: JSON.stringify({
           priority: priority || 'medium',
           assigned_to: assigned_to || context.userId,
           status: 'pending',
         }),
-        due_date: parsedDueDate?.toISOString() || null,
+        scheduled_at: parsedDueDate?.toISOString() || null,
         created_by: context.userId,
       })
       .select()
@@ -3216,19 +3216,19 @@ ariaFunctionRegistry.register({
       .select(
         `
         id,
-        title,
-        description,
-        due_date,
+        subject,
+        content,
+        scheduled_at,
         contact_id,
         project_id,
         created_at,
-        contact:contacts(first_name, last_name),
-        project:projects(name)
+        contact:contacts!contact_id(first_name, last_name),
+        project:projects!project_id(name)
       `
       )
       .eq('tenant_id', context.tenantId)
       .eq('type', 'task')
-      .order('due_date', { ascending: true, nullsFirst: false })
+      .order('scheduled_at', { ascending: true, nullsFirst: false })
 
     if (contact_id) {
       query = query.eq('contact_id', contact_id)
@@ -3243,13 +3243,13 @@ ariaFunctionRegistry.register({
       return { success: false, error: error.message }
     }
 
-    // Filter for pending tasks (status in description JSON)
+    // Filter for pending tasks (status in content JSON)
     const now = new Date()
     interface TaskWithRelations {
       id: string
-      title: string
-      description: string | null
-      due_date: string | null
+      subject: string
+      content: string | null
+      scheduled_at: string | null
       contact_id: string | null
       project_id: string | null
       created_at: string
@@ -3259,7 +3259,7 @@ ariaFunctionRegistry.register({
 
     const pendingTasks = (tasks as TaskWithRelations[])?.filter((task) => {
       try {
-        const desc = task.description ? JSON.parse(task.description) : {}
+        const desc = task.content ? JSON.parse(task.content) : {}
         if (desc.status === 'completed') return false
 
         // Filter by assignee
@@ -3269,14 +3269,14 @@ ariaFunctionRegistry.register({
         }
 
         // Filter overdue only
-        if (overdue_only && task.due_date) {
-          const dueDate = new Date(task.due_date)
+        if (overdue_only && task.scheduled_at) {
+          const dueDate = new Date(task.scheduled_at)
           if (dueDate >= now) return false
         }
 
         return true
       } catch {
-        return true // Include tasks with non-JSON descriptions
+        return true // Include tasks with non-JSON content
       }
     })
 
@@ -3292,19 +3292,19 @@ ariaFunctionRegistry.register({
     const formatted = pendingTasks.map((task) => {
       const contactData = Array.isArray(task.contact) ? task.contact[0] : task.contact
       const projectData = Array.isArray(task.project) ? task.project[0] : task.project
-      const dueDate = task.due_date ? new Date(task.due_date) : null
+      const dueDate = task.scheduled_at ? new Date(task.scheduled_at) : null
       const isOverdue = dueDate && dueDate < now
 
       let desc
       try {
-        desc = task.description ? JSON.parse(task.description) : {}
+        desc = task.content ? JSON.parse(task.content) : {}
       } catch {
         desc = {}
       }
 
       return {
         id: task.id,
-        title: task.title,
+        title: task.subject,
         priority: desc.priority || 'medium',
         due_date: dueDate?.toLocaleDateString('en-US', {
           weekday: 'short',
@@ -3362,7 +3362,7 @@ ariaFunctionRegistry.register({
     // Get current task
     const { data: task, error: fetchError } = await context.supabase
       .from('activities')
-      .select('title, description')
+      .select('subject, content')
       .eq('id', task_id)
       .eq('tenant_id', context.tenantId)
       .eq('type', 'task')
@@ -3372,10 +3372,10 @@ ariaFunctionRegistry.register({
       return { success: false, error: 'Task not found' }
     }
 
-    // Update description to mark as completed
+    // Update content to mark as completed
     let desc
     try {
-      desc = task.description ? JSON.parse(task.description) : {}
+      desc = task.content ? JSON.parse(task.content) : {}
     } catch {
       desc = {}
     }
@@ -3387,7 +3387,7 @@ ariaFunctionRegistry.register({
 
     const { error: updateError } = await context.supabase
       .from('activities')
-      .update({ description: JSON.stringify(desc) })
+      .update({ content: JSON.stringify(desc) })
       .eq('id', task_id)
       .eq('tenant_id', context.tenantId)
 
@@ -3397,7 +3397,7 @@ ariaFunctionRegistry.register({
 
     return {
       success: true,
-      message: `Task "${task.title}" marked as completed.`,
+      message: `Task "${task.subject}" marked as completed.`,
     }
   },
 })
@@ -3461,7 +3461,7 @@ ariaFunctionRegistry.register({
         address_city,
         address_state,
         address_zip,
-        projects(id, name, status, pipeline_stage)
+        projects!contact_id(id, name, status, pipeline_stage)
       `
       )
       .eq('tenant_id', context.tenantId)

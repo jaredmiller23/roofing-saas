@@ -275,14 +275,20 @@ export default function SignDocumentPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to load document')
+        throw new Error(data.error?.message || data.error || 'Failed to load document')
       }
 
-      setDocument(data.document)
+      // API returns { success, data: { document } }
+      const doc = data.data?.document
+      if (!doc) {
+        throw new Error('Document not found')
+      }
+
+      setDocument(doc)
 
       // Initialize field refs
-      if (data.document.signature_fields) {
-        data.document.signature_fields.forEach((field: SignatureFieldPlacement) => {
+      if (doc.signature_fields) {
+        doc.signature_fields.forEach((field: SignatureFieldPlacement) => {
           if (!fieldRefs.current.has(field.id)) {
             fieldRefs.current.set(field.id, { current: null })
           }
