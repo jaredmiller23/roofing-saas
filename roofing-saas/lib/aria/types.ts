@@ -23,6 +23,7 @@ export type ARIAFunctionCategory =
   | 'documents'     // Estimates, reports, summaries
   | 'workflows'     // Automation orchestration
   | 'vision'        // Photo analysis, damage detection
+  | 'insurance'     // Claims intelligence, adjusters, carriers
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 

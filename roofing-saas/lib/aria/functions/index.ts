@@ -35,5 +35,8 @@ import './vision'
 // Weather/Storm intelligence (forecasts, storm impact, alerts, storm mode)
 import './weather'
 
+// Insurance/Claims intelligence (claim status, adjusters, carriers, patterns)
+import './insurance'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
