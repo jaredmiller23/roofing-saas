@@ -8,8 +8,8 @@ interface LeaderboardEntry {
   rank: number
   user_id: string
   name: string
-  avatar_url?: string
-  role?: string
+  avatar_url?: string | null
+  role?: string | null
   points: number
   level: number
   isCurrentUser: boolean
@@ -21,12 +21,23 @@ interface Badge {
   color: string
 }
 
+interface LeaderboardData {
+  period: string
+  type: string
+  leaderboard: LeaderboardEntry[]
+  currentUserRank: number | null
+}
+
 interface LeaderboardProps {
   period?: 'all' | 'daily' | 'weekly' | 'monthly'
   limit?: number
   type?: 'points' | 'knocks' | 'sales'
   title?: string
   metricLabel?: string
+  /** Optional pre-fetched data from consolidated API */
+  data?: LeaderboardData | null
+  /** Optional loading state from parent */
+  isLoading?: boolean
 }
 
 export function Leaderboard({
@@ -34,20 +45,39 @@ export function Leaderboard({
   limit = 10,
   type = 'points',
   title = 'Leaderboard',
-  metricLabel = 'points'
+  metricLabel = 'points',
+  data: externalData,
+  isLoading: externalLoading
 }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [internalLoading, setInternalLoading] = useState(!externalData)
   const [selectedPeriod, setSelectedPeriod] = useState(period)
 
+  // Use external data if provided
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
+
+  // Apply external data when provided
   useEffect(() => {
-    fetchLeaderboard()
+    if (externalData) {
+      setLeaderboard(externalData.leaderboard || [])
+      setCurrentUserRank(externalData.currentUserRank)
+    }
+  }, [externalData])
+
+  useEffect(() => {
+    // Only fetch if no external data and period changes
+    if (externalData === undefined) {
+      fetchLeaderboard()
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod, type])
+  }, [selectedPeriod, type, externalData])
 
   const fetchLeaderboard = async () => {
-    setLoading(true)
+    // Skip fetch if external data is provided
+    if (externalData !== undefined) return
+
+    setInternalLoading(true)
     try {
       const response = await fetch(
         `/api/gamification/leaderboard?period=${selectedPeriod}&limit=${limit}&type=${type}`
@@ -61,7 +91,7 @@ export function Leaderboard({
     } catch (error) {
       console.error('Error fetching leaderboard:', error)
     } finally {
-      setLoading(false)
+      setInternalLoading(false)
     }
   }
 
@@ -129,6 +159,28 @@ export function Leaderboard({
     return badges
   }
 
+  // Handle period change - refetch if using internal data
+  const handlePeriodChange = (newPeriod: typeof selectedPeriod) => {
+    setSelectedPeriod(newPeriod)
+    // If we have external data, we need to fetch for a different period
+    if (externalData !== undefined) {
+      // Clear external data indicator to trigger fetch
+      setInternalLoading(true)
+      fetch(
+        `/api/gamification/leaderboard?period=${newPeriod}&limit=${limit}&type=${type}`
+      )
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setLeaderboard(result.data.leaderboard)
+            setCurrentUserRank(result.data.currentUserRank)
+          }
+        })
+        .catch(err => console.error('Error fetching leaderboard:', err))
+        .finally(() => setInternalLoading(false))
+    }
+  }
+
   return (
     <div className="bg-card rounded-lg shadow-sm p-6">
       {/* Header with Period Selector */}
@@ -138,7 +190,7 @@ export function Leaderboard({
           {(['daily', 'weekly', 'monthly', 'all'] as const).map((p) => (
             <button
               key={p}
-              onClick={() => setSelectedPeriod(p)}
+              onClick={() => handlePeriodChange(p)}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 selectedPeriod === p
                   ? 'bg-primary text-white'
@@ -161,7 +213,7 @@ export function Leaderboard({
       )}
 
       {/* Loading State */}
-      {loading && (
+      {isLoading && (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
@@ -174,7 +226,7 @@ export function Leaderboard({
       )}
 
       {/* Leaderboard List */}
-      {!loading && leaderboard.length > 0 && (
+      {!isLoading && leaderboard.length > 0 && (
         <div className="space-y-2">
           {leaderboard.map((entry) => (
             <div
@@ -243,7 +295,7 @@ export function Leaderboard({
       )}
 
       {/* Empty State */}
-      {!loading && leaderboard.length === 0 && (
+      {!isLoading && leaderboard.length === 0 && (
         <div className="text-center py-8">
           <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No leaderboard data available</p>

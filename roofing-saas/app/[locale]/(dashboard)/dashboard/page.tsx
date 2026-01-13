@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
 import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboard/DashboardScopeFilter'
@@ -8,6 +8,8 @@ import { PointsDisplay } from '@/components/gamification/PointsDisplay'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 import { WeatherWidget } from '@/components/dashboard/WeatherWidget'
+import { Button } from '@/components/ui/button'
+import { RefreshCw } from 'lucide-react'
 
 // Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
@@ -28,18 +30,155 @@ const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard'
   ssr: false
 })
 
+import type { TieredMetrics } from '@/lib/dashboard/metrics-types'
+
+/**
+ * Consolidated dashboard data shape from /api/dashboard/consolidated
+ */
+interface ConsolidatedDashboardData {
+  metrics: TieredMetrics
+  activity: {
+    activities: Array<{
+      id: string
+      type: string
+      title: string
+      description: string
+      timestamp: string
+      metadata?: {
+        user?: string
+        value?: number
+        contact_name?: string
+      }
+    }>
+    count: number
+  }
+  challenge: {
+    id: string
+    title: string
+    description: string
+    target: number
+    current: number
+    unit: string
+    timeRemaining: string
+    participants: number
+    reward: string
+    status: 'active' | 'completed' | 'upcoming'
+  }
+  knockLeaderboard: {
+    period: string
+    type: string
+    leaderboard: Array<{
+      rank: number
+      user_id: string
+      name: string
+      avatar_url: string | null
+      role: string | null
+      points: number
+      level: number
+      isCurrentUser: boolean
+    }>
+    currentUserRank: number | null
+  }
+  salesLeaderboard: {
+    period: string
+    type: string
+    leaderboard: Array<{
+      rank: number
+      user_id: string
+      name: string
+      avatar_url: string | null
+      role: string | null
+      points: number
+      level: number
+      isCurrentUser: boolean
+    }>
+    currentUserRank: number | null
+  }
+  points: {
+    user_id: string
+    total_points: number
+    current_level: number
+    daily_points: number
+    weekly_points: number
+    monthly_points: number
+  }
+}
+
 /**
  * Dashboard page - main landing page after authentication
  *
- * Features comprehensive KPI metrics and visualizations:
- * - Revenue tracking and trends
- * - Pipeline overview
- * - Activity metrics (door knocking, calls, emails)
- * - Sales performance (conversion rate, avg deal size, sales cycle)
- * - Team gamification (points & leaderboard)
+ * Uses a consolidated API endpoint to fetch all dashboard data in a single request,
+ * reducing load time from 5-10 seconds to <2 seconds by eliminating 6 separate
+ * serverless cold starts.
  */
 export default function DashboardPage() {
   const [scope, setScope] = useState<DashboardScope>('company')
+  const [data, setData] = useState<ConsolidatedDashboardData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDashboardData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    const abortController = new AbortController()
+    const timeoutId = setTimeout(() => abortController.abort(), 30000)
+
+    try {
+      const response = await fetch(
+        `/api/dashboard/consolidated?scope=${scope}&mode=full`,
+        { signal: abortController.signal }
+      )
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
+      }
+
+      const result = await response.json()
+      if (result.success && result.data) {
+        setData(result.data)
+      } else {
+        throw new Error('Invalid response format')
+      }
+    } catch (err) {
+      clearTimeout(timeoutId)
+      console.error('Failed to fetch dashboard data:', err)
+
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timeout - please try again')
+      } else {
+        setError('Failed to load dashboard data')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [scope])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [fetchDashboardData])
+
+  // Full page error state
+  if (error && !data) {
+    return (
+      <div className="p-4 pt-16 lg:p-8 lg:pt-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="text-muted-foreground mb-4 text-center">
+              <p className="text-lg font-medium mb-2">Unable to load dashboard</p>
+              <p className="text-sm">{error}</p>
+            </div>
+            <Button onClick={() => fetchDashboardData()} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 pt-16 lg:p-8 lg:pt-8">
@@ -58,7 +197,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Comprehensive KPI Dashboard */}
-        <DashboardMetrics scope={scope} />
+        <DashboardMetrics
+          scope={scope}
+          data={data?.metrics}
+          isLoading={isLoading}
+        />
 
         {/* Weather - Full Width */}
         <div className="w-full">
@@ -67,9 +210,18 @@ export default function DashboardPage() {
 
         {/* Gamification Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <WeeklyChallengeWidget />
-          <PointsDisplay />
-          <ActivityFeed />
+          <WeeklyChallengeWidget
+            data={data?.challenge}
+            isLoading={isLoading}
+          />
+          <PointsDisplay
+            data={data?.points}
+            isLoading={isLoading}
+          />
+          <ActivityFeed
+            data={data?.activity}
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Leaderboards */}
@@ -82,6 +234,8 @@ export default function DashboardPage() {
               type="knocks"
               title="Knock Leaderboard"
               metricLabel="knocks"
+              data={data?.knockLeaderboard}
+              isLoading={isLoading}
             />
             <Leaderboard
               period="weekly"
@@ -89,6 +243,8 @@ export default function DashboardPage() {
               type="sales"
               title="Sales Leaderboard"
               metricLabel="deals"
+              data={data?.salesLeaderboard}
+              isLoading={isLoading}
             />
           </div>
         </div>

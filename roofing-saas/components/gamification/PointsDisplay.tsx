@@ -17,15 +17,32 @@ interface PointsData {
   monthly_points: number
 }
 
-export function PointsDisplay() {
+interface PointsDisplayProps {
+  /** Optional pre-fetched data from consolidated API */
+  data?: PointsData | null
+  /** Optional loading state from parent */
+  isLoading?: boolean
+}
+
+export function PointsDisplay({ data: externalData, isLoading: externalLoading }: PointsDisplayProps) {
   const [points, setPoints] = useState<PointsData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [internalLoading, setInternalLoading] = useState(!externalData)
+
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
+  const effectivePoints = externalData || points
 
   useEffect(() => {
-    fetchPoints()
-  }, [])
+    // Only fetch if no external data provided
+    if (externalData === undefined) {
+      fetchPoints()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalData])
 
   const fetchPoints = async () => {
+    // Skip fetch if external data is provided
+    if (externalData !== undefined) return
+
     try {
       const response = await fetch('/api/gamification/points')
       const result = await response.json()
@@ -36,11 +53,11 @@ export function PointsDisplay() {
     } catch (error) {
       console.error('Error fetching points:', error)
     } finally {
-      setLoading(false)
+      setInternalLoading(false)
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-card rounded-lg shadow-sm border border-border p-6 animate-pulse">
         <div className="flex items-center justify-between mb-4">
@@ -67,10 +84,10 @@ export function PointsDisplay() {
     )
   }
 
-  if (!points) return null
+  if (!effectivePoints) return null
 
   // Calculate points in current level and progress to next level
-  const pointsInCurrentLevel = points.total_points - (points.current_level * 100)
+  const pointsInCurrentLevel = effectivePoints.total_points - (effectivePoints.current_level * 100)
   const progressPercentage = (pointsInCurrentLevel / 100) * 100
 
   return (
@@ -83,9 +100,9 @@ export function PointsDisplay() {
       {/* Level and Total Points */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-muted-foreground">Level {points.current_level}</span>
+          <span className="text-sm text-muted-foreground">Level {effectivePoints.current_level}</span>
           <span className="text-sm font-medium text-foreground">
-            {points.total_points.toLocaleString()} points
+            {effectivePoints.total_points.toLocaleString()} points
           </span>
         </div>
 
@@ -98,7 +115,7 @@ export function PointsDisplay() {
         </div>
 
         <p className="text-xs text-muted-foreground mt-1">
-          {100 - pointsInCurrentLevel} points to level {points.current_level + 1}
+          {100 - pointsInCurrentLevel} points to level {effectivePoints.current_level + 1}
         </p>
       </div>
 
@@ -113,7 +130,7 @@ export function PointsDisplay() {
                   <span className="text-xs text-muted-foreground">Daily</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
-                  {points.daily_points}
+                  {effectivePoints.daily_points}
                 </p>
               </div>
             </TooltipTrigger>
@@ -130,7 +147,7 @@ export function PointsDisplay() {
                   <span className="text-xs text-muted-foreground">Weekly</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
-                  {points.weekly_points}
+                  {effectivePoints.weekly_points}
                 </p>
               </div>
             </TooltipTrigger>
@@ -147,7 +164,7 @@ export function PointsDisplay() {
                   <span className="text-xs text-muted-foreground">Monthly</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
-                  {points.monthly_points}
+                  {effectivePoints.monthly_points}
                 </p>
               </div>
             </TooltipTrigger>

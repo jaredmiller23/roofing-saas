@@ -31,13 +31,75 @@ interface Activity {
   badge?: string
 }
 
-export function ActivityFeed() {
+interface ActivityFeedData {
+  activities: Array<{
+    id: string
+    type: string
+    title: string
+    description: string
+    timestamp: string
+    metadata?: {
+      user?: string
+      value?: number
+      contact_name?: string
+    }
+  }>
+  count: number
+}
+
+interface ActivityFeedProps {
+  /** Optional pre-fetched data from consolidated API */
+  data?: ActivityFeedData | null
+  /** Optional loading state from parent */
+  isLoading?: boolean
+}
+
+export function ActivityFeed({ data: externalData, isLoading: externalLoading }: ActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [internalLoading, setInternalLoading] = useState(!externalData)
   const [error, setError] = useState<string | null>(null)
 
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
+
+  // Transform external data to internal format
+  const transformApiData = (apiData: ActivityFeedData): Activity[] => {
+    return (apiData.activities || []).map((item) => {
+      // Map API types to component types
+      let mappedType: Activity['type'] = 'goal'
+      if (item.type === 'project_won') mappedType = 'sale'
+      else if (item.type === 'project_lost') mappedType = 'goal'
+      else if (item.type === 'project_created') mappedType = 'goal'
+      else if (item.type === 'contact_added') mappedType = 'knock'
+      else if (item.type === 'status_change') mappedType = 'goal'
+
+      return {
+        id: item.id,
+        type: mappedType,
+        title: item.title,
+        description: item.description,
+        user: {
+          name: item.metadata?.user || 'Team Member',
+          avatar: undefined
+        },
+        timestamp: new Date(item.timestamp),
+        value: item.metadata?.value,
+        badge: item.type === 'project_won' ? 'Won' : undefined
+      }
+    })
+  }
+
+  // Use external data if provided
+  useEffect(() => {
+    if (externalData) {
+      setActivities(transformApiData(externalData))
+    }
+  }, [externalData])
+
   const fetchActivities = async () => {
-    setIsLoading(true)
+    // Skip fetch if external data is provided
+    if (externalData !== undefined) return
+
+    setInternalLoading(true)
     setError(null)
 
     // Create abort controller for timeout
@@ -57,43 +119,7 @@ export function ActivityFeed() {
 
       const result = await response.json()
       if (result.success && result.data) {
-        // Transform the data to match our interface
-        // API returns different format - adapt it
-        const transformedActivities = (result.data.activities || []).map((item: {
-          id: string
-          type: string
-          title: string
-          description: string
-          timestamp: string
-          metadata?: {
-            user?: string
-            value?: number
-            contact_name?: string
-          }
-        }) => {
-          // Map API types to component types
-          let mappedType: Activity['type'] = 'goal'
-          if (item.type === 'project_won') mappedType = 'sale'
-          else if (item.type === 'project_lost') mappedType = 'goal'
-          else if (item.type === 'project_created') mappedType = 'goal'
-          else if (item.type === 'contact_added') mappedType = 'knock'
-          else if (item.type === 'status_change') mappedType = 'goal'
-
-          return {
-            id: item.id,
-            type: mappedType,
-            title: item.title,
-            description: item.description,
-            user: {
-              name: item.metadata?.user || 'Team Member',
-              avatar: undefined
-            },
-            timestamp: new Date(item.timestamp),
-            value: item.metadata?.value,
-            badge: item.type === 'project_won' ? 'Won' : undefined
-          }
-        })
-        setActivities(transformedActivities)
+        setActivities(transformApiData(result.data))
       } else {
         setError('Failed to load activity data')
       }
@@ -109,13 +135,17 @@ export function ActivityFeed() {
         setError('Failed to connect to server')
       }
     } finally {
-      setIsLoading(false)
+      setInternalLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchActivities()
-  }, [])
+    // Only fetch if no external data provided
+    if (externalData === undefined) {
+      fetchActivities()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalData])
 
   const getIcon = (type: Activity['type']) => {
     switch (type) {

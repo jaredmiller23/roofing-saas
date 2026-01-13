@@ -34,14 +34,27 @@ interface Challenge {
   status: 'active' | 'completed' | 'upcoming'
 }
 
-export function WeeklyChallengeWidget() {
+interface WeeklyChallengeWidgetProps {
+  /** Optional pre-fetched data from consolidated API */
+  data?: Challenge | null
+  /** Optional loading state from parent */
+  isLoading?: boolean
+}
+
+export function WeeklyChallengeWidget({ data: externalData, isLoading: externalLoading }: WeeklyChallengeWidgetProps) {
   const [challenge, setChallenge] = useState<Challenge | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [internalLoading, setInternalLoading] = useState(!externalData)
   const [error, setError] = useState<string | null>(null)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
+  const effectiveChallenge = externalData || challenge
+
   const fetchWeeklyChallenge = async () => {
-    setIsLoading(true)
+    // Skip fetch if external data is provided
+    if (externalData !== undefined) return
+
+    setInternalLoading(true)
     setError(null)
 
     // Create abort controller for timeout
@@ -77,13 +90,17 @@ export function WeeklyChallengeWidget() {
         setError('Failed to connect to server')
       }
     } finally {
-      setIsLoading(false)
+      setInternalLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchWeeklyChallenge()
-  }, [])
+    // Only fetch if no external data provided
+    if (externalData === undefined) {
+      fetchWeeklyChallenge()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalData])
 
   // Show loading skeleton
   if (isLoading) {
@@ -171,7 +188,7 @@ export function WeeklyChallengeWidget() {
   }
 
   // Show no data state
-  if (!challenge) {
+  if (!effectiveChallenge) {
     return (
       <Card className="lg:col-span-1">
         <CardHeader>
@@ -196,7 +213,7 @@ export function WeeklyChallengeWidget() {
     )
   }
 
-  const progress = (challenge.current / challenge.target) * 100
+  const progress = (effectiveChallenge.current / effectiveChallenge.target) * 100
   const isNearCompletion = progress >= 80
   const isCompleted = progress >= 100
 
@@ -231,10 +248,10 @@ export function WeeklyChallengeWidget() {
       <CardContent className="space-y-4">
         <div>
           <h3 className="font-semibold text-foreground mb-1">
-            {challenge.title}
+            {effectiveChallenge.title}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {challenge.description}
+            {effectiveChallenge.description}
           </p>
         </div>
 
@@ -242,13 +259,13 @@ export function WeeklyChallengeWidget() {
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Progress</span>
             <span className="font-medium">
-              {challenge.current} / {challenge.target} {challenge.unit}
+              {effectiveChallenge.current} / {effectiveChallenge.target} {effectiveChallenge.unit}
             </span>
           </div>
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{Math.round(progress)}% complete</span>
-            <span>{challenge.target - challenge.current} remaining</span>
+            <span>{effectiveChallenge.target - effectiveChallenge.current} remaining</span>
           </div>
         </div>
 
@@ -256,12 +273,12 @@ export function WeeklyChallengeWidget() {
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground">
-              {challenge.timeRemaining === 'rolling' ? 'Last 7 days' : `${challenge.timeRemaining} left`}
+              {effectiveChallenge.timeRemaining === 'rolling' ? 'Last 7 days' : `${effectiveChallenge.timeRemaining} left`}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">{challenge.participants} competing</span>
+            <span className="text-muted-foreground">{effectiveChallenge.participants} competing</span>
           </div>
         </div>
 
@@ -271,7 +288,7 @@ export function WeeklyChallengeWidget() {
             <span className="text-sm font-medium text-foreground">Reward</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {challenge.reward}
+            {effectiveChallenge.reward}
           </p>
         </div>
 

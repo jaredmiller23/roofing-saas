@@ -18,6 +18,10 @@ export type DashboardScope = 'company' | 'team' | 'personal'
 
 interface DashboardMetricsProps {
   scope: DashboardScope
+  /** Optional pre-fetched data from consolidated API */
+  data?: TieredMetrics | null
+  /** Optional loading state from parent */
+  isLoading?: boolean
 }
 
 /**
@@ -57,11 +61,15 @@ const METRIC_CARD_CONFIGS: Record<MetricCardType, MetricCardConfig> = {
   },
 }
 
-export function DashboardMetrics({ scope }: DashboardMetricsProps) {
+export function DashboardMetrics({ scope, data: externalData, isLoading: externalLoading }: DashboardMetricsProps) {
   const { isFieldMode, isManagerMode } = useUIMode()
   const [metrics, setMetrics] = useState<TieredMetrics | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [internalLoading, setInternalLoading] = useState(!externalData)
   const [error, setError] = useState<string | null>(null)
+
+  // Use external data if provided
+  const effectiveMetrics = externalData || metrics
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
 
   // Map UI mode to metrics tier
   const tier: MetricsTier = useMemo(() => {
@@ -76,7 +84,10 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
   }, [tier])
 
   const fetchMetrics = useCallback(async () => {
-    setIsLoading(true)
+    // Skip fetch if external data is provided
+    if (externalData !== undefined) return
+
+    setInternalLoading(true)
     setError(null)
 
     const abortController = new AbortController()
@@ -112,13 +123,16 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
         setError('Failed to connect to server')
       }
     } finally {
-      setIsLoading(false)
+      setInternalLoading(false)
     }
-  }, [scope, tier])
+  }, [scope, tier, externalData])
 
   useEffect(() => {
-    fetchMetrics()
-  }, [fetchMetrics])
+    // Only fetch if no external data provided
+    if (externalData === undefined) {
+      fetchMetrics()
+    }
+  }, [fetchMetrics, externalData])
 
   const formatValue = (value: number, type: 'currency' | 'number' | 'percentage') => {
     if (type === 'currency') {
@@ -138,17 +152,17 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
   const getMetricValue = (
     metricType: MetricCardType
   ): { value: number; change: number; trend: 'up' | 'down' } | null => {
-    if (!metrics) return null
+    if (!effectiveMetrics) return null
 
     switch (metricType) {
       case 'knocks':
-        return metrics.knocks
+        return effectiveMetrics.knocks
       case 'pipeline':
-        return hasManagerMetrics(metrics) ? metrics.pipeline : null
+        return hasManagerMetrics(effectiveMetrics) ? effectiveMetrics.pipeline : null
       case 'conversion':
-        return hasManagerMetrics(metrics) ? metrics.conversion : null
+        return hasManagerMetrics(effectiveMetrics) ? effectiveMetrics.conversion : null
       case 'revenue':
-        return hasFullMetrics(metrics) ? metrics.revenue : null
+        return hasFullMetrics(effectiveMetrics) ? effectiveMetrics.revenue : null
       default:
         return null
     }
@@ -204,7 +218,7 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
   }
 
   // No data state
-  if (!metrics) {
+  if (!effectiveMetrics) {
     return (
       <div className="grid grid-cols-1 gap-6">
         <Card>
@@ -217,7 +231,7 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
   }
 
   // Field mode: Special compact layout with recent wins
-  if (tier === 'field' && metrics.recentWins) {
+  if (tier === 'field' && effectiveMetrics.recentWins) {
     return (
       <div className="space-y-4">
         {/* Knock count card */}
@@ -227,13 +241,13 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
             <Phone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{metrics.knocks.value}</div>
+            <div className="text-3xl font-bold">{effectiveMetrics.knocks.value}</div>
             <p className="text-xs text-muted-foreground mt-1">Keep up the great work!</p>
           </CardContent>
         </Card>
 
         {/* Recent wins */}
-        {metrics.recentWins.length > 0 && (
+        {effectiveMetrics.recentWins.length > 0 && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Recent Wins</CardTitle>
@@ -241,7 +255,7 @@ export function DashboardMetrics({ scope }: DashboardMetricsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {metrics.recentWins.slice(0, 3).map((win) => (
+                {effectiveMetrics.recentWins.slice(0, 3).map((win) => (
                   <div
                     key={win.id}
                     className="flex items-center justify-between text-sm"
