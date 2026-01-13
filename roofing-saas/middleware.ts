@@ -38,7 +38,12 @@ export async function middleware(request: NextRequest) {
   // Skip for API routes, static assets, root landing page, marketing pages
   // Auth routes are now under [locale] so they need i18n middleware
   const isRootPath = pathname === '/'
-  const isMarketingPage = pathname === '/demo' // Marketing pages outside [locale]
+
+  // Marketing/public pages that live outside [locale] folder
+  // These should NOT get locale prefix redirects
+  const marketingPages = ['/demo', '/contact', '/privacy', '/terms', '/about', '/offline']
+  const isMarketingPage = marketingPages.includes(pathname) || pathname.startsWith('/card/')
+
   const hasLocalePrefix = locales.some(locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`)
 
   // Only run i18n middleware for paths that need locale prefix added
@@ -124,6 +129,12 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = [
     '/', // Marketing landing page
     '/demo', // Demo scheduling page
+    '/contact', // Contact page
+    '/privacy', // Privacy policy
+    '/terms', // Terms of service
+    '/about', // About page
+    '/card', // Digital business cards (public)
+    '/offline', // PWA offline fallback
     '/login',
     '/register',
     '/reset-password',
