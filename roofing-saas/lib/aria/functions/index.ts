@@ -26,5 +26,8 @@ import './financial'
 // Document generation (estimates, inspection reports, claim summaries, project summaries)
 import './documents'
 
+// Workflow orchestration (start, list, check status, pause, stats)
+import './workflows'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
