@@ -5,16 +5,12 @@ import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 import type { AIMessage, SendMessageRequest, SendMessageResponse } from '@/lib/ai-assistant/types'
-import OpenAI from 'openai'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 // ARIA - AI Roofing Intelligent Assistant
 import { ariaFunctionRegistry, buildARIAContext, getARIASystemPrompt, executeARIAFunction } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Resilient OpenAI client with rate limit handling
+import { openai, createChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
 
 /**
  * POST /api/ai/messages
@@ -140,9 +136,8 @@ export async function POST(request: NextRequest) {
     // Get ARIA's enhanced function tools (CRM + QuickBooks + Actions + Weather)
     const tools = ariaFunctionRegistry.getChatCompletionTools()
 
-    // Call OpenAI Chat Completions API
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    // Call OpenAI Chat Completions API with resilient client (handles rate limits)
+    const completion = await createChatCompletion(openai, {
       messages,
       tools: tools.length > 0 ? tools : undefined,
       temperature: 0.7,
@@ -179,8 +174,7 @@ export async function POST(request: NextRequest) {
       }
 
       // If we have a function result, make a second call to get a natural language response
-      const followUpCompletion = await openai.chat.completions.create({
-        model: 'gpt-4o',
+      const followUpCompletion = await createChatCompletion(openai, {
         messages: [
           ...messages,
           {
@@ -210,7 +204,7 @@ export async function POST(request: NextRequest) {
         function_call: functionCallData,
         metadata: {
           context,
-          model: 'gpt-4o',
+          model: getOpenAIModel(),
         },
       })
       .select()

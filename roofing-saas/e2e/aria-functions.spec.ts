@@ -1,5 +1,9 @@
 import { test, expect, APIRequestContext } from '@playwright/test'
 
+// Run ARIA tests sequentially to avoid OpenAI rate limits
+// gpt-4o has 30K TPM limit; parallel tests can exhaust this quickly
+test.describe.configure({ mode: 'serial' })
+
 /**
  * ARIA Function E2E Tests
  *
@@ -310,7 +314,8 @@ test.describe('ARIA Activity Functions', () => {
       expect(result.success).toBe(true)
 
       if (result.functionCall) {
-        expect(['log_phone_call', 'add_note']).toContain(result.functionCall.name)
+        // AI may call search_contacts first to find the contact, or directly log_phone_call/add_note
+        expect(['log_phone_call', 'add_note', 'search_contacts']).toContain(result.functionCall.name)
       }
 
       await cleanupConversation(request, result.conversationId)

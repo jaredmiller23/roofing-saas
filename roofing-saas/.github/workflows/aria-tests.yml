@@ -1,0 +1,81 @@
+name: ARIA Tests
+
+# Manual trigger with configuration options
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'OpenAI model to use'
+        required: false
+        default: 'gpt-4o-mini'
+        type: choice
+        options:
+          - gpt-4o-mini
+          - gpt-4o
+          - gpt-3.5-turbo
+      environment:
+        description: 'Test environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+  # Optional scheduled runs (disabled by default - uncomment to enable)
+  # schedule:
+  #   - cron: '0 6 * * 1'  # Weekly on Monday 6am UTC
+
+jobs:
+  aria-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # ARIA tests are slow due to serial execution
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run ARIA Tests
+        run: npm run test:aria
+        env:
+          # OpenAI configuration
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ inputs.model || 'gpt-4o-mini' }}
+          # Test environment
+          TEST_ENV: ${{ inputs.environment || 'staging' }}
+          # Supabase configuration (from secrets)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Test credentials (from secrets)
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aria-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Upload trace files on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: aria-traces
+          path: test-results/
+          retention-days: 7

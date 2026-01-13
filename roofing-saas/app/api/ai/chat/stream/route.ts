@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import OpenAI from 'openai'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import { logger } from '@/lib/logger'
 // ARIA - AI Roofing Intelligent Assistant
@@ -9,11 +8,8 @@ import { buildARIAContext, getARIASystemPrompt } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
 import { ariaFunctionRegistry } from '@/lib/aria/function-registry'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Resilient OpenAI client with rate limit handling
+import { openai, createStreamingChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
 
 /**
  * POST /api/ai/chat/stream
@@ -144,14 +140,13 @@ export async function POST(request: NextRequest) {
 
           // Loop to handle multiple rounds of tool calls
           while (continueLoop) {
-            const stream = await openai.chat.completions.create({
-              model: 'gpt-4o',
+            // Use resilient client with rate limit handling
+            const stream = await createStreamingChatCompletion(openai, {
               messages: currentMessages,
               tools: tools.length > 0 ? tools : undefined,
               tool_choice: tools.length > 0 ? 'auto' : undefined,
               temperature: 0.7,
               max_tokens: 1000,
-              stream: true,
             })
 
             // Accumulate tool calls during streaming
@@ -306,7 +301,7 @@ export async function POST(request: NextRequest) {
               conversation_id: conversationId,
               role: 'assistant',
               content: fullContent,
-              metadata: { context, model: 'gpt-4o', streamed: true, usedTools: true },
+              metadata: { context, model: getOpenAIModel(), streamed: true, usedTools: true },
             })
             .select()
             .single()
