@@ -98,7 +98,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: UserPlus,
     bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     textColor: 'text-blue-700 dark:text-blue-300',
-    onClick: () => console.log('New Lead clicked'),
+    onClick: () => {},
   },
   {
     id: 'check-in',
@@ -106,7 +106,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: CheckCircle,
     bgColor: 'bg-green-100 dark:bg-green-900/30',
     textColor: 'text-green-700 dark:text-green-300',
-    onClick: () => console.log('Check In clicked'),
+    onClick: () => {},
   },
   {
     id: 'make-call',
@@ -114,7 +114,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: Phone,
     bgColor: 'bg-purple-100 dark:bg-purple-900/30',
     textColor: 'text-purple-700 dark:text-purple-300',
-    onClick: () => console.log('Make Call clicked'),
+    onClick: () => {},
   },
   {
     id: 'send-message',
@@ -122,7 +122,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: MessageSquare,
     bgColor: 'bg-orange-100 dark:bg-orange-900/30',
     textColor: 'text-orange-700 dark:text-orange-300',
-    onClick: () => console.log('Send Message clicked'),
+    onClick: () => {},
   },
   {
     id: 'territory',
@@ -130,7 +130,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: MapPin,
     bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
     textColor: 'text-indigo-700 dark:text-indigo-300',
-    onClick: () => console.log('Territory clicked'),
+    onClick: () => {},
   },
   {
     id: 'targeting',
@@ -138,7 +138,7 @@ const defaultQuickActions: QuickAction[] = [
     icon: Target,
     bgColor: 'bg-pink-100 dark:bg-pink-900/30',
     textColor: 'text-pink-700 dark:text-pink-300',
-    onClick: () => console.log('Targeting clicked'),
+    onClick: () => {},
   },
 ]
 

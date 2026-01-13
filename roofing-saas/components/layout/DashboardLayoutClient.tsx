@@ -15,9 +15,6 @@ interface DashboardLayoutClientProps {
 }
 
 export function DashboardLayoutClient({ children, userRole, userEmail }: DashboardLayoutClientProps) {
-  // Log UI mode initialization for verification
-  console.log('DashboardLayoutClient - Initializing with userRole:', userRole)
-
   return (
     <UIModeProvider>
       <UIPreferencesProvider>

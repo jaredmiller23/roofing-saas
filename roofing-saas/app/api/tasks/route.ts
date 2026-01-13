@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
 
     logger.apiRequest('GET', '/api/tasks', { tenantId, userId: user.id })
 
-    // Parse query parameters
+    // Parse query parameters with validation
     const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20'))) // Max 100 per page
     const search = searchParams.get('search') || undefined
     const priority = searchParams.get('priority') || undefined
     const status = searchParams.get('status') || undefined
@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
       query = query.eq('contact_id', contactId)
     }
     if (search) {
-      query = query.ilike('title', `%${search}%`)
+      // Escape SQL wildcards to prevent unexpected matches
+      const escapedSearch = search.replace(/[%_\\]/g, '\\$&')
+      query = query.ilike('title', `%${escapedSearch}%`)
     }
 
     // Pagination

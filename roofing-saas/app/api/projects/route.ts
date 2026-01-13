@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
+import { createProjectSchema } from '@/lib/validations/project'
 
 /**
  * Projects API
@@ -27,9 +28,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const searchParams = request.nextUrl.searchParams
 
-    // Parse query parameters
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
+    // Parse query parameters with validation
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50'))) // Max 100 per page
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
     const pipeline = searchParams.get('pipeline') || ''
@@ -97,9 +98,11 @@ export async function GET(request: NextRequest) {
       query = query.eq('custom_fields->>assigned_to', assignedTo)
     }
 
-    // Apply search (project name or contact name)
+    // Apply search (project name or project number)
     if (search) {
-      query = query.or(`name.ilike.%${search}%,project_number.ilike.%${search}%`)
+      // Escape SQL wildcards to prevent unexpected matches
+      const escapedSearch = search.replace(/[%_\\]/g, '\\$&')
+      query = query.or(`name.ilike.%${escapedSearch}%,project_number.ilike.%${escapedSearch}%`)
     }
 
     // Exclude OLD RECRUITING pipeline (HR data, not sales)
@@ -164,6 +167,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // Validate input - prevents clients from setting server-controlled fields
+    const validationResult = createProjectSchema.safeParse(body)
+    if (!validationResult.success) {
+      logger.warn('Project validation failed', { errors: validationResult.error.issues })
+      throw ValidationError('Invalid project data', validationResult.error.issues)
+    }
+    const validatedData = validationResult.data
+
     // Create project with audit logging
     const project = await auditedCreate(
       'project',
@@ -173,7 +184,7 @@ export async function POST(request: NextRequest) {
         const { data, error } = await supabase
           .from('projects')
           .insert({
-            ...body,
+            ...validatedData,
             tenant_id: tenantId,
             created_by: user.id,
           })
@@ -191,8 +202,8 @@ export async function POST(request: NextRequest) {
       {
         operation: 'project_creation',
         source: 'api',
-        project_type: body.type,
-        estimated_value: body.estimated_value
+        project_type: validatedData.type,
+        estimated_value: validatedData.estimated_value
       }
     )
 

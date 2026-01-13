@@ -107,9 +107,6 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
     }
   }, [])
 
-  // Log current mode and navigation style for verification (as requested in success criteria)
-  console.log('AdaptiveLayout - Current UI Mode:', mode, 'Config:', config, 'NavStyle:', preferences.nav_style)
-
   // Check if we're on the dashboard route (handles locale prefixes)
   const isOnDashboard = pathname.endsWith('/dashboard')
 

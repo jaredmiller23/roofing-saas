@@ -20,11 +20,13 @@ import type {
   AffectedCustomer,
   StormResponseConfig,
 } from '@/lib/storm/storm-types'
+import { createClient } from '@/lib/supabase/client'
 import { CloudLightning, RefreshCw, Loader2 } from 'lucide-react'
 
 export default function StormTrackingPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [stormEvents, setStormEvents] = useState<StormEvent[]>([])
   const [alerts, setAlerts] = useState<StormAlert[]>([])
   const [affectedCustomers, setAffectedCustomers] = useState<AffectedCustomer[]>([])
@@ -48,8 +50,16 @@ export default function StormTrackingPage() {
     },
   })
 
-  // Load storm data on mount
+  // Load user and storm data on mount
   useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setCurrentUserId(user.id)
+      }
+    }
+    fetchUser()
     loadStormData()
   }, [])
 
@@ -253,7 +263,7 @@ export default function StormTrackingPage() {
             <h2 className="text-xl font-semibold mb-4">Active Alerts</h2>
             <StormAlertPanel
               alerts={alerts}
-              currentUserId="current-user-id" // Replace with actual user ID
+              currentUserId={currentUserId || ''}
               onAcknowledge={handleAcknowledgeAlert}
               onDismiss={handleDismissAlert}
             />

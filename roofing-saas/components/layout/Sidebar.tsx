@@ -12,7 +12,7 @@ import {
   Trophy,
   Calendar,
   Map,
-  Zap,
+  Target,
   Menu,
   X,
   LogOut,
@@ -22,7 +22,8 @@ import {
   Sparkles,
   CloudLightning,
   Users,
-  Mail
+  Mail,
+  RefreshCw,
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -44,28 +45,29 @@ interface SidebarProps {
   userRole?: string
 }
 
-// Navigation structure per owner specification
-// Source of truth: docs/specs/SIDEBAR_NAVIGATION.md
+// Navigation structure reorganized for workflow clarity
+// Core workflow items first, then sales tools, then communications
 const navSections: NavSection[] = [
-  {
-    label: 'SELL',
-    items: [
-      { href: '/knocks', label: 'Knock', icon: Map },
-      { href: '/signatures', label: 'Signatures', icon: PenTool },
-      { href: '/claims', label: 'Claims', icon: FileText },
-      { href: '/incentives', label: 'Incentives', icon: Trophy },
-      { href: '/storm-targeting', label: 'Lead Gen', icon: Zap },
-      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
-    ]
-  },
   {
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/contacts', label: 'Contacts', icon: Users },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
-      { href: '/insights', label: 'Business Intel', icon: Sparkles },
-      { href: '/events', label: 'Events', icon: Calendar },
+      { href: '/signatures', label: 'Signatures', icon: PenTool },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
+      { href: '/events', label: 'Events', icon: Calendar },
+    ]
+  },
+  {
+    label: 'SELL',
+    items: [
+      { href: '/knocks', label: 'Knock', icon: Map },
+      { href: '/storm-targeting', label: 'Lead Gen', icon: Target },
+      { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning },
+      { href: '/claims', label: 'Claims', icon: FileText },
+      { href: '/incentives', label: 'Incentives', icon: Trophy },
+      { href: '/insights', label: 'Business Intel', icon: Sparkles },
     ]
   },
   {
@@ -73,9 +75,8 @@ const navSections: NavSection[] = [
     items: [
       { href: '/call-logs', label: 'Call Log', icon: Phone },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/campaigns', label: 'Emails', icon: Mail },
-      { href: '/automations', label: 'Campaigns', icon: Zap },
-      { href: '/contacts', label: 'Contacts', icon: Users },
+      { href: '/campaigns', label: 'Campaigns', icon: Mail },
+      { href: '/automations', label: 'Automations', icon: RefreshCw },
     ]
   },
   {

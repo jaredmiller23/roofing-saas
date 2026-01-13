@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-// import { useRouter } from 'next/navigation' // TODO: Use for navigation
 import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
@@ -29,7 +28,6 @@ const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalenda
  * - Set reminders and notifications
  */
 export default function EventsPage() {
-  // const router = useRouter() // TODO: Use for navigation
   const [view, setView] = useState<'calendar' | 'list'>('calendar')
   const [calendarType, setCalendarType] = useState<'standard' | 'google'>('standard')
   const [events, setEvents] = useState([])

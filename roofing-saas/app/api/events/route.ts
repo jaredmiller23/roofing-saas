@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { createEventSchema } from '@/lib/validations/event'
 
 /**
  * GET /api/events
@@ -22,8 +23,8 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10'))) // Max 100 per page
     const eventType = searchParams.get('event_type')
     const status = searchParams.get('status')
     const contactId = searchParams.get('contact_id')
@@ -44,7 +45,9 @@ export async function GET(request: NextRequest) {
     if (projectId) query = query.eq('project_id', projectId)
     if (jobId) query = query.eq('job_id', jobId)
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,location.ilike.%${search}%`)
+      // Escape SQL wildcards to prevent unexpected matches
+      const escapedSearch = search.replace(/[%_\\]/g, '\\$&')
+      query = query.or(`title.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,location.ilike.%${escapedSearch}%`)
     }
 
     query = query
@@ -87,15 +90,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+
+    // Validate input - prevents clients from setting server-controlled fields
+    const validationResult = createEventSchema.safeParse(body)
+    if (!validationResult.success) {
+      logger.warn('Event validation failed', { errors: validationResult.error.issues })
+      throw ValidationError('Invalid event data', validationResult.error.issues)
+    }
+    const validatedData = validationResult.data
+
     const supabase = await createClient()
 
-    // Use organizer from body if provided, otherwise default to current user
-    const organizer = body.organizer || user.id
+    // Use organizer from validated data if provided, otherwise default to current user
+    const organizer = validatedData.organizer || user.id
 
     const { data, error } = await supabase
       .from('events')
       .insert({
-        ...body,
+        ...validatedData,
         tenant_id: tenantId,
         created_by: user.id,
         organizer: organizer,

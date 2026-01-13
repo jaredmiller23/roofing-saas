@@ -116,8 +116,8 @@ export default function ProjectDetailPage() {
     fetchUser()
   }, [])
 
-  // Track presence for this project
-  const { presentUsers: _presentUsers, count: _count } = usePresence({
+  // Track presence for this project (using hook for join/leave side effects)
+  usePresence({
     entityType: 'project',
     entityId: projectId,
     user: currentUser || { id: '', name: '', email: '', avatar: '' },
