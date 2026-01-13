@@ -538,8 +538,15 @@ export default function ViewSignatureDocumentPage() {
                   <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg">
                     <Building className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Company Signature Required</span>
-                    {document.signatures?.some(s => s.signer_type === 'company') && (
+                    {document.signatures?.some(s => s.signer_type === 'company') ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Button size="sm" variant="default" className="ml-2" asChild>
+                        <Link href={`/sign/${document.id}?as=company`}>
+                          <FileText className="h-4 w-4 mr-1" />
+                          Sign as Company
+                        </Link>
+                      </Button>
                     )}
                   </div>
                 )}

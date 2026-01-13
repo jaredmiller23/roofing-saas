@@ -12,7 +12,10 @@ import {
   createDeclineNotificationEmail,
   getDeclineNotificationSubject,
   createSignedNotificationEmail,
-  getSignedNotificationSubject
+  getSignedNotificationSubject,
+  createCompanyTurnEmail,
+  getCompanyTurnSubject,
+  type CompanyTurnNotificationData
 } from '@/lib/email/signature-reminder-templates'
 
 /**
@@ -241,6 +244,19 @@ export async function POST(
         }))
       : []
 
+    // Check for existing signature from same signer (prevent duplicates)
+    const { data: existingSignature } = await supabase
+      .from('signatures')
+      .select('id')
+      .eq('document_id', id)
+      .eq('signer_email', signer_email)
+      .eq('signer_type', signer_type)
+      .single()
+
+    if (existingSignature) {
+      throw ValidationError('You have already signed this document')
+    }
+
     // Create signature record
     const { data: signature, error: signError } = await supabase
       .from('signatures')
@@ -384,6 +400,53 @@ export async function POST(
           viewed_at: new Date().toISOString()
         })
         .eq('id', id)
+
+      // Send "company turn" notification if customer just signed and company signature required
+      if (signer_type === 'customer' && document.requires_company_signature) {
+        try {
+          const { data: owner } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', document.created_by)
+            .single()
+
+          if (owner?.email) {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+            const companyTurnData: CompanyTurnNotificationData = {
+              ownerName: owner.full_name || 'there',
+              documentTitle: document.title,
+              projectName: document.project?.name,
+              customerName: signer_name,
+              customerEmail: signer_email,
+              signedAt: new Date().toLocaleString(),
+              signingUrl: `${baseUrl}/sign/${id}?as=company`,
+              documentUrl: `${baseUrl}/signatures/${id}`
+            }
+
+            const emailHtml = createCompanyTurnEmail(companyTurnData)
+            const subject = getCompanyTurnSubject(companyTurnData)
+
+            await sendEmail({
+              to: owner.email,
+              subject,
+              html: emailHtml
+            })
+
+            logger.info('Company turn notification sent', {
+              documentId: id,
+              to: owner.email,
+              customerName: signer_name
+            })
+          }
+        } catch (emailError) {
+          // Log but don't fail the signing if email fails
+          logger.error('Failed to send company turn notification', {
+            error: emailError,
+            documentId: id
+          })
+        }
+      }
     }
 
     const duration = Date.now() - startTime

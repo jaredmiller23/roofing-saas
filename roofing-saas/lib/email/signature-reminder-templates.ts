@@ -409,3 +409,78 @@ export function createSignedNotificationEmail(data: SignedNotificationData): str
   const body = getSignedNotificationBody(data)
   return createEmailHTML(body, getSignedNotificationSubject(data))
 }
+
+// ============================================
+// Company Turn Notification (Customer Signed)
+// ============================================
+
+export interface CompanyTurnNotificationData {
+  ownerName: string
+  documentTitle: string
+  projectName?: string
+  customerName: string
+  customerEmail: string
+  signedAt: string
+  signingUrl: string
+  documentUrl: string
+}
+
+/**
+ * Get the subject line for company turn notification
+ */
+export function getCompanyTurnSubject(data: CompanyTurnNotificationData): string {
+  return `Action Required: "${data.documentTitle}" needs your company signature`
+}
+
+/**
+ * Get the email body for company turn notification
+ */
+function getCompanyTurnBody(data: CompanyTurnNotificationData): string {
+  const { ownerName, documentTitle, projectName, customerName, customerEmail, signedAt, signingUrl, documentUrl } = data
+  const projectLine = projectName ? `<p style="margin: 4px 0;"><strong>Project:</strong> ${projectName}</p>` : ''
+
+  return `
+    <div class="header" style="border-bottom-color: #f59e0b;">
+      <h1 style="margin: 0; color: #d97706;">Customer Has Signed - Your Turn!</h1>
+    </div>
+
+    <p>Hi ${ownerName},</p>
+
+    <p>Great news! Your customer has signed the document. The document now requires your company signature to complete.</p>
+
+    <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #f59e0b;">
+      <h3 style="margin: 0 0 12px 0; color: #92400e;">Document Details</h3>
+      <p style="margin: 4px 0;"><strong>Document:</strong> ${documentTitle}</p>
+      ${projectLine}
+    </div>
+
+    <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #22c55e;">
+      <h4 style="margin: 0 0 8px 0; color: #166534;">Customer Signature Received</h4>
+      <p style="margin: 4px 0;"><strong>Name:</strong> ${customerName}</p>
+      <p style="margin: 4px 0;"><strong>Email:</strong> ${customerEmail}</p>
+      <p style="margin: 4px 0;"><strong>Signed:</strong> ${signedAt}</p>
+    </div>
+
+    <p style="text-align: center; margin: 32px 0;">
+      <a href="${signingUrl}" class="button" style="display: inline-block; padding: 16px 32px; background-color: #f59e0b; color: white; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 16px;">
+        Sign as Company Representative
+      </a>
+    </p>
+
+    <p style="color: #6b7280; font-size: 14px; text-align: center;">
+      Or <a href="${documentUrl}" style="color: #3b82f6;">view the document details</a> in your dashboard first.
+    </p>
+
+    <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+      Once you sign, both parties will receive a confirmation email with the fully executed document.
+    </p>
+  `
+}
+
+/**
+ * Generate the complete HTML email for company turn notification
+ */
+export function createCompanyTurnEmail(data: CompanyTurnNotificationData): string {
+  const body = getCompanyTurnBody(data)
+  return createEmailHTML(body, getCompanyTurnSubject(data))
+}

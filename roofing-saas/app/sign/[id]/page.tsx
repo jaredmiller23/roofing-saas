@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
@@ -180,8 +180,13 @@ function FieldOverlay({ field, isActive, isCompleted, onClick, fieldRef, tabInde
 export default function SignDocumentPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const documentId = params.id as string
   const isMobile = useIsMobile()
+
+  // Get initial signer type from query param (?as=company)
+  const asParam = searchParams.get('as')
+  const initialSignerType = asParam === 'company' ? 'company' : 'customer'
 
   const [document, setDocument] = useState<SignatureDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -198,7 +203,7 @@ export default function SignDocumentPage() {
   // Signer information
   const [signerName, setSignerName] = useState('')
   const [signerEmail, setSignerEmail] = useState('')
-  const [signerType, setSignerType] = useState<'customer' | 'company'>('customer')
+  const [signerType, setSignerType] = useState<'customer' | 'company'>(initialSignerType)
 
   // Field completion state
   const [completedFields, setCompletedFields] = useState<Set<string>>(new Set())
