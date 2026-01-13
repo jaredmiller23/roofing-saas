@@ -25,6 +25,7 @@ import {
   Mail,
   RefreshCw,
   Lock,
+  Voicemail,
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -79,6 +80,7 @@ const navSections: NavSection[] = [
     label: 'COMMUNICATIONS',
     items: [
       { href: '/call-logs', label: 'Call Log', icon: Phone },
+      { href: '/voicemail', label: 'Voicemail', icon: Voicemail },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/campaigns', label: 'Campaigns', icon: Mail, feature: 'campaigns' },
       { href: '/automations', label: 'Automations', icon: RefreshCw },
