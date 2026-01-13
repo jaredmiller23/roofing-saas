@@ -6,31 +6,10 @@ import heic2any from 'heic2any'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { withTimeout } from '@/lib/utils'
+import { withTimeout, validateHeicFile } from '@/lib/utils'
 
 // Timeout for HEIC conversion (30 seconds)
 const HEIC_CONVERSION_TIMEOUT = 30000
-
-/**
- * Validate HEIC file by checking magic bytes
- * HEIC files have 'ftyp' at offset 4 followed by a valid brand
- */
-async function validateHeicFile(file: File): Promise<boolean> {
-  try {
-    const buffer = await file.slice(0, 12).arrayBuffer()
-    const bytes = new Uint8Array(buffer)
-
-    // HEIC files have 'ftyp' at offset 4
-    const ftyp = String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7])
-    if (ftyp !== 'ftyp') return false
-
-    // Valid brands: heic, heix, hevc, hevx, mif1, msf1
-    const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11])
-    return ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1'].includes(brand)
-  } catch {
-    return false
-  }
-}
 
 interface PhotoUploadProps {
   contactId?: string
@@ -65,10 +44,16 @@ export function PhotoUpload({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const cancelledRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Cancel handler - resets state and sets cancelled flag
+  // Cancel handler - aborts fetch and resets state
   const handleCancel = useCallback(() => {
     cancelledRef.current = true
+    // Abort any in-flight fetch request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
     setUploadState({ status: 'idle', progress: 0, message: 'Upload cancelled' })
     setPreviewUrl(null)
     // Reset cancelled flag after a short delay so next upload works
@@ -255,9 +240,13 @@ export function PhotoUpload({
             })
           )
 
+          // Create AbortController for cancellable fetch
+          abortControllerRef.current = new AbortController()
+
           const response = await fetch('/api/photos/upload', {
             method: 'POST',
             body: formData,
+            signal: abortControllerRef.current.signal,
           })
 
           if (!response.ok) {
@@ -287,12 +276,28 @@ export function PhotoUpload({
           }, 2000)
         }
       } catch (error) {
-        // Don't show error if it was a cancellation
-        if (cancelledRef.current || (error instanceof Error && error.message === 'Upload cancelled')) {
+        // Don't show error if it was a cancellation (either manual or AbortController)
+        const isAbortError = error instanceof Error && error.name === 'AbortError'
+        const isCancelledByUser = cancelledRef.current || (error instanceof Error && error.message === 'Upload cancelled')
+
+        if (isAbortError || isCancelledByUser) {
+          console.log('[PhotoUpload] Upload cancelled by user')
           return
         }
 
-        console.error('Photo upload error:', error)
+        // Log timeout events for observability
+        const isTimeout = error instanceof Error && error.message.includes('timed out')
+        if (isTimeout) {
+          console.warn('[PhotoUpload] Operation timed out:', {
+            message: error instanceof Error ? error.message : 'Unknown timeout',
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+          })
+        } else {
+          console.error('[PhotoUpload] Upload error:', error)
+        }
+
         const errorMessage = error instanceof Error ? error.message : 'Upload failed'
         setUploadState({
           status: 'error',
