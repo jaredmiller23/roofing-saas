@@ -35,79 +35,86 @@ interface CommitmentPattern {
 }
 
 /**
+ * Patterns that indicate an OFFER/QUESTION (not a commitment)
+ * These should NOT trigger task creation - ARIA is asking, not promising
+ */
+const OFFER_PATTERNS: RegExp[] = [
+  /would you (?:like|prefer|want)/i,
+  /do you (?:want|need|prefer)/i,
+  /can i (?:have someone|arrange|schedule)/i,
+  /shall i (?:have someone|arrange|schedule)/i,
+  /would (?:a call|that) work/i,
+  /or would you (?:prefer|rather)/i,
+  /\?$/, // Ends with question mark
+]
+
+/**
  * Patterns ordered by priority - first match wins
+ * These match CONFIRMED commitments (after customer consent)
  */
 const COMMITMENT_PATTERNS: CommitmentPattern[] = [
-  // HIGH PRIORITY - Callback/Contact (due same day)
+  // HIGH PRIORITY - Confirmed Callback (due same day)
+  // These patterns indicate ARIA has confirmed an action, not just offered
   {
-    regex: /(?:someone|we|i|a team member|our team)\s*(?:will|can|'ll)\s*(?:call|contact|reach out|phone|get in touch)/i,
+    // "Great! I'll arrange a callback" or "I'll have someone call you"
+    regex: /(?:great|perfect|absolutely|sure|okay|yes)[\s!,]*(?:i'll|i will|let me)\s*(?:arrange|have someone|get someone)/i,
     type: 'callback',
     urgency: 'high',
     dueDays: 0,
   },
   {
-    regex: /(?:expect|anticipate)\s*(?:a|our)?\s*call/i,
+    // "I'm arranging a callback" or "I've scheduled someone to call"
+    regex: /(?:i'm|i am|i've|i have)\s*(?:arranging|scheduling|setting up|having someone)/i,
     type: 'callback',
     urgency: 'high',
     dueDays: 0,
   },
   {
-    regex: /(?:give|make)\s*(?:you)?\s*a\s*call/i,
-    type: 'callback',
-    urgency: 'high',
-    dueDays: 0,
-  },
-  {
-    regex: /call\s*(?:you|back)\s*(?:to|and)\s*(?:confirm|discuss|schedule)/i,
+    // "Someone will call you shortly" (after customer confirmed they want this)
+    regex: /(?:someone|a team member)\s*will\s*(?:call|contact|reach out).*(?:shortly|soon|today|right away)/i,
     type: 'callback',
     urgency: 'high',
     dueDays: 0,
   },
 
-  // MEDIUM PRIORITY - Quote/Estimate (due next business day)
+  // MEDIUM PRIORITY - Confirmed Quote (due next business day)
   {
-    regex: /(?:send|provide|get|prepare|put together)\s*(?:you|a)?\s*(?:a|an|the)?\s*(?:quote|estimate|pricing|proposal)/i,
+    regex: /(?:great|perfect|absolutely)[\s!,]*(?:i'll|let me)\s*(?:send|prepare|get)\s*(?:you\s*)?(?:a|that)\s*quote/i,
     type: 'quote',
     urgency: 'medium',
     dueDays: 1,
   },
   {
-    regex: /(?:work up|calculate|figure out)\s*(?:a|an|the)?\s*(?:quote|estimate|price|cost)/i,
+    regex: /(?:i'm|i am)\s*(?:sending|preparing|putting together)\s*(?:a|your)\s*(?:quote|estimate)/i,
     type: 'quote',
     urgency: 'medium',
     dueDays: 1,
   },
 
-  // MEDIUM PRIORITY - Schedule (due next business day)
+  // MEDIUM PRIORITY - Confirmed Schedule (due next business day)
   {
-    regex: /(?:schedule|set up|arrange|book)\s*(?:a|an|the)?\s*(?:appointment|visit|inspection|meeting|time)/i,
+    regex: /(?:great|perfect|absolutely)[\s!,]*(?:i'll|let me)\s*(?:schedule|set up|book|arrange)\s*(?:that|an?)/i,
     type: 'schedule',
     urgency: 'medium',
     dueDays: 1,
   },
   {
-    regex: /(?:find|check)\s*(?:a|some)?\s*(?:time|availability)/i,
+    regex: /(?:i'm|i am)\s*(?:scheduling|setting up|booking|arranging)\s*(?:that|an?|your)/i,
     type: 'schedule',
     urgency: 'medium',
     dueDays: 1,
   },
 
-  // LOW PRIORITY - General Follow-up (due in 2 days)
+  // LOW PRIORITY - Confirmed Follow-up (due in 2 days)
   {
-    regex: /(?:get back|follow up|reach out|be in touch)\s*(?:to|with)?\s*(?:you)?/i,
+    regex: /(?:great|perfect|absolutely)[\s!,]*(?:i'll|let me)\s*(?:follow up|get back|check on)/i,
     type: 'followup',
     urgency: 'low',
     dueDays: 2,
   },
   {
-    regex: /(?:someone|we|i)\s*(?:will|'ll)\s*(?:follow up|respond|reply|get back)/i,
+    regex: /(?:i'll|i will)\s*(?:make sure|ensure)\s*(?:someone|we)\s*(?:follows up|gets back)/i,
     type: 'followup',
-    urgency: 'low',
-    dueDays: 2,
-  },
-  {
-    regex: /(?:let me|i'll)\s*(?:check|find out|look into|verify)/i,
-    type: 'information',
     urgency: 'low',
     dueDays: 2,
   },
@@ -170,6 +177,9 @@ function extractDetails(response: string, matchIndex: number): string | undefine
 /**
  * Detect commitments in ARIA's response
  *
+ * Only detects CONFIRMED commitments (after customer consent).
+ * Offers/questions like "Would you like someone to call you?" are NOT commitments.
+ *
  * @param response - ARIA's generated response text
  * @returns Detected commitment details or null if no commitment found
  */
@@ -183,7 +193,25 @@ export function detectCommitment(response: string): DetectedCommitment {
     }
   }
 
-  // Check each pattern in priority order
+  // First, check if this is an OFFER/QUESTION (not a commitment)
+  // ARIA asking "Would you like a callback?" is NOT a commitment
+  for (const offerPattern of OFFER_PATTERNS) {
+    if (offerPattern.test(response)) {
+      logger.debug('Response is an offer/question, not a commitment', {
+        response: response.slice(0, 100),
+        matchedPattern: offerPattern.source,
+      })
+      return {
+        hasCommitment: false,
+        type: 'followup',
+        urgency: 'low',
+        suggestedDueDate: new Date(),
+      }
+    }
+  }
+
+  // Check each commitment pattern in priority order
+  // These only match CONFIRMED actions (after customer said yes)
   for (const pattern of COMMITMENT_PATTERNS) {
     const match = response.match(pattern.regex)
 
