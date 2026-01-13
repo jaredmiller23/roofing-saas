@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Phone, PhoneIncoming, PhoneOutgoing, Clock, FileText, Mic } from 'lucide-react'
 import { AudioPlayer } from '@/components/call-logs/audio-player'
+import { CallTranscription } from '@/components/call-logs/call-transcription'
 
 /**
  * View call log details page
@@ -135,6 +136,21 @@ export default async function CallLogDetailPage({
             <AudioPlayer
               recordingUrl={call.recording_url}
               duration={call.recording_duration}
+            />
+          </div>
+        )}
+
+        {/* Transcription Card */}
+        {call.recording_url && (
+          <div className="mb-6">
+            <CallTranscription
+              transcription={call.transcription}
+              summary={call.summary}
+              sentiment={call.sentiment as 'positive' | 'neutral' | 'negative' | null}
+              keyPoints={call.key_points}
+              confidence={call.transcription_confidence}
+              provider={call.transcription_provider}
+              isProcessing={call.recording_url && !call.transcription}
             />
           </div>
         )}
