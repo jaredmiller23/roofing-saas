@@ -41,5 +41,8 @@ import './insurance'
 // Analytics & Coaching (daily summary, sales metrics, activity analytics, bottlenecks, improvements)
 import './analytics'
 
+// Team & Dispatch (availability, location, routing, reassignment, performance, notifications)
+import './team'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'

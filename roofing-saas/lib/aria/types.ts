@@ -25,6 +25,7 @@ export type ARIAFunctionCategory =
   | 'vision'        // Photo analysis, damage detection
   | 'insurance'     // Claims intelligence, adjusters, carriers
   | 'analytics'     // Business intelligence, coaching, performance
+  | 'team'          // Crew management, dispatch, performance
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 
