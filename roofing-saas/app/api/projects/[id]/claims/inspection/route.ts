@@ -38,9 +38,11 @@ export async function POST(
     }
 
     // Get project with its contact (address lives on contacts table)
+    // Use contact:contact_id(...) to disambiguate - projects has two FKs to contacts
+    // (contact_id and adjuster_contact_id), so contact:contacts(...) is ambiguous
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, name, contact_id, contact:contacts(address_street, address_city, address_state, address_zip)')
+      .select('id, name, contact_id, contact:contact_id(address_street, address_city, address_state, address_zip)')
       .eq('id', projectId)
       .eq('tenant_id', tenantUser.tenant_id)
       .single()
@@ -97,15 +99,15 @@ export async function POST(
       .eq('id', projectId)
       .eq('tenant_id', tenantUser.tenant_id)
 
-    // Create activity log
+    // Create activity log (use actual column names: project_id, content - not entity_type/entity_id/notes)
     const selectedCount = inspectionState.damageAreas.filter(a => a.selected).length
     await supabase.from('activities').insert({
       tenant_id: tenantUser.tenant_id,
+      project_id: projectId,
+      contact_id: project.contact_id,
       type: 'claim_inspection',
-      entity_type: 'project',
-      entity_id: projectId,
       subject: 'Property Inspection Completed',
-      notes: `Inspection completed with ${selectedCount} areas documented`,
+      content: `Inspection completed with ${selectedCount} areas documented`,
       created_by: user.id,
     })
 

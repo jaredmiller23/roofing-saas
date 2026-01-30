@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       .from('projects')
       .select(`
         *,
-        contact:contacts(
+        contact:contact_id(
           id,
           first_name,
           last_name,

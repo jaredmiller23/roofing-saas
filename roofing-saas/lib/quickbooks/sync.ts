@@ -193,7 +193,7 @@ export async function syncProjectToInvoice(
     // Get project with contact
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('*, contact:contacts(*)')
+      .select('*, contact:contact_id(*)')
       .eq('id', projectId)
       .eq('tenant_id', tenantId)
       .single()
