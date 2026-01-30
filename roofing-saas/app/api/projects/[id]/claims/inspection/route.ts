@@ -37,12 +37,11 @@ export async function POST(
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    // Get project with its contact (address lives on contacts table)
-    // Use contact:contact_id(...) to disambiguate - projects has two FKs to contacts
-    // (contact_id and adjuster_contact_id), so contact:contacts(...) is ambiguous
+    // Get project (no embedded select — projects has two FKs to contacts
+    // which causes PostgREST ambiguity)
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, name, contact_id, contact:contact_id(address_street, address_city, address_state, address_zip)')
+      .select('id, name, contact_id')
       .eq('id', projectId)
       .eq('tenant_id', tenantUser.tenant_id)
       .single()
@@ -52,14 +51,31 @@ export async function POST(
       throw NotFoundError('Project')
     }
 
-    // Extract contact address (contact is embedded as an object from the foreign key join)
-    const contact = project.contact as { address_street?: string; address_city?: string; address_state?: string; address_zip?: string } | null
+    // Fetch contact address separately to avoid PostgREST FK ambiguity
+    let contactAddress = { street: '', city: '', state: '', zip: '' }
+    const contactId = inspectionState.contactId || project.contact_id
+    if (contactId) {
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('address_street, address_city, address_state, address_zip')
+        .eq('id', contactId)
+        .single()
+
+      if (contact) {
+        contactAddress = {
+          street: contact.address_street || '',
+          city: contact.address_city || '',
+          state: contact.address_state || '',
+          zip: contact.address_zip || '',
+        }
+      }
+    }
 
     // Build claim data using only columns that exist in the claims table
     const claimData = {
       tenant_id: tenantUser.tenant_id,
       project_id: projectId,
-      contact_id: inspectionState.contactId || project.contact_id,
+      contact_id: contactId,
       status: 'new',
       date_of_loss: new Date().toISOString().split('T')[0],
       created_by: user.id,
@@ -67,10 +83,10 @@ export async function POST(
       // Store inspection data and address in custom_fields JSONB
       custom_fields: {
         claim_type: 'roof',
-        property_address: contact?.address_street || '',
-        property_city: contact?.address_city || '',
-        property_state: contact?.address_state || '',
-        property_zip: contact?.address_zip || '',
+        property_address: contactAddress.street,
+        property_city: contactAddress.city,
+        property_state: contactAddress.state,
+        property_zip: contactAddress.zip,
         inspection: {
           location: inspectionState.location,
           overview_photo: inspectionState.overviewPhoto,
@@ -80,7 +96,7 @@ export async function POST(
       },
     }
 
-    // Insert claim (no unique constraint on project_id, so use insert)
+    // Insert claim
     const { data: claim, error: claimError } = await supabase
       .from('claims')
       .insert(claimData)
@@ -99,12 +115,12 @@ export async function POST(
       .eq('id', projectId)
       .eq('tenant_id', tenantUser.tenant_id)
 
-    // Create activity log (use actual column names: project_id, content - not entity_type/entity_id/notes)
+    // Create activity log
     const selectedCount = inspectionState.damageAreas.filter(a => a.selected).length
     await supabase.from('activities').insert({
       tenant_id: tenantUser.tenant_id,
       project_id: projectId,
-      contact_id: project.contact_id,
+      contact_id: contactId,
       type: 'claim_inspection',
       subject: 'Property Inspection Completed',
       content: `Inspection completed with ${selectedCount} areas documented`,
