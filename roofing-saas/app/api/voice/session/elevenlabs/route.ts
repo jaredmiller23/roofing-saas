@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json().catch(() => ({}))
-    const { contact_id, project_id, context } = body
+    const { contact_id, project_id, language, context } = body
 
     // Get agent ID from environment or request
     const agentId = body.agent_id || process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID
@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
         connection_info: {
           agent_id: agentId,
           provider: 'elevenlabs',
+          language: language || 'en',
         },
       })
       .select()

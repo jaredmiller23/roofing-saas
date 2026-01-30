@@ -10,6 +10,7 @@
  */
 
 import { ariaFunctionRegistry } from '../function-registry'
+import { notifyContact } from '../notify'
 import { logger } from '@/lib/logger'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -865,10 +866,18 @@ ariaFunctionRegistry.register({
       })
     }
 
-    // Queue notification if requested (placeholder - would integrate with SMS/email)
+    // Send cancellation notification via SMS
     if (notify_contact && existingEvent.contact_id) {
-      // TODO: Queue SMS/email notification
-      logger.info('[Calendar] Notification queued for cancellation', {
+      const cancelBody = `Your appointment "${existingEvent.title}" scheduled for ${new Date(existingEvent.start_at).toLocaleString()} has been cancelled.${reason ? ` Reason: ${reason}` : ''} We apologize for any inconvenience.`
+      await notifyContact({
+        supabase: context.supabase,
+        tenantId: context.tenantId,
+        contactId: existingEvent.contact_id,
+        subject: 'Appointment Cancelled',
+        body: cancelBody,
+        channel: 'sms',
+      })
+      logger.info('[Calendar] Cancellation notification sent', {
         event_id,
         contact_id: existingEvent.contact_id,
       })

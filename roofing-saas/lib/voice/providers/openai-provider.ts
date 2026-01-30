@@ -26,6 +26,7 @@ export class OpenAIProvider extends VoiceProvider {
         provider: 'openai',
         contact_id: config.contactId,
         project_id: config.projectId,
+        language: config.language,
         context: {
           timestamp: new Date().toISOString(),
         },
@@ -39,12 +40,21 @@ export class OpenAIProvider extends VoiceProvider {
     const data = await response.json()
     const { session_id, ephemeral_token } = data.data
 
+    // Build language-aware instructions
+    const languageNames: Record<string, string> = { es: 'Spanish', fr: 'French' }
+    let instructions = config.instructions
+    if (config.language && config.language !== 'en' && languageNames[config.language]) {
+      const langName = languageNames[config.language]
+      instructions = `${instructions || ''}\n\nYou MUST respond in ${langName}. All spoken responses must be in ${langName}.`
+    }
+
     return {
       session_id,
       provider: 'openai',
       ephemeral_token,
+      language: config.language,
       config: {
-        instructions: config.instructions,
+        instructions,
         voice: config.voice || 'alloy',
         temperature: config.temperature || 0.7,
         tools: config.tools,

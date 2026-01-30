@@ -31,6 +31,7 @@ export class ElevenLabsProvider extends VoiceProvider {
         contact_id: config.contactId,
         project_id: config.projectId,
         agent_id: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID,
+        language: config.language,
       }),
     })
 
@@ -41,13 +42,22 @@ export class ElevenLabsProvider extends VoiceProvider {
     const data = await response.json()
     const { session_id, signed_url, agent_id } = data.data
 
+    // Build language-aware instructions for ElevenLabs
+    const languageNames: Record<string, string> = { es: 'Spanish', fr: 'French' }
+    let instructions = config.instructions
+    if (config.language && config.language !== 'en' && languageNames[config.language]) {
+      const langName = languageNames[config.language]
+      instructions = `${instructions || ''}\n\nYou MUST respond in ${langName}. All spoken responses must be in ${langName}.`
+    }
+
     return {
       session_id,
       provider: 'elevenlabs',
       ephemeral_token: signed_url,
       agent_id,
+      language: config.language,
       config: {
-        instructions: config.instructions,
+        instructions,
         voice: config.voice,
         temperature: config.temperature,
         tools: config.tools,

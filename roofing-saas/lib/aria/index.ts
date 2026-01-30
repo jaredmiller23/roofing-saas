@@ -52,3 +52,9 @@ export {
   updateContactLanguage,
   resolveLanguage,
 } from './language'
+
+// Notification Utilities
+export {
+  notifyContact,
+  notifyTeamMember,
+} from './notify'

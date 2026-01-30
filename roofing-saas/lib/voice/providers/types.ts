@@ -50,6 +50,7 @@ export interface SessionResponse {
   voice_id?: string // For ElevenLabs
   agent_id?: string // For ElevenLabs
   model?: string // For Gemini (e.g., 'gemini-2.5-flash-native-audio-preview-09-2025')
+  language?: string // Contact's preferred language (e.g., 'es', 'fr')
   config?: {
     instructions?: string
     voice?: string

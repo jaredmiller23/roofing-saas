@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Parse optional request body (contact context, project context)
     const body = await request.json().catch(() => ({}))
-    const { contact_id, project_id, context } = body
+    const { contact_id, project_id, language, context } = body
 
     // Generate ephemeral OpenAI token
     const openaiApiKey = process.env.OPENAI_API_KEY
@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
         connection_info: {
           model: 'gpt-realtime',
           voice: 'alloy',
+          language: language || 'en',
         },
       })
       .select()

@@ -9,6 +9,9 @@ import type {
   ARIAFunctionCategory,
   ARIAFunctionRegistry,
 } from './types'
+import { sendEmail } from '@/lib/resend/email'
+import { notifyTeamMember } from './notify'
+import { logger } from '@/lib/logger'
 
 /**
  * ARIA Function Registry Implementation
@@ -2344,8 +2347,17 @@ ariaFunctionRegistry.register({
     }
 
     if (notify_adjuster && adjusterData?.email) {
-      message += `\n(Adjuster notification requested - would send to ${adjusterData.email})`
-      // TODO: Actually send notification via email
+      try {
+        await sendEmail({
+          to: adjusterData.email,
+          subject: `${meetingTypeLabels[meeting_type]} Scheduled - ${project.name}`,
+          html: `<p>An ${meetingTypeLabels[meeting_type]} has been scheduled for ${dateStr} at ${timeStr}.</p><p>Project: ${project.name}</p>${notes ? `<p>Notes: ${notes}</p>` : ''}`,
+        })
+        message += `\n(Notification sent to ${adjusterData.email})`
+      } catch (err) {
+        logger.error('Failed to notify adjuster', { error: err, email: adjusterData.email })
+        message += `\n(Adjuster notification requested but email delivery failed)`
+      }
     }
 
     return {
@@ -2758,8 +2770,18 @@ ariaFunctionRegistry.register({
 
     let message = `✅ "${data.name}" assigned to ${assigned_to}`
     if (notify) {
-      message += '\n(Notification would be sent)'
-      // TODO: Actually send notification
+      const notifyResult = await notifyTeamMember({
+        supabase: context.supabase,
+        tenantId: context.tenantId,
+        assignedTo: assigned_to,
+        subject: `Project Assigned: ${data.name}`,
+        body: `You have been assigned to project "${data.name}".`,
+      })
+      if (notifyResult.sent) {
+        message += `\n(Notification sent via ${notifyResult.channels.join(', ')})`
+      } else {
+        message += '\n(Notification requested but delivery failed)'
+      }
     }
 
     return { success: true, data, message }

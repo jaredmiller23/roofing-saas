@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
 import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
+import { ARIAChatButton } from '@/components/aria/ARIAChatButton'
 
 /**
  * Dashboard layout - main application layout with sidebar navigation
@@ -50,6 +51,9 @@ export default async function DashboardLayout({
             {children}
           </DashboardLayoutClient>
         </main>
+
+        {/* ARIA Chat - floating button + slide-over panel */}
+        <ARIAChatButton />
       </div>
     </CommandPaletteProvider>
   )

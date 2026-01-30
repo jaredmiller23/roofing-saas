@@ -212,7 +212,19 @@ export function VoiceSession({
         console.warn('Error loading ARIA functions:', err)
       }
 
-      // Step 4: Initialize session with provider
+      // Step 4: Fetch contact's preferred language (if contact provided)
+      let contactLanguage: string | undefined
+      if (contactId) {
+        try {
+          const contactRes = await fetch(`/api/contacts/${contactId}`)
+          if (contactRes.ok) {
+            const contactData = await contactRes.json()
+            contactLanguage = contactData.data?.preferred_language
+          }
+        } catch { /* ignore — language is optional */ }
+      }
+
+      // Step 5: Initialize session with provider
       const sessionResponse = await voiceProvider.initSession({
         provider,
         contactId,
@@ -221,11 +233,12 @@ export function VoiceSession({
         voice: undefined,
         temperature: undefined,
         tools: ariaTools,
+        language: contactLanguage,
       })
 
       setSessionId(sessionResponse.session_id)
 
-      // Step 4: Establish WebRTC connection with provider
+      // Step 6: Establish WebRTC connection with provider
       const isMobile = isMobileDevice()
       await voiceProvider.establishConnection(
         sessionResponse,

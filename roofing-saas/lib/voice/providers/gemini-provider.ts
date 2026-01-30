@@ -32,6 +32,7 @@ export class GeminiProvider extends VoiceProvider {
       body: JSON.stringify({
         contact_id: config.contactId,
         project_id: config.projectId,
+        language: config.language,
         context: {
           timestamp: new Date().toISOString(),
         },
@@ -51,6 +52,7 @@ export class GeminiProvider extends VoiceProvider {
       provider: 'gemini',
       ephemeral_token,
       model: model || 'gemini-2.5-flash-native-audio-preview-09-2025',
+      language: config.language,
       config: {
         instructions: config.instructions,
         temperature: config.temperature || 0.7,
@@ -126,6 +128,13 @@ export class GeminiProvider extends VoiceProvider {
       return
     }
 
+    // Build language-aware instructions
+    const languageNames: Record<string, string> = { es: 'Spanish', fr: 'French' }
+    const baseInstructions = sessionResponse.config?.instructions || 'You are a helpful AI assistant for a roofing company.'
+    const languageInstruction = sessionResponse.language && sessionResponse.language !== 'en' && languageNames[sessionResponse.language]
+      ? `\n\nYou MUST respond in ${languageNames[sessionResponse.language]}. All spoken responses must be in ${languageNames[sessionResponse.language]}.`
+      : ''
+
     const setupMessage = {
       setup: {
         model: sessionResponse.model,
@@ -136,7 +145,7 @@ export class GeminiProvider extends VoiceProvider {
         system_instruction: {
           parts: [
             {
-              text: sessionResponse.config?.instructions || 'You are a helpful AI assistant for a roofing company.',
+              text: baseInstructions + languageInstruction,
             },
           ],
         },

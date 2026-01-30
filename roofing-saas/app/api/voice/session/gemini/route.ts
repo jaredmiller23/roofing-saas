@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Parse optional request body (contact context, project context)
     const body = await request.json().catch(() => ({}))
-    const { contact_id, project_id, context } = body
+    const { contact_id, project_id, language, context } = body
 
     // Validate Gemini API key
     const geminiApiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
           model,
           provider: 'gemini',
           cost_per_minute: 0.05,
+          language: language || 'en',
         },
       })
       .select()

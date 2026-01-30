@@ -1,3 +1,5 @@
 export { ApprovalModal } from './ApprovalModal'
 export { ApprovalQueue } from './ApprovalQueue'
 export { ApprovalItem } from './ApprovalItem'
+export { ARIAChat } from './ARIAChat'
+export { ARIAChatButton } from './ARIAChatButton'
