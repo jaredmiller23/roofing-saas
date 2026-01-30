@@ -14,7 +14,18 @@ export const createContactSchema = z.object({
   is_organization: z.boolean().optional(),
   organization_id: z.string().uuid().optional().nullable(),
   company: z.string().max(200).optional(),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  website: z.string().optional().or(z.literal('')).refine(
+    (val) => {
+      if (!val || val.trim() === '') return true;
+      try {
+        new URL(val.startsWith('http') ? val : `https://${val}`);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Invalid URL (e.g., example.com)' }
+  ),
   contact_category: z.enum([
     'homeowner',
     'adjuster',
