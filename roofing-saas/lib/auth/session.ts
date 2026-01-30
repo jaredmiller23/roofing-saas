@@ -180,9 +180,11 @@ export async function hasRole(userId: string, role: string): Promise<boolean> {
 
 /**
  * Check if user is admin in their tenant
+ * Owners also have admin-level privileges
  */
 export async function isAdmin(userId: string): Promise<boolean> {
-  return hasRole(userId, 'admin')
+  const role = await getUserRole(userId)
+  return role === 'admin' || role === 'owner'
 }
 
 /**
