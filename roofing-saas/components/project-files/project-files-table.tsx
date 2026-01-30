@@ -92,7 +92,6 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
         const data = result.data || result
         setFiles(data.files || data)
         setTotal(data.total || 0)
-        setPage(data.page || 1)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
