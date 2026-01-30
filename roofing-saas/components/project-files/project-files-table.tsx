@@ -33,6 +33,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(parseInt((params.page as string) || '1'))
 
+  // Extract stable primitive value to avoid object-reference dependency issues
+  const projectId = params.project_id as string | undefined
+
   // Enhanced state for new features
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,12 +65,10 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
       try {
         const queryParams = new URLSearchParams()
 
-        // Add original params
-        Object.entries(params).forEach(([key, value]) => {
-          if (value && typeof value === 'string') {
-            queryParams.set(key, value)
-          }
-        })
+        // Add project_id param
+        if (projectId) {
+          queryParams.set('project_id', projectId)
+        }
 
         // Add search and filter params
         if (searchTerm) queryParams.set('search_term', searchTerm)
@@ -100,7 +101,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
     }
 
     fetchFiles()
-  }, [params, searchTerm, selectedCategories, selectedFileTypes, currentFolderPath, sortBy, sortOrder, page])
+  }, [projectId, searchTerm, selectedCategories, selectedFileTypes, currentFolderPath, sortBy, sortOrder, page])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this file?')) {
