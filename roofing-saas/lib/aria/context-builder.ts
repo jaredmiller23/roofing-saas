@@ -5,7 +5,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import type { ARIAContext, ARIAActivity, ARIATask, ARIAMessage } from './types'
+import type { ARIAContext, ARIAActivity, ARIATask, ARIAMessage, SupportedLanguage } from './types'
+import { locales } from '@/lib/i18n/config'
 
 /**
  * Build enriched ARIA context from base context
@@ -24,6 +25,7 @@ export async function buildARIAContext(
     userId: baseContext.userId,
     supabase,
     channel: baseContext.channel || 'chat',
+    language: baseContext.language,
     page: baseContext.page,
     entityType: baseContext.entityType,
     entityId: baseContext.entityId,
@@ -57,7 +59,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
       const { data: contact } = await context.supabase
         .from('contacts')
         .select(
-          'id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status'
+          'id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language'
         )
         .eq('id', context.entityId)
         .eq('tenant_id', context.tenantId)
@@ -76,6 +78,12 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
           address_zip: contact.address_zip,
           stage: contact.stage,
           dnc_status: contact.dnc_status,
+          preferred_language: contact.preferred_language,
+        }
+
+        // Set context language from contact preference if not already set
+        if (!context.language && contact.preferred_language && locales.includes(contact.preferred_language as SupportedLanguage)) {
+          context.language = contact.preferred_language as SupportedLanguage
         }
 
         // Also fetch their projects
@@ -96,7 +104,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
       const { data: project } = await context.supabase
         .from('projects')
         .select(
-          '*, contacts(id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status)'
+          '*, contacts(id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language)'
         )
         .eq('id', context.entityId)
         .eq('tenant_id', context.tenantId)
@@ -126,6 +134,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
           address_zip?: string
           stage?: string
           dnc_status?: string
+          preferred_language?: string
         } | null
 
         if (contact) {
@@ -141,6 +150,12 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
             address_zip: contact.address_zip,
             stage: contact.stage,
             dnc_status: contact.dnc_status,
+            preferred_language: contact.preferred_language,
+          }
+
+          // Set context language from contact preference if not already set
+          if (!context.language && contact.preferred_language && locales.includes(contact.preferred_language as SupportedLanguage)) {
+            context.language = contact.preferred_language as SupportedLanguage
           }
         }
       }
@@ -194,7 +209,7 @@ export async function findContactByPhone(
     const { data: contacts } = await context.supabase
       .from('contacts')
       .select(
-        'id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status'
+        'id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language'
       )
       .eq('tenant_id', context.tenantId)
       .or(
@@ -218,6 +233,7 @@ export async function findContactByPhone(
         address_zip: contact.address_zip,
         stage: contact.stage,
         dnc_status: contact.dnc_status,
+        preferred_language: contact.preferred_language,
       }
     }
   } catch (error) {

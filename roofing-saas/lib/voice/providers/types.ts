@@ -13,6 +13,7 @@ export interface VoiceProviderConfig {
   voice?: string
   temperature?: number
   tools?: VoiceFunction[]
+  language?: string
 }
 
 export interface VoiceFunctionParameter {

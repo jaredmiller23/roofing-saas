@@ -12,6 +12,7 @@ import type { ARIAContext } from './types'
 import { openai, getOpenAIModel } from '@/lib/ai/openai-client'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
+import { detectLanguage, resolveLanguage, translateResponse, updateContactLanguage } from './language'
 
 export interface SMSHandlerResult {
   success: boolean
@@ -160,18 +161,18 @@ function classifyMessageIntentRegex(message: string): IntentClassification {
 
   // === AUTO-SEND CATEGORIES - Safe for AI to respond ===
 
-  // Greetings
-  if (/^(hi|hello|hey|good\s*(morning|afternoon|evening))[\s!.]*$/i.test(lowerMessage)) {
+  // Greetings (English + Spanish + French)
+  if (/^(hi|hello|hey|good\s*(morning|afternoon|evening)|hola|buenos?\s*(dias?|tardes?|noches?)|bonjour|bonsoir|salut)[\s!.]*$/i.test(lowerMessage)) {
     return { category: 'greeting', shouldAutoSend: true, confidence: 0.95 }
   }
 
-  // Confirmations
-  if (/^(yes|yeah|yep|ok|okay|sure|sounds?\s*good|perfect|great|absolutely|definitely)[\s!.]*$/i.test(lowerMessage)) {
+  // Confirmations (English + Spanish + French)
+  if (/^(yes|yeah|yep|ok|okay|sure|sounds?\s*good|perfect|great|absolutely|definitely|si|s[ií]|claro|por\s*supuesto|oui|bien\s*s[uû]r|d'accord|parfait)[\s!.]*$/i.test(lowerMessage)) {
     return { category: 'confirmation', shouldAutoSend: true, confidence: 0.9 }
   }
 
-  // Thanks
-  if (/^(thanks?|thank\s*you|thx|ty|appreciate)[\s!.]*$/i.test(lowerMessage)) {
+  // Thanks (English + Spanish + French)
+  if (/^(thanks?|thank\s*you|thx|ty|appreciate|gracias|muchas\s*gracias|merci|merci\s*beaucoup)[\s!.]*$/i.test(lowerMessage)) {
     return { category: 'thanks', shouldAutoSend: true, confidence: 0.95 }
   }
 
@@ -236,6 +237,29 @@ export async function handleInboundSMS(params: InboundSMSParams): Promise<SMSHan
       method: reasoning ? 'ML' : 'regex',
     })
 
+    // Phase 11: Detect inbound language
+    const langDetection = await detectLanguage(body)
+    const effectiveLanguage = resolveLanguage(
+      langDetection.language,
+      contact?.preferred_language
+    )
+
+    logger.info('SMS language detected', {
+      detected: langDetection.language,
+      confidence: langDetection.confidence,
+      contactPreference: contact?.preferred_language,
+      effective: effectiveLanguage,
+    })
+
+    // Persist language preference if detection is confident and non-English
+    if (
+      langDetection.confidence > 0.7 &&
+      langDetection.language !== 'en' &&
+      contactId
+    ) {
+      await updateContactLanguage(supabase, contactId, tenantId, langDetection.language)
+    }
+
     // Build ARIA context
     const ariaContext = await buildARIAContext({
       tenantId,
@@ -243,6 +267,7 @@ export async function handleInboundSMS(params: InboundSMSParams): Promise<SMSHan
       userId: '00000000-0000-0000-0000-000000000000',
       supabase,
       channel: 'sms',
+      language: effectiveLanguage,
       entityType: contactId ? 'contact' : undefined,
       entityId: contactId,
     })
@@ -413,12 +438,22 @@ ${shouldAutoSend ? 'This is a simple message - response can be sent automaticall
       .replace(/\n+/g, ' ')  // Collapse newlines
       .trim()
 
+    // Phase 11: Translate response if non-English
+    if (effectiveLanguage !== 'en') {
+      responseContent = await translateResponse(
+        responseContent,
+        effectiveLanguage,
+        'SMS response to a roofing customer'
+      )
+    }
+
     // Log the generated response
     logger.info('ARIA SMS response generated', {
       contactId,
       category,
       shouldAutoSend,
       responseLength: responseContent.length,
+      language: effectiveLanguage,
     })
 
     return {

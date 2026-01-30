@@ -7,6 +7,8 @@ import { ariaFunctionRegistry } from '../function-registry'
 import { canSendSMS } from '@/lib/twilio/compliance'
 import { canSendEmail } from '@/lib/resend/compliance'
 import { logger } from '@/lib/logger'
+import { translateResponse, updateContactLanguage } from '../language'
+import type { SupportedLanguage } from '../types'
 
 // =============================================================================
 // Send SMS
@@ -73,6 +75,13 @@ ariaFunctionRegistry.register({
       ? `${context.contact.first_name} ${context.contact.last_name}`.trim()
       : targetPhone
 
+    // Phase 11: Translate draft body if non-English
+    const language = context.language || 'en'
+    let draftBody = message
+    if (language !== 'en') {
+      draftBody = await translateResponse(message, language, 'SMS to a roofing customer')
+    }
+
     return {
       success: true,
       awaitingApproval: true,
@@ -80,11 +89,16 @@ ariaFunctionRegistry.register({
       draft: {
         type: 'sms',
         recipient: targetPhone,
-        body: message,
+        body: draftBody,
         metadata: {
           contact_id: targetContactId,
           contact_name: contactName,
           via: 'aria',
+          ...(language !== 'en' && {
+            original_body: message,
+            original_language: 'en',
+            target_language: language,
+          }),
         },
       },
       message: `SMS draft created for ${contactName}. Awaiting approval.`,
@@ -162,6 +176,15 @@ ariaFunctionRegistry.register({
       ? `${context.contact.first_name} ${context.contact.last_name}`.trim()
       : targetEmail
 
+    // Phase 11: Translate draft if non-English
+    const language = context.language || 'en'
+    let draftSubject = subject
+    let draftBody = body
+    if (language !== 'en') {
+      draftSubject = await translateResponse(subject, language, 'Email subject for a roofing customer')
+      draftBody = await translateResponse(body, language, 'Email body for a roofing customer')
+    }
+
     return {
       success: true,
       awaitingApproval: true,
@@ -169,13 +192,19 @@ ariaFunctionRegistry.register({
       draft: {
         type: 'email',
         recipient: targetEmail,
-        subject: subject,
-        body: body,
+        subject: draftSubject,
+        body: draftBody,
         metadata: {
           contact_id: targetContactId,
           contact_name: contactName,
-          html_body: `<p>${body.replace(/\n/g, '<br>')}</p>`,
+          html_body: `<p>${draftBody.replace(/\n/g, '<br>')}</p>`,
           via: 'aria',
+          ...(language !== 'en' && {
+            original_subject: subject,
+            original_body: body,
+            original_language: 'en',
+            target_language: language,
+          }),
         },
       },
       message: `Email draft created for ${contactName}. Awaiting approval.`,
@@ -405,6 +434,83 @@ ariaFunctionRegistry.register({
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to schedule callback',
+      }
+    }
+  },
+})
+
+// =============================================================================
+// Set Contact Language Preference (Phase 11)
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'set_contact_language',
+  category: 'crm',
+  description: 'Set the preferred language for a contact',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'set_contact_language',
+    description: 'Set the preferred language for a contact (English, Spanish, or French)',
+    parameters: {
+      type: 'object',
+      properties: {
+        contact_id: {
+          type: 'string',
+          description: 'Contact ID (defaults to current contact in context)',
+        },
+        language: {
+          type: 'string',
+          description: 'Language code: "en" (English), "es" (Spanish), or "fr" (French)',
+        },
+      },
+      required: ['language'],
+    },
+  },
+  execute: async (args, context) => {
+    const { contact_id, language } = args as {
+      contact_id?: string
+      language: string
+    }
+
+    const targetContactId = contact_id || context.contact?.id
+
+    if (!targetContactId) {
+      return { success: false, error: 'No contact ID provided or available in context' }
+    }
+
+    const validLanguages: SupportedLanguage[] = ['en', 'es', 'fr']
+    if (!validLanguages.includes(language as SupportedLanguage)) {
+      return {
+        success: false,
+        error: `Invalid language "${language}". Supported: en (English), es (Spanish), fr (French)`,
+      }
+    }
+
+    try {
+      await updateContactLanguage(
+        context.supabase,
+        targetContactId,
+        context.tenantId,
+        language as SupportedLanguage
+      )
+
+      const languageNames: Record<string, string> = {
+        en: 'English',
+        es: 'Spanish',
+        fr: 'French',
+      }
+
+      return {
+        success: true,
+        message: `Language preference set to ${languageNames[language]} for this contact.`,
+      }
+    } catch (error) {
+      logger.error('ARIA set_contact_language error:', { error })
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to set language preference',
       }
     }
   },

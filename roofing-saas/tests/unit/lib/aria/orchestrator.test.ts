@@ -38,6 +38,24 @@ vi.mock('@/lib/aria/context-builder', () => ({
   }),
 }))
 
+// Mock system prompts
+vi.mock('@/lib/aria/system-prompts', () => ({
+  getLocalizedSystemPrompt: vi.fn((language: string, channel: string) => {
+    let prompt = 'You are ARIA, an AI assistant for a Tennessee roofing company. Your capabilities include CRM management.\n\nBe helpful, professional, and concise.'
+
+    if (channel === 'voice_inbound') {
+      prompt += '\n\nYou are answering an inbound phone call.\n- Greet the caller appropriately\n- Try to identify who is calling'
+    } else if (channel === 'voice_outbound') {
+      prompt += '\n\nYou are on an outbound call.\n- Be professional and to the point\n- Help the team member with their task'
+    } else if (channel === 'sms') {
+      prompt += '\n\nYou are responding via SMS text message.\n- Keep responses brief and to the point\n- If complex, offer to call them instead'
+    }
+
+    prompt += '\n\nAuthorization rules:\n- You CAN: Look up contacts, manage projects\n- You CANNOT: Process payments, issue refunds'
+    return prompt
+  }),
+}))
+
 describe('Orchestrator', () => {
   let orchestrator: any
   let mockContext: any

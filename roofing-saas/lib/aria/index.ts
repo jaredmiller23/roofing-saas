@@ -24,6 +24,7 @@ export type {
   VoicemailMessage,
   KnowledgeEntry,
   KnowledgeSearchResult,
+  SupportedLanguage,
 } from './types'
 
 // Function Registry (with all registered functions)
@@ -43,3 +44,11 @@ export {
   getARIASystemPrompt,
   initializeARIA,
 } from './orchestrator'
+
+// Language Service (Phase 11)
+export {
+  detectLanguage,
+  translateResponse,
+  updateContactLanguage,
+  resolveLanguage,
+} from './language'

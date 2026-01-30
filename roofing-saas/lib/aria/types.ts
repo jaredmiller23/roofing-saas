@@ -5,6 +5,9 @@
 
 import type { VoiceFunction, FunctionCallParameters, FunctionCallResult } from '@/lib/voice/providers/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Locale } from '@/lib/i18n/config'
+
+export type SupportedLanguage = Locale
 
 // =============================================================================
 // ARIA Function Categories
@@ -57,6 +60,7 @@ export interface ARIAContext {
     address_zip?: string
     stage?: string
     dnc_status?: string
+    preferred_language?: string
   }
   project?: {
     id: string
@@ -71,6 +75,9 @@ export interface ARIAContext {
     DisplayName: string
     Balance?: number
   }
+
+  // Language (Phase 11 - Multi-Language Support)
+  language?: SupportedLanguage
 
   // Channel info
   channel: 'chat' | 'voice_inbound' | 'voice_outbound' | 'sms'

@@ -20,7 +20,9 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { buildARIAContext, executeARIAFunction } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
+import type { SupportedLanguage } from '@/lib/aria/types'
 import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
+import { translateResponse } from '@/lib/aria/language'
 
 interface ExecuteRequest {
   function_name: string
@@ -31,6 +33,7 @@ interface ExecuteRequest {
     channel?: ARIAContext['channel']
     call_sid?: string
     session_id?: string
+    language?: SupportedLanguage
   }
 }
 
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       supabase,
       channel: context?.channel || 'chat',
+      language: context?.language,
       entityType: context?.contact_id ? 'contact' : context?.project_id ? 'project' : undefined,
       entityId: context?.contact_id || context?.project_id,
       callSid: context?.call_sid,
@@ -93,6 +97,12 @@ export async function POST(request: NextRequest) {
       parameters as import('@/lib/voice/providers/types').FunctionCallParameters,
       ariaContext
     )
+
+    // Phase 11: Translate result message if non-English
+    const effectiveLanguage = ariaContext.language || 'en'
+    if (effectiveLanguage !== 'en' && result.message) {
+      result.message = await translateResponse(result.message, effectiveLanguage)
+    }
 
     const duration = Date.now() - startTime
     logger.info('ARIA function execution complete', {
