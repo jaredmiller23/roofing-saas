@@ -125,8 +125,15 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
   try {
     const supabase = createClient();
 
+    // Validate that stored data exists (old-format queue entries may lack fileData)
+    if (!photo.fileData) {
+      console.warn(`⚠️ Photo ${photo.localId} has no file data (old queue format). Removing from queue.`);
+      await db.queuedPhotos.update(photo.id!, { status: 'failed', error: 'Missing file data — photo must be retaken' });
+      return;
+    }
+
     // Reconstruct File from stored Blob + metadata
-    const file = new File([photo.fileData], photo.fileName, { type: photo.fileType });
+    const file = new File([photo.fileData], photo.fileName || `photo_${Date.now()}.jpg`, { type: photo.fileType || 'image/jpeg' });
 
     // Generate unique file name
     const timestamp = Date.now();
