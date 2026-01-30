@@ -22,9 +22,14 @@ export async function addPhotoToQueue(
   const localId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   try {
+    // Store file data as Blob + metadata separately.
+    // File objects don't reliably survive IndexedDB round-trips in Safari.
     await db.queuedPhotos.add({
       localId,
-      file,
+      fileData: new Blob([file], { type: file.type }),
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
       contactId,
       projectId,
       metadata,
@@ -120,17 +125,20 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
   try {
     const supabase = createClient();
 
+    // Reconstruct File from stored Blob + metadata
+    const file = new File([photo.fileData], photo.fileName, { type: photo.fileType });
+
     // Generate unique file name
     const timestamp = Date.now();
-    const sanitizedName = photo.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const fileName = `${photo.tenantId}/${photo.contactId}/${timestamp}_${sanitizedName}`;
+    const sanitizedName = photo.fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const storagePath = `${photo.tenantId}/${photo.contactId}/${timestamp}_${sanitizedName}`;
 
-    console.log(`📤 Uploading ${fileName}...`);
+    console.log(`📤 Uploading ${storagePath}...`);
 
     // Upload to Supabase Storage (use property-photos bucket)
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('property-photos')
-      .upload(fileName, photo.file, {
+      .upload(storagePath, file, {
         cacheControl: '3600',
         upsert: false,
       });
@@ -153,9 +161,9 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
         project_id: photo.projectId,
         file_url: publicUrl,
         file_path: uploadData.path,
-        file_name: photo.file.name,
-        file_size: photo.file.size,
-        file_type: photo.file.type,
+        file_name: photo.fileName,
+        file_size: photo.fileSize,
+        file_type: photo.fileType,
         latitude: photo.metadata.latitude,
         longitude: photo.metadata.longitude,
         notes: photo.metadata.notes,

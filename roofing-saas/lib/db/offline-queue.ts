@@ -9,7 +9,11 @@ import Dexie, { Table } from 'dexie';
 export interface QueuedPhoto {
   id?: number;
   localId: string;
-  file: File;
+  /** Binary data stored as Blob (File objects don't survive IndexedDB in Safari) */
+  fileData: Blob;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
   contactId: string;
   projectId?: string;
   metadata: {
