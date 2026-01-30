@@ -53,6 +53,7 @@ export async function GET(
       .from('projects')
       .select(`
         id,
+        tenant_id,
         name,
         project_number,
         contact_id,

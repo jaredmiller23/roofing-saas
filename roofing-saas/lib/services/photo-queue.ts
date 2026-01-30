@@ -132,6 +132,12 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
       return;
     }
 
+    // Get current user for uploaded_by
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     // Reconstruct File from stored Blob + metadata
     const file = new File([photo.fileData], photo.fileName || `photo_${Date.now()}.jpg`, { type: photo.fileType || 'image/jpeg' });
 
@@ -159,15 +165,32 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
       .from('property-photos')
       .getPublicUrl(uploadData.path);
 
-    // Insert into photos table
-    const { error: dbError } = await supabase
-      .from('photos')
-      .insert({
-        tenant_id: photo.tenantId,
-        contact_id: photo.contactId,
-        project_id: photo.projectId,
-        file_url: publicUrl,
-        file_path: uploadData.path,
+    // Parse damage/claim info from notes JSON
+    let damageType: string | undefined;
+    let severity: string | undefined;
+    let photoOrder: number | undefined;
+    let claimId: string | undefined;
+    if (photo.metadata.notes) {
+      try {
+        const parsed = JSON.parse(photo.metadata.notes);
+        damageType = parsed.damageType;
+        severity = parsed.severity;
+        photoOrder = parsed.photoOrder;
+        claimId = parsed.claimId;
+      } catch {
+        // notes is plain text, not JSON
+      }
+    }
+
+    // Build insert — only columns that exist in the photos table
+    const insertData: Record<string, unknown> = {
+      tenant_id: photo.tenantId,
+      contact_id: photo.contactId || null,
+      project_id: photo.projectId || null,
+      file_url: publicUrl,
+      file_path: uploadData.path,
+      uploaded_by: user.id,
+      metadata: {
         file_name: photo.fileName,
         file_size: photo.fileSize,
         file_type: photo.fileType,
@@ -175,7 +198,19 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
         longitude: photo.metadata.longitude,
         notes: photo.metadata.notes,
         captured_at: photo.metadata.capturedAt,
-      })
+      },
+    };
+
+    // Only include optional columns if they have values
+    if (damageType) insertData.damage_type = damageType;
+    if (severity) insertData.severity = severity;
+    if (photoOrder !== undefined) insertData.photo_order = photoOrder;
+    if (claimId) insertData.claim_id = claimId;
+
+    // Insert into photos table
+    const { error: dbError } = await supabase
+      .from('photos')
+      .insert(insertData)
       .select()
       .single();
 
