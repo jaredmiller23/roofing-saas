@@ -32,7 +32,7 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const isReviewable = REVIEWABLE_STATUSES.includes(claim.status)
+  const isReviewable = REVIEWABLE_STATUSES.includes(claim.status || 'new')
   const isApproved = claim.status === 'approved'
   const isRejected = false // We can track this with a separate field or substatus in the future
 
@@ -168,23 +168,23 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {claim.initial_estimate ? (
+                    {claim.estimated_damage ? (
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     ) : (
                       <AlertCircle className="h-4 w-4 text-yellow-600" />
                     )}
-                    <span className={claim.initial_estimate ? 'text-green-700' : 'text-yellow-700'}>
-                      Initial estimate provided ({claim.initial_estimate ? `$${claim.initial_estimate.toLocaleString()}` : 'Missing'})
+                    <span className={claim.estimated_damage ? 'text-green-700' : 'text-yellow-700'}>
+                      Initial estimate provided ({claim.estimated_damage ? `$${claim.estimated_damage.toLocaleString()}` : 'Missing'})
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {claim.inspection_completed ? (
+                    {claim.inspection_completed_at ? (
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     ) : (
                       <AlertCircle className="h-4 w-4 text-yellow-600" />
                     )}
-                    <span className={claim.inspection_completed ? 'text-green-700' : 'text-yellow-700'}>
-                      Inspection completed {claim.inspection_completed ? `(${format(new Date(claim.inspection_completed), 'MMM d, yyyy')})` : '(Pending)'}
+                    <span className={claim.inspection_completed_at ? 'text-green-700' : 'text-yellow-700'}>
+                      Inspection completed {claim.inspection_completed_at ? `(${format(new Date(claim.inspection_completed_at), 'MMM d, yyyy')})` : '(Pending)'}
                     </span>
                   </div>
                 </div>

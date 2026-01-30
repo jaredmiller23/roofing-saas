@@ -27,45 +27,59 @@ export const TN_LAW_THRESHOLDS = {
 } as const
 
 /**
- * Claim data structure matching Claims Agent schema
+ * Claim data structure matching the actual claims database table.
+ *
+ * Column names must match the DB exactly. Fields that don't exist as
+ * top-level columns (e.g. claim_type, property address) are stored
+ * in the custom_fields JSONB column.
  */
 export interface ClaimData {
   id: string
-  contact_id: string
-  project_id: string
+  tenant_id: string
+  contact_id?: string
+  project_id?: string
   claim_number?: string
   policy_number?: string
-  carrier_id?: string
-  date_of_loss: string
+  date_of_loss?: string
   date_filed?: string
-  status: ClaimStatus
-  claim_type: 'roof' | 'siding' | 'gutters' | 'full_exterior' | 'other'
+  status?: ClaimStatus
 
-  // Financial
-  initial_estimate?: number
+  // Insurance
+  insurance_carrier?: string
+  carrier_id?: string
+  adjuster_id?: string
+  adjuster_name?: string
+  adjuster_email?: string
+  adjuster_phone?: string
+  claim_email_address?: string
+
+  // Financial (actual DB column names)
+  estimated_damage?: number
+  insurance_estimate?: number
   approved_amount?: number
   paid_amount?: number
   deductible?: number
+  recovered_amount?: number
 
-  // Property info
-  property_address: string
-  property_city: string
-  property_state: string
-  property_zip: string
-  property_type?: 'residential' | 'commercial' | 'multi_family'
+  // Analysis (JSONB)
+  coverage_analysis?: Record<string, unknown>
+  missed_coverages?: Record<string, unknown>
+  violations?: Record<string, unknown>
 
-  // Timeline
-  acknowledgment_received?: string
-  inspection_scheduled?: string
-  inspection_completed?: string
+  // Timeline (actual DB column names — note: _at suffix, not bare names)
+  acknowledgment_date?: string
+  inspection_scheduled_at?: string
+  inspection_completed_at?: string
   decision_date?: string
 
-  // Weather causation
-  storm_event_id?: string
+  // Notes & custom data
+  notes?: string
+  custom_fields?: Record<string, unknown>
 
   // Metadata
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
+  created_by?: string
 }
 
 /**

@@ -66,16 +66,19 @@ export default function ProjectClaimsPage() {
       const projectRes = await fetch(`/api/projects/${projectId}`)
       if (projectRes.ok) {
         const projectData = await projectRes.json()
-        setProject(projectData.project)
+        // API returns { success: true, data: { project: {...} } }
+        const proj = projectData.data?.project || projectData.project
+        setProject(proj)
 
         // Fetch contact for lat/lng (for weather evidence)
-        if (projectData.project?.contact_id) {
-          const contactRes = await fetch(`/api/contacts/${projectData.project.contact_id}`)
+        if (proj?.contact_id) {
+          const contactRes = await fetch(`/api/contacts/${proj.contact_id}`)
           if (contactRes.ok) {
             const contactData = await contactRes.json()
+            const ct = contactData.data?.contact || contactData.contact
             setContact({
-              latitude: contactData.contact?.latitude,
-              longitude: contactData.contact?.longitude,
+              latitude: ct?.latitude,
+              longitude: ct?.longitude,
             })
           }
         }
@@ -85,7 +88,8 @@ export default function ProjectClaimsPage() {
       const claimsRes = await fetch(`/api/claims?project_id=${projectId}`)
       if (claimsRes.ok) {
         const claimsData = await claimsRes.json()
-        setClaims(claimsData.claims || [])
+        // API returns { success: true, data: { claims: [...] } }
+        setClaims(claimsData.data?.claims || claimsData.claims || [])
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -225,13 +229,13 @@ export default function ProjectClaimsPage() {
                       <CardTitle className="text-xl">
                         {claim.claim_number || 'Claim in Progress'}
                       </CardTitle>
-                      <Badge className={STATUS_COLORS[claim.status]}>
-                        {STATUS_LABELS[claim.status]}
+                      <Badge className={STATUS_COLORS[claim.status || 'new']}>
+                        {STATUS_LABELS[claim.status || 'new']}
                       </Badge>
                     </div>
                     <CardDescription className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Loss Date: {format(new Date(claim.date_of_loss), 'MMM d, yyyy')}
+                      Loss Date: {claim.date_of_loss ? format(new Date(claim.date_of_loss), 'MMM d, yyyy') : 'N/A'}
                     </CardDescription>
                   </div>
                   {claim.approved_amount && (
@@ -252,16 +256,25 @@ export default function ProjectClaimsPage() {
                   </div>
                   <div>
                     <div className="text-muted-foreground">Claim Type</div>
-                    <div className="font-medium capitalize">{claim.claim_type.replace('_', ' ')}</div>
+                    <div className="font-medium capitalize">
+                      {((claim.custom_fields as Record<string, string> | undefined)?.claim_type || 'roof').replace('_', ' ')}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Property</div>
-                    <div className="font-medium">{claim.property_city}, {claim.property_state}</div>
+                    <div className="font-medium">
+                      {(() => {
+                        const cf = claim.custom_fields as Record<string, string> | undefined
+                        const city = cf?.property_city
+                        const state = cf?.property_state
+                        return city || state ? `${city || ''}${city && state ? ', ' : ''}${state || ''}` : 'N/A'
+                      })()}
+                    </div>
                   </div>
-                  {claim.initial_estimate && (
+                  {claim.estimated_damage && (
                     <div>
                       <div className="text-muted-foreground">Initial Estimate</div>
-                      <div className="font-medium">${claim.initial_estimate.toLocaleString()}</div>
+                      <div className="font-medium">${claim.estimated_damage.toLocaleString()}</div>
                     </div>
                   )}
                 </div>

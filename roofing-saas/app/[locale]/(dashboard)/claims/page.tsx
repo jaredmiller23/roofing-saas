@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet, CloudLightning, Brain } from 'lucide-react'
+import { FileText, Calendar, AlertCircle, Search, Filter, Download, FileSpreadsheet, Brain } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
@@ -64,11 +64,15 @@ export default function ClaimsPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       filtered = filtered.filter(
-        (claim) =>
-          claim.claim_number?.toLowerCase().includes(term) ||
-          claim.property_address.toLowerCase().includes(term) ||
-          claim.property_city.toLowerCase().includes(term) ||
-          claim.policy_number?.toLowerCase().includes(term)
+        (claim) => {
+          const cf = claim.custom_fields as Record<string, string> | undefined
+          return (
+            claim.claim_number?.toLowerCase().includes(term) ||
+            cf?.property_address?.toLowerCase().includes(term) ||
+            cf?.property_city?.toLowerCase().includes(term) ||
+            claim.policy_number?.toLowerCase().includes(term)
+          )
+        }
       )
     }
 
@@ -85,14 +89,14 @@ export default function ClaimsPage() {
     // Apply date range filter (date of loss)
     if (dateFromFilter) {
       const fromDate = new Date(dateFromFilter)
-      filtered = filtered.filter((claim) => new Date(claim.date_of_loss) >= fromDate)
+      filtered = filtered.filter((claim) => claim.date_of_loss && new Date(claim.date_of_loss) >= fromDate)
     }
 
     if (dateToFilter) {
       const toDate = new Date(dateToFilter)
       // Set to end of day for inclusive filtering
       toDate.setHours(23, 59, 59, 999)
-      filtered = filtered.filter((claim) => new Date(claim.date_of_loss) <= toDate)
+      filtered = filtered.filter((claim) => claim.date_of_loss && new Date(claim.date_of_loss) <= toDate)
     }
 
     setFilteredClaims(filtered)
@@ -105,14 +109,14 @@ export default function ClaimsPage() {
         const claimsRes = await fetch('/api/claims')
         if (claimsRes.ok) {
           const claimsData = await claimsRes.json()
-          setClaims(claimsData.claims || [])
+          setClaims(claimsData.data?.claims || claimsData.claims || [])
         }
 
         // Fetch projects for filter dropdown
         const projectsRes = await fetch('/api/projects')
         if (projectsRes.ok) {
           const projectsData = await projectsRes.json()
-          setProjects(projectsData.projects || [])
+          setProjects(projectsData.data?.projects || projectsData.projects || [])
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -166,20 +170,23 @@ export default function ClaimsPage() {
         'Paid Amount',
       ]
 
-      const rows = filteredClaims.map((claim) => [
-        claim.claim_number || 'N/A',
-        STATUS_LABELS[claim.status],
-        format(new Date(claim.date_of_loss), 'yyyy-MM-dd'),
-        claim.property_address,
-        claim.property_city,
-        claim.property_state,
-        claim.property_zip,
-        claim.policy_number || 'N/A',
-        claim.claim_type,
-        claim.initial_estimate?.toString() || '0',
-        claim.approved_amount?.toString() || '0',
-        claim.paid_amount?.toString() || '0',
-      ])
+      const rows = filteredClaims.map((claim) => {
+        const cf = claim.custom_fields as Record<string, string> | undefined
+        return [
+          claim.claim_number || 'N/A',
+          STATUS_LABELS[claim.status || 'new'],
+          claim.date_of_loss ? format(new Date(claim.date_of_loss), 'yyyy-MM-dd') : 'N/A',
+          cf?.property_address || 'N/A',
+          cf?.property_city || 'N/A',
+          cf?.property_state || 'N/A',
+          cf?.property_zip || 'N/A',
+          claim.policy_number || 'N/A',
+          cf?.claim_type || 'roof',
+          claim.estimated_damage?.toString() || '0',
+          claim.approved_amount?.toString() || '0',
+          claim.paid_amount?.toString() || '0',
+        ]
+      })
 
       const csvContent = [
         headers.join(','),
@@ -475,19 +482,13 @@ export default function ClaimsPage() {
                         <CardTitle className="text-xl">
                           {claim.claim_number || 'Claim in Progress'}
                         </CardTitle>
-                        <Badge className={STATUS_COLORS[claim.status]}>
-                          {STATUS_LABELS[claim.status]}
+                        <Badge className={STATUS_COLORS[claim.status || 'new']}>
+                          {STATUS_LABELS[claim.status || 'new']}
                         </Badge>
-                        {claim.storm_event_id && (
-                          <Badge variant="outline" className="text-cyan-600 border-cyan-600">
-                            <CloudLightning className="h-3 w-3 mr-1" />
-                            Weather Documented
-                          </Badge>
-                        )}
                       </div>
                       <CardDescription className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        Loss Date: {format(new Date(claim.date_of_loss), 'MMM d, yyyy')}
+                        Loss Date: {claim.date_of_loss ? format(new Date(claim.date_of_loss), 'MMM d, yyyy') : 'N/A'}
                       </CardDescription>
                     </div>
                     {claim.approved_amount && (
@@ -508,20 +509,29 @@ export default function ClaimsPage() {
                     </div>
                     <div>
                       <div className="text-muted-foreground">Claim Type</div>
-                      <div className="font-medium capitalize">{claim.claim_type.replace('_', ' ')}</div>
+                      <div className="font-medium capitalize">
+                        {((claim.custom_fields as Record<string, string> | undefined)?.claim_type || 'roof').replace('_', ' ')}
+                      </div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Property</div>
                       <div className="font-medium">
-                        {claim.property_address}
-                        <br />
-                        {claim.property_city}, {claim.property_state}
+                        {(() => {
+                          const cf = claim.custom_fields as Record<string, string> | undefined
+                          return (
+                            <>
+                              {cf?.property_address || 'N/A'}
+                              <br />
+                              {cf?.property_city || ''}{cf?.property_city && cf?.property_state ? ', ' : ''}{cf?.property_state || ''}
+                            </>
+                          )
+                        })()}
                       </div>
                     </div>
-                    {claim.initial_estimate && (
+                    {claim.estimated_damage && (
                       <div>
                         <div className="text-muted-foreground">Initial Estimate</div>
-                        <div className="font-medium">${claim.initial_estimate.toLocaleString()}</div>
+                        <div className="font-medium">${claim.estimated_damage.toLocaleString()}</div>
                       </div>
                     )}
                   </div>

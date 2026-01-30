@@ -73,9 +73,10 @@ export default function ClaimDetailPage() {
       const res = await fetch(`/api/claims/${claimId}`)
       if (res.ok) {
         const data = await res.json()
-        setClaim(data.claim)
+        // API returns { success: true, data: { claim: {...} } }
+        setClaim(data.data?.claim || data.claim)
       } else {
-        console.error('Failed to fetch claim')
+        console.error('Failed to fetch claim:', res.status)
       }
     } catch (error) {
       console.error('Error fetching claim:', error)
@@ -89,9 +90,10 @@ export default function ClaimDetailPage() {
       const res = await fetch(`/api/claims/${claimId}/documents`)
       if (res.ok) {
         const data = await res.json()
-        setDocuments(data.documents || [])
+        // API returns { success: true, data: { documents: [...] } }
+        setDocuments(data.data?.documents || data.documents || [])
       } else {
-        console.error('Failed to fetch documents')
+        // Documents endpoint may not exist yet — don't log error
       }
     } catch (error) {
       console.error('Error fetching documents:', error)
@@ -213,13 +215,17 @@ export default function ClaimDetailPage() {
               <h1 className="text-3xl font-bold">
                 {claim.claim_number || 'Claim in Progress'}
               </h1>
-              <Badge className={STATUS_COLORS[claim.status]}>
-                {STATUS_LABELS[claim.status]}
+              <Badge className={STATUS_COLORS[claim.status || 'new']}>
+                {STATUS_LABELS[claim.status || 'new']}
               </Badge>
             </div>
-            <p className="text-muted-foreground mt-1">
-              {claim.property_address}, {claim.property_city}, {claim.property_state}
-            </p>
+            {claim.custom_fields && (
+              <p className="text-muted-foreground mt-1">
+                {(claim.custom_fields as Record<string, string>).property_address}
+                {(claim.custom_fields as Record<string, string>).property_city && `, ${(claim.custom_fields as Record<string, string>).property_city}`}
+                {(claim.custom_fields as Record<string, string>).property_state && `, ${(claim.custom_fields as Record<string, string>).property_state}`}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
@@ -252,8 +258,8 @@ export default function ClaimDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {claim.initial_estimate
-                ? `$${claim.initial_estimate.toLocaleString()}`
+              {claim.estimated_damage
+                ? `$${claim.estimated_damage.toLocaleString()}`
                 : 'N/A'}
             </div>
           </CardContent>
@@ -318,13 +324,15 @@ export default function ClaimDetailPage() {
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Claim Type</div>
                 <div className="font-medium capitalize">
-                  {claim.claim_type.replace('_', ' ')}
+                  {((claim.custom_fields as Record<string, string> | undefined)?.claim_type || 'roof').replace('_', ' ')}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Date of Loss</div>
                 <div className="font-medium">
-                  {format(new Date(claim.date_of_loss), 'MMMM d, yyyy')}
+                  {claim.date_of_loss
+                    ? format(new Date(claim.date_of_loss), 'MMMM d, yyyy')
+                    : 'N/A'}
                 </div>
               </div>
               <div>
@@ -336,15 +344,15 @@ export default function ClaimDetailPage() {
                 </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Property Type</div>
-                <div className="font-medium capitalize">
-                  {claim.property_type?.replace('_', ' ') || 'N/A'}
+                <div className="text-sm text-muted-foreground mb-1">Insurance Carrier</div>
+                <div className="font-medium">
+                  {claim.insurance_carrier || 'N/A'}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Storm Event</div>
+                <div className="text-sm text-muted-foreground mb-1">Adjuster</div>
                 <div className="font-medium">
-                  {claim.storm_event_id ? 'Yes' : 'No'}
+                  {claim.adjuster_name || 'Not assigned'}
                 </div>
               </div>
             </CardContent>
@@ -355,24 +363,31 @@ export default function ClaimDetailPage() {
               <CardTitle>Property Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Address</div>
-                <div className="font-medium">{claim.property_address}</div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">City</div>
-                  <div className="font-medium">{claim.property_city}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">State</div>
-                  <div className="font-medium">{claim.property_state}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">ZIP</div>
-                  <div className="font-medium">{claim.property_zip}</div>
-                </div>
-              </div>
+              {(() => {
+                const cf = claim.custom_fields as Record<string, string> | undefined
+                return (
+                  <>
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Address</div>
+                      <div className="font-medium">{cf?.property_address || 'N/A'}</div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">City</div>
+                        <div className="font-medium">{cf?.property_city || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">State</div>
+                        <div className="font-medium">{cf?.property_state || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-1">ZIP</div>
+                        <div className="font-medium">{cf?.property_zip || 'N/A'}</div>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
@@ -395,7 +410,9 @@ export default function ClaimDetailPage() {
                 <div className="flex-1">
                   <div className="font-medium">Date of Loss</div>
                   <div className="text-sm text-muted-foreground">
-                    {format(new Date(claim.date_of_loss), 'MMMM d, yyyy')}
+                    {claim.date_of_loss
+                      ? format(new Date(claim.date_of_loss), 'MMMM d, yyyy')
+                      : 'N/A'}
                   </div>
                 </div>
               </div>
@@ -416,7 +433,7 @@ export default function ClaimDetailPage() {
               )}
 
               {/* Acknowledgment */}
-              {claim.acknowledgment_received && (
+              {claim.acknowledgment_date && (
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/10">
                     <CheckCircle className="h-4 w-4 text-secondary" />
@@ -424,14 +441,14 @@ export default function ClaimDetailPage() {
                   <div className="flex-1">
                     <div className="font-medium">Acknowledgment Received</div>
                     <div className="text-sm text-muted-foreground">
-                      {format(new Date(claim.acknowledgment_received), 'MMMM d, yyyy')}
+                      {format(new Date(claim.acknowledgment_date), 'MMMM d, yyyy')}
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Inspection Scheduled */}
-              {claim.inspection_scheduled && (
+              {claim.inspection_scheduled_at && (
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100">
                     <Clock className="h-4 w-4 text-yellow-600" />
@@ -439,14 +456,14 @@ export default function ClaimDetailPage() {
                   <div className="flex-1">
                     <div className="font-medium">Inspection Scheduled</div>
                     <div className="text-sm text-muted-foreground">
-                      {format(new Date(claim.inspection_scheduled), 'MMMM d, yyyy')}
+                      {format(new Date(claim.inspection_scheduled_at), 'MMMM d, yyyy')}
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Inspection Completed */}
-              {claim.inspection_completed && (
+              {claim.inspection_completed_at && (
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
                     <CheckCircle className="h-4 w-4 text-green-600" />
@@ -454,7 +471,7 @@ export default function ClaimDetailPage() {
                   <div className="flex-1">
                     <div className="font-medium">Inspection Completed</div>
                     <div className="text-sm text-muted-foreground">
-                      {format(new Date(claim.inspection_completed), 'MMMM d, yyyy')}
+                      {format(new Date(claim.inspection_completed_at), 'MMMM d, yyyy')}
                     </div>
                   </div>
                 </div>

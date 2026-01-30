@@ -108,13 +108,14 @@ export async function POST(request: NextRequest) {
         yPosition = pageHeight - margin
       }
 
+      const cf = claim.custom_fields as Record<string, string> | undefined
       const row = [
         { text: claim.claim_number || 'N/A', x: margin },
-        { text: STATUS_LABELS[claim.status] || claim.status, x: margin + 80 },
-        { text: new Date(claim.date_of_loss).toLocaleDateString(), x: margin + 160 },
-        { text: truncateText(claim.property_address, 25), x: margin + 240 },
-        { text: `${claim.property_city}, ${claim.property_state}`, x: margin + 390 },
-        { text: claim.initial_estimate ? `$${claim.initial_estimate.toLocaleString()}` : '$0', x: margin + 510 },
+        { text: STATUS_LABELS[claim.status || 'new'] || claim.status || 'new', x: margin + 80 },
+        { text: claim.date_of_loss ? new Date(claim.date_of_loss).toLocaleDateString() : 'N/A', x: margin + 160 },
+        { text: truncateText(cf?.property_address || 'N/A', 25), x: margin + 240 },
+        { text: `${cf?.property_city || ''}, ${cf?.property_state || ''}`, x: margin + 390 },
+        { text: claim.estimated_damage ? `$${claim.estimated_damage.toLocaleString()}` : '$0', x: margin + 510 },
         { text: claim.approved_amount ? `$${claim.approved_amount.toLocaleString()}` : '$0', x: margin + 580 },
       ]
 
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
       yPosition = pageHeight - margin
     }
 
-    const totalInitialEstimate = claims.reduce((sum, c) => sum + (c.initial_estimate || 0), 0)
+    const totalInitialEstimate = claims.reduce((sum, c) => sum + (c.estimated_damage || 0), 0)
     const totalApproved = claims.reduce((sum, c) => sum + (c.approved_amount || 0), 0)
     const totalPaid = claims.reduce((sum, c) => sum + (c.paid_amount || 0), 0)
 

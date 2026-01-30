@@ -107,7 +107,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
   const [updating, setUpdating] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  const currentStatus = claim.status
+  const currentStatus = claim.status || 'new'
   const possibleTransitions = STATUS_TRANSITIONS[currentStatus] || []
 
   const validateTransition = (newStatus: ClaimStatus): string | null => {
@@ -219,16 +219,16 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">Available Actions</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {possibleTransitions.map((status) => {
-                  const info = STATUS_INFO[status]
+                {possibleTransitions.map((nextStatus) => {
+                  const info = STATUS_INFO[nextStatus]
                   const Icon = info.icon
-                  const error = validateTransition(status)
+                  const error = validateTransition(nextStatus)
 
                   return (
                     <Button
-                      key={status}
+                      key={nextStatus}
                       variant="outline"
-                      onClick={() => handleStatusClick(status)}
+                      onClick={() => handleStatusClick(nextStatus)}
                       className="h-auto p-4 flex items-start gap-3 justify-start"
                       disabled={!!error && error.includes('required')}
                     >
