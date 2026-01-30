@@ -36,25 +36,30 @@ export async function addPhotoToQueue(
 
     console.log(`✅ Photo ${localId} added to queue`);
 
-    // Trigger background sync if available
+    // Trigger background sync (non-blocking - photo is already safely queued)
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        if ('sync' in registration) {
-          await (registration as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register('photo-sync');
-          console.log('📡 Background sync registered');
-        } else {
-          // Fallback: process immediately if online
+      const syncTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Service worker ready timeout')), 3000)
+      );
+
+      Promise.race([navigator.serviceWorker.ready, syncTimeout])
+        .then(registration => {
+          if ('sync' in registration) {
+            return (registration as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register('photo-sync');
+          } else if (navigator.onLine) {
+            return processPhotoQueue();
+          }
+        })
+        .then(() => console.log('📡 Background sync registered'))
+        .catch(error => {
+          console.warn('Background sync not available, using fallback:', error);
           if (navigator.onLine) {
             processPhotoQueue().catch(console.error);
           }
-        }
-      } catch (error) {
-        console.warn('Background sync not available, using fallback:', error);
-        if (navigator.onLine) {
-          processPhotoQueue().catch(console.error);
-        }
-      }
+        });
+    } else if (typeof window !== 'undefined' && navigator.onLine) {
+      // No service worker support - process immediately
+      processPhotoQueue().catch(console.error);
     }
 
     return localId;
