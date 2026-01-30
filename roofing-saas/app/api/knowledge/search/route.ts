@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateEmbedding } from '@/lib/embeddings'
+import { incrementAiUsage, calculateEmbeddingCostCents } from '@/lib/billing/ai-usage'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -38,6 +39,14 @@ export async function POST(request: NextRequest) {
 
     if (!embeddingResult) {
       throw InternalError('Failed to generate query embedding')
+    }
+
+    // Track embedding token usage (fire-and-forget)
+    if (embeddingResult.tokens > 0) {
+      const costCents = calculateEmbeddingCostCents(embeddingResult.tokens)
+      incrementAiUsage(tenantId, embeddingResult.tokens, costCents).catch(err =>
+        logger.error('Failed to track embedding usage', { error: err })
+      )
     }
 
     // Search using database function

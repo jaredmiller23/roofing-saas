@@ -68,6 +68,11 @@ export async function GET(_request: NextRequest) {
           remaining: emailLimit.remaining,
           canSend: emailLimit.allowed,
         },
+        ai: {
+          tokens: current.aiTokens,
+          costCents: current.aiCostCents,
+          costDollars: current.aiCostCents / 100,
+        },
       },
       resetAt: current.resetAt,
     });

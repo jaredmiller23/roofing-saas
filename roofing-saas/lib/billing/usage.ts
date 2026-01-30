@@ -166,6 +166,8 @@ async function resetUsageIfNeeded(tenantId: string): Promise<boolean> {
       .update({
         sms_used_this_month: 0,
         emails_used_this_month: 0,
+        ai_tokens_used_this_month: 0,
+        ai_cost_this_month_cents: 0,
         usage_reset_at: now.toISOString(),
       })
       .eq('tenant_id', tenantId);
@@ -188,6 +190,8 @@ export async function resetUsageCounters(tenantId: string): Promise<void> {
     .update({
       sms_used_this_month: 0,
       emails_used_this_month: 0,
+      ai_tokens_used_this_month: 0,
+      ai_cost_this_month_cents: 0,
       usage_reset_at: new Date().toISOString(),
     })
     .eq('tenant_id', tenantId);
@@ -206,6 +210,8 @@ export async function getCurrentUsage(tenantId: string): Promise<{
   sms: number;
   emails: number;
   users: number;
+  aiTokens: number;
+  aiCostCents: number;
   resetAt: string | null;
 }> {
   const supabase = await createAdminClient();
@@ -213,7 +219,7 @@ export async function getCurrentUsage(tenantId: string): Promise<{
   const { data } = await supabase
     .from('subscriptions')
     .select(
-      'sms_used_this_month, emails_used_this_month, users_count, usage_reset_at'
+      'sms_used_this_month, emails_used_this_month, users_count, ai_tokens_used_this_month, ai_cost_this_month_cents, usage_reset_at'
     )
     .eq('tenant_id', tenantId)
     .single();
@@ -222,6 +228,8 @@ export async function getCurrentUsage(tenantId: string): Promise<{
     sms: data?.sms_used_this_month || 0,
     emails: data?.emails_used_this_month || 0,
     users: data?.users_count || 0,
+    aiTokens: data?.ai_tokens_used_this_month || 0,
+    aiCostCents: data?.ai_cost_this_month_cents || 0,
     resetAt: data?.usage_reset_at || null,
   };
 }

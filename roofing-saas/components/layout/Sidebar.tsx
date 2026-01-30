@@ -26,6 +26,8 @@ import {
   RefreshCw,
   Lock,
   Voicemail,
+  BookOpen,
+  Bot,
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
@@ -84,6 +86,13 @@ const navSections: NavSection[] = [
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/campaigns', label: 'Campaigns', icon: Mail, feature: 'campaigns' },
       { href: '/automations', label: 'Automations', icon: RefreshCw },
+    ]
+  },
+  {
+    label: 'AI',
+    items: [
+      { href: '/aria/knowledge', label: 'Knowledge Base', icon: BookOpen },
+      { href: '/aria/approvals', label: 'Approvals', icon: Bot },
     ]
   },
   {

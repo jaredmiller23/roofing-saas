@@ -4,6 +4,7 @@
  *
  * Uses OpenAI chat completions (streaming) with ARIA functions as tools.
  * Handles tool calls inline — executes via ariaOrchestrator, then continues.
+ * Persists conversations and messages to ai_conversations / ai_messages tables.
  */
 
 import { NextRequest } from 'next/server'
@@ -20,6 +21,8 @@ import { buildARIAContext, ariaFunctionRegistry, executeARIAFunction } from '@/l
 import { getARIASystemPrompt } from '@/lib/aria/orchestrator'
 import { openai, getOpenAIModel } from '@/lib/ai/openai-client'
 import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
+import { createConversation, saveMessage, updateConversationTitle, generateTitle } from '@/lib/aria/persistence'
+import { incrementAiUsage, calculateChatCostCents } from '@/lib/billing/ai-usage'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
 
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: ChatRequest = await request.json()
-    const { message, history, context } = body
+    const { message, conversation_id, history, context } = body
 
     if (!message?.trim()) {
       throw ValidationError('message is required')
@@ -67,7 +70,24 @@ export async function POST(request: NextRequest) {
       tenantId,
       messageLength: message.length,
       historyLength: history?.length || 0,
+      conversationId: conversation_id || 'new',
     })
+
+    // Resolve or create conversation
+    let conversationId = conversation_id || null
+    let isNewConversation = false
+
+    if (!conversationId) {
+      conversationId = await createConversation(tenantId, user.id)
+      isNewConversation = true
+    }
+
+    // Save user message (fire-and-forget for persistence, don't block streaming)
+    if (conversationId) {
+      saveMessage(conversationId, 'user', message).catch(err =>
+        logger.error('Failed to persist user message', { error: err })
+      )
+    }
 
     // Build ARIA context
     const supabase = await createClient()
@@ -106,8 +126,16 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Emit conversation_id so the client can track it
+          if (conversationId) {
+            const convEvent = JSON.stringify({ type: 'conversation_id', id: conversationId })
+            controller.enqueue(encoder.encode(`data: ${convEvent}\n\n`))
+          }
+
           const conversationMessages: ChatCompletionMessageParam[] = [...messages]
           let continueLoop = true
+          let finalAssistantContent = ''
+          let sessionTotalTokens = 0
 
           while (continueLoop) {
             continueLoop = false
@@ -117,6 +145,7 @@ export async function POST(request: NextRequest) {
               messages: conversationMessages,
               tools: tools.length > 0 ? tools : undefined,
               stream: true,
+              stream_options: { include_usage: true },
             })
 
             let accumulatedContent = ''
@@ -124,6 +153,7 @@ export async function POST(request: NextRequest) {
               id: string
               function: { name: string; arguments: string }
             }> = []
+            let totalTokens = 0
 
             for await (const chunk of completion) {
               const delta = chunk.choices[0]?.delta
@@ -150,6 +180,12 @@ export async function POST(request: NextRequest) {
                     if (tc.function?.arguments) toolCalls[tc.index].function.arguments += tc.function.arguments
                   }
                 }
+              }
+
+              // Capture usage from final chunk
+              if (chunk.usage) {
+                totalTokens += chunk.usage.total_tokens
+                sessionTotalTokens += chunk.usage.total_tokens
               }
             }
 
@@ -195,6 +231,18 @@ export async function POST(request: NextRequest) {
                 })
                 controller.enqueue(encoder.encode(`data: ${fnResult}\n\n`))
 
+                // Persist function call message
+                if (conversationId) {
+                  saveMessage(
+                    conversationId,
+                    'function',
+                    JSON.stringify(result),
+                    { name: fnName, parameters: fnArgs, result },
+                  ).catch(err =>
+                    logger.error('Failed to persist function message', { error: err })
+                  )
+                }
+
                 // Add tool result to messages
                 conversationMessages.push({
                   role: 'tool',
@@ -205,7 +253,39 @@ export async function POST(request: NextRequest) {
 
               // Continue the loop to get the model's response after tool execution
               continueLoop = true
+            } else {
+              // Final text response (no more tool calls)
+              finalAssistantContent = accumulatedContent
             }
+
+            // Emit token usage for the client
+            if (totalTokens > 0) {
+              const usageEvent = JSON.stringify({ type: 'usage', total_tokens: totalTokens })
+              controller.enqueue(encoder.encode(`data: ${usageEvent}\n\n`))
+            }
+          }
+
+          // Persist final assistant message
+          if (conversationId && finalAssistantContent) {
+            saveMessage(conversationId, 'assistant', finalAssistantContent).catch(err =>
+              logger.error('Failed to persist assistant message', { error: err })
+            )
+          }
+
+          // Auto-set title from first message for new conversations
+          if (isNewConversation && conversationId) {
+            const title = generateTitle(message)
+            updateConversationTitle(conversationId, title).catch(err =>
+              logger.error('Failed to set conversation title', { error: err })
+            )
+          }
+
+          // Track AI token usage (fire-and-forget)
+          if (sessionTotalTokens > 0) {
+            const costCents = calculateChatCostCents(sessionTotalTokens)
+            incrementAiUsage(tenantId, sessionTotalTokens, costCents).catch(err =>
+              logger.error('Failed to track AI usage', { error: err })
+            )
           }
 
           // Signal done

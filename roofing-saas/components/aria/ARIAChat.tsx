@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { X, Send, Loader2, Bot, User, Wrench } from 'lucide-react'
+import { X, Send, Loader2, Bot, User, Wrench, History, Plus } from 'lucide-react'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 
 interface ARIAChatProps {
@@ -18,15 +18,27 @@ interface ChatMessage {
   timestamp: Date
 }
 
+interface ConversationSummary {
+  id: string
+  title: string | null
+  updated_at: string
+}
+
 /**
  * ARIA Chat Panel
  * Slide-over panel for text-chatting with ARIA.
  * Streams responses via server-sent events from /api/aria/chat.
+ * Supports persistent conversations with history.
  */
 export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [conversations, setConversations] = useState<ConversationSummary[]>([])
+  const [showConversationList, setShowConversationList] = useState(false)
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -41,6 +53,66 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
       setTimeout(() => inputRef.current?.focus(), 300)
     }
   }, [isOpen])
+
+  const fetchConversations = useCallback(async () => {
+    setIsLoadingConversations(true)
+    try {
+      const res = await fetch('/api/ai/conversations?limit=20')
+      if (res.ok) {
+        const data = await res.json()
+        setConversations(data.data?.conversations || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch conversations:', err)
+    } finally {
+      setIsLoadingConversations(false)
+    }
+  }, [])
+
+  // Fetch conversations when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchConversations()
+    }
+  }, [isOpen, fetchConversations])
+
+  const loadConversation = useCallback(async (conversationId: string) => {
+    setIsLoadingMessages(true)
+    setShowConversationList(false)
+    try {
+      const res = await fetch(`/api/ai/conversations/${conversationId}/messages?limit=100`)
+      if (res.ok) {
+        const data = await res.json()
+        const apiMessages = data.data?.messages || []
+
+        // Map API messages to local ChatMessage format
+        const mapped: ChatMessage[] = apiMessages
+          .filter((m: { role: string }) => m.role !== 'system')
+          .map((m: { id: string; role: string; content: string; function_call?: { name: string }; created_at: string }) => ({
+            id: m.id,
+            role: m.role === 'function' ? 'function' : m.role,
+            content: m.content,
+            functionName: m.function_call?.name,
+            functionSuccess: m.role === 'function' ? true : undefined,
+            timestamp: new Date(m.created_at),
+          }))
+
+        setMessages(mapped)
+        setActiveConversationId(conversationId)
+      }
+    } catch (err) {
+      console.error('Failed to load conversation:', err)
+    } finally {
+      setIsLoadingMessages(false)
+    }
+  }, [])
+
+  const startNewChat = useCallback(() => {
+    setActiveConversationId(null)
+    setMessages([])
+    setShowConversationList(false)
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }, [])
 
   // Build conversation history for the API (excludes function-result display messages)
   const buildHistory = useCallback((): ChatCompletionMessageParam[] => {
@@ -82,6 +154,7 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
+          conversation_id: activeConversationId || undefined,
           history: buildHistory(),
         }),
       })
@@ -115,7 +188,10 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
           try {
             const parsed = JSON.parse(data)
 
-            if (parsed.type === 'text') {
+            if (parsed.type === 'conversation_id') {
+              // Track the conversation ID from the server
+              setActiveConversationId(parsed.id)
+            } else if (parsed.type === 'text') {
               // Append text to the current assistant message
               setMessages(prev => prev.map(m =>
                 m.id === assistantId
@@ -154,6 +230,9 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
           }
         }
       }
+
+      // Refresh conversation list after a new message
+      fetchConversations()
     } catch (error) {
       console.error('Chat error:', error)
       setMessages(prev => prev.map(m =>
@@ -164,7 +243,7 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
     } finally {
       setIsStreaming(false)
     }
-  }, [input, isStreaming, buildHistory])
+  }, [input, isStreaming, buildHistory, activeConversationId, fetchConversations])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -200,18 +279,81 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
               <p className="text-xs text-muted-foreground">AI Assistant</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
-            aria-label="Close chat"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={startNewChat}
+              className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+              aria-label="New chat"
+              title="New chat"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => setShowConversationList(!showConversationList)}
+              className={`p-1.5 rounded-lg transition-colors ${
+                showConversationList ? 'bg-primary/10 text-primary' : 'hover:bg-muted/50 text-muted-foreground'
+              }`}
+              aria-label="Conversation history"
+              title="Conversation history"
+            >
+              <History className="h-4 w-4" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+              aria-label="Close chat"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
+
+        {/* Conversation List Dropdown */}
+        {showConversationList && (
+          <div className="border-b border-border bg-card max-h-60 overflow-y-auto">
+            {isLoadingConversations ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="py-4 text-center text-xs text-muted-foreground">
+                No conversations yet
+              </div>
+            ) : (
+              <div className="py-1">
+                {conversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    onClick={() => loadConversation(conv.id)}
+                    className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-muted/50 ${
+                      conv.id === activeConversationId ? 'bg-primary/10 text-primary' : 'text-foreground'
+                    }`}
+                  >
+                    <div className="truncate font-medium">
+                      {conv.title || 'Untitled conversation'}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(conv.updated_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-          {messages.length === 0 && (
+          {isLoadingMessages ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="p-3 rounded-full bg-primary/10 mb-3">
                 <Bot className="h-8 w-8 text-primary" />
@@ -221,57 +363,57 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
                 Ask about contacts, projects, schedule appointments, or get business insights.
               </p>
             </div>
-          )}
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id}>
+                {msg.role === 'user' && (
+                  <div className="flex justify-end">
+                    <div className="flex items-start gap-2 max-w-[85%]">
+                      <div className="bg-primary text-primary-foreground rounded-lg px-3 py-2 text-sm">
+                        {msg.content}
+                      </div>
+                      <div className="flex-shrink-0 p-1 rounded-full bg-muted">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {messages.map((msg) => (
-            <div key={msg.id}>
-              {msg.role === 'user' && (
-                <div className="flex justify-end">
-                  <div className="flex items-start gap-2 max-w-[85%]">
-                    <div className="bg-primary text-primary-foreground rounded-lg px-3 py-2 text-sm">
+                {msg.role === 'assistant' && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start gap-2 max-w-[85%]">
+                      <div className="flex-shrink-0 p-1 rounded-full bg-primary/10">
+                        <Bot className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div className="bg-muted/50 text-foreground rounded-lg px-3 py-2 text-sm whitespace-pre-wrap">
+                        {msg.content || (
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Thinking...
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {msg.role === 'function' && (
+                  <div className="flex justify-center">
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${
+                      msg.functionSuccess === true
+                        ? 'bg-green-500/10 text-green-400'
+                        : msg.functionSuccess === false
+                        ? 'bg-red-500/10 text-red-400'
+                        : 'bg-muted/50 text-muted-foreground'
+                    }`}>
+                      <Wrench className="h-3 w-3" />
                       {msg.content}
                     </div>
-                    <div className="flex-shrink-0 p-1 rounded-full bg-muted">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
                   </div>
-                </div>
-              )}
-
-              {msg.role === 'assistant' && (
-                <div className="flex justify-start">
-                  <div className="flex items-start gap-2 max-w-[85%]">
-                    <div className="flex-shrink-0 p-1 rounded-full bg-primary/10">
-                      <Bot className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div className="bg-muted/50 text-foreground rounded-lg px-3 py-2 text-sm whitespace-pre-wrap">
-                      {msg.content || (
-                        <span className="flex items-center gap-1 text-muted-foreground">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Thinking...
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {msg.role === 'function' && (
-                <div className="flex justify-center">
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${
-                    msg.functionSuccess === true
-                      ? 'bg-green-500/10 text-green-400'
-                      : msg.functionSuccess === false
-                      ? 'bg-red-500/10 text-red-400'
-                      : 'bg-muted/50 text-muted-foreground'
-                  }`}>
-                    <Wrench className="h-3 w-3" />
-                    {msg.content}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -285,7 +427,7 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask ARIA anything..."
-              disabled={isStreaming}
+              disabled={isStreaming || isLoadingMessages}
               className="flex-1 bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
             />
             <button

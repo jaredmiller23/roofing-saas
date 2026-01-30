@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateKnowledgeEmbedding } from '@/lib/embeddings'
+import { incrementAiUsage, calculateEmbeddingCostCents } from '@/lib/billing/ai-usage'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
@@ -110,6 +111,13 @@ export async function POST(request: NextRequest) {
       const embeddingResult = await generateKnowledgeEmbedding(title, content)
       if (embeddingResult) {
         embedding = JSON.stringify(embeddingResult.embedding)
+        // Track embedding token usage (fire-and-forget)
+        if (embeddingResult.tokens > 0) {
+          const costCents = calculateEmbeddingCostCents(embeddingResult.tokens)
+          incrementAiUsage(tenantId, embeddingResult.tokens, costCents).catch(err =>
+            logger.error('Failed to track embedding usage', { error: err })
+          )
+        }
       }
     }
 
@@ -193,6 +201,13 @@ export async function PATCH(request: NextRequest) {
         const embeddingResult = await generateKnowledgeEmbedding(title, content)
         if (embeddingResult) {
           updates.embedding = JSON.stringify(embeddingResult.embedding)
+          // Track embedding token usage (fire-and-forget)
+          if (embeddingResult.tokens > 0) {
+            const costCents = calculateEmbeddingCostCents(embeddingResult.tokens)
+            incrementAiUsage(tenantId, embeddingResult.tokens, costCents).catch(err =>
+              logger.error('Failed to track embedding usage', { error: err })
+            )
+          }
         }
       }
     }

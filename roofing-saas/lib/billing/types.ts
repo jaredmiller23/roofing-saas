@@ -88,6 +88,8 @@ export interface Subscription {
   users_count: number;
   sms_used_this_month: number;
   emails_used_this_month: number;
+  ai_tokens_used_this_month: number;
+  ai_cost_this_month_cents: number;
   usage_reset_at: string | null;
 
   // Timestamps
