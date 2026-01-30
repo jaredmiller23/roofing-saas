@@ -56,7 +56,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // CSS-in-JS + Google Fonts
           "img-src 'self' data: blob: https://api.jobclarity.io https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com", // Supabase + Google Maps tiles
           "font-src 'self' data: https://fonts.gstatic.com",
-          "connect-src 'self' https://api.jobclarity.io wss://api.jobclarity.io https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API
+          "connect-src 'self' blob: https://api.jobclarity.io wss://api.jobclarity.io https://*.googleapis.com https://*.google.com", // Supabase + Google Maps API + PDF blob URLs
           "worker-src 'self' blob: https://unpkg.com", // Service workers + PDF.js worker
           "child-src 'self' blob:", // Web workers and service workers
           "frame-src https://*.google.com", // Google Maps iframes if needed
