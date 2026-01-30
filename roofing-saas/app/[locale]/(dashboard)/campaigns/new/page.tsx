@@ -44,7 +44,7 @@ export default function NewCampaignPage() {
       }
 
       const data = await response.json()
-      router.push(`/campaigns/${data.campaign.id}/builder`)
+      router.push(`/campaigns/${data.data.campaign.id}/builder`)
     } catch (error) {
       console.error('Error creating campaign:', error)
       alert('Failed to create campaign. Please try again.')
