@@ -4,18 +4,20 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Plus, Pencil, Trash2, GripVertical } from 'lucide-react'
+import { CheckCircle, Pencil, GripVertical, Info } from 'lucide-react'
 
 interface PipelineStage {
   id: string
+  stage_key: string
   name: string
   description: string | null
   color: string
   icon: string | null
   stage_order: number
-  stage_type: 'open' | 'won' | 'lost'
+  stage_type: 'active' | 'won' | 'lost'
   win_probability: number
-  auto_actions: Record<string, unknown> | null
+  is_active: boolean
+  is_default: boolean
 }
 
 export function PipelineSettings() {
@@ -25,14 +27,13 @@ export function PipelineSettings() {
   const [error, setError] = useState<string | null>(null)
   const [stages, setStages] = useState<PipelineStage[]>([])
   const [editingStage, setEditingStage] = useState<PipelineStage | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     color: '#3B82F6',
     icon: '',
-    stage_type: 'open' as 'open' | 'won' | 'lost',
+    stage_type: 'active' as 'active' | 'won' | 'lost',
     win_probability: 0
   })
 
@@ -45,7 +46,6 @@ export function PipelineSettings() {
       setLoading(true)
       const res = await fetch('/api/settings/pipeline-stages')
       const data = await res.json()
-      // API returns { success: true, data: { stages: [...] } }
       setStages(data.data?.stages || [])
     } catch (err) {
       console.error('Error loading pipeline stages:', err)
@@ -56,44 +56,34 @@ export function PipelineSettings() {
   }
 
   const handleSave = async () => {
+    if (!editingStage) return
+
     try {
       setSaving(true)
       setError(null)
 
-      const url = editingStage
-        ? `/api/settings/pipeline-stages/${editingStage.id}`
-        : '/api/settings/pipeline-stages'
-
-      const method = editingStage ? 'PATCH' : 'POST'
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(`/api/settings/pipeline-stages/${editingStage.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          stage_order: editingStage ? editingStage.stage_order : stages.length
+          name: formData.name,
+          description: formData.description || null,
+          color: formData.color,
+          icon: formData.icon || null,
+          stage_type: formData.stage_type,
+          win_probability: formData.win_probability
         })
       })
 
       if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to save stage')
+        const errorData = await res.json()
+        throw new Error(errorData.error?.message || 'Failed to save stage')
       }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
 
-      // Reset form and reload
-      setFormData({
-        name: '',
-        description: '',
-        color: '#3B82F6',
-        icon: '',
-        stage_type: 'open',
-        win_probability: 0
-      })
       setEditingStage(null)
-      setShowAddForm(false)
       loadStages()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save stage')
@@ -112,39 +102,16 @@ export function PipelineSettings() {
       stage_type: stage.stage_type,
       win_probability: stage.win_probability
     })
-    setShowAddForm(true)
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this stage?')) return
-
-    try {
-      const res = await fetch(`/api/settings/pipeline-stages/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to delete stage')
-      }
-
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-      loadStages()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete stage')
-    }
   }
 
   const handleCancelEdit = () => {
     setEditingStage(null)
-    setShowAddForm(false)
     setFormData({
       name: '',
       description: '',
       color: '#3B82F6',
       icon: '',
-      stage_type: 'open',
+      stage_type: 'active',
       win_probability: 0
     })
   }
@@ -159,12 +126,20 @@ export function PipelineSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Info Banner */}
+      <Alert className="bg-primary/5 border-primary/20">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-muted-foreground">
+          Pipeline stages are linked to your project workflow. You can customize display names, colors, and win probabilities for each stage.
+        </AlertDescription>
+      </Alert>
+
       {/* Success Message */}
       {success && (
         <Alert className="bg-chart-2/10 border-chart-2/30">
           <CheckCircle className="h-4 w-4 text-chart-2" />
           <AlertDescription className="text-foreground">
-            Pipeline stage saved successfully!
+            Pipeline stage updated successfully!
           </AlertDescription>
         </Alert>
       )}
@@ -180,13 +155,6 @@ export function PipelineSettings() {
       <div className="bg-card rounded-lg border border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">Sales Pipeline Stages</h3>
-          <Button
-            onClick={() => setShowAddForm(true)}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Stage
-          </Button>
         </div>
 
         {/* Visual Pipeline */}
@@ -194,11 +162,12 @@ export function PipelineSettings() {
           {stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center">
               <div
-                className="relative group min-w-[180px] p-4 rounded-lg border-2 text-white"
+                className="relative group min-w-[180px] p-4 rounded-lg border-2 text-white cursor-pointer"
                 style={{
                   backgroundColor: stage.color,
                   borderColor: stage.color
                 }}
+                onClick={() => handleEdit(stage)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -213,65 +182,71 @@ export function PipelineSettings() {
                   <GripVertical className="h-4 w-4 opacity-50" />
                 </div>
 
-                {/* Edit/Delete buttons on hover */}
+                {/* Edit button on hover */}
                 <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
                   <button
-                    onClick={() => handleEdit(stage)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(stage)
+                    }}
                     className="p-1 bg-card/20 hover:bg-card/30 rounded"
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(stage.id)}
-                    className="p-1 bg-card/20 hover:bg-card/30 rounded"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
                 </div>
               </div>
               {index < stages.length - 1 && (
-                <div className="text-muted-foreground px-2">→</div>
+                <div className="text-muted-foreground px-2">&rarr;</div>
               )}
             </div>
           ))}
-
-          {stages.length === 0 && (
-            <div className="text-muted-foreground text-sm py-8 text-center w-full">
-              No pipeline stages configured. Add your first stage to get started.
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Add/Edit Form */}
-      {showAddForm && (
+      {/* Edit Form */}
+      {editingStage && (
         <div className="bg-card rounded-lg border border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            {editingStage ? 'Edit Stage' : 'Add New Stage'}
+            Edit Stage: {editingStage.name}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Stage Key (read-only) */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Stage Name *
+                Stage Key
+              </label>
+              <Input
+                value={editingStage.stage_key}
+                disabled
+                className="bg-muted/30 text-muted-foreground"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                System identifier — cannot be changed
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Display Name *
               </label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Lead, Qualified, Proposal"
+                placeholder="e.g., Prospect, Qualified, Quote Sent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Stage Type *
+                Stage Type
               </label>
               <select
                 value={formData.stage_type}
-                onChange={(e) => setFormData({ ...formData, stage_type: e.target.value as 'open' | 'won' | 'lost' })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                onChange={(e) => setFormData({ ...formData, stage_type: e.target.value as 'active' | 'won' | 'lost' })}
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
               >
-                <option value="open">Open (Active)</option>
+                <option value="active">Active</option>
                 <option value="won">Won (Closed Won)</option>
                 <option value="lost">Lost (Closed Lost)</option>
               </select>
@@ -311,20 +286,7 @@ export function PipelineSettings() {
               </div>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                placeholder="Brief description of this stage..."
-              />
-            </div>
-
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Icon (optional)
               </label>
@@ -333,9 +295,19 @@ export function PipelineSettings() {
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                 placeholder="e.g., star, check, x (lucide icon name)"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter a Lucide icon name for visual representation
-              </p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
+                placeholder="Brief description of this stage..."
+              />
             </div>
           </div>
 
@@ -351,20 +323,21 @@ export function PipelineSettings() {
               disabled={saving || !formData.name}
               className="bg-primary hover:bg-primary/90"
             >
-              {saving ? 'Saving...' : editingStage ? 'Update Stage' : 'Add Stage'}
+              {saving ? 'Saving...' : 'Update Stage'}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Stage List (Table View) */}
-      {stages.length > 0 && !showAddForm && (
+      {/* Stage List (Table View) — shown when not editing */}
+      {stages.length > 0 && !editingStage && (
         <div className="bg-card rounded-lg border border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-muted">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Order</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Stage</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Key</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Win Probability</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Color</th>
@@ -373,7 +346,7 @@ export function PipelineSettings() {
             </thead>
             <tbody className="bg-card divide-y divide-border">
               {stages.map((stage) => (
-                <tr key={stage.id}>
+                <tr key={stage.id} className="hover:bg-muted/10 cursor-pointer" onClick={() => handleEdit(stage)}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {stage.stage_order + 1}
                   </td>
@@ -382,6 +355,11 @@ export function PipelineSettings() {
                     {stage.description && (
                       <div className="text-sm text-muted-foreground">{stage.description}</div>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <code className="text-xs bg-muted/30 px-2 py-1 rounded text-muted-foreground">
+                      {stage.stage_key}
+                    </code>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -406,16 +384,13 @@ export function PipelineSettings() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => handleEdit(stage)}
-                      className="text-primary hover:text-primary/80 mr-4"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEdit(stage)
+                      }}
+                      className="text-primary hover:text-primary/80"
                     >
                       Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(stage.id)}
-                      className="text-destructive hover:text-destructive/80"
-                    >
-                      Delete
                     </button>
                   </td>
                 </tr>

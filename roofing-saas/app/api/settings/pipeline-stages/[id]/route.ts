@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * PATCH /api/settings/pipeline-stages/[id]
- * Update a pipeline stage
+ * Update a pipeline stage's display properties.
+ * Only updates fields explicitly provided in the request body.
  */
 export async function PATCH(
   request: Request,
@@ -27,20 +28,44 @@ export async function PATCH(
     const body = await request.json()
     const supabase = await createClient()
 
+    // Prevent changing stage_key (immutable link to enum)
+    if (body.stage_key !== undefined) {
+      throw ValidationError('stage_key cannot be modified')
+    }
+
+    // Build update object with only provided fields
+    const allowedFields = [
+      'name', 'description', 'color', 'icon',
+      'stage_order', 'stage_type', 'win_probability'
+    ] as const
+
+    const updateData: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field]
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      throw ValidationError('No valid fields to update')
+    }
+
+    // Validate stage_type if provided
+    if (updateData.stage_type && !['active', 'won', 'lost'].includes(updateData.stage_type as string)) {
+      throw ValidationError('stage_type must be active, won, or lost')
+    }
+
+    // Validate win_probability if provided
+    if (updateData.win_probability !== undefined) {
+      const prob = updateData.win_probability as number
+      if (prob < 0 || prob > 100) {
+        throw ValidationError('win_probability must be between 0 and 100')
+      }
+    }
+
     const { data: stage, error } = await supabase
       .from('pipeline_stages')
-      .update({
-        name: body.name,
-        description: body.description,
-        color: body.color,
-        icon: body.icon,
-        stage_order: body.stage_order,
-        stage_type: body.stage_type,
-        win_probability: body.win_probability,
-        auto_actions: body.auto_actions,
-        is_active: body.is_active,
-        is_default: body.is_default
-      })
+      .update(updateData)
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .select()
@@ -63,39 +88,10 @@ export async function PATCH(
 
 /**
  * DELETE /api/settings/pipeline-stages/[id]
- * Delete a pipeline stage
+ * Core pipeline stages cannot be deleted (they are tied to the PostgreSQL enum).
  */
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
-    const { id } = await params
-    const supabase = await createClient()
-
-    const { error } = await supabase
-      .from('pipeline_stages')
-      .delete()
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-
-    if (error) {
-      throw InternalError(error.message)
-    }
-
-    return successResponse({ success: true })
-  } catch (error) {
-    logger.error('Error deleting pipeline stage:', { error })
-    return errorResponse(error instanceof Error ? error : InternalError())
-  }
+export async function DELETE() {
+  return errorResponse(
+    ValidationError('Core pipeline stages cannot be deleted.')
+  )
 }

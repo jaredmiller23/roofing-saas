@@ -17,7 +17,7 @@ import { useRealtimeSubscription } from '@/lib/hooks/useRealtimeSubscription'
 import { RealtimeToast } from '@/components/collaboration/RealtimeToast'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { hexToTailwindBg, stageNameToSlug } from '@/lib/utils/colors'
+import { hexToTailwindBg } from '@/lib/utils/colors'
 
 // Default stages - used as fallback if DB fetch fails
 const DEFAULT_STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
@@ -79,6 +79,7 @@ interface DBPipelineStage {
   id: string
   name: string
   color: string
+  stage_key: string
   stage_order: number
   stage_type: string
   is_active: boolean
@@ -110,15 +111,14 @@ export function PipelineBoard() {
         const dbStages: DBPipelineStage[] = result.data?.stages || result.stages || []
 
         if (dbStages.length > 0) {
-          // Map DB stages to our format, filtering to only valid stage IDs
+          // Map DB stages to our format using stage_key for stable mapping
           const mappedStages = dbStages
-            .filter(s => s.is_active !== false) // Only active stages
+            .filter(s => s.is_active !== false)
             .map(s => {
-              const slug = stageNameToSlug(s.name) as PipelineStage
-              // Only include if it's a valid stage ID
-              if (VALID_STAGE_IDS.includes(slug)) {
+              const stageKey = (s.stage_key || '') as PipelineStage
+              if (VALID_STAGE_IDS.includes(stageKey)) {
                 return {
-                  id: slug,
+                  id: stageKey,
                   name: s.name,
                   color: hexToTailwindBg(s.color),
                 }
@@ -127,11 +127,10 @@ export function PipelineBoard() {
             })
             .filter((s): s is { id: PipelineStage; name: string; color: string } => s !== null)
 
-          // Sort by the order defined in DEFAULT_STAGES to maintain consistent ordering
-          const stageOrderMap = new Map(DEFAULT_STAGES.map((s, i) => [s.id, i]))
+          // Sort by stage_order from DB
           mappedStages.sort((a, b) => {
-            const orderA = stageOrderMap.get(a.id) ?? 999
-            const orderB = stageOrderMap.get(b.id) ?? 999
+            const orderA = dbStages.find(s => s.stage_key === a.id)?.stage_order ?? 999
+            const orderB = dbStages.find(s => s.stage_key === b.id)?.stage_order ?? 999
             return orderA - orderB
           })
 
