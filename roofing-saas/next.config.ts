@@ -9,7 +9,7 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/config.ts');
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === 'development', // Disable PWA in development to avoid Turbopack conflicts
+  disable: process.env.NODE_ENV !== 'production', // Only enable for production builds (Serwist requires webpack)
 });
 
 // Note: Runtime caching strategies have been moved to app/sw.ts

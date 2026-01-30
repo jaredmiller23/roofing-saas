@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Save, X, RefreshCw } from 'lucide-react'
 import type {
@@ -29,6 +29,10 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
   const [selectedConfig, setSelectedConfig] = useState<FilterConfig | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Stable ref for callback to avoid re-triggering effects when parent re-renders
+  const onFiltersChangeRef = useRef(onFiltersChange)
+  onFiltersChangeRef.current = onFiltersChange
 
   const fetchConfigs = useCallback(async () => {
     setError(null)
@@ -70,8 +74,8 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
 
   // Notify parent when active filters change
   useEffect(() => {
-    onFiltersChange(activeFilters)
-  }, [activeFilters, onFiltersChange])
+    onFiltersChangeRef.current(activeFilters)
+  }, [activeFilters])
 
   const handleAddFilter = (config: FilterConfig) => {
     setSelectedConfig(config)

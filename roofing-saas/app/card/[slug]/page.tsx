@@ -50,51 +50,50 @@ export default function PublicCardPage() {
   })
 
   useEffect(() => {
-    if (slug) {
-      fetchCard()
-      trackView()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug])
+    if (!slug) return
 
-  const fetchCard = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/digital-cards/slug/${slug}`)
-      if (!response.ok) throw new Error('Card not found')
+    const controller = new AbortController()
 
-      const data = await response.json()
-      setCard(data.card)
-
-      // Apply brand color to page
-      if (data.card.brand_color) {
-        document.documentElement.style.setProperty('--brand-color', data.card.brand_color)
-      }
-    } catch (error) {
-      console.error('Error fetching card:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const trackView = async () => {
-    try {
-      // Wait a bit to get card ID from fetchCard
-      setTimeout(async () => {
-        if (!card) return
-
-        await fetch(`/api/digital-cards/${card.id}/interactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            interaction_type: 'view',
-          }),
+    async function loadCard() {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/digital-cards/slug/${slug}`, {
+          signal: controller.signal,
         })
-      }, 500)
-    } catch (error) {
-      console.error('Error tracking view:', error)
+        if (!response.ok) throw new Error('Card not found')
+
+        const data = await response.json()
+        setCard(data.card)
+
+        // Apply brand color to page
+        if (data.card.brand_color) {
+          document.documentElement.style.setProperty('--brand-color', data.card.brand_color)
+        }
+
+        // Track view after card is loaded (needs card ID)
+        if (data.card?.id) {
+          fetch(`/api/digital-cards/${data.card.id}/interactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interaction_type: 'view' }),
+            signal: controller.signal,
+          }).catch(() => {/* view tracking is best-effort */})
+        }
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error fetching card:', error)
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
+      }
     }
-  }
+
+    loadCard()
+
+    return () => controller.abort()
+  }, [slug])
 
   const trackInteraction = async (type: string) => {
     if (!card) return

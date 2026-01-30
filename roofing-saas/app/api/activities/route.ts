@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
       .from('activities')
       .select(`
         id,
-        activity_type,
+        type,
         subject,
-        notes,
+        content,
         created_at,
         created_by,
         project_id,
@@ -63,10 +63,10 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to fetch activities')
     }
 
-    // Map to expected format (activity_type -> type for frontend compatibility)
+    // Map to expected format for frontend compatibility
     const mappedActivities = (activities || []).map(activity => ({
       ...activity,
-      type: activity.activity_type, // Alias for frontend
+      notes: activity.content, // Alias content as notes for frontend
     }))
 
     return successResponse({ activities: mappedActivities })
