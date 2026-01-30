@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { createdResponse, errorResponse } from '@/lib/api/response'
 import type { InspectionState } from '@/lib/claims/inspection-state'
-import type { ClaimStatus } from '@/lib/claims/types'
 
 /**
  * POST /api/projects/[id]/claims/inspection
@@ -27,73 +26,86 @@ export async function POST(
     const supabase = await createClient()
 
     // Get user's tenant
-    const { data: tenantUser } = await supabase
+    const { data: tenantUser, error: tenantError } = await supabase
       .from('tenant_users')
       .select('tenant_id')
       .eq('user_id', user.id)
       .single()
 
-    if (!tenantUser) {
+    if (tenantError || !tenantUser) {
+      logger.error('Tenant lookup failed:', { error: tenantError })
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    // Get project details
-    const { data: project } = await supabase
+    // Get project with its contact (address lives on contacts table)
+    const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('*, contact:contacts(*)')
+      .select('id, name, contact_id, contact:contacts(address_street, address_city, address_state, address_zip)')
       .eq('id', projectId)
       .eq('tenant_id', tenantUser.tenant_id)
       .single()
 
-    if (!project) {
-      throw NotFoundError('Project not found')
+    if (projectError || !project) {
+      logger.error('Project lookup failed:', { error: projectError, projectId })
+      throw NotFoundError('Project')
     }
 
-    // Prepare claim data from inspection
+    // Extract contact address (contact is embedded as an object from the foreign key join)
+    const contact = project.contact as { address_street?: string; address_city?: string; address_state?: string; address_zip?: string } | null
+
+    // Build claim data using only columns that exist in the claims table
     const claimData = {
       tenant_id: tenantUser.tenant_id,
       project_id: projectId,
-      contact_id: inspectionState.contactId,
-      status: 'new' as ClaimStatus,
-      claim_type: 'roof' as const, // Default to roof, can be updated later
-      date_of_loss: new Date().toISOString().split('T')[0], // Today's date
-      property_address: project.address_street || '',
-      property_city: project.address_city || '',
-      property_state: project.address_state || '',
-      property_zip: project.address_zip || '',
+      contact_id: inspectionState.contactId || project.contact_id,
+      status: 'new',
+      date_of_loss: new Date().toISOString().split('T')[0],
       created_by: user.id,
-
-      // Store inspection data in custom fields
-      inspection_data: {
-        location: inspectionState.location,
-        overview_photo: inspectionState.overviewPhoto,
-        damage_areas: inspectionState.damageAreas,
-        completed_at: new Date().toISOString(),
+      inspection_completed_at: new Date().toISOString(),
+      // Store inspection data and address in custom_fields JSONB
+      custom_fields: {
+        claim_type: 'roof',
+        property_address: contact?.address_street || '',
+        property_city: contact?.address_city || '',
+        property_state: contact?.address_state || '',
+        property_zip: contact?.address_zip || '',
+        inspection: {
+          location: inspectionState.location,
+          overview_photo: inspectionState.overviewPhoto,
+          damage_areas: inspectionState.damageAreas,
+          completed_at: new Date().toISOString(),
+        },
       },
     }
 
-    // Insert or update claim
+    // Insert claim (no unique constraint on project_id, so use insert)
     const { data: claim, error: claimError } = await supabase
       .from('claims')
-      .upsert(claimData, {
-        onConflict: 'project_id',
-      })
-      .select()
+      .insert(claimData)
+      .select('id')
       .single()
 
     if (claimError) {
-      logger.error('Error creating/updating claim:', { error: claimError })
+      logger.error('Error creating claim:', { error: claimError })
       throw InternalError('Failed to save inspection')
     }
 
+    // Link claim to project
+    await supabase
+      .from('projects')
+      .update({ claim_id: claim.id })
+      .eq('id', projectId)
+      .eq('tenant_id', tenantUser.tenant_id)
+
     // Create activity log
+    const selectedCount = inspectionState.damageAreas.filter(a => a.selected).length
     await supabase.from('activities').insert({
       tenant_id: tenantUser.tenant_id,
       type: 'claim_inspection',
       entity_type: 'project',
       entity_id: projectId,
       subject: 'Property Inspection Completed',
-      notes: `Inspection completed with ${inspectionState.damageAreas.filter(a => a.selected).length} areas documented`,
+      notes: `Inspection completed with ${selectedCount} areas documented`,
       created_by: user.id,
     })
 

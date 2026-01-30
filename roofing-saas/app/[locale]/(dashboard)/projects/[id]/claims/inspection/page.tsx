@@ -67,11 +67,13 @@ export default function InspectionPage() {
       })
 
       if (res.ok) {
-        const data = await res.json()
-        // Redirect to claim detail page
-        router.push(`/projects/${projectId}/claims/${data.claimId}`)
+        const result = await res.json()
+        // API returns { success: true, data: { claimId: '...' } }
+        const claimId = result.data?.claimId || result.claimId
+        router.push(`/projects/${projectId}/claims/${claimId}`)
       } else {
-        console.error('Failed to submit inspection')
+        const errorData = await res.json().catch(() => null)
+        console.error('Failed to submit inspection:', res.status, errorData)
         alert('Failed to submit inspection. Please try again.')
       }
     } catch (error) {
