@@ -146,10 +146,11 @@ export default function ProjectDetailPage() {
       setLoading(true)
 
       // Fetch project
+      // API returns: { success: true, data: { project: { ... } } }
       const projectRes = await fetch(`/api/projects/${projectId}`)
       if (projectRes.ok) {
         const projectData = await projectRes.json()
-        const projectObj = projectData.project || projectData
+        const projectObj = projectData.data?.project || projectData.project || projectData
         setProject(projectObj)
 
         // Fetch contact if exists
@@ -157,7 +158,7 @@ export default function ProjectDetailPage() {
           const contactRes = await fetch(`/api/contacts/${projectObj.contact_id}`)
           if (contactRes.ok) {
             const contactData = await contactRes.json()
-            setContact(contactData.contact || contactData)
+            setContact(contactData.data?.contact || contactData.contact || contactData)
           }
         }
 
@@ -171,14 +172,14 @@ export default function ProjectDetailPage() {
       const jobsRes = await fetch(`/api/jobs?project_id=${projectId}`)
       if (jobsRes.ok) {
         const jobsData = await jobsRes.json()
-        setJobs(jobsData.jobs || [])
+        setJobs(jobsData.data?.jobs || jobsData.jobs || [])
       }
 
       // Fetch activities
       const activitiesRes = await fetch(`/api/activities?project_id=${projectId}&limit=20`)
       if (activitiesRes.ok) {
         const activitiesData = await activitiesRes.json()
-        setActivities(activitiesData.activities || activitiesData.data?.activities || [])
+        setActivities(activitiesData.data?.activities || activitiesData.activities || [])
       }
     } catch (error) {
       console.error('Failed to fetch project data:', error)

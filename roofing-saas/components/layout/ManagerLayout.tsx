@@ -76,8 +76,9 @@ const navSections: NavSection[] = [
     label: 'CORE',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/contacts', label: 'Contacts', icon: Users },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
-      { href: '/insights', label: 'Business Intel', icon: Sparkles },
+      { href: '/insights', label: 'Insights', icon: Sparkles },
       { href: '/events', label: 'Events', icon: Calendar },
       { href: '/tasks', label: 'Tasks', icon: CheckSquare },
     ]
@@ -87,8 +88,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/call-logs', label: 'Call Log', icon: Phone },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
-      { href: '/campaigns', label: 'Emails', icon: Mail },
-      { href: '/contacts', label: 'Contacts', icon: Users },
+      { href: '/campaigns', label: 'Campaigns', icon: Mail },
     ]
   },
   {

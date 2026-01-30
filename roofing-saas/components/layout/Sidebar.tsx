@@ -23,7 +23,6 @@ import {
   CloudLightning,
   Users,
   Mail,
-  RefreshCw,
   Lock,
   Voicemail,
   BookOpen,
@@ -75,7 +74,7 @@ const navSections: NavSection[] = [
       { href: '/storm-tracking', label: 'Storm Intel', icon: CloudLightning, feature: 'stormData' },
       { href: '/claims', label: 'Claims', icon: FileText, feature: 'claimsTracking' },
       { href: '/incentives', label: 'Incentives', icon: Trophy },
-      { href: '/insights', label: 'Business Intel', icon: Sparkles },
+      { href: '/insights', label: 'Insights', icon: Sparkles },
     ]
   },
   {
@@ -85,7 +84,6 @@ const navSections: NavSection[] = [
       { href: '/voicemail', label: 'Voicemail', icon: Voicemail },
       { href: '/messages', label: 'Messages', icon: MessageSquare },
       { href: '/campaigns', label: 'Campaigns', icon: Mail, feature: 'campaigns' },
-      { href: '/automations', label: 'Automations', icon: RefreshCw },
     ]
   },
   {
