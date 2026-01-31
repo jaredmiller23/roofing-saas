@@ -38,8 +38,6 @@ const createTemplateSchema = z.object({
   expiration_days: z.number().int().min(1).max(365).default(30),
 })
 
-const _updateTemplateSchema = createTemplateSchema.partial()
-
 export type SignatureField = z.infer<typeof signatureFieldSchema>
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
 

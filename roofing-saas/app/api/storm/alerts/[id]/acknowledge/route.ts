@@ -6,8 +6,9 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { getUserTenantId } from '@/lib/auth/session'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -26,13 +27,20 @@ export async function POST(
       throw AuthenticationError()
     }
 
+    // Get tenant for multi-tenant isolation
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
+    }
+
     const { id } = await context.params
 
-    // Fetch current alert
+    // Fetch current alert (scoped to tenant)
     const { data: alert, error: fetchError } = await supabase
       .from('storm_alerts')
       .select('acknowledged_by')
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !alert) {
@@ -45,7 +53,7 @@ export async function POST(
       acknowledgedBy.push(user.id)
     }
 
-    // Update alert
+    // Update alert (scoped to tenant)
     const { error: updateError } = await supabase
       .from('storm_alerts')
       .update({
@@ -53,6 +61,7 @@ export async function POST(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('tenant_id', tenantId)
 
     if (updateError) {
       console.error('Error acknowledging alert:', updateError)

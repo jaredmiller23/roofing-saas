@@ -1,5 +1,4 @@
 import { getRequestConfig } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 export const locales = ['en', 'es', 'fr'] as const;
 export type Locale = (typeof locales)[number];
@@ -20,14 +19,17 @@ export const localeRegions = {
   fr: 'CA'  // Canadian market
 } as const;
 
-export default getRequestConfig(async ({ locale }) => {
-  // Validate that the incoming `locale` parameter is valid
-  if (!locale || !locales.includes(locale as Locale)) {
-    notFound();
-  }
+export default getRequestConfig(async ({ requestLocale }) => {
+  // Await the locale from the [locale] URL segment
+  const requested = await requestLocale;
+
+  // Validate that the incoming locale parameter is valid, fall back to default
+  const locale: Locale = requested && locales.includes(requested as Locale)
+    ? (requested as Locale)
+    : defaultLocale;
 
   return {
     messages: (await import(`./translations/${locale}.json`)).default,
-    locale: locale as string
+    locale,
   };
 });
