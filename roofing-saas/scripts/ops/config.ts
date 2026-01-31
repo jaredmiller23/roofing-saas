@@ -42,11 +42,11 @@ export const DEFAULT_ENV: Environment = 'production'
 // =============================================================================
 
 export const supabase = {
-  url: 'https://wfifizczqvogbcqamnmw.supabase.co',
-  projectRef: 'wfifizczqvogbcqamnmw',
+  url: 'https://api.jobclarity.io',
+  projectRef: 'nas-supabase',
 
-  // Anon key (public, safe to include)
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmaWZpemN6cXZvZ2JjcWFtbm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMDMwOTMsImV4cCI6MjA3MzY3OTA5M30.UaMCkJmypS4T5DopA6efaZs_3YvvLluG0MK-4s7gTBI',
+  // Anon key (public, safe to include - NAS instance)
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzY4MTUzNDk2LCJleHAiOjIwODM1MTM0OTZ9.-aUIHLTdg-8ufBfnaP1UGje3PeMsVFHqt9Z48QsJD9Q',
 
   // Service role key - from environment variable only (never hardcode)
   get serviceRoleKey(): string {
@@ -85,8 +85,8 @@ export const testAccount = {
     return pwd
   },
 
-  // User ID (for direct database queries)
-  userId: '5dc43384-1509-4da8-a795-71060988140a',
+  // User ID (for direct database queries - NAS instance)
+  userId: 'cfdc67b0-73de-4e68-bb4e-284a1356e94d',
 
   // Tenant ID (Clarity AI Development - sandbox)
   tenantId: '478d279b-5b8a-4040-a805-75d595d59702',

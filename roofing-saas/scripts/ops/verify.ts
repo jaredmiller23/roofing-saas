@@ -142,7 +142,7 @@ async function verify(env: Environment) {
     for (const { path, name } of criticalPages) {
       await runCheck(`${name} page loads`, async () => {
         await page!.goto(`${baseUrl}${path}`, { timeout: 15000 })
-        await page!.waitForLoadState('networkidle', { timeout: 10000 })
+        await page!.waitForLoadState('networkidle', { timeout: 30000 })
 
         // Check for error indicators
         const pageText = await page!.textContent('body')
