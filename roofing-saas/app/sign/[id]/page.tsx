@@ -189,6 +189,9 @@ export default function SignDocumentPage() {
   const asParam = searchParams.get('as')
   const initialSignerType = asParam === 'company' ? 'company' : 'customer'
 
+  // Check if this is an in-person signing session
+  const isInPerson = searchParams.get('inperson') === 'true'
+
   const [document, setDocument] = useState<SignatureDocument | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -292,6 +295,17 @@ export default function SignDocumentPage() {
 
       setDocument(doc)
 
+      // Pre-fill signer info for in-person signing from linked contact
+      if (isInPerson && doc.contact) {
+        const contact = doc.contact
+        if (contact.first_name || contact.last_name) {
+          setSignerName(`${contact.first_name || ''} ${contact.last_name || ''}`.trim())
+        }
+        if (contact.email) {
+          setSignerEmail(contact.email)
+        }
+      }
+
       // Initialize field refs
       if (doc.signature_fields) {
         doc.signature_fields.forEach((field: SignatureFieldPlacement) => {
@@ -327,7 +341,7 @@ export default function SignDocumentPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [documentId])
+  }, [documentId, isInPerson])
 
   useEffect(() => {
     loadDocument()

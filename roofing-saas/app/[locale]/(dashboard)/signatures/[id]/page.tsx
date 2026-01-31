@@ -25,7 +25,8 @@ import {
   RefreshCw,
   Copy,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  PenLine
 } from 'lucide-react'
 import {
   getDisplayStatus,
@@ -329,6 +330,16 @@ export default function ViewSignatureDocumentPage() {
                     <RefreshCw className="h-4 w-4 mr-2" />
                   )}
                   {isResending ? 'Sending...' : 'Resend Reminder'}
+                </Button>
+              )}
+              {['draft', 'sent', 'viewed'].includes(document.status) && (
+                <Button
+                  onClick={() => window.open('/sign/' + document.id + '?as=customer&inperson=true', '_blank')}
+                  variant="outline"
+                  className="text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  <PenLine className="h-4 w-4 mr-2" />
+                  Sign In Person
                 </Button>
               )}
               {document.status === 'signed' && (

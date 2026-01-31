@@ -47,6 +47,7 @@ import {
   Edit,
   Trash2,
   Ban,
+  PenLine,
 } from 'lucide-react'
 import {
   getDisplayStatus,
@@ -448,6 +449,17 @@ export default function SignaturesPage() {
                       >
                         <Send className="h-4 w-4 mr-1" />
                         Send
+                      </Button>
+                    )}
+                    {['draft', 'sent', 'viewed'].includes(doc.status) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open('/sign/' + doc.id + '?as=customer&inperson=true', '_blank')}
+                        className="text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <PenLine className="h-4 w-4 mr-1" />
+                        Sign In Person
                       </Button>
                     )}
                     {doc.status === 'signed' && (
