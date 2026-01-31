@@ -49,7 +49,7 @@ export function SubstatusSelector({
       }
 
       const data = await response.json()
-      const activeSubstatuses = (data.configs || []).filter((s: SubstatusConfig) => s.is_active)
+      const activeSubstatuses = (data.data?.configs || []).filter((s: SubstatusConfig) => s.is_active)
       setSubstatuses(activeSubstatuses.sort((a: SubstatusConfig, b: SubstatusConfig) => a.display_order - b.display_order))
     } catch (err) {
       console.error('Error loading substatuses:', err)

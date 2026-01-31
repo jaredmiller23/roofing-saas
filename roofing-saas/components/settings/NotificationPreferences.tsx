@@ -47,7 +47,7 @@ export function NotificationPreferences() {
       if (!response.ok) throw new Error('Failed to fetch preferences')
 
       const data = await response.json()
-      setPreferences(data.preferences)
+      setPreferences(data.data?.preferences)
     } catch (error) {
       console.error('Error fetching notification preferences:', error)
       setMessage({ type: 'error', text: 'Failed to load notification preferences' })
@@ -83,7 +83,7 @@ export function NotificationPreferences() {
         throw new Error(data.error || 'Failed to save preferences')
       }
 
-      setPreferences(data.preferences)
+      setPreferences(data.data?.preferences)
       setMessage({ type: 'success', text: 'Notification preferences saved!' })
       setHasChanges(false)
     } catch (error) {

@@ -61,10 +61,10 @@ export async function GET() {
         user_id: user.id,
         tenant_id: tenantId,
       }
-      return successResponse({ success: true, preferences: defaultPrefs, isDefault: true })
+      return successResponse({ preferences: defaultPrefs, isDefault: true })
     }
 
-    return successResponse({ success: true, preferences: data, isDefault: false })
+    return successResponse({ preferences: data, isDefault: false })
   } catch (error) {
     logger.error('Error in GET /api/profile/notifications:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -121,7 +121,6 @@ export async function PUT(request: NextRequest) {
     }
 
     return successResponse({
-      success: true,
       preferences: data,
       message: 'Notification preferences updated successfully',
     })

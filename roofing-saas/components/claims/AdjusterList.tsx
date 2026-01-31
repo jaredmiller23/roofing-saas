@@ -55,7 +55,7 @@ export function AdjusterList() {
       if (!response.ok) throw new Error('Failed to fetch adjusters')
 
       const data = await response.json()
-      setAdjusters(data.adjusters || [])
+      setAdjusters(data.data?.adjusters || [])
     } catch (error) {
       console.error('Error fetching adjusters:', error)
     } finally {
@@ -75,7 +75,7 @@ export function AdjusterList() {
       const response = await fetch(`/api/adjusters/${id}`)
       if (!response.ok) throw new Error('Failed to fetch adjuster details')
       const data = await response.json()
-      setSelectedAdjuster(data)
+      setSelectedAdjuster(data.data || data)
     } catch (error) {
       console.error('Error fetching adjuster details:', error)
     }

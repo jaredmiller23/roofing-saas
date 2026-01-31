@@ -68,7 +68,7 @@ export function RoleSettings() {
       setLoading(true)
       const res = await fetch('/api/settings/roles')
       const data = await res.json()
-      setRoles(data.roles || [])
+      setRoles(data.data?.roles || [])
     } catch (err) {
       console.error('Error loading roles:', err)
       setError('Failed to load roles')

@@ -44,7 +44,7 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
       }
 
       const data = await response.json()
-      setConfigs(data.configs || [])
+      setConfigs(data.data?.configs || [])
       onError?.(null) // Clear any previous errors
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load filter configuration'
@@ -60,7 +60,7 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
     try {
       const response = await fetch(`/api/filters/saved?entity_type=${entity_type}`)
       const data = await response.json()
-      setSavedFilters(data.filters || [])
+      setSavedFilters(data.data?.filters || [])
     } catch (error) {
       console.error('Error fetching saved filters:', error)
     }

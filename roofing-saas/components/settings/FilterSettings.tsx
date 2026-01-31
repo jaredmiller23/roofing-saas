@@ -84,7 +84,7 @@ export function FilterSettings() {
       })
       const res = await fetch(`/api/filters/configs?${params.toString()}`)
       const data = await res.json()
-      setConfigs(data.configs || [])
+      setConfigs(data.data?.configs || [])
     } catch (err) {
       console.error('Error loading filter configs:', err)
       setError('Failed to load filter configurations')

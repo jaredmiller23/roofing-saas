@@ -47,17 +47,17 @@ export function BrandingSettings() {
       const res = await fetch('/api/settings')
       const data = await res.json()
 
-      if (data.settings) {
+      if (data.data?.settings) {
         setSettings({
-          company_name: data.settings.company_name,
-          company_tagline: data.settings.company_tagline,
-          logo_url: data.settings.logo_url,
-          primary_color: data.settings.primary_color,
-          secondary_color: data.settings.secondary_color,
-          accent_color: data.settings.accent_color,
-          email_header_logo_url: data.settings.email_header_logo_url,
-          email_footer_text: data.settings.email_footer_text,
-          email_signature: data.settings.email_signature,
+          company_name: data.data.settings.company_name,
+          company_tagline: data.data.settings.company_tagline,
+          logo_url: data.data.settings.logo_url,
+          primary_color: data.data.settings.primary_color,
+          secondary_color: data.data.settings.secondary_color,
+          accent_color: data.data.settings.accent_color,
+          email_header_logo_url: data.data.settings.email_header_logo_url,
+          email_footer_text: data.data.settings.email_footer_text,
+          email_signature: data.data.settings.email_signature,
         })
       }
     } catch (err) {
