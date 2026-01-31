@@ -417,52 +417,26 @@ async function getRecentMessages(
     normalizedPhone.slice(-10),
   ]
 
-  // Try sms_messages table first (if it exists)
-  const { data: messages, error } = await context.supabase
-    .from('sms_messages')
-    .select('id, direction, body, created_at, status')
+  // Fetch SMS activities from activities table (type = 'sms')
+  const { data: smsActivities } = await context.supabase
+    .from('activities')
+    .select('id, direction, content, created_at, to_address, from_address')
     .eq('tenant_id', context.tenantId)
+    .eq('type', 'sms')
     .or(
-      phoneVariants.map((p) => `to_number.ilike.%${p}%`).join(',') +
+      phoneVariants.map((p) => `to_address.ilike.%${p}%`).join(',') +
         ',' +
-        phoneVariants.map((p) => `from_number.ilike.%${p}%`).join(',')
+        phoneVariants.map((p) => `from_address.ilike.%${p}%`).join(',')
     )
     .order('created_at', { ascending: false })
     .limit(5)
 
-  if (error) {
-    // Table might not exist or other error, try activities
-    logger.debug('SMS messages table query failed, trying activities:', { error })
-
-    const { data: smsActivities } = await context.supabase
-      .from('activities')
-      .select('id, direction, content, created_at, metadata')
-      .eq('tenant_id', context.tenantId)
-      .eq('type', 'sms')
-      .or(
-        phoneVariants.map((p) => `metadata->>phone.ilike.%${p}%`).join(',')
-      )
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    if (smsActivities) {
-      return smsActivities.map((a) => ({
-        id: a.id,
-        direction: a.direction || 'outbound',
-        body: a.content || '',
-        sent_at: a.created_at,
-      }))
-    }
-
-    return []
-  }
-
-  return (messages || []).map((m) => ({
-    id: m.id,
-    direction: m.direction,
-    body: m.body,
-    sent_at: m.created_at,
-    status: m.status,
+  return (smsActivities || []).map((a) => ({
+    id: a.id,
+    direction: a.direction || 'outbound',
+    body: a.content || '',
+    sent_at: a.created_at,
+    status: 'delivered',
   }))
 }
 

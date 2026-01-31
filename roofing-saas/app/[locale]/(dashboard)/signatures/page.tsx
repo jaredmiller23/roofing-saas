@@ -6,6 +6,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
   FileText,
   Plus,
   Send,
@@ -16,7 +42,11 @@ import {
   Search,
   LayoutTemplate,
   Eye,
-  AlertCircle
+  AlertCircle,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Ban,
 } from 'lucide-react'
 import {
   getDisplayStatus,
@@ -24,6 +54,8 @@ import {
   getStatusIconColor,
   type StatusColor
 } from '@/lib/signatures/status'
+import { usePermissions } from '@/hooks/usePermissions'
+import { createClient } from '@/lib/supabase/client'
 
 interface SignatureDocument {
   id: string
@@ -35,6 +67,7 @@ interface SignatureDocument {
   sent_at: string | null
   signed_at: string | null
   expires_at: string | null
+  created_by?: string
   requires_customer_signature?: boolean
   requires_company_signature?: boolean
   decline_reason?: string | null
@@ -50,6 +83,29 @@ export default function SignaturesPage() {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Permission & user state
+  const { canEdit, canDelete } = usePermissions()
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // Action state
+  const [documentToDelete, setDocumentToDelete] = useState<SignatureDocument | null>(null)
+  const [documentToCancel, setDocumentToCancel] = useState<SignatureDocument | null>(null)
+  const [documentToEdit, setDocumentToEdit] = useState<SignatureDocument | null>(null)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Edit form state
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editDocumentType, setEditDocumentType] = useState('')
+
+  // Get current user ID
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
+  }, [])
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -79,6 +135,109 @@ export default function SignaturesPage() {
   useEffect(() => {
     loadDocuments()
   }, [loadDocuments])
+
+  // Check if user can perform action on a specific document
+  const canUserEdit = (doc: SignatureDocument) => {
+    if (doc.status === 'signed') return false
+    if (canEdit('signatures')) return true
+    if (doc.status === 'draft' && doc.created_by === currentUserId) return true
+    return false
+  }
+
+  const canUserDelete = (doc: SignatureDocument) => {
+    if (doc.status === 'signed') return false
+    if (canDelete('signatures')) return true
+    if (doc.status === 'draft' && doc.created_by === currentUserId) return true
+    return false
+  }
+
+  const canUserCancel = (doc: SignatureDocument) => {
+    return (doc.status === 'sent' || doc.status === 'viewed') && canDelete('signatures')
+  }
+
+  // Action handlers
+  const handleDelete = async () => {
+    if (!documentToDelete) return
+    setActionLoading(documentToDelete.id)
+    try {
+      const res = await fetch(`/api/signature-documents/${documentToDelete.id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const result = await res.json()
+        throw new Error(result.error?.message || 'Failed to delete document')
+      }
+      setDocuments((prev) => prev.filter((d) => d.id !== documentToDelete.id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete document')
+    } finally {
+      setActionLoading(null)
+      setDocumentToDelete(null)
+    }
+  }
+
+  const handleCancel = async () => {
+    if (!documentToCancel) return
+    setActionLoading(documentToCancel.id)
+    try {
+      const res = await fetch(`/api/signature-documents/${documentToCancel.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'expired' }),
+      })
+      if (!res.ok) {
+        const result = await res.json()
+        throw new Error(result.error?.message || 'Failed to cancel document')
+      }
+      setDocuments((prev) =>
+        prev.map((d) =>
+          d.id === documentToCancel.id ? { ...d, status: 'expired' } : d
+        )
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel document')
+    } finally {
+      setActionLoading(null)
+      setDocumentToCancel(null)
+    }
+  }
+
+  const openEditDialog = (doc: SignatureDocument) => {
+    setDocumentToEdit(doc)
+    setEditTitle(doc.title)
+    setEditDescription(doc.description || '')
+    setEditDocumentType(doc.document_type)
+  }
+
+  const handleEdit = async () => {
+    if (!documentToEdit) return
+    setActionLoading(documentToEdit.id)
+    try {
+      const res = await fetch(`/api/signature-documents/${documentToEdit.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          document_type: editDocumentType,
+        }),
+      })
+      if (!res.ok) {
+        const result = await res.json()
+        throw new Error(result.error?.message || 'Failed to update document')
+      }
+      const result = await res.json()
+      const updated = result.data?.document || result.document
+      setDocuments((prev) =>
+        prev.map((d) => (d.id === documentToEdit.id ? { ...d, ...updated } : d))
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update document')
+    } finally {
+      setActionLoading(null)
+      setDocumentToEdit(null)
+    }
+  }
 
   // Get icon based on computed display status
   const getStatusIcon = (doc: SignatureDocument) => {
@@ -280,7 +439,7 @@ export default function SignaturesPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex items-center gap-2 ml-4">
                     {doc.status === 'draft' && (
                       <Button
                         size="sm"
@@ -301,6 +460,55 @@ export default function SignaturesPage() {
                         Download
                       </Button>
                     )}
+
+                    {/* Actions dropdown — visible when user has any action available */}
+                    {(canUserEdit(doc) || canUserDelete(doc) || canUserCancel(doc)) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            disabled={actionLoading === doc.id}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Actions</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canUserEdit(doc) && (
+                            <DropdownMenuItem onClick={() => openEditDialog(doc)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {canUserCancel(doc) && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => setDocumentToCancel(doc)}
+                                className="text-orange-500 focus:text-orange-500"
+                              >
+                                <Ban className="h-4 w-4 mr-2" />
+                                Cancel &amp; Revoke
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {canUserDelete(doc) && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => setDocumentToDelete(doc)}
+                                className="text-red-500 focus:text-red-500"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               </div>
@@ -308,6 +516,102 @@ export default function SignaturesPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!documentToDelete} onOpenChange={() => setDocumentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{documentToDelete?.title}&rdquo;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {actionLoading ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel/Revoke Confirmation Dialog */}
+      <AlertDialog open={!!documentToCancel} onOpenChange={() => setDocumentToCancel(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will revoke the signing link for &ldquo;{documentToCancel?.title}&rdquo;. The customer will no longer be able to sign this document. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Active</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancel}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              {actionLoading ? 'Cancelling...' : 'Cancel Document'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!documentToEdit} onOpenChange={() => setDocumentToEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            {documentToEdit?.status === 'draft' && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Document Type</Label>
+                <select
+                  id="edit-type"
+                  value={editDocumentType}
+                  onChange={(e) => setEditDocumentType(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="contract">Contract</option>
+                  <option value="proposal">Proposal</option>
+                  <option value="work_authorization">Work Authorization</option>
+                  <option value="change_order">Change Order</option>
+                  <option value="completion_certificate">Completion Certificate</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDocumentToEdit(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEdit} disabled={!editTitle.trim() || !!actionLoading}>
+              {actionLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
