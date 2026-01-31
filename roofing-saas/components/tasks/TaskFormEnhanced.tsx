@@ -80,9 +80,9 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       const contactsData = await contactsRes.json()
       const tasksData = await tasksRes.json()
 
-      setProjects(projectsData.projects || [])
-      setContacts(contactsData.contacts || [])
-      setTasks((tasksData.tasks || []).filter((t: { id: string }) => t.id !== task?.id))
+      setProjects(projectsData.data?.projects || [])
+      setContacts(contactsData.data?.contacts || [])
+      setTasks((tasksData.data?.tasks || []).filter((t: { id: string }) => t.id !== task?.id))
     } catch (err) {
       console.error('Failed to load data:', err)
     }
