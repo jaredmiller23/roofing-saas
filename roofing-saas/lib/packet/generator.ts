@@ -5,7 +5,7 @@
  * claims documentation package that is so complete that denial is unreasonable.
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { type SupabaseClient } from '@supabase/supabase-js'
 import {
   getApplicableCodes,
   getManufacturerSpecs,
@@ -33,9 +33,9 @@ import type {
  * Generate a complete claims packet for a project
  */
 export async function generatePacket(
-  input: PacketGenerationInput
+  input: PacketGenerationInput,
+  supabase: SupabaseClient
 ): Promise<PacketGenerationResult> {
-  const supabase = createClient()
   const {
     project_id,
     include_weather = true,
@@ -69,12 +69,6 @@ export async function generatePacket(
           address_city,
           address_state,
           address_zip
-        ),
-        claims (
-          id,
-          adjuster_id,
-          carrier_id,
-          insurance_carrier
         )
       `)
       .eq('id', project_id)
@@ -84,16 +78,23 @@ export async function generatePacket(
       return { success: false, error: `Project not found: ${projectError?.message}` }
     }
 
-    // Extract claim data if available
-    const claim = Array.isArray(project.claims) ? project.claims[0] : project.claims
+    // Fetch claim data separately (no FK constraint between projects and claims)
+    const { data: claimRows } = await supabase
+      .from('claims')
+      .select('id, adjuster_id, carrier_id, insurance_carrier')
+      .eq('project_id', project_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const claim = claimRows?.[0] || null
 
     // 2. Get inspection data (photos and damage documentation)
-    const damage = await getInspectionData(project_id)
+    const damage = await getInspectionData(project_id, supabase)
 
     // 3. Get weather causation (if enabled)
     let weather_causation: WeatherCausation | undefined
     if (include_weather) {
-      weather_causation = await getWeatherCausation(project_id)
+      weather_causation = await getWeatherCausation(project_id, supabase)
     }
 
     // Extract contact (may be object or array depending on PostgREST response)
@@ -266,9 +267,7 @@ export async function generatePacket(
 /**
  * Get inspection/damage data for a project
  */
-async function getInspectionData(project_id: string): Promise<DamageDocumentation> {
-  const supabase = createClient()
-
+async function getInspectionData(project_id: string, supabase: SupabaseClient): Promise<DamageDocumentation> {
   // Get inspection photos
   const { data: photos } = await supabase
     .from('project_photos')
@@ -330,9 +329,7 @@ async function getInspectionData(project_id: string): Promise<DamageDocumentatio
 /**
  * Get weather causation data for a project
  */
-async function getWeatherCausation(project_id: string): Promise<WeatherCausation | undefined> {
-  const supabase = createClient()
-
+async function getWeatherCausation(project_id: string, supabase: SupabaseClient): Promise<WeatherCausation | undefined> {
   // Check for existing weather report
   const { data: report } = await supabase
     .from('weather_reports')

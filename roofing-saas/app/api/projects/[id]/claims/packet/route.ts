@@ -98,8 +98,8 @@ export async function POST(
       },
     }
 
-    // Generate the packet
-    const result = await generatePacket(input)
+    // Generate the packet (pass server client for authenticated DB access)
+    const result = await generatePacket(input, supabase)
 
     if (!result.success || !result.packet) {
       throw InternalError(result.error || 'Failed to generate packet')
