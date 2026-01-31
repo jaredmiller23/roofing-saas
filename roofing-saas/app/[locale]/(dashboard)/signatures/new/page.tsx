@@ -16,7 +16,6 @@ import {
   FileText,
   ArrowLeft,
   ArrowRight,
-  Save,
   Check,
   FileCheck,
   Loader2,
@@ -26,7 +25,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Mail,
+  Smartphone,
 } from 'lucide-react'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Document, Page, pdfjs } from 'react-pdf'
@@ -420,7 +421,7 @@ export default function NewSignatureDocumentPage() {
   }
 
   // Submit the document
-  const handleSubmit = async () => {
+  const handleSubmit = async (mode: 'email' | 'sign-now') => {
     if (!validateStep(step)) {
       setError('Please complete all required fields')
       return
@@ -458,38 +459,48 @@ export default function NewSignatureDocumentPage() {
         throw new Error(data.error?.message || 'Failed to create document')
       }
 
-      // Send the document if a contact with email is selected
       const documentId = data.data?.document?.id
-      const selectedContact = contacts.find(c => c.id === formData.contactId)
-      const contactEmail = selectedContact?.email
 
-      if (documentId && contactEmail) {
-        try {
-          const sendRes = await fetch(`/api/signature-documents/${documentId}/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              recipient_email: contactEmail,
-              recipient_name: `${selectedContact.first_name} ${selectedContact.last_name}`.trim(),
-              message: formData.description || 'Please review and sign this document.',
-              expiration_days: formData.expirationDays,
-            }),
-          })
+      if (mode === 'sign-now' && documentId) {
+        // Open the signing page directly for in-person signing (phone/iPad)
+        const baseUrl = window.location.origin
+        window.open(`${baseUrl}/sign/${documentId}`, '_blank')
+        setSuccess(true)
+        setTimeout(() => {
+          router.push(`/${locale}/signatures`)
+        }, 1500)
+      } else {
+        // Send the document via email if a contact with email is selected
+        const selectedContact = contacts.find(c => c.id === formData.contactId)
+        const contactEmail = selectedContact?.email
 
-          if (!sendRes.ok) {
-            const sendData = await sendRes.json()
-            console.warn('Document created but email send failed:', sendData.error?.message)
+        if (documentId && contactEmail) {
+          try {
+            const sendRes = await fetch(`/api/signature-documents/${documentId}/send`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipient_email: contactEmail,
+                recipient_name: `${selectedContact.first_name} ${selectedContact.last_name}`.trim(),
+                message: formData.description || 'Please review and sign this document.',
+                expiration_days: formData.expirationDays,
+              }),
+            })
+
+            if (!sendRes.ok) {
+              const sendData = await sendRes.json()
+              console.warn('Document created but email send failed:', sendData.error?.message)
+            }
+          } catch (sendErr) {
+            console.warn('Document created but failed to send email:', sendErr)
           }
-        } catch (sendErr) {
-          // Document was created successfully, just log the send failure
-          console.warn('Document created but failed to send email:', sendErr)
         }
-      }
 
-      setSuccess(true)
-      setTimeout(() => {
-        router.push(`/${locale}/signatures`)
-      }, 1500)
+        setSuccess(true)
+        setTimeout(() => {
+          router.push(`/${locale}/signatures`)
+        }, 1500)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create document')
     } finally {
@@ -962,23 +973,32 @@ export default function NewSignatureDocumentPage() {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading || !canProceed}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {isLoading ? (
-                  <>
+              <>
+                <Button
+                  onClick={() => handleSubmit('sign-now')}
+                  disabled={isLoading || !canProceed}
+                  variant="outline"
+                >
+                  {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Create Document
-                  </>
-                )}
-              </Button>
+                  ) : (
+                    <Smartphone className="h-4 w-4 mr-2" />
+                  )}
+                  Sign Now (In-Person)
+                </Button>
+                <Button
+                  onClick={() => handleSubmit('email')}
+                  disabled={isLoading || !canProceed}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Mail className="h-4 w-4 mr-2" />
+                  )}
+                  Send via Email
+                </Button>
+              </>
             )}
           </div>
         </div>
