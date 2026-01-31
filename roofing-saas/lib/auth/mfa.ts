@@ -177,14 +177,7 @@ export async function verifyMFAChallenge(
 /**
  * Get the current authentication assurance level
  */
-export async function getAssuranceLevel(): Promise<{
-  currentLevel: 'aal1' | 'aal2'
-  nextLevel: 'aal1' | 'aal2' | null
-  currentAuthenticationMethods: Array<{
-    method: string
-    timestamp: number
-  }>
-}> {
+export async function getAssuranceLevel() {
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()

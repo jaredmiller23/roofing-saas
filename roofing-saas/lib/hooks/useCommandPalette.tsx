@@ -224,14 +224,6 @@ function getDefaultQuickActions(): QuickAction[] {
       keywords: ['new', 'project', 'create', 'start']
     },
     {
-      id: 'create-estimate',
-      title: 'New Estimate',
-      description: 'Create a new estimate',
-      icon: '📄',
-      href: '/estimates/new',
-      keywords: ['new', 'estimate', 'quote', 'proposal']
-    },
-    {
       id: 'view-calendar',
       title: 'View Calendar',
       description: 'Open your calendar',

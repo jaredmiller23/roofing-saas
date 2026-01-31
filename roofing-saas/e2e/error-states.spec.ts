@@ -177,7 +177,7 @@ test.describe('Error State Handling', () => {
   test.describe('General Error Handling', () => {
     test('should never display "[object Object]" anywhere in the app', async ({ page }) => {
       // Visit multiple pages and trigger various actions
-      const pages = ['/dashboard', '/contacts', '/projects', '/tasks', '/territories']
+      const pages = ['/dashboard', '/contacts', '/projects', '/tasks', '/knocks']
 
       for (const pagePath of pages) {
         await page.goto(pagePath, { waitUntil: 'networkidle' })

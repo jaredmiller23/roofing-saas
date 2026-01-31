@@ -642,12 +642,6 @@ export default function ProjectDetailPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/estimates/new?project_id=${projectId}`}>
-                    <Button size="sm" variant="outline">
-                      <Calculator className="h-4 w-4 mr-2" />
-                      Edit Options
-                    </Button>
-                  </Link>
                   {quoteOptions.length > 0 && (
                     <Button size="sm">
                       <Send className="h-4 w-4 mr-2" />
@@ -683,12 +677,10 @@ export default function ProjectDetailPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                       Create pricing options to provide your customer with choices
                     </p>
-                    <Link href={`/estimates/new?project_id=${projectId}`}>
-                      <Button>
-                        <Calculator className="h-4 w-4 mr-2" />
-                        Create Quote Options
-                      </Button>
-                    </Link>
+                    <Button disabled>
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Create Quote Options
+                    </Button>
                   </CardContent>
                 </Card>
               )}

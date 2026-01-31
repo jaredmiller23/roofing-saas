@@ -5,7 +5,7 @@
  * Business owners need visibility into revenue, commissions, and analytics
  *
  * Success Criteria:
- * - Financials dashboard loads
+ * - Financial reports page loads
  * - Reports page loads
  * - Commissions page loads
  * - Analytics page loads
@@ -20,8 +20,8 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
     // Use empty storage state to test without authentication
     test.use({ storageState: { cookies: [], origins: [] } })
 
-    test('should redirect /financials to login when unauthenticated', async ({ page }) => {
-      await page.goto('/financials')
+    test('should redirect /financial/reports to login when unauthenticated', async ({ page }) => {
+      await page.goto('/financial/reports')
 
       // Should redirect to login page
       await expect(page).toHaveURL(/\/login/)
@@ -53,21 +53,21 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
     })
   })
 
-  test.describe('Authenticated Financials Dashboard', () => {
+  test.describe('Authenticated Financial Reports', () => {
     // Uses default authenticated storage state
 
-    test('should load financials dashboard page', async ({ page }) => {
-      await page.goto('/financials')
+    test('should load financial reports page', async ({ page }) => {
+      await page.goto('/financial/reports')
 
-      // Should stay on financials page (not redirect to login)
-      await expect(page).toHaveURL(/\/financials/)
+      // Should stay on financial reports page (not redirect to login)
+      await expect(page).toHaveURL(/\/financial\/reports/)
 
-      // Should show the financials dashboard header
+      // Should show the financial reports header
       await expect(page.getByRole('heading', { name: /Financial|Financials|Dashboard/ })).toBeVisible()
     })
 
     test('should display financial overview cards', async ({ page }) => {
-      await page.goto('/financials')
+      await page.goto('/financial/reports')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: /Financial|Financials|Dashboard/ })).toBeVisible()
@@ -82,7 +82,7 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
     })
 
     test('should display financial charts and visualizations', async ({ page }) => {
-      await page.goto('/financials')
+      await page.goto('/financial/reports')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: /Financial|Financials|Dashboard/ })).toBeVisible()
@@ -96,18 +96,17 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
     })
 
     test('should display navigation to financial sub-modules', async ({ page }) => {
-      await page.goto('/financials')
+      await page.goto('/financial/reports')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: /Financial|Financials|Dashboard/ })).toBeVisible()
 
       // Should have navigation to financial sub-modules
-      const hasReportsNav = await page.getByRole('link', { name: /Reports|Financial.*Reports/ }).isVisible()
-      const hasCommissionsNav = await page.getByRole('link', { name: /Commissions|Commission.*Tracking/ }).isVisible()
       const hasAnalyticsNav = await page.getByRole('link', { name: /Analytics|Financial.*Analytics/ }).isVisible()
+      const hasCommissionsNav = await page.getByRole('link', { name: /Commissions|Commission.*Tracking/ }).isVisible()
 
       // Should have at least one navigation option
-      expect(hasReportsNav || hasCommissionsNav || hasAnalyticsNav).toBeTruthy()
+      expect(hasAnalyticsNav || hasCommissionsNav).toBeTruthy()
     })
   })
 
@@ -385,15 +384,15 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
         }
       })
 
-      // Navigate to financials page
-      const response = await page.goto('/financials', { waitUntil: 'networkidle' })
+      // Navigate to financial reports page
+      const response = await page.goto('/financial/reports', { waitUntil: 'networkidle' })
 
       // Check HTTP response is not server error
       expect(response?.status()).not.toBe(500)
       expect(response?.status()).toBeLessThan(500)
 
       // Page should load without critical errors
-      await expect(page).toHaveURL(/\/financials/)
+      await expect(page).toHaveURL(/\/financial\/reports/)
 
       // Filter out expected/harmless errors (like Sentry transport warnings)
       const criticalErrors = errors.filter(e =>
@@ -497,7 +496,7 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
     })
 
     test('should display appropriate message when financial data is unavailable', async ({ page }) => {
-      await page.goto('/financials')
+      await page.goto('/financial/reports')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: /Financial|Financials|Dashboard/ })).toBeVisible()

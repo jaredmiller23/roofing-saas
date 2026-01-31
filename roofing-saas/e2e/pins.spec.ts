@@ -13,14 +13,14 @@ import { test, expect, type Page } from '@playwright/test'
 
 test.describe('Pin CRUD Operations', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to territories page to ensure we're authenticated
-    await page.goto('/territories')
+    // Navigate to knocks page to ensure we're authenticated
+    await page.goto('/knocks')
     await page.waitForLoadState('networkidle')
   })
 
-  test('territories page loads successfully', async ({ page }) => {
-    // Verify territories page loaded
-    await expect(page).toHaveURL(/\/territories/)
+  test('knocks page loads successfully', async ({ page }) => {
+    // Verify knocks page loaded
+    await expect(page).toHaveURL(/\/knocks/)
 
     // Check for key UI elements
     const hasContent = await page.locator('body').textContent()
@@ -194,8 +194,8 @@ test.describe('Pin CRUD Operations', () => {
 })
 
 test.describe('Pin UI Integration', () => {
-  test('territory map page loads', async ({ page }) => {
-    await page.goto('/territories')
+  test('field activity map page loads', async ({ page }) => {
+    await page.goto('/knocks')
     await page.waitForLoadState('networkidle')
 
     // Check for map or territory UI elements

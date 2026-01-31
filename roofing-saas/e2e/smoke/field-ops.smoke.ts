@@ -5,10 +5,10 @@
  * Field ops are critical for door-to-door sales and territory management
  *
  * Success Criteria:
- * - Territories page loads with map
+ * - Knocks page loads with map (field activity)
  * - Territory list displays
  * - Create territory form is accessible
- * - Knocks page loads (redirects to /territories)
+ * - Knocks page loads directly
  * - New knock form is accessible
  * - Storm targeting page loads with drawing tools
  * - Storm leads page loads with area management
@@ -22,8 +22,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     // Use empty storage state to test without authentication
     test.use({ storageState: { cookies: [], origins: [] } })
 
-    test('should redirect /territories to login when unauthenticated', async ({ page }) => {
-      await page.goto('/territories')
+    test('should redirect /knocks to login when unauthenticated', async ({ page }) => {
+      await page.goto('/knocks')
 
       // Should redirect to login page
       await expect(page).toHaveURL(/\/login/)
@@ -37,14 +37,6 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       await page.goto('/territories/new')
 
       // Should redirect to login page
-      await expect(page).toHaveURL(/\/login/)
-    })
-
-    test('should redirect /knocks to login via /territories redirect', async ({ page }) => {
-      // /knocks redirects to /territories, which should then redirect to login
-      await page.goto('/knocks')
-
-      // Should eventually end up at login
       await expect(page).toHaveURL(/\/login/)
     })
 
@@ -70,14 +62,14 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
   })
 
-  test.describe('Authenticated Territories Access', () => {
+  test.describe('Authenticated Field Activity Access', () => {
     // Uses default authenticated storage state
 
-    test('should load territories page with map view', async ({ page }) => {
-      await page.goto('/territories')
+    test('should load knocks page with map view', async ({ page }) => {
+      await page.goto('/knocks')
 
-      // Should stay on territories page (not redirect to login)
-      await expect(page).toHaveURL(/\/territories/)
+      // Should stay on knocks page (not redirect to login)
+      await expect(page).toHaveURL(/\/knocks/)
 
       // Should show the Field Activity header
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -87,7 +79,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
 
     test('should display map and territory selection controls', async ({ page }) => {
-      await page.goto('/territories')
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -102,7 +94,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
 
     test('should display territory selector section', async ({ page }) => {
-      await page.goto('/territories')
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -113,7 +105,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
 
     test('should switch between map, KPIs, and territories views', async ({ page }) => {
-      await page.goto('/territories')
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -136,7 +128,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
 
     test('should display recent activity section', async ({ page }) => {
-      await page.goto('/territories')
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -153,7 +145,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     })
 
     test('should handle empty territory state gracefully', async ({ page }) => {
-      await page.goto('/territories')
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -211,16 +203,16 @@ test.describe('Field Operations Module - Smoke Tests', () => {
     test('should have back navigation link', async ({ page }) => {
       await page.goto('/territories/new')
 
-      // Should have back link to territories
-      const backLink = page.getByRole('link', { name: /Back to Territories/ })
+      // Should have back link to field activity
+      const backLink = page.getByRole('link', { name: /Back to Field Activity/ })
       await expect(backLink).toBeVisible()
 
-      // Verify it links to /territories
-      await expect(backLink).toHaveAttribute('href', '/territories')
+      // Verify it links to /knocks
+      await expect(backLink).toHaveAttribute('href', '/knocks')
     })
 
-    test('should access new territory from territories page', async ({ page }) => {
-      await page.goto('/territories')
+    test('should access new territory from knocks page', async ({ page }) => {
+      await page.goto('/knocks')
 
       // Look for "New Territory" button
       const newTerritoryButton = page.getByRole('link', { name: /New Territory/ })
@@ -240,11 +232,11 @@ test.describe('Field Operations Module - Smoke Tests', () => {
   test.describe('Authenticated Knocks Access', () => {
     // Uses default authenticated storage state
 
-    test('should redirect /knocks to /territories', async ({ page }) => {
+    test('should load /knocks as primary field activity page', async ({ page }) => {
       await page.goto('/knocks')
 
-      // Should redirect to territories page
-      await expect(page).toHaveURL(/\/territories/)
+      // Should stay on knocks page
+      await expect(page).toHaveURL(/\/knocks/)
 
       // Should show Field Activity content
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
@@ -273,8 +265,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       }
     })
 
-    test('should access new knock form from territories page', async ({ page }) => {
-      await page.goto('/territories')
+    test('should access new knock form from knocks page', async ({ page }) => {
+      await page.goto('/knocks')
 
       // Look for "Log Knock" or "New Knock" button
       const logKnockButton = page.getByRole('link', { name: /Log Knock|New Knock/ })
@@ -452,7 +444,7 @@ test.describe('Field Operations Module - Smoke Tests', () => {
   })
 
   test.describe('Error Handling', () => {
-    test('should handle network errors gracefully on territories page', async ({ page }) => {
+    test('should handle network errors gracefully on knocks page', async ({ page }) => {
       // Set up console error listener
       const errors: string[] = []
       page.on('console', (msg) => {
@@ -461,15 +453,15 @@ test.describe('Field Operations Module - Smoke Tests', () => {
         }
       })
 
-      // Navigate to territories page
-      const response = await page.goto('/territories', { waitUntil: 'networkidle' })
+      // Navigate to knocks page
+      const response = await page.goto('/knocks', { waitUntil: 'networkidle' })
 
       // Check HTTP response is not server error
       expect(response?.status()).not.toBe(500)
       expect(response?.status()).toBeLessThan(500)
 
       // Page should load without critical errors
-      await expect(page).toHaveURL(/\/territories/)
+      await expect(page).toHaveURL(/\/knocks/)
 
       // Filter out expected/harmless errors
       const criticalErrors = errors.filter(e =>
@@ -526,8 +518,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       expect(isOnTerritoriesPage || hasErrorMessage).toBeTruthy()
     })
 
-    test('should load Google Maps API successfully on territories page', async ({ page }) => {
-      await page.goto('/territories')
+    test('should load Google Maps API successfully on knocks page', async ({ page }) => {
+      await page.goto('/knocks')
 
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()

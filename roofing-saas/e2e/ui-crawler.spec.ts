@@ -172,11 +172,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log(`Pipeline has draggable elements: ${hasDraggable}`)
   })
 
-  test('should test territories and mapping features', async ({ page }) => {
-    setupConsoleTracking(page, 'Territories')
-    console.log('Testing: Territories Module')
+  test('should test field activity and mapping features', async ({ page }) => {
+    setupConsoleTracking(page, 'Field Activity')
+    console.log('Testing: Field Activity Module')
 
-    await page.goto('/territories')
+    await page.goto('/knocks')
     await page.waitForLoadState('networkidle')
 
     // Check for map container
@@ -186,7 +186,7 @@ test.describe('UI Crawler - Full Application Test', () => {
       issues.push({
         severity: 'medium',
         category: 'ui',
-        page: '/territories',
+        page: '/knocks',
         description: 'Map container not found',
       })
     }
@@ -284,8 +284,8 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Financials')
     console.log('Testing: Financial Modules')
 
-    // Test financials overview
-    await page.goto('/financials')
+    // Test financial reports
+    await page.goto('/financial/reports')
     await page.waitForLoadState('networkidle')
 
     // Test commissions
