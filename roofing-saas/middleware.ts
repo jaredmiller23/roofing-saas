@@ -182,15 +182,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
   }
 
-  // Pass auth context via REQUEST headers so layout (headers()) and API
+  // Pass auth context via request headers so layout (headers()) and API
   // routes (request.headers) can read them without re-validating the JWT
   // or re-querying tenant_users. Middleware has already validated the
   // session — these headers are trustworthy and overwrite any client values.
+  //
+  // We use Next.js's internal x-middleware-request-* mechanism to inject
+  // custom request headers into the EXISTING supabaseResponse, preserving
+  // the Supabase cookie handling (creating a new response would break it).
   if (user && !isPublicRoute) {
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-user-id', user.id)
-    requestHeaders.set('x-user-email', user.email || '')
-
     // Single tenant_users query replaces 3-5 separate queries downstream
     const { data: tenantData } = await supabase
       .from('tenant_users')
@@ -200,20 +200,26 @@ export async function middleware(request: NextRequest) {
       .order('joined_at', { ascending: false })
       .limit(1)
 
+    // Build the list of custom headers to inject
+    const customHeaders: Record<string, string> = {
+      'x-user-id': user.id,
+      'x-user-email': user.email || '',
+    }
     if (tenantData && tenantData.length > 0) {
-      requestHeaders.set('x-tenant-id', tenantData[0].tenant_id)
-      requestHeaders.set('x-user-role', tenantData[0].role)
+      customHeaders['x-tenant-id'] = tenantData[0].tenant_id
+      customHeaders['x-user-role'] = tenantData[0].role
     }
 
-    // Recreate response with modified request headers (per Supabase pattern,
-    // lines 222-231 below) while preserving auth cookies
-    const newResponse = NextResponse.next({
-      request: { headers: requestHeaders },
-    })
-    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) =>
-      newResponse.cookies.set(name, value, options)
-    )
-    supabaseResponse = newResponse
+    // Append to Next.js middleware header override mechanism
+    const existingOverrides = supabaseResponse.headers.get('x-middleware-override-headers') || ''
+    const customKeys = Object.keys(customHeaders)
+    const allOverrides = existingOverrides
+      ? `${existingOverrides},${customKeys.join(',')}`
+      : customKeys.join(',')
+    supabaseResponse.headers.set('x-middleware-override-headers', allOverrides)
+    for (const [key, value] of Object.entries(customHeaders)) {
+      supabaseResponse.headers.set(`x-middleware-request-${key}`, value)
+    }
   }
 
   // Check MFA enforcement for authenticated users accessing protected routes
