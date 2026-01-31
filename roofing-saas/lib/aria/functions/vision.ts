@@ -433,6 +433,7 @@ ariaFunctionRegistry.register({
           .select('address, city, state, zip')
           .eq('id', contactId)
           .eq('tenant_id', tenantId)
+          .eq('is_deleted', false)
           .single()
 
         if (contact) {

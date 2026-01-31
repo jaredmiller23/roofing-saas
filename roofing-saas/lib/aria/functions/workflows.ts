@@ -119,6 +119,7 @@ ariaFunctionRegistry.register({
         .from('contacts')
         .select('*')
         .eq('id', targetContactId)
+        .eq('is_deleted', false)
         .single()
 
       if (contact) {
@@ -131,6 +132,7 @@ ariaFunctionRegistry.register({
         .from('projects')
         .select('*')
         .eq('id', targetProjectId)
+        .eq('is_deleted', false)
         .single()
 
       if (project) {

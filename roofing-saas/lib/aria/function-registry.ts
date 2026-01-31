@@ -115,6 +115,7 @@ ariaFunctionRegistry.register({
         'id, first_name, last_name, email, phone, mobile_phone, address_street, address_city, address_state, address_zip, source, stage'
       )
       .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
       .or(
         `first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,mobile_phone.ilike.%${query}%,address_street.ilike.%${query}%,address_city.ilike.%${query}%`
       )
@@ -166,6 +167,7 @@ ariaFunctionRegistry.register({
       .from('contacts')
       .select('*, projects(*)')
       .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
 
     if (contact_id) {
       query = query.eq('id', contact_id)

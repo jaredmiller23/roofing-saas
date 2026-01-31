@@ -213,6 +213,7 @@ export async function findContactByPhone(
         'id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language'
       )
       .eq('tenant_id', context.tenantId)
+      .eq('is_deleted', false)
       .or(
         phoneVariants
           .flatMap((p) => [`phone.ilike.%${p}%`, `mobile_phone.ilike.%${p}%`])

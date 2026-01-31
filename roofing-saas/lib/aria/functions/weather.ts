@@ -125,6 +125,7 @@ ariaFunctionRegistry.register({
           .select('latitude, longitude, city, state')
           .eq('id', contactId)
           .eq('tenant_id', tenantId)
+          .eq('is_deleted', false)
           .single()
 
         if (contact) {

@@ -47,6 +47,7 @@ export async function notifyContact(params: NotifyContactParams): Promise<Notify
       .select('email, phone, first_name, last_name')
       .eq('id', contactId)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (error || !contact) {

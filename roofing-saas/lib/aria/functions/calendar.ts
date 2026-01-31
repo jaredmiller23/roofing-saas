@@ -571,6 +571,7 @@ ariaFunctionRegistry.register({
         .from('contacts')
         .select('address, city, state')
         .eq('id', finalContactId)
+        .eq('is_deleted', false)
         .single()
 
       if (contact?.address) {
