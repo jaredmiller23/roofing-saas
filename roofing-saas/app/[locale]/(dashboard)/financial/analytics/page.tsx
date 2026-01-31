@@ -51,6 +51,13 @@ export default async function FinancialAnalyticsPage() {
     .eq('tenant_id', tenantId)
     .limit(100)
 
+  // Fetch financial configuration for configurable ratios
+  const { data: financialConfig } = await supabase
+    .from('financial_configs')
+    .select('forecast_blend_historical, forecast_blend_pipeline, cost_rate, margin_excellent, margin_good, margin_fair, margin_target, seasonal_adjustments')
+    .eq('tenant_id', tenantId)
+    .single()
+
   // Calculate pipeline data for forecasting
   const pipelineProjects = projects?.filter(p =>
     p.status === 'prospect' || p.status === 'quote_sent' || p.status === 'negotiation'
@@ -170,19 +177,33 @@ export default async function FinancialAnalyticsPage() {
           pipelineProjects={pipelineProjects}
           completedProjects={completedProjects}
           closeRate={closeRate}
+          financialSettings={financialConfig ? {
+            forecastBlendHistorical: Number(financialConfig.forecast_blend_historical),
+            forecastBlendPipeline: Number(financialConfig.forecast_blend_pipeline),
+            seasonalAdjustments: financialConfig.seasonal_adjustments as Record<string, number> | undefined,
+          } : undefined}
         />
 
         {/* Cash Flow Projection */}
         <CashFlowProjection
           projects={completedProjects}
           arAging={arAging}
+          costRate={financialConfig ? Number(financialConfig.cost_rate) : undefined}
         />
 
         {/* Cost Trend Analysis */}
         <CostTrendAnalysis expenses={expenses || []} />
 
         {/* Margin Analysis */}
-        <MarginAnalysis projects={projects || []} />
+        <MarginAnalysis
+          projects={projects || []}
+          marginThresholds={financialConfig ? {
+            excellent: Number(financialConfig.margin_excellent),
+            good: Number(financialConfig.margin_good),
+            fair: Number(financialConfig.margin_fair),
+            target: Number(financialConfig.margin_target),
+          } : undefined}
+        />
 
         {/* Material Waste Tracking */}
         <MaterialWasteTracking materials={materials || []} />

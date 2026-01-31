@@ -21,6 +21,7 @@ import { buildARIAContext, ariaFunctionRegistry, executeARIAFunction } from '@/l
 import { getARIASystemPrompt } from '@/lib/aria/orchestrator'
 import { openai, getOpenAIModel } from '@/lib/ai/openai-client'
 import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
+import { canUseFeature } from '@/lib/billing/feature-gates'
 import { createConversation, saveMessage, updateConversationTitle, generateTitle } from '@/lib/aria/persistence'
 import { incrementAiUsage, calculateChatCostCents } from '@/lib/billing/ai-usage'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
@@ -46,6 +47,12 @@ export async function POST(request: NextRequest) {
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    // Check AI feature access (allow if no subscription — treat as trial/setup mode)
+    const aiAccess = await canUseFeature(tenantId, 'aiChat')
+    if (!aiAccess.allowed && aiAccess.reason !== 'No active subscription') {
+      throw AuthorizationError(aiAccess.reason || 'AI chat requires a plan upgrade')
     }
 
     // Apply rate limiting

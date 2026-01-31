@@ -22,14 +22,35 @@ import {
   Clock,
   Edit,
   Loader2,
+  Users,
+  UserPlus,
+  RefreshCw,
+  ChevronLeft,
 } from 'lucide-react'
 import type {
   Campaign,
   CampaignStep,
   CampaignTrigger,
+  CampaignEnrollment,
+  EnrollmentStatus,
   StepType,
 } from '@/lib/campaigns/types'
-import { apiFetch } from '@/lib/api/client'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 export default function CampaignBuilderPage() {
   const router = useRouter()
@@ -39,6 +60,11 @@ export default function CampaignBuilderPage() {
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [steps, setSteps] = useState<CampaignStep[]>([])
   const [_triggers, _setTriggers] = useState<CampaignTrigger[]>([])
+  const [enrollments, setEnrollments] = useState<CampaignEnrollment[]>([])
+  const [enrollmentTotal, setEnrollmentTotal] = useState(0)
+  const [enrollmentPage, setEnrollmentPage] = useState(1)
+  const [enrollmentFilter, setEnrollmentFilter] = useState<EnrollmentStatus | 'all'>('all')
+  const [enrollmentsLoading, setEnrollmentsLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -63,6 +89,25 @@ export default function CampaignBuilderPage() {
       console.error('Error fetching campaign data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchEnrollments = async (page = 1, status: EnrollmentStatus | 'all' = 'all') => {
+    setEnrollmentsLoading(true)
+    try {
+      const limit = 20
+      const offset = (page - 1) * limit
+      let url = `/api/campaigns/${campaignId}/enrollments?limit=${limit}&offset=${offset}`
+      if (status !== 'all') {
+        url += `&status=${status}`
+      }
+      const result = await apiFetchPaginated<CampaignEnrollment[]>(url)
+      setEnrollments(result.data)
+      setEnrollmentTotal(result.pagination.total)
+    } catch (error) {
+      console.error('Error fetching enrollments:', error)
+    } finally {
+      setEnrollmentsLoading(false)
     }
   }
 
@@ -334,19 +379,25 @@ export default function CampaignBuilderPage() {
 
         {/* Enrollments Tab */}
         <TabsContent value="enrollments" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Enrollments</CardTitle>
-              <CardDescription>
-                View and manage contacts enrolled in this campaign
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                Enrollment management coming soon
-              </p>
-            </CardContent>
-          </Card>
+          <EnrollmentsPanel
+            campaignId={campaignId}
+            enrollments={enrollments}
+            total={enrollmentTotal}
+            page={enrollmentPage}
+            filter={enrollmentFilter}
+            loading={enrollmentsLoading}
+            onFilterChange={(status) => {
+              setEnrollmentFilter(status)
+              setEnrollmentPage(1)
+              fetchEnrollments(1, status)
+            }}
+            onPageChange={(page) => {
+              setEnrollmentPage(page)
+              fetchEnrollments(page, enrollmentFilter)
+            }}
+            onRefresh={() => fetchEnrollments(enrollmentPage, enrollmentFilter)}
+            onLoad={() => fetchEnrollments(1, enrollmentFilter)}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -418,5 +469,257 @@ function StepCard({ step, index, onDelete }: StepCardProps) {
         </Button>
       </div>
     </div>
+  )
+}
+
+// --- Enrollments Panel ---
+
+interface EnrollmentsPanelProps {
+  campaignId: string
+  enrollments: CampaignEnrollment[]
+  total: number
+  page: number
+  filter: EnrollmentStatus | 'all'
+  loading: boolean
+  onFilterChange: (status: EnrollmentStatus | 'all') => void
+  onPageChange: (page: number) => void
+  onRefresh: () => void
+  onLoad: () => void
+}
+
+function EnrollmentsPanel({
+  campaignId,
+  enrollments,
+  total,
+  page,
+  filter,
+  loading,
+  onFilterChange,
+  onPageChange,
+  onRefresh,
+  onLoad,
+}: EnrollmentsPanelProps) {
+  const [loaded, setLoaded] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
+  const [contactIdInput, setContactIdInput] = useState('')
+
+  useEffect(() => {
+    if (!loaded) {
+      setLoaded(true)
+      onLoad()
+    }
+  }, [loaded, onLoad])
+
+  const handleManualEnroll = async () => {
+    if (!contactIdInput.trim()) return
+    setEnrolling(true)
+    try {
+      await apiFetch<CampaignEnrollment>(`/api/campaigns/${campaignId}/enrollments`, {
+        method: 'POST',
+        body: { contact_id: contactIdInput.trim() },
+      })
+      setContactIdInput('')
+      onRefresh()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to enroll contact'
+      alert(message)
+    } finally {
+      setEnrolling(false)
+    }
+  }
+
+  const limit = 20
+  const totalPages = Math.ceil(total / limit)
+
+  const getStatusBadge = (status: EnrollmentStatus) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-500">Active</Badge>
+      case 'completed':
+        return <Badge variant="default">Completed</Badge>
+      case 'paused':
+        return <Badge variant="secondary">Paused</Badge>
+      case 'exited':
+        return <Badge variant="outline">Exited</Badge>
+      case 'failed':
+        return <Badge className="bg-red-500">Failed</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Campaign Enrollments
+            </CardTitle>
+            <CardDescription>
+              {total} contact{total !== 1 ? 's' : ''} enrolled
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Manual Enrollment */}
+        <div className="flex items-end gap-2 p-3 border border-dashed border-border rounded-lg">
+          <div className="flex-1 space-y-1">
+            <Label htmlFor="contact-id" className="text-xs text-muted-foreground">
+              Enroll a contact by ID
+            </Label>
+            <Input
+              id="contact-id"
+              placeholder="Contact UUID..."
+              value={contactIdInput}
+              onChange={(e) => setContactIdInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleManualEnroll()
+              }}
+            />
+          </div>
+          <Button
+            size="sm"
+            onClick={handleManualEnroll}
+            disabled={enrolling || !contactIdInput.trim()}
+          >
+            {enrolling ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <UserPlus className="h-4 w-4 mr-2" />
+            )}
+            Enroll
+          </Button>
+        </div>
+
+        {/* Filter */}
+        <div className="flex items-center gap-2">
+          <Label className="text-sm text-muted-foreground">Status:</Label>
+          <Select
+            value={filter}
+            onValueChange={(value) => onFilterChange(value as EnrollmentStatus | 'all')}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
+              <SelectItem value="exited">Exited</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Enrollment Table */}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : enrollments.length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">
+              {filter !== 'all'
+                ? `No ${filter} enrollments found`
+                : 'No contacts enrolled yet'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-md border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contact ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead className="text-right">Step</TableHead>
+                    <TableHead className="text-right">Emails</TableHead>
+                    <TableHead className="text-right">SMS</TableHead>
+                    <TableHead>Enrolled</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {enrollments.map((enrollment) => (
+                    <TableRow key={enrollment.id}>
+                      <TableCell className="font-mono text-xs">
+                        {enrollment.contact_id.slice(0, 8)}...
+                      </TableCell>
+                      <TableCell>{getStatusBadge(enrollment.status)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {enrollment.enrollment_source?.replace(/_/g, ' ') || 'unknown'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {enrollment.steps_completed}/{enrollment.current_step_order ?? '?'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span title={`Sent: ${enrollment.emails_sent}, Opened: ${enrollment.emails_opened}, Clicked: ${enrollment.emails_clicked}`}>
+                          {enrollment.emails_sent}
+                          {enrollment.emails_opened > 0 && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({Math.round((enrollment.emails_opened / enrollment.emails_sent) * 100) || 0}%)
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">{enrollment.sms_sent}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(enrollment.enrolled_at)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2">
+                <p className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages} ({total} total)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(page - 1)}
+                    disabled={page <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPageChange(page + 1)}
+                    disabled={page >= totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }

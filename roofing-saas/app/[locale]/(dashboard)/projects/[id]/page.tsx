@@ -660,13 +660,49 @@ export default function ProjectDetailPage() {
                   options={quoteOptions}
                   projectName={project?.name || 'Project'}
                   mode="comparison"
-                  onSendProposal={(optionIds) => {
-                    console.log('Sending proposal for options:', optionIds)
-                    // TODO: Implement proposal sending
+                  onSendProposal={async (optionIds) => {
+                    try {
+                      toast.info('Generating proposal PDF...')
+                      const res = await fetch(`/api/estimates/${project?.id}/pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ option_ids: optionIds }),
+                      })
+                      if (!res.ok) throw new Error('Failed to generate PDF')
+                      const blob = await res.blob()
+                      // TODO: Open send dialog with PDF attachment
+                      // For now, download the PDF
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `proposal-${project?.name?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() || 'estimate'}.pdf`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                      toast.success('Proposal PDF downloaded')
+                    } catch {
+                      toast.error('Failed to generate proposal')
+                    }
                   }}
-                  onDownloadPdf={(optionIds) => {
-                    console.log('Downloading PDF for options:', optionIds)
-                    // TODO: Implement PDF download
+                  onDownloadPdf={async (optionIds) => {
+                    try {
+                      toast.info('Generating PDF...')
+                      const res = await fetch(`/api/estimates/${project?.id}/pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ option_ids: optionIds }),
+                      })
+                      if (!res.ok) throw new Error('Failed to generate PDF')
+                      const blob = await res.blob()
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `estimate-${project?.name?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() || 'estimate'}.pdf`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                      toast.success('PDF downloaded')
+                    } catch {
+                      toast.error('Failed to generate PDF')
+                    }
                   }}
                 />
               ) : (

@@ -19,9 +19,10 @@ interface ARAgingData {
 interface CashFlowProjectionProps {
   projects: Project[]
   arAging: ARAgingData
+  costRate?: number
 }
 
-export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProps) {
+export function CashFlowProjection({ projects, arAging, costRate }: CashFlowProjectionProps) {
   const cashFlow = useMemo(() => {
     // Calculate total AR
     const totalAR = arAging.current + arAging.days30 + arAging.days60 + arAging.days90plus
@@ -59,8 +60,8 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
                          i === 1 ? expectedCollections.month2 :
                          expectedCollections.month3
 
-      // Assume 70% of revenue goes to costs (industry average)
-      const expectedOut = avgMonthlyRevenue * 0.7
+      // Apply configurable cost rate (default 70% industry average)
+      const expectedOut = avgMonthlyRevenue * (costRate ?? 0.7)
 
       const netCashFlow = expectedIn - expectedOut
 
@@ -81,7 +82,7 @@ export function CashFlowProjection({ projects, arAging }: CashFlowProjectionProp
       projections,
       hasShortfall,
     }
-  }, [projects, arAging])
+  }, [projects, arAging, costRate])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

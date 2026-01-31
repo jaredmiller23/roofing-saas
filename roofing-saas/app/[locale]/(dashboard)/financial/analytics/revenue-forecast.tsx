@@ -9,13 +9,20 @@ interface Project {
   actual_completion?: string | null
 }
 
+interface FinancialSettings {
+  forecastBlendHistorical: number
+  forecastBlendPipeline: number
+  seasonalAdjustments?: Record<string, number>
+}
+
 interface RevenueForecastProps {
   pipelineProjects: Project[]
   completedProjects: Project[]
   closeRate: number
+  financialSettings?: FinancialSettings
 }
 
-export function RevenueForecast({ pipelineProjects, completedProjects, closeRate }: RevenueForecastProps) {
+export function RevenueForecast({ pipelineProjects, completedProjects, closeRate, financialSettings }: RevenueForecastProps) {
   const forecast = useMemo(() => {
     // Calculate pipeline value
     const pipelineValue = pipelineProjects.reduce((sum, p) => sum + (p.estimated_value || 0), 0)
@@ -45,11 +52,14 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
       const forecastDate = new Date(today.getFullYear(), today.getMonth() + i + 1, 1)
       const monthName = forecastDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
-      // Simple forecast: blend historical average with expected pipeline revenue
-      const forecastValue = (avgMonthlyRevenue * 0.6) + (expectedRevenue / 3 * 0.4)
+      // Blend historical average with expected pipeline revenue using configurable ratios
+      const blendHistorical = financialSettings?.forecastBlendHistorical ?? 0.6
+      const blendPipeline = financialSettings?.forecastBlendPipeline ?? 0.4
+      const forecastValue = (avgMonthlyRevenue * blendHistorical) + (expectedRevenue / 3 * blendPipeline)
 
-      // Add seasonal adjustment (placeholder - could be enhanced)
-      const seasonalFactor = 1.0
+      // Apply seasonal adjustment if configured for this month
+      const monthKey = String(forecastDate.getMonth() + 1)
+      const seasonalFactor = financialSettings?.seasonalAdjustments?.[monthKey] ?? 1.0
 
       forecasts.push({
         month: monthName,
@@ -65,7 +75,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
       avgMonthlyRevenue,
       forecasts,
     }
-  }, [pipelineProjects, completedProjects, closeRate])
+  }, [pipelineProjects, completedProjects, closeRate, financialSettings])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -154,7 +164,7 @@ export function RevenueForecast({ pipelineProjects, completedProjects, closeRate
         {/* Methodology Note */}
         <div className="mt-6 p-4 bg-primary/10 rounded-lg">
           <p className="text-xs text-primary">
-            <strong>Methodology:</strong> Forecast combines historical average revenue (60% weight) with pipeline value adjusted by close rate (40% weight).
+            <strong>Methodology:</strong> Forecast combines historical average revenue ({((financialSettings?.forecastBlendHistorical ?? 0.6) * 100).toFixed(0)}% weight) with pipeline value adjusted by close rate ({((financialSettings?.forecastBlendPipeline ?? 0.4) * 100).toFixed(0)}% weight).
             Confidence intervals show ±20% variance. Enhanced with seasonal adjustments when available.
           </p>
         </div>

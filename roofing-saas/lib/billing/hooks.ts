@@ -39,6 +39,9 @@ const DEFAULT_FEATURES: PlanFeatures = {
   unlimitedMessaging: false,
   customIntegrations: false,
   dedicatedSupport: false,
+  aiChat: false,
+  aiVoiceAssistant: false,
+  aiKnowledgeBase: false,
 };
 
 // =============================================================================

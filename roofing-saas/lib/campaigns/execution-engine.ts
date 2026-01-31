@@ -558,15 +558,65 @@ async function executeConditional(
   context: StepExecutionContext,
   config: ConditionalStepConfig
 ): Promise<ExecutionResult> {
-  // TODO: Implement condition evaluation
-  // For now, return mock result
-  const conditionMet = true
+  const conditionMet = evaluateConditions(config.conditions, context)
 
   return {
     condition_met: conditionMet,
     next_step: conditionMet
       ? config.true_path_step_id
       : config.false_path_step_id,
+  }
+}
+
+/**
+ * Evaluate a set of condition rules against the contact/enrollment context
+ */
+function evaluateConditions(
+  conditions: import('./types').StepConditions,
+  context: StepExecutionContext
+): boolean {
+  const { rules, logic = 'AND' } = conditions
+
+  if (!rules || rules.length === 0) {
+    return true
+  }
+
+  if (logic === 'AND') {
+    return rules.every(rule => evaluateRule(rule, context))
+  }
+  return rules.some(rule => evaluateRule(rule, context))
+}
+
+/**
+ * Evaluate a single condition rule against a contact field value
+ */
+function evaluateRule(
+  rule: import('./types').ConditionRule,
+  context: StepExecutionContext
+): boolean {
+  const contact = context.contact as Record<string, unknown>
+  const fieldValue = contact[rule.field]
+
+  switch (rule.operator) {
+    case 'equals':
+      return fieldValue === rule.value
+    case 'not_equals':
+      return fieldValue !== rule.value
+    case 'greater_than':
+      return typeof fieldValue === 'number' && typeof rule.value === 'number' && fieldValue > rule.value
+    case 'less_than':
+      return typeof fieldValue === 'number' && typeof rule.value === 'number' && fieldValue < rule.value
+    case 'contains':
+      return typeof fieldValue === 'string' && typeof rule.value === 'string' && fieldValue.toLowerCase().includes(rule.value.toLowerCase())
+    case 'not_contains':
+      return typeof fieldValue === 'string' && typeof rule.value === 'string' && !fieldValue.toLowerCase().includes(rule.value.toLowerCase())
+    case 'is_null':
+      return fieldValue === null || fieldValue === undefined
+    case 'is_not_null':
+      return fieldValue !== null && fieldValue !== undefined
+    default:
+      logger.warn('Unknown condition operator', { operator: rule.operator })
+      return false
   }
 }
 

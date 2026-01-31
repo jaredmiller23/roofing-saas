@@ -11,11 +11,19 @@ interface Project {
   profit_margin_percent?: number | null
 }
 
-interface MarginAnalysisProps {
-  projects: Project[]
+interface MarginThresholds {
+  excellent: number
+  good: number
+  fair: number
+  target: number
 }
 
-export function MarginAnalysis({ projects }: MarginAnalysisProps) {
+interface MarginAnalysisProps {
+  projects: Project[]
+  marginThresholds?: MarginThresholds
+}
+
+export function MarginAnalysis({ projects, marginThresholds }: MarginAnalysisProps) {
   const analysis = useMemo(() => {
     // Margin by job type
     const byType: Record<string, { revenue: number; profit: number; count: number }> = {}
@@ -83,18 +91,23 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
     }).format(value)
   }
 
+  const excellent = marginThresholds?.excellent ?? 30
+  const good = marginThresholds?.good ?? 20
+  const fair = marginThresholds?.fair ?? 10
+  const target = marginThresholds?.target ?? 25
+
   const getMarginColor = (margin: number) => {
-    if (margin >= 30) return 'text-green-600'
-    if (margin >= 20) return 'text-primary'
-    if (margin >= 10) return 'text-yellow-600'
+    if (margin >= excellent) return 'text-green-600'
+    if (margin >= good) return 'text-primary'
+    if (margin >= fair) return 'text-yellow-600'
     if (margin >= 0) return 'text-orange-600'
     return 'text-red-600'
   }
 
   const getMarginBgColor = (margin: number) => {
-    if (margin >= 30) return 'bg-green-100'
-    if (margin >= 20) return 'bg-primary/10'
-    if (margin >= 10) return 'bg-yellow-100'
+    if (margin >= excellent) return 'bg-green-100'
+    if (margin >= good) return 'bg-primary/10'
+    if (margin >= fair) return 'bg-yellow-100'
     if (margin >= 0) return 'bg-orange-100'
     return 'bg-red-100'
   }
@@ -212,10 +225,10 @@ export function MarginAnalysis({ projects }: MarginAnalysisProps) {
                 {analysis.marginByType[0].margin.toFixed(1)}%
               </li>
             )}
-            {analysis.overallMargin >= 25 && (
-              <li>Overall margin is healthy at {analysis.overallMargin.toFixed(1)}% (above 25% target)</li>
+            {analysis.overallMargin >= target && (
+              <li>Overall margin is healthy at {analysis.overallMargin.toFixed(1)}% (above {target}% target)</li>
             )}
-            {analysis.overallMargin < 15 && (
+            {analysis.overallMargin < fair + 5 && (
               <li className="text-red-700">Overall margin is below target. Review pricing and cost controls.</li>
             )}
             {analysis.worstPerformers.length > 0 && analysis.worstPerformers[0].profit_margin_percent! < 5 && (

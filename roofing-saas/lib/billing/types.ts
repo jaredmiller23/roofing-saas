@@ -19,6 +19,9 @@ export interface PlanFeatures {
   unlimitedMessaging: boolean;
   customIntegrations: boolean;
   dedicatedSupport: boolean;
+  aiChat: boolean;
+  aiVoiceAssistant: boolean;
+  aiKnowledgeBase: boolean;
 }
 
 export interface PlanConfig {

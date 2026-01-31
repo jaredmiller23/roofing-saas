@@ -3956,6 +3956,57 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_configs: {
+        Row: {
+          id: string
+          tenant_id: string
+          forecast_blend_historical: number
+          forecast_blend_pipeline: number
+          cost_rate: number
+          margin_excellent: number
+          margin_good: number
+          margin_fair: number
+          margin_target: number
+          seasonal_adjustments: Json | null
+          created_by: string | null
+          updated_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          forecast_blend_historical?: number
+          forecast_blend_pipeline?: number
+          cost_rate?: number
+          margin_excellent?: number
+          margin_good?: number
+          margin_fair?: number
+          margin_target?: number
+          seasonal_adjustments?: Json | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          forecast_blend_historical?: number
+          forecast_blend_pipeline?: number
+          cost_rate?: number
+          margin_excellent?: number
+          margin_good?: number
+          margin_fair?: number
+          margin_target?: number
+          seasonal_adjustments?: Json | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       gamification_activities: {
         Row: {
           activity_type: string

@@ -1,29 +1,155 @@
+import { NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
+import { successResponse, noContentResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
+import { rewardConfigSchema } from '@/lib/gamification/types'
+
 /**
- * Reward by ID API
- *
- * NOTE: This feature is not yet implemented in production.
- * The reward_configs table does not exist in the production database.
- * Returns 501 Not Implemented until the feature is built.
+ * GET /api/gamification/rewards/[id]
+ * Get a single reward config by ID
  */
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
 
-import { ApiError, ErrorCode } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
 
-const notImplementedError = () =>
-  new ApiError(
-    ErrorCode.INTERNAL_ERROR,
-    'Rewards feature is not yet available. This feature is planned for a future release.',
-    501
-  )
+    const { id } = await params
+    const supabase = await createClient()
 
-export async function GET() {
-  return errorResponse(notImplementedError())
+    const { data, error } = await supabase
+      .from('reward_configs')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (error || !data) {
+      if (error?.code === 'PGRST116') {
+        throw NotFoundError('Reward')
+      }
+      logger.error('Error fetching reward config', { error })
+      throw InternalError('Failed to fetch reward')
+    }
+
+    return successResponse(data)
+  } catch (error) {
+    logger.error('Error in GET /api/gamification/rewards/[id]', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
+  }
 }
 
-export async function PATCH() {
-  return errorResponse(notImplementedError())
+/**
+ * PATCH /api/gamification/rewards/[id]
+ * Update a reward config
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
+
+    const { id } = await params
+    const body = await request.json()
+    const validation = rewardConfigSchema.partial().safeParse(body)
+
+    if (!validation.success) {
+      throw ValidationError(validation.error.issues[0].message)
+    }
+
+    const supabase = await createClient()
+
+    // Verify the reward exists and belongs to tenant
+    const { data: existing, error: fetchError } = await supabase
+      .from('reward_configs')
+      .select('id')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (fetchError || !existing) {
+      throw NotFoundError('Reward')
+    }
+
+    const { data, error } = await supabase
+      .from('reward_configs')
+      .update({
+        ...validation.data,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('Error updating reward config', { error })
+      throw InternalError('Failed to update reward')
+    }
+
+    return successResponse(data)
+  } catch (error) {
+    logger.error('Error in PATCH /api/gamification/rewards/[id]', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
+  }
 }
 
-export async function DELETE() {
-  return errorResponse(notImplementedError())
+/**
+ * DELETE /api/gamification/rewards/[id]
+ * Delete a reward config
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError()
+    }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
+
+    const { id } = await params
+    const supabase = await createClient()
+
+    const { error } = await supabase
+      .from('reward_configs')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+
+    if (error) {
+      logger.error('Error deleting reward config', { error })
+      throw InternalError('Failed to delete reward')
+    }
+
+    return noContentResponse()
+  } catch (error) {
+    logger.error('Error in DELETE /api/gamification/rewards/[id]', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
+  }
 }
