@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api/client'
+import { Button } from '@/components/ui/button'
 
 interface ProjectCardProps {
   project: Project
@@ -360,10 +361,11 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
       {/* Start Production Button - Only for Won stage */}
       {project.pipeline_stage === 'won' && (
         <div className="mt-3 pt-3 border-t border-border">
-          <button
+          <Button
             onClick={handleStartProduction}
             disabled={startingProduction}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-primary-foreground rounded-md text-sm font-medium transition-colors"
+            variant="success"
+            className="w-full"
           >
             {startingProduction ? (
               <>
@@ -376,7 +378,7 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
                 Start Production
               </>
             )}
-          </button>
+          </Button>
         </div>
       )}
 

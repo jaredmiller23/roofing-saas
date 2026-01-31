@@ -3,16 +3,17 @@
 import React, { useState } from 'react'
 import { ARTool, ARSession } from '@/lib/ar/ar-types'
 import {
-  Ruler, 
-  Square, 
-  Triangle, 
-  AlertTriangle, 
-  Camera, 
-  Save, 
+  Ruler,
+  Square,
+  Triangle,
+  AlertTriangle,
+  Camera,
+  Save,
   Download,
   RotateCcw,
   Settings
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface ARToolbarProps {
   session: ARSession | null
@@ -226,10 +227,12 @@ export function ARToolbar({
             <span className="text-sm">Save</span>
           </button>
 
-          <button
+          <Button
             onClick={handleExport}
             disabled={isExporting || !session}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-primary-foreground rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="success"
+            size="sm"
+            className="gap-2"
           >
             {isExporting ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -237,18 +240,20 @@ export function ARToolbar({
               <Download className="h-4 w-4" />
             )}
             <span className="text-sm">Export</span>
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <button
+          <Button
             onClick={onReset}
             disabled={!session}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-primary-foreground rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="warning"
+            size="sm"
+            className="gap-2"
           >
             <RotateCcw className="h-4 w-4" />
             <span className="text-sm">Reset</span>
-          </button>
+          </Button>
 
           <button
             onClick={() => setShowSettings(!showSettings)}

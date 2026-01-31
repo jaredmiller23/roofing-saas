@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   DamageTypeSelector,
   SeveritySelector,
@@ -417,7 +418,7 @@ export function ClaimPhotoCapture({
               <div className="flex gap-2">
                 <button
                   onClick={capturePhoto}
-                  className="flex-1 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+                  className="flex-1 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90"
                 >
                   Capture
                 </button>
@@ -436,7 +437,7 @@ export function ClaimPhotoCapture({
             <div className="flex flex-col gap-2">
               <button
                 onClick={startCamera}
-                className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -491,23 +492,21 @@ export function ClaimPhotoCapture({
               <SeveritySelector value={severity} onChange={setSeverity} />
 
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={processAndUpload}
                   disabled={!canSave}
-                  className={`flex-1 py-3 rounded-lg font-medium ${
-                    canSave
-                      ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
+                  variant="success"
+                  className="flex-1 py-3"
                 >
                   Save Photo
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleCancel}
-                  className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent"
+                  variant="outline"
+                  className="px-4 py-3"
                 >
                   Retake
-                </button>
+                </Button>
               </div>
             </div>
           )}

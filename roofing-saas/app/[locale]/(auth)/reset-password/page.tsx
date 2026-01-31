@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getAppBaseUrl } from '@/lib/utils'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function ResetPasswordPage() {
   const params = useParams()
@@ -81,9 +82,9 @@ export default function ResetPasswordPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
           {error && (
-            <div className="rounded-md bg-red-500/10 p-4">
-              <div className="text-sm text-red-800">{error}</div>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <div>

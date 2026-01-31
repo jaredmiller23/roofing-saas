@@ -147,7 +147,7 @@ export function ConfirmImpersonationDialog({
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="bg-orange-600 hover:bg-orange-700"
+            variant="warning"
           >
             {isSubmitting ? 'Starting...' : 'Start Impersonation'}
           </Button>

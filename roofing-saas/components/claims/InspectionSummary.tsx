@@ -2,6 +2,7 @@
 
 import { type InspectionState, getInspectionSummary } from '@/lib/claims/inspection-state'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface InspectionSummaryProps {
   state: InspectionState
@@ -117,21 +118,19 @@ export function InspectionSummary({
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">
-            <button
+            <Button
               onClick={onBack}
               disabled={isSubmitting}
-              className="px-4 py-3 border border-border text-muted-foreground rounded-lg hover:bg-accent disabled:opacity-50"
+              variant="outline"
+              className="px-4 py-3"
             >
               Back
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onSubmit}
               disabled={!summary.readyToSubmit || isSubmitting}
-              className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
-                summary.readyToSubmit && !isSubmitting
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted text-muted-foreground cursor-not-allowed'
-              }`}
+              variant="success"
+              className="flex-1 py-3"
             >
               {isSubmitting ? (
                 <>
@@ -149,7 +148,7 @@ export function InspectionSummary({
                   Complete Inspection
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -166,7 +165,7 @@ function ChecklistItem({ checked, label }: { checked: boolean; label: string }) 
         }`}
       >
         {checked ? (
-          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"

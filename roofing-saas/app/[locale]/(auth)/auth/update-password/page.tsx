@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
@@ -74,9 +75,9 @@ export default function UpdatePasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
-          <div className="rounded-md bg-red-500/10 p-4">
-            <div className="text-sm text-red-400">{error}</div>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
           <div className="text-center">
             <a
               href={`/${locale}/reset-password`}
@@ -105,9 +106,9 @@ export default function UpdatePasswordPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleUpdatePassword}>
           {error && (
-            <div className="rounded-md bg-red-500/10 p-4">
-              <div className="text-sm text-red-400">{error}</div>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <div className="space-y-4">

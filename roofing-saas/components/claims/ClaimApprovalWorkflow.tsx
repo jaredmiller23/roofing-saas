@@ -194,7 +194,8 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={() => setShowApproveDialog(true)}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  variant="success"
+                  className="flex-1"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Approve Claim
@@ -257,7 +258,7 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
             <Button
               onClick={handleApprove}
               disabled={processing}
-              className="bg-green-600 hover:bg-green-700"
+              variant="success"
             >
               {processing ? 'Approving...' : 'Confirm Approval'}
             </Button>

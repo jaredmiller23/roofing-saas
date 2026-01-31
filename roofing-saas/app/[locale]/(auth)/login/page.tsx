@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { MFAChallenge } from '@/components/auth/MFAChallenge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -106,9 +107,9 @@ export default function LoginPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="rounded-md bg-red-500/10 p-4">
-              <div className="text-sm text-red-800">{error}</div>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <div className="rounded-md shadow-sm -space-y-px">
