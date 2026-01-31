@@ -1,0 +1,1682 @@
+{
+  "validated_at": "2026-01-31T01:51:12.338Z",
+  "summary": {
+    "tables_checked": 110,
+    "tables_missing": 10,
+    "columns_checked": 788,
+    "columns_phantom": 76,
+    "fk_issues": 2,
+    "rpc_missing": 5,
+    "total_issues": 93
+  },
+  "issues": [
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "project_profit_loss",
+      "detail": "Table 'project_profit_loss' does not exist in the database (6 references)",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/analytics/page.tsx",
+          "line": 27
+        },
+        {
+          "file": "app/[locale]/(dashboard)/financial/reports/page.tsx",
+          "line": 25
+        },
+        {
+          "file": "app/[locale]/(dashboard)/financials/page.tsx",
+          "line": 24
+        },
+        {
+          "file": "app/api/financials/pl/route.ts",
+          "line": 34
+        },
+        {
+          "file": "app/api/insights/query/route.ts",
+          "line": 230
+        },
+        {
+          "file": "app/api/insights/suggestions/route.ts",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "commission_summary_by_user",
+      "detail": "Table 'commission_summary_by_user' does not exist in the database (1 reference)",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "user_settings",
+      "detail": "Table 'user_settings' does not exist in the database (2 references)",
+      "references": [
+        {
+          "file": "app/api/calendar/google/disconnect/route.ts",
+          "line": 22
+        },
+        {
+          "file": "app/api/calendar/google/status/route.ts",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "profiles",
+      "detail": "Table 'profiles' does not exist in the database (1 reference)",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 67
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "leaderboard",
+      "detail": "Table 'leaderboard' does not exist in the database (6 references)",
+      "references": [
+        {
+          "file": "app/api/gamification/leaderboard/route.ts",
+          "line": 156
+        },
+        {
+          "file": "app/api/gamification/leaderboard/route.ts",
+          "line": 171
+        },
+        {
+          "file": "app/api/gamification/leaderboard/route.ts",
+          "line": 178
+        },
+        {
+          "file": "lib/dashboard/queries.ts",
+          "line": 489
+        },
+        {
+          "file": "lib/dashboard/queries.ts",
+          "line": 515
+        },
+        {
+          "file": "lib/dashboard/queries.ts",
+          "line": 522
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "files",
+      "detail": "Table 'files' does not exist in the database (5 references)",
+      "references": [
+        {
+          "file": "app/api/project-files/upload/route.ts",
+          "line": 65
+        },
+        {
+          "file": "app/api/project-files/upload/route.ts",
+          "line": 78
+        },
+        {
+          "file": "app/api/project-files/upload/route.ts",
+          "line": 114
+        },
+        {
+          "file": "components/project-files/project-file-form.tsx",
+          "line": 108
+        },
+        {
+          "file": "components/project-files/project-file-form.tsx",
+          "line": 120
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "users",
+      "detail": "Table 'users' does not exist in the database (6 references)",
+      "references": [
+        {
+          "file": "app/api/signature-documents/[id]/sign/route.ts",
+          "line": 119
+        },
+        {
+          "file": "app/api/signature-documents/[id]/sign/route.ts",
+          "line": 408
+        },
+        {
+          "file": "app/api/signature-documents/[id]/sign/route.ts",
+          "line": 496
+        },
+        {
+          "file": "lib/aria/commitment-actions.ts",
+          "line": 168
+        },
+        {
+          "file": "lib/aria/notify.ts",
+          "line": 118
+        },
+        {
+          "file": "lib/supabase/server.ts",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "sms_messages",
+      "detail": "Table 'sms_messages' does not exist in the database (1 reference)",
+      "references": [
+        {
+          "file": "lib/aria/context-builder.ts",
+          "line": 422
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "tenant_members",
+      "detail": "Table 'tenant_members' does not exist in the database (1 reference)",
+      "references": [
+        {
+          "file": "lib/billing/grace-period.ts",
+          "line": 65
+        }
+      ]
+    },
+    {
+      "severity": "P0",
+      "category": "non_existent_table",
+      "table": "dashboards",
+      "detail": "Table 'dashboards' does not exist in the database (6 references)",
+      "references": [
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 34
+        },
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 88
+        },
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 131
+        },
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 157
+        },
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 181
+        },
+        {
+          "file": "lib/dashboard/dashboard-engine.ts",
+          "line": 511
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "user_role_assignments",
+      "column": "user_roles",
+      "detail": "Column 'user_roles' does not exist on table 'user_role_assignments'",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/aria/knowledge/page.tsx",
+          "line": 29
+        },
+        {
+          "file": "app/api/knowledge/generate-embeddings/route.ts",
+          "line": 34
+        },
+        {
+          "file": "app/api/knowledge/route.ts",
+          "line": 84
+        },
+        {
+          "file": "app/api/knowledge/route.ts",
+          "line": 174
+        },
+        {
+          "file": "app/api/knowledge/route.ts",
+          "line": 253
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "commission_records",
+      "column": "commission_type",
+      "detail": "Column 'commission_type' does not exist on table 'commission_records'",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "commission_records",
+      "column": "base_amount",
+      "detail": "Column 'base_amount' does not exist on table 'commission_records'",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "commission_records",
+      "column": "commission_amount",
+      "detail": "Column 'commission_amount' does not exist on table 'commission_records'",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "commission_records",
+      "column": "final_amount",
+      "detail": "Column 'final_amount' does not exist on table 'commission_records'",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "audit_log",
+      "column": "action_type",
+      "detail": "Column 'action_type' does not exist on table 'audit_log'",
+      "references": [
+        {
+          "file": "app/api/admin/audit-log/export/route.ts",
+          "line": 84
+        },
+        {
+          "file": "app/api/admin/audit-log/export/route.ts",
+          "line": 280
+        },
+        {
+          "file": "app/api/admin/audit-log/route.ts",
+          "line": 95
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "audit_log",
+      "column": "timestamp",
+      "detail": "Column 'timestamp' does not exist on table 'audit_log'",
+      "references": [
+        {
+          "file": "app/api/admin/audit-log/export/route.ts",
+          "line": 282
+        },
+        {
+          "file": "app/api/admin/audit-log/export/route.ts",
+          "line": 283
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "tenant_users",
+      "column": "created_at",
+      "detail": "Column 'created_at' does not exist on table 'tenant_users'",
+      "references": [
+        {
+          "file": "app/api/admin/users/route.ts",
+          "line": 48
+        },
+        {
+          "file": "app/api/admin/users/route.ts",
+          "line": 50
+        },
+        {
+          "file": "app/api/team-members/route.ts",
+          "line": 49
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "campaign_step_executions",
+      "column": "campaign_enrollments",
+      "detail": "Column 'campaign_enrollments' does not exist on table 'campaign_step_executions'",
+      "references": [
+        {
+          "file": "app/api/campaigns/executions/route.ts",
+          "line": 70
+        },
+        {
+          "file": "app/api/campaigns/stats/route.ts",
+          "line": 60
+        },
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 69
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_registry",
+      "column": "is_deleted",
+      "detail": "Column 'is_deleted' does not exist on table 'dnc_registry'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/import/route.ts",
+          "line": 90
+        },
+        {
+          "file": "lib/compliance/dnc-sync-service.ts",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_registry",
+      "column": "phone_hash",
+      "detail": "Column 'phone_hash' does not exist on table 'dnc_registry'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/import/route.ts",
+          "line": 92
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "source",
+      "detail": "Column 'source' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "numbers_count",
+      "detail": "Column 'numbers_count' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "numbers_added",
+      "detail": "Column 'numbers_added' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "numbers_updated",
+      "detail": "Column 'numbers_updated' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "numbers_failed",
+      "detail": "Column 'numbers_failed' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_imports",
+      "column": "metadata",
+      "detail": "Column 'metadata' does not exist on table 'dnc_imports'",
+      "references": [
+        {
+          "file": "app/api/compliance/dnc/imports/route.ts",
+          "line": 41
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "tenants",
+      "column": "is_deleted",
+      "detail": "Column 'is_deleted' does not exist on table 'tenants'",
+      "references": [
+        {
+          "file": "app/api/cron/dnc-sync/route.ts",
+          "line": 81
+        },
+        {
+          "file": "lib/compliance/dnc-sync-service.ts",
+          "line": 408
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "dnc_sync_jobs",
+      "column": "source",
+      "detail": "Column 'source' does not exist on table 'dnc_sync_jobs'",
+      "references": [
+        {
+          "file": "app/api/cron/dnc-sync/route.ts",
+          "line": 111
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "signature_documents",
+      "column": "reminder_sent_at",
+      "detail": "Column 'reminder_sent_at' does not exist on table 'signature_documents'",
+      "references": [
+        {
+          "file": "app/api/cron/signature-reminders/route.ts",
+          "line": 110
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "signature_documents",
+      "column": "reminder_count",
+      "detail": "Column 'reminder_count' does not exist on table 'signature_documents'",
+      "references": [
+        {
+          "file": "app/api/cron/signature-reminders/route.ts",
+          "line": 110
+        },
+        {
+          "file": "app/api/cron/signature-reminders/route.ts",
+          "line": 124
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "activities",
+      "column": "metadata",
+      "detail": "Column 'metadata' does not exist on table 'activities'",
+      "references": [
+        {
+          "file": "app/api/email/webhook/route.ts",
+          "line": 48
+        },
+        {
+          "file": "app/api/email/webhook/route.ts",
+          "line": 51
+        },
+        {
+          "file": "app/api/messages/[contactId]/route.ts",
+          "line": 49
+        },
+        {
+          "file": "app/api/voice/recording/route.ts",
+          "line": 30
+        },
+        {
+          "file": "app/api/voice/recording/route.ts",
+          "line": 144
+        },
+        {
+          "file": "app/api/voice/recording/route.ts",
+          "line": 146
+        },
+        {
+          "file": "app/api/voice/webhook/route.ts",
+          "line": 53
+        },
+        {
+          "file": "app/api/voice/webhook/route.ts",
+          "line": 55
+        },
+        {
+          "file": "lib/aria/context-builder.ts",
+          "line": 301
+        },
+        {
+          "file": "lib/aria/context-builder.ts",
+          "line": 439
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 714
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 824
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 1788
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 3008
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 3082
+        },
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 357
+        },
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 595
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 77
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 243
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 378
+        },
+        {
+          "file": "lib/resend/compliance.ts",
+          "line": 187
+        },
+        {
+          "file": "lib/twilio/analytics.ts",
+          "line": 91
+        },
+        {
+          "file": "lib/twilio/analytics.ts",
+          "line": 237
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "is_recommended",
+      "detail": "Column 'is_recommended' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "display_order",
+      "detail": "Column 'display_order' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        },
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "tax_rate",
+      "detail": "Column 'tax_rate' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "tax_amount",
+      "detail": "Column 'tax_amount' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "total_amount",
+      "detail": "Column 'total_amount' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "profit_margin",
+      "detail": "Column 'profit_margin' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 78
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "quote_options",
+      "column": "projects",
+      "detail": "Column 'projects' does not exist on table 'quote_options'",
+      "references": [
+        {
+          "file": "app/api/estimates/[id]/options/route.ts",
+          "line": 425
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "achievements",
+      "column": "points_required",
+      "detail": "Column 'points_required' does not exist on table 'achievements'",
+      "references": [
+        {
+          "file": "app/api/gamification/achievements/route.ts",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "user_achievements",
+      "column": "unlocked_at",
+      "detail": "Column 'unlocked_at' does not exist on table 'user_achievements'",
+      "references": [
+        {
+          "file": "app/api/gamification/achievements/route.ts",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "point_rules",
+      "column": "category",
+      "detail": "Column 'category' does not exist on table 'point_rules'",
+      "references": [
+        {
+          "file": "app/api/gamification/point-rules/route.ts",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "point_rules",
+      "column": "action_name",
+      "detail": "Column 'action_name' does not exist on table 'point_rules'",
+      "references": [
+        {
+          "file": "app/api/gamification/point-rules/route.ts",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "end_date",
+      "detail": "Column 'end_date' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "app/api/insights/query/route.ts",
+          "line": 197
+        },
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 2667
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "name",
+      "detail": "Column 'name' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "app/api/insights/query/route.ts",
+          "line": 273
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "status",
+      "detail": "Column 'status' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "app/api/insights/query/route.ts",
+          "line": 273
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "project_files",
+      "column": "folder_path",
+      "detail": "Column 'folder_path' does not exist on table 'project_files'",
+      "references": [
+        {
+          "file": "app/api/project-files/bulk/route.ts",
+          "line": 54
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "project_files",
+      "column": "parent_file_id",
+      "detail": "Column 'parent_file_id' does not exist on table 'project_files'",
+      "references": [
+        {
+          "file": "app/api/project-files/search/route.ts",
+          "line": 128
+        },
+        {
+          "file": "app/api/project-files/search/route.ts",
+          "line": 145
+        },
+        {
+          "file": "app/api/project-files/search/route.ts",
+          "line": 303
+        },
+        {
+          "file": "app/api/project-files/search/route.ts",
+          "line": 318
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "project_files",
+      "column": "version",
+      "detail": "Column 'version' does not exist on table 'project_files'",
+      "references": [
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 83
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 97
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 190
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 194
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 331
+        },
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 335
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "project_files",
+      "column": "updated_at",
+      "detail": "Column 'updated_at' does not exist on table 'project_files'",
+      "references": [
+        {
+          "file": "app/api/project-files/versions/route.ts",
+          "line": 83
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "territories",
+      "column": "status",
+      "detail": "Column 'status' does not exist on table 'territories'",
+      "references": [
+        {
+          "file": "app/api/search/route.ts",
+          "line": 122
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "signatures",
+      "column": "created_at",
+      "detail": "Column 'created_at' does not exist on table 'signatures'",
+      "references": [
+        {
+          "file": "app/api/signature-documents/[id]/sign/route.ts",
+          "line": 422
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "tasks",
+      "column": "parent_task",
+      "detail": "Column 'parent_task' does not exist on table 'tasks'",
+      "references": [
+        {
+          "file": "app/api/tasks/[id]/route.ts",
+          "line": 32
+        },
+        {
+          "file": "app/api/tasks/route.ts",
+          "line": 49
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "tasks",
+      "column": "subtasks",
+      "detail": "Column 'subtasks' does not exist on table 'tasks'",
+      "references": [
+        {
+          "file": "app/api/tasks/[id]/route.ts",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "templates",
+      "column": "is_deleted",
+      "detail": "Column 'is_deleted' does not exist on table 'templates'",
+      "references": [
+        {
+          "file": "app/api/templates/route.ts",
+          "line": 53
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "templates",
+      "column": "category",
+      "detail": "Column 'category' does not exist on table 'templates'",
+      "references": [
+        {
+          "file": "app/api/templates/route.ts",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "pipeline_stage",
+      "detail": "Column 'pipeline_stage' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "app/api/territories/[id]/stats/route.ts",
+          "line": 89
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "activities",
+      "column": "activity_type",
+      "detail": "Column 'activity_type' does not exist on table 'activities'",
+      "references": [
+        {
+          "file": "app/api/territories/[id]/stats/route.ts",
+          "line": 115
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "activities",
+      "column": "notes",
+      "detail": "Column 'notes' does not exist on table 'activities'",
+      "references": [
+        {
+          "file": "app/api/territories/[id]/stats/route.ts",
+          "line": 115
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "insurance_carrier",
+      "detail": "Column 'insurance_carrier' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "lib/aria/context-builder.ts",
+          "line": 93
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "contact_type",
+      "detail": "Column 'contact_type' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 1978
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "property_address",
+      "detail": "Column 'property_address' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 2246
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "start_date",
+      "detail": "Column 'start_date' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 2667
+        },
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 36
+        },
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 378
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "address",
+      "detail": "Column 'address' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/aria/functions/calendar.ts",
+          "line": 572
+        },
+        {
+          "file": "lib/aria/functions/vision.ts",
+          "line": 433
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "city",
+      "detail": "Column 'city' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/aria/functions/calendar.ts",
+          "line": 572
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 752
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 778
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 808
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 817
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 841
+        },
+        {
+          "file": "lib/aria/functions/vision.ts",
+          "line": 433
+        },
+        {
+          "file": "lib/aria/functions/weather.ts",
+          "line": 125
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "state",
+      "detail": "Column 'state' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/aria/functions/calendar.ts",
+          "line": 572
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 752
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 778
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 808
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 841
+        },
+        {
+          "file": "lib/aria/functions/vision.ts",
+          "line": 433
+        },
+        {
+          "file": "lib/aria/functions/weather.ts",
+          "line": 125
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "stage",
+      "detail": "Column 'stage' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 95
+        },
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 339
+        },
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 577
+        },
+        {
+          "file": "lib/aria/functions/documents.ts",
+          "line": 810
+        },
+        {
+          "file": "lib/aria/functions/financial.ts",
+          "line": 651
+        },
+        {
+          "file": "lib/aria/functions/financial.ts",
+          "line": 657
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 113
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 397
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 554
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "zip",
+      "detail": "Column 'zip' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 752
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 808
+        },
+        {
+          "file": "lib/aria/functions/intelligence.ts",
+          "line": 815
+        },
+        {
+          "file": "lib/aria/functions/vision.ts",
+          "line": 433
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "status",
+      "detail": "Column 'status' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 73
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 76
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 101
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 251
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 255
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 585
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "trigger",
+      "detail": "Column 'trigger' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 101
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 251
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "actions",
+      "detail": "Column 'actions' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 101
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "execution_count",
+      "detail": "Column 'execution_count' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 251
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 266
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 585
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 587
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "last_executed_at",
+      "detail": "Column 'last_executed_at' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 251
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 585
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflows",
+      "column": "template_category",
+      "detail": "Column 'template_category' does not exist on table 'workflows'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 251
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 259
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflow_executions",
+      "column": "contact_id",
+      "detail": "Column 'contact_id' does not exist on table 'workflow_executions'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 363
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 507
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "workflow_executions",
+      "column": "project_id",
+      "detail": "Column 'project_id' does not exist on table 'workflow_executions'",
+      "references": [
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 366
+        },
+        {
+          "file": "lib/aria/functions/workflows.ts",
+          "line": 510
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "campaigns",
+      "column": "trigger_type",
+      "detail": "Column 'trigger_type' does not exist on table 'campaigns'",
+      "references": [
+        {
+          "file": "lib/campaigns/trigger-handler.ts",
+          "line": 38
+        },
+        {
+          "file": "lib/campaigns/trigger-handler.ts",
+          "line": 50
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "campaigns",
+      "column": "trigger_config",
+      "detail": "Column 'trigger_config' does not exist on table 'campaigns'",
+      "references": [
+        {
+          "file": "lib/campaigns/trigger-handler.ts",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "photos",
+      "column": "storage_path",
+      "detail": "Column 'storage_path' does not exist on table 'photos'",
+      "references": [
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 422
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "photos",
+      "column": "caption",
+      "detail": "Column 'caption' does not exist on table 'photos'",
+      "references": [
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 422
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "documents",
+      "column": "storage_path",
+      "detail": "Column 'storage_path' does not exist on table 'documents'",
+      "references": [
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 430
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "documents",
+      "column": "project_id",
+      "detail": "Column 'project_id' does not exist on table 'documents'",
+      "references": [
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 431
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "documents",
+      "column": "is_deleted",
+      "detail": "Column 'is_deleted' does not exist on table 'documents'",
+      "references": [
+        {
+          "file": "lib/claims/sync-service.ts",
+          "line": 432
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "point_rule_configs",
+      "column": "org_id",
+      "detail": "Column 'org_id' does not exist on table 'point_rule_configs'",
+      "references": [
+        {
+          "file": "lib/gamification/award-points.ts",
+          "line": 68
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "projects",
+      "column": "notes",
+      "detail": "Column 'notes' does not exist on table 'projects'",
+      "references": [
+        {
+          "file": "lib/migrations/migrate-proline.ts",
+          "line": 300
+        },
+        {
+          "file": "lib/migrations/validate-migration.ts",
+          "line": 97
+        },
+        {
+          "file": "lib/migrations/validate-migration.ts",
+          "line": 184
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "street_address",
+      "detail": "Column 'street_address' does not exist on table 'contacts'",
+      "references": [
+        {
+          "file": "lib/migrations/migrate-proline.ts",
+          "line": 420
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "fk_target_bug",
+      "table": "ai_conversations",
+      "column": "tenant_id",
+      "detail": "ai_conversations.tenant_id references 'tenant_users.user_id' instead of 'tenants.id'",
+      "references": []
+    },
+    {
+      "severity": "P1",
+      "category": "fk_target_bug",
+      "table": "ai_conversations",
+      "column": "tenant_id",
+      "detail": "ai_conversations.tenant_id references 'tenant_users.tenant_id' instead of 'tenants.id'",
+      "references": []
+    },
+    {
+      "severity": "P2",
+      "category": "non_existent_rpc",
+      "table": "",
+      "detail": "RPC function 'calculate_commission' does not exist (1 reference)",
+      "references": [
+        {
+          "file": "app/[locale]/(dashboard)/financial/commissions/actions.ts",
+          "line": 65
+        }
+      ]
+    },
+    {
+      "severity": "P2",
+      "category": "non_existent_rpc",
+      "table": "",
+      "detail": "RPC function 'calculate_polygon_area_sq_miles' does not exist (1 reference)",
+      "references": [
+        {
+          "file": "app/api/storm-targeting/extract-addresses/route.ts",
+          "line": 48
+        }
+      ]
+    },
+    {
+      "severity": "P2",
+      "category": "non_existent_rpc",
+      "table": "",
+      "detail": "RPC function 'jsonb_set_nested' does not exist (1 reference)",
+      "references": [
+        {
+          "file": "lib/aria/function-registry.ts",
+          "line": 2576
+        }
+      ]
+    },
+    {
+      "severity": "P2",
+      "category": "non_existent_rpc",
+      "table": "",
+      "detail": "RPC function 'increment' does not exist (6 references)",
+      "references": [
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 250
+        },
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 611
+        },
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 618
+        },
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 620
+        },
+        {
+          "file": "lib/campaigns/execution-engine.ts",
+          "line": 622
+        },
+        {
+          "file": "lib/enrichment/enrichment-queue.ts",
+          "line": 352
+        }
+      ]
+    },
+    {
+      "severity": "P2",
+      "category": "non_existent_rpc",
+      "table": "",
+      "detail": "RPC function 'increment_campaign_enrollments' does not exist (1 reference)",
+      "references": [
+        {
+          "file": "lib/campaigns/trigger-handler.ts",
+          "line": 237
+        }
+      ]
+    }
+  ]
+}
