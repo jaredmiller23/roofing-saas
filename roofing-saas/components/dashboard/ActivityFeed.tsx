@@ -17,6 +17,7 @@ import {
   Clock
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { getActivityColor } from '@/lib/constants/activity-colors'
 
 interface Activity {
   id: string
@@ -173,24 +174,7 @@ export function ActivityFeed({ data: externalData, isLoading: externalLoading }:
     return null
   }
 
-  const getActivityColor = (type: Activity['type']) => {
-    switch (type) {
-      case 'sale':
-        return 'text-green-600 bg-green-100'
-      case 'knock':
-        return 'text-blue-600 bg-blue-100'
-      case 'call':
-        return 'text-purple-600 bg-purple-100'
-      case 'email':
-        return 'text-orange-600 bg-orange-100'
-      case 'achievement':
-        return 'text-yellow-600 bg-yellow-100'
-      case 'goal':
-        return 'text-indigo-600 bg-indigo-100'
-      default:
-        return 'text-muted-foreground bg-muted'
-    }
-  }
+  // Activity colors now imported from @/lib/constants/activity-colors
 
   // Show loading skeleton
   if (isLoading) {

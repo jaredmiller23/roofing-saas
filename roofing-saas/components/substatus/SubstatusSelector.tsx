@@ -147,7 +147,7 @@ export function SubstatusSelector({
                       disabled={updating}
                       className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${
                         isSelected
-                          ? 'bg-blue-50'
+                          ? 'bg-primary/10'
                           : 'hover:bg-accent'
                       } ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >

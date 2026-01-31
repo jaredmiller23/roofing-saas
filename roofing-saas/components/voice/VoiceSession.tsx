@@ -554,7 +554,7 @@ export function VoiceSession({
                 <div
                   className={`max-w-xs px-4 py-2 rounded-lg ${
                     message.role === 'user'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : message.role === 'assistant'
                       ? 'bg-muted text-foreground'
                       : 'bg-purple-100 text-purple-900 text-xs'

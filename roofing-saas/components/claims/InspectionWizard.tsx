@@ -311,7 +311,7 @@ export function InspectionWizard({
                 disabled={currentArea.photos.length === 0}
                 className={`flex-1 py-3 rounded-lg font-medium ${
                   currentArea.photos.length > 0
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >

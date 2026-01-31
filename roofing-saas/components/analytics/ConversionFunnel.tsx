@@ -32,16 +32,16 @@ export function ConversionFunnel({ data, onStageClick, className }: ConversionFu
     return `${value.toFixed(1)}%`
   }
 
-  // Get stage color
+  // Get stage color - uses CSS variables from globals.css for theme consistency
   const getStageColor = (stageName: string) => {
     const colors = {
-      'Prospect': 'bg-muted-foreground',
-      'Qualified': 'bg-blue-500',
-      'Quote Sent': 'bg-purple-500',
-      'Negotiation': 'bg-orange-500',
-      'Won': 'bg-green-500',
-      'Production': 'bg-cyan-500',
-      'Complete': 'bg-emerald-600',
+      'Prospect': 'bg-[var(--stage-prospect)]',
+      'Qualified': 'bg-[var(--stage-qualified)]',
+      'Quote Sent': 'bg-[var(--stage-quote-sent)]',
+      'Negotiation': 'bg-[var(--stage-negotiation)]',
+      'Won': 'bg-[var(--stage-won)]',
+      'Production': 'bg-[var(--stage-production)]',
+      'Complete': 'bg-[var(--stage-complete)]',
     }
     return colors[stageName as keyof typeof colors] || 'bg-muted-foreground'
   }

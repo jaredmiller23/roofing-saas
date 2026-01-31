@@ -54,7 +54,7 @@ export function DamageTypeSelector({
             className={cn(
               'p-2 text-xs rounded-lg border transition-all text-center',
               value === type.value
-                ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                ? 'border-primary bg-primary/10 text-primary font-medium'
                 : 'border-border hover:border-muted-foreground/20 text-muted-foreground'
             )}
           >

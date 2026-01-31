@@ -21,15 +21,16 @@ import { hexToTailwindBg } from '@/lib/utils/colors'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 // Default stages - used as fallback if DB fetch fails
+// Colors use CSS variables from globals.css for theme consistency
 const DEFAULT_STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
-  { id: 'prospect', name: 'Prospect', color: 'bg-gray-500' },
-  { id: 'qualified', name: 'Qualified', color: 'bg-blue-500' },
-  { id: 'quote_sent', name: 'Quote Sent', color: 'bg-purple-500' },
-  { id: 'negotiation', name: 'Negotiation', color: 'bg-orange-500' },
-  { id: 'won', name: 'Won', color: 'bg-green-500' },
-  { id: 'production', name: 'Production', color: 'bg-cyan-500' },
-  { id: 'complete', name: 'Complete', color: 'bg-emerald-600' },
-  { id: 'lost', name: 'Lost', color: 'bg-red-500' },
+  { id: 'prospect', name: 'Prospect', color: 'bg-[var(--stage-prospect)]' },
+  { id: 'qualified', name: 'Qualified', color: 'bg-[var(--stage-qualified)]' },
+  { id: 'quote_sent', name: 'Quote Sent', color: 'bg-[var(--stage-quote-sent)]' },
+  { id: 'negotiation', name: 'Negotiation', color: 'bg-[var(--stage-negotiation)]' },
+  { id: 'won', name: 'Won', color: 'bg-[var(--stage-won)]' },
+  { id: 'production', name: 'Production', color: 'bg-[var(--stage-production)]' },
+  { id: 'complete', name: 'Complete', color: 'bg-[var(--stage-complete)]' },
+  { id: 'lost', name: 'Lost', color: 'bg-[var(--stage-lost)]' },
 ]
 
 // Valid pipeline stage IDs for type checking

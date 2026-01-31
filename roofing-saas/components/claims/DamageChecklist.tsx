@@ -44,7 +44,7 @@ export function DamageChecklist({
                 className={cn(
                   'p-3 rounded-lg border-2 text-left transition-all',
                   area.selected
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-primary bg-primary/10'
                     : 'border-border hover:border-border'
                 )}
               >
@@ -52,7 +52,7 @@ export function DamageChecklist({
                   <div
                     className={cn(
                       'w-5 h-5 rounded flex items-center justify-center',
-                      area.selected ? 'bg-blue-500' : 'border border-border'
+                      area.selected ? 'bg-primary' : 'border border-border'
                     )}
                   >
                     {area.selected && (
@@ -65,7 +65,7 @@ export function DamageChecklist({
                       </svg>
                     )}
                   </div>
-                  <span className={cn('font-medium', area.selected ? 'text-blue-700' : 'text-muted-foreground')}>
+                  <span className={cn('font-medium', area.selected ? 'text-primary' : 'text-muted-foreground')}>
                     {area.label}
                   </span>
                 </div>
@@ -119,7 +119,7 @@ export function DamageChecklist({
               className={cn(
                 'flex-1 py-3 rounded-lg font-medium',
                 selectedCount > 0
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
               )}
             >

@@ -17,6 +17,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { ACTIVITY_TYPE_COLORS } from '@/lib/constants/activity-colors'
 
 interface ActivityItem {
   id: string
@@ -38,14 +39,14 @@ const INITIAL_LIMIT = 10
 const LOAD_MORE_LIMIT = 20
 
 const activityConfig: Record<string, { icon: typeof Phone; label: string; color: string }> = {
-  call: { icon: Phone, label: 'Call', color: 'text-purple-600 bg-purple-100' },
-  email: { icon: Mail, label: 'Email', color: 'text-blue-600 bg-blue-100' },
-  sms: { icon: MessageSquare, label: 'SMS', color: 'text-green-600 bg-green-100' },
-  note: { icon: FileText, label: 'Note', color: 'text-orange-600 bg-orange-100' },
-  meeting: { icon: Calendar, label: 'Meeting', color: 'text-indigo-600 bg-indigo-100' },
-  door_knock: { icon: MapPin, label: 'Door Knock', color: 'text-teal-600 bg-teal-100' },
-  photo: { icon: Camera, label: 'Photo', color: 'text-pink-600 bg-pink-100' },
-  task: { icon: FileText, label: 'Task', color: 'text-yellow-600 bg-yellow-100' },
+  call: { icon: Phone, label: 'Call', color: ACTIVITY_TYPE_COLORS.call },
+  email: { icon: Mail, label: 'Email', color: ACTIVITY_TYPE_COLORS.email },
+  sms: { icon: MessageSquare, label: 'SMS', color: ACTIVITY_TYPE_COLORS.sms },
+  note: { icon: FileText, label: 'Note', color: ACTIVITY_TYPE_COLORS.note },
+  meeting: { icon: Calendar, label: 'Meeting', color: ACTIVITY_TYPE_COLORS.meeting },
+  door_knock: { icon: MapPin, label: 'Door Knock', color: ACTIVITY_TYPE_COLORS.door_knock },
+  photo: { icon: Camera, label: 'Photo', color: ACTIVITY_TYPE_COLORS.photo },
+  task: { icon: FileText, label: 'Task', color: ACTIVITY_TYPE_COLORS.task },
 }
 
 function getActivityConfig(type: string) {

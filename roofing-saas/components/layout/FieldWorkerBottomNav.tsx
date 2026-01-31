@@ -197,8 +197,8 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
                     "bg-red-600 text-primary-foreground shadow-lg shadow-red-600/25"
                   ],
                   voiceSessionStatus === 'idle' && [
-                    "bg-blue-50 text-blue-600 hover:bg-blue-100",
-                    "dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900"
+                    "bg-primary/10 text-primary hover:bg-primary/20",
+                    "dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20"
                   ],
                   // Animation scale effect
                   !prefersReducedMotion && "active:scale-95 hover:scale-105",
