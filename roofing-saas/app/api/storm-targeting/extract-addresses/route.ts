@@ -8,7 +8,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
 import { googlePlacesClient } from '@/lib/address-extraction/google-places-client';
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
@@ -39,22 +38,34 @@ function polygonToPostGIS(polygon: Polygon): string {
 }
 
 /**
- * Calculate area of polygon in square miles (using PostGIS)
+ * Calculate area of polygon in square miles using the spherical excess formula.
+ * Operates on WKT POLYGON string with (lng lat) coordinate pairs.
  */
-async function calculateAreaSquareMiles(
-  supabase: SupabaseClient,
-  polygonWKT: string
-): Promise<number> {
-  const { data, error } = await supabase.rpc('calculate_polygon_area_sq_miles', {
-    poly: polygonWKT,
+function calculateAreaSquareMiles(polygonWKT: string): number {
+  // Parse coordinates from WKT: POLYGON((lng1 lat1, lng2 lat2, ...))
+  const match = polygonWKT.match(/POLYGON\(\((.+)\)\)/);
+  if (!match) return 0;
+
+  const coords = match[1].split(',').map(pair => {
+    const [lng, lat] = pair.trim().split(' ').map(Number);
+    return { lat, lng };
   });
 
-  if (error || !data) {
-    logger.warn('Failed to calculate area, using estimate', { error });
-    return 0;
-  }
+  if (coords.length < 3) return 0;
 
-  return parseFloat(data);
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const EARTH_RADIUS_MILES = 3958.8;
+
+  // Spherical polygon area via the shoelace formula on a sphere
+  let area = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const j = (i + 1) % coords.length;
+    const dLng = toRad(coords[j].lng - coords[i].lng);
+    area += dLng * (2 + Math.sin(toRad(coords[i].lat)) + Math.sin(toRad(coords[j].lat)));
+  }
+  area = Math.abs((area * EARTH_RADIUS_MILES * EARTH_RADIUS_MILES) / 2);
+
+  return area;
 }
 
 // =====================================================
@@ -95,7 +106,7 @@ export async function POST(request: NextRequest) {
     const polygonWKT = polygonToPostGIS(polygon);
 
     // Calculate area to validate size (prevent timeouts)
-    const areaSquareMiles = await calculateAreaSquareMiles(supabase, polygonWKT);
+    const areaSquareMiles = calculateAreaSquareMiles(polygonWKT);
     logger.info('Calculated area', { areaSquareMiles: areaSquareMiles.toFixed(2) });
 
     // Validate area size

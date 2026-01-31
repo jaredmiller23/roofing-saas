@@ -40,7 +40,6 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const type = searchParams.get('type') // 'sms' or 'email'
-    const category = searchParams.get('category')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
@@ -56,8 +55,6 @@ export async function GET(request: NextRequest) {
     if (type) {
       query = query.eq('type', type)
     }
-
-    // category column doesn't exist on templates table, skip filter
 
     // Pagination
     const from = (page - 1) * limit

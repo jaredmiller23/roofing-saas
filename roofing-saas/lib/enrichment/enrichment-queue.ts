@@ -345,14 +345,8 @@ export class EnrichmentQueueManager {
       } as PropertyEnrichmentResult;
     });
 
-    // Update hit count
-    await this.supabase
-      .from('property_enrichment_cache')
-      .update({
-        hit_count: this.supabase.rpc('increment', { value: 1 }) as unknown as number,
-        last_accessed_at: new Date().toISOString(),
-      })
-      .in('address_hash', hashes);
+    // Update hit count atomically via RPC
+    await this.supabase.rpc('increment_cache_hits', { hashes });
 
     return {
       results,

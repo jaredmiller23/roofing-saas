@@ -2538,15 +2538,20 @@ ariaFunctionRegistry.register({
 
     // Update project custom_fields with completion if provided
     if (completion_percentage !== undefined) {
+      const { data: currentProject } = await context.supabase
+        .from('projects')
+        .select('custom_fields')
+        .eq('id', finalProjectId)
+        .single()
+
+      const updatedFields = {
+        ...(currentProject?.custom_fields as Record<string, unknown> || {}),
+        completion_percentage,
+      }
+
       await context.supabase
         .from('projects')
-        .update({
-          custom_fields: context.supabase.rpc('jsonb_set_nested', {
-            target: 'custom_fields',
-            path: '{completion_percentage}',
-            value: completion_percentage,
-          }),
-        })
+        .update({ custom_fields: updatedFields })
         .eq('id', finalProjectId)
     }
 
@@ -3160,7 +3165,7 @@ ariaFunctionRegistry.register({
       project_id,
       title,
       date,
-      duration_minutes = 60,
+      duration_minutes: _duration_minutes = 60,
       notes,
       appointment_type = 'meeting',
     } = args as {

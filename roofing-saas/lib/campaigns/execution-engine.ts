@@ -607,27 +607,32 @@ async function updateEnrollmentMetrics(
 ) {
   const supabase = await createClient()
 
-  const updates: Record<string, unknown> = {
-    steps_completed: supabase.rpc('increment', {
-      column: 'steps_completed',
-    }),
-    last_step_executed_at: new Date().toISOString(),
-  }
-
-  if (stepType === 'send_email') {
-    updates.emails_sent = supabase.rpc('increment', { column: 'emails_sent' })
-  } else if (stepType === 'send_sms') {
-    updates.sms_sent = supabase.rpc('increment', { column: 'sms_sent' })
-  } else if (stepType === 'create_task') {
-    updates.tasks_created = supabase.rpc('increment', {
-      column: 'tasks_created',
-    })
-  }
-
+  // Update timestamp
   await supabase
     .from('campaign_enrollments')
-    .update(updates)
+    .update({ last_step_executed_at: new Date().toISOString() })
     .eq('id', enrollmentId)
+
+  // Increment steps_completed atomically via RPC
+  await supabase.rpc('increment', {
+    table_name: 'campaign_enrollments',
+    id: enrollmentId,
+    column_name: 'steps_completed',
+  })
+
+  // Increment type-specific counter
+  const counterColumn =
+    stepType === 'send_email' ? 'emails_sent' :
+    stepType === 'send_sms' ? 'sms_sent' :
+    stepType === 'create_task' ? 'tasks_created' : null
+
+  if (counterColumn) {
+    await supabase.rpc('increment', {
+      table_name: 'campaign_enrollments',
+      id: enrollmentId,
+      column_name: counterColumn,
+    })
+  }
 }
 
 async function scheduleNextStep(enrollmentId: string, campaignId: string) {

@@ -248,6 +248,10 @@ ariaFunctionRegistry.register({
       query = query.eq('is_active', status === 'active')
     }
 
+    if (category) {
+      query = query.eq('trigger_type', category)
+    }
+
     if (search) {
       query = query.ilike('name', `%${search}%`)
     }
