@@ -5,8 +5,7 @@
  * Used for security features like "sign out everywhere" and session monitoring.
  */
 
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getUserTenantId } from './session'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
@@ -25,9 +24,9 @@ export interface UserSession {
   location_city: string | null
   location_region: string | null
   location_country: string | null
-  is_current: boolean
-  created_at: string
-  last_active_at: string
+  is_current: boolean | null
+  created_at: string | null
+  last_active_at: string | null
   expires_at: string
   revoked_at: string | null
 }
@@ -146,10 +145,7 @@ export async function createSessionRecord(
   const parsed = parseUserAgent(userAgent)
 
   // Use admin client for insert (bypasses RLS)
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = await createAdminClient()
 
   const { data, error } = await supabaseAdmin
     .from('user_sessions')
@@ -299,10 +295,7 @@ export async function markSessionAsCurrent(
  */
 export async function cleanupExpiredSessions(): Promise<number> {
   // Use admin client for cleanup
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = await createAdminClient()
 
   const { data, error } = await supabaseAdmin
     .from('user_sessions')

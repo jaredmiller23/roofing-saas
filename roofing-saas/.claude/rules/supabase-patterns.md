@@ -1,7 +1,7 @@
 # Supabase Patterns & Conventions
 
 **Applies to**: `**/supabase/**`, `**/lib/supabase/**`, `**/api/**`
-**Last Updated**: December 10, 2025
+**Last Updated**: January 31, 2026
 
 ## Row Level Security (RLS)
 
@@ -23,35 +23,55 @@ const org_id = user?.user_metadata?.org_id;
 const { data } = await supabase.from('contacts').insert({ ...input, org_id });
 ```
 
-## Auth Helpers
+## Client Selection Guide
 
-### Server Components (Next.js App Router)
-```typescript
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+All Supabase clients use the `Database` generic type (from `lib/types/database.types.ts`)
+for full type safety. Wrong column names are compile errors.
 
-export default async function Page() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  // ...
-}
-```
+### When to use each client
 
-### API Routes
-```typescript
-import { createRouteHandlerClient } from '@/lib/supabase/server';
-
-export async function GET(request: Request) {
-  const supabase = await createRouteHandlerClient();
-  // ...
-}
-```
+| Context | Client | Import | RLS |
+|---------|--------|--------|-----|
+| Client component | `createClient()` | `@/lib/supabase/client` | Active (anon key) |
+| Server component / API route | `createClient()` | `@/lib/supabase/server` | Active (user cookies) |
+| System operation (no user) | `createAdminClient()` | `@/lib/supabase/server` | **Bypassed** |
 
 ### Client Components
 ```typescript
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient();
+const supabase = createClient()
 ```
+
+### Server Components & API Routes
+```typescript
+import { createClient } from '@/lib/supabase/server'
+
+const supabase = await createClient()
+```
+
+### System Operations (Webhooks, Cron, Auth Admin API)
+```typescript
+import { createAdminClient } from '@/lib/supabase/server'
+
+const supabase = await createAdminClient()
+```
+
+### When `createAdminClient` is legitimate
+- Webhooks (Twilio, Stripe, Resend) — no user session
+- Auth Admin API (`auth.admin.listUsers()`, `auth.admin.createUser()`)
+- Billing/subscription operations triggered by system events
+- ARIA streaming handlers (cannot reliably access user session cookies)
+- Session management (creating/cleaning sessions during login flow)
+
+### When `createAdminClient` is NOT legitimate
+- API routes where the user is authenticated and has a tenantId
+- Any query that already includes `.eq('tenant_id', tenantId)`
+- Operations where RLS policies should handle access control
+
+**Rule**: If the user is authenticated and you're adding `.eq('tenant_id', tenantId)`,
+you should be using `createClient()`, not `createAdminClient()`. Fix the RLS policy
+instead of bypassing it.
 
 ## Query Patterns
 

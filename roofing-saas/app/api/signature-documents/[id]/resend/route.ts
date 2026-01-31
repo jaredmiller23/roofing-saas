@@ -13,7 +13,7 @@ import {
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend/email'
 import { isResendConfigured } from '@/lib/resend/client'
 import {
@@ -73,11 +73,9 @@ export async function POST(
       throw ValidationError('Email is not configured. Please configure Resend to send reminders.')
     }
 
-    // Use admin client to bypass RLS for reading document
-    const adminSupabase = await createAdminClient()
+    const supabase = await createClient()
 
-    // First, find document by ID only (without tenant filter) to debug
-    const { data: rawDocument, error: fetchError } = await adminSupabase
+    const { data: rawDocument, error: fetchError } = await supabase
       .from('signature_documents')
       .select(`
         id,
@@ -89,29 +87,16 @@ export async function POST(
         project:projects(id, name)
       `)
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !rawDocument) {
-      logger.error('Resend: Document not found by ID', {
+      logger.error('Resend: Document not found', {
         documentId: id,
-        userTenantId: tenantId,
+        tenantId,
         error: fetchError?.message
       })
-      // Return diagnostic info in development
-      throw NotFoundError(`Signature document (debug: query_error=${fetchError?.message || 'no document'}, tenantId=${tenantId}, docId=${id})`)
-    }
-
-    // Now verify tenant access
-    if (rawDocument.tenant_id !== tenantId) {
-      logger.error('Resend: Tenant mismatch', {
-        documentId: id,
-        documentTenantId: rawDocument.tenant_id,
-        userTenantId: tenantId,
-        userId: user.id,
-        userEmail: user.email
-      })
-      // Return diagnostic info in development
-      throw NotFoundError(`Signature document (debug: tenant_mismatch, doc_tenant=${rawDocument.tenant_id}, user_tenant=${tenantId})`)
+      throw NotFoundError('Signature document not found')
     }
 
     const document = rawDocument as unknown as DocumentRecord

@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
@@ -27,7 +27,7 @@ export async function GET(
     }
 
     const { id } = await params
-    const supabase = await createAdminClient()
+    const supabase = await createClient()
 
     // Fetch workflow with steps
     const { data: workflow, error } = await supabase
@@ -73,7 +73,7 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const supabase = await createAdminClient()
+    const supabase = await createClient()
 
     // Only allow updating specific fields
     const allowedFields = ['name', 'description', 'is_active', 'trigger_config']
@@ -132,7 +132,7 @@ export async function DELETE(
     }
 
     const { id } = await params
-    const supabase = await createAdminClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('workflows')

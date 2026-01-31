@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
 import {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const supabase = await createAdminClient()
+    const supabase = await createClient()
 
     let query = supabase
       .from('workflows')
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { steps, ...workflowData } = validatedData.data
-    const supabase = await createAdminClient()
+    const supabase = await createClient()
 
     // Create workflow
     const { data: workflow, error } = await supabase

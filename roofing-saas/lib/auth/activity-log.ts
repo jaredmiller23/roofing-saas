@@ -4,8 +4,7 @@
  * Tracks login attempts, failures, and authentication events for security auditing.
  */
 
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getUserTenantId } from './session'
 import { getRequestContext, parseUserAgent } from './sessions'
 
@@ -67,10 +66,7 @@ export async function logLoginAttempt(params: LogLoginAttemptParams): Promise<vo
     }
 
     // Use admin client for insert (bypasses RLS)
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabaseAdmin = await createAdminClient()
 
     await supabaseAdmin.from('login_activity').insert({
       tenant_id: tenantId,
@@ -85,7 +81,7 @@ export async function logLoginAttempt(params: LogLoginAttemptParams): Promise<vo
       os: parsed.os,
       os_version: parsed.osVersion,
       failure_reason: failureReason || null,
-      metadata: metadata || {},
+      metadata: (metadata || {}) as import('@/lib/types/database.types').Json,
     })
   } catch (error) {
     // Don't throw - logging should not break the auth flow
@@ -139,11 +135,7 @@ export async function getRecentFailedAttempts(
   email: string,
   windowMinutes: number = 15
 ): Promise<number> {
-  // Use admin client to query across users
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabaseAdmin = await createAdminClient()
 
   const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString()
 
