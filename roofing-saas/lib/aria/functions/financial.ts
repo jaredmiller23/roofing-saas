@@ -650,7 +650,7 @@ ariaFunctionRegistry.register({
       .from('projects')
       .select(`
         id, name, stage, created_at, updated_at,
-        contacts(first_name, last_name)
+        contacts:contact_id(first_name, last_name)
       `)
       .eq('tenant_id', context.tenantId)
       .eq('is_deleted', false)

@@ -12,7 +12,6 @@ export const createContactSchema = z.object({
   mobile_phone: z.string().optional(),
   // Organization fields
   is_organization: z.boolean().optional(),
-  organization_id: z.string().uuid().optional().nullable(),
   company: z.string().max(200).optional(),
   website: z.string().optional().or(z.literal('')).refine(
     (val) => {

@@ -84,7 +84,6 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       email: contact?.email || '',
       phone: contact?.phone || '',
       mobile_phone: contact?.mobile_phone || '',
-      organization_id: contact?.organization_id || undefined,
       is_organization: contact?.is_organization || false,
       company: contact?.company || '',
       website: contact?.website || '',
@@ -200,7 +199,6 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         email: data.email || undefined,
         phone: data.phone || undefined,
         mobile_phone: data.mobile_phone || undefined,
-        organization_id: data.organization_id || undefined,
         company: data.company || undefined,
         website: data.website || undefined,
       }

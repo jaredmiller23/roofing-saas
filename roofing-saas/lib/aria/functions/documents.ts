@@ -94,7 +94,7 @@ ariaFunctionRegistry.register({
       .from('projects')
       .select(`
         id, name, stage, status, created_at, custom_fields,
-        contacts(id, first_name, last_name, email, phone, address, city, state, zip)
+        contacts:contact_id(id, first_name, last_name, email, phone, address, city, state, zip)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -338,7 +338,7 @@ ariaFunctionRegistry.register({
       .from('projects')
       .select(`
         id, name, stage, created_at, custom_fields,
-        contacts(id, first_name, last_name, address, city, state, zip)
+        contacts:contact_id(id, first_name, last_name, address, city, state, zip)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -576,7 +576,7 @@ ariaFunctionRegistry.register({
       .from('projects')
       .select(`
         id, name, stage, status, created_at, updated_at, custom_fields,
-        contacts(first_name, last_name, address, city, state, zip, phone, email)
+        contacts:contact_id(first_name, last_name, address, city, state, zip, phone, email)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -809,7 +809,7 @@ ariaFunctionRegistry.register({
       .from('projects')
       .select(`
         id, name, stage, status, created_at, updated_at, custom_fields,
-        contacts(first_name, last_name, email, phone, address, city, state)
+        contacts:contact_id(first_name, last_name, email, phone, address, city, state)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)

@@ -104,7 +104,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
       const { data: project } = await context.supabase
         .from('projects')
         .select(
-          '*, contacts(id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language)'
+          '*, contacts:contact_id(id, first_name, last_name, phone, mobile_phone, email, address_street, address_city, address_state, address_zip, stage, dnc_status, preferred_language)'
         )
         .eq('id', context.entityId)
         .eq('tenant_id', context.tenantId)

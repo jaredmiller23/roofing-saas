@@ -881,7 +881,7 @@ ariaFunctionRegistry.register({
           // Find other customers with insurance projects
           const { data: projects } = await context.supabase
             .from('projects')
-            .select('contact_id, contacts(id, first_name, last_name, city, state)')
+            .select('contact_id, contacts:contact_id(id, first_name, last_name, city, state)')
             .eq('tenant_id', context.tenantId)
             .eq('is_deleted', false)
             .neq('contact_id', targetContactId)

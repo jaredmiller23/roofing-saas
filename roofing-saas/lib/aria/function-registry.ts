@@ -981,7 +981,7 @@ ariaFunctionRegistry.register({
 
     const { data, error } = await context.supabase
       .from('projects')
-      .select('*, contacts(first_name, last_name)')
+      .select('*, contacts:contact_id(first_name, last_name)')
       .eq('tenant_id', context.tenantId)
       .eq('is_deleted', false)
       .or(`name.ilike.%${query}%,property_address.ilike.%${query}%`)

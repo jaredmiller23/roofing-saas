@@ -267,62 +267,21 @@ export async function generatePacket(
 /**
  * Get inspection/damage data for a project
  */
-async function getInspectionData(project_id: string, supabase: SupabaseClient): Promise<DamageDocumentation> {
-  // Get inspection photos
-  const { data: photos } = await supabase
-    .from('project_photos')
-    .select('*')
-    .eq('project_id', project_id)
-    .order('created_at', { ascending: false })
-
-  // Get inspection checklist data
-  const { data: inspection } = await supabase
-    .from('project_inspections')
-    .select('*')
-    .eq('project_id', project_id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  // Map photos to damage documentation format
-  const damagePhotos = (photos || []).map((photo) => ({
-    id: photo.id,
-    url: photo.url,
-    caption: photo.caption || photo.description,
-    damage_type: photo.damage_type || photo.category,
-    severity: photo.severity,
-    location: photo.location || photo.area,
-    taken_at: photo.taken_at || photo.created_at,
-    gps_coordinates: photo.gps_lat && photo.gps_lng
-      ? { lat: photo.gps_lat, lng: photo.gps_lng }
-      : undefined,
-  }))
-
-  // Extract affected areas from photos and inspection
-  const affectedAreas = new Set<string>()
-  damagePhotos.forEach((p) => {
-    if (p.damage_type) affectedAreas.add(p.damage_type)
-    if (p.location) affectedAreas.add(p.location)
-  })
-
-  // Add common roofing damage types based on inspection
-  if (inspection?.findings) {
-    const findings = inspection.findings as Record<string, unknown>
-    if (findings.shingle_damage) affectedAreas.add('shingles')
-    if (findings.flashing_damage) affectedAreas.add('flashing')
-    if (findings.ridge_damage) affectedAreas.add('ridge_cap')
-    if (findings.gutter_damage) affectedAreas.add('gutters')
-    if (findings.underlayment_damage) affectedAreas.add('underlayment')
-  }
-
+async function getInspectionData(_project_id: string, _supabase: SupabaseClient): Promise<DamageDocumentation> {
+  // TODO: project_photos and project_inspections tables do not exist yet.
+  // When these tables are created, restore queries here.
+  // The existing project_files table stores photos but with a different schema
+  // than what this function expects. A future migration should either:
+  //   1. Create project_photos/project_inspections tables, OR
+  //   2. Adapt this function to query project_files with file_type='photo'
   return {
-    photos: damagePhotos,
-    inspection_date: inspection?.inspection_date || new Date().toISOString(),
-    inspector_name: inspection?.inspector_name,
-    damage_summary: inspection?.summary || generateDamageSummary(damagePhotos),
-    affected_areas: Array.from(affectedAreas),
-    test_square_count: inspection?.test_square_count,
-    hail_hits_per_square: inspection?.hail_hits_per_square,
+    photos: [],
+    inspection_date: new Date().toISOString(),
+    inspector_name: undefined,
+    damage_summary: generateDamageSummary([]),
+    affected_areas: [],
+    test_square_count: undefined,
+    hail_hits_per_square: undefined,
   }
 }
 
@@ -330,23 +289,8 @@ async function getInspectionData(project_id: string, supabase: SupabaseClient): 
  * Get weather causation data for a project
  */
 async function getWeatherCausation(project_id: string, supabase: SupabaseClient): Promise<WeatherCausation | undefined> {
-  // Check for existing weather report
-  const { data: report } = await supabase
-    .from('weather_reports')
-    .select('*')
-    .eq('project_id', project_id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  if (report) {
-    return {
-      events: report.events || [],
-      causation_narrative: report.narrative || '',
-      evidence_score: report.evidence_score || 0,
-      pdf_url: report.pdf_url,
-    }
-  }
+  // TODO: weather_reports table does not exist yet.
+  // When created, add query here to check for existing weather reports first.
 
   // Check for linked storm events
   const { data: project } = await supabase

@@ -50,9 +50,6 @@ export interface Contact {
   phone: string | null
   mobile_phone: string | null
 
-  // Organization Link
-  organization_id: string | null
-
   // Organization Info (merged from organizations table)
   is_organization: boolean
   company: string | null
@@ -106,6 +103,7 @@ export interface Contact {
   auto_call_consent: boolean
   recording_consent: boolean
   timezone: string | null
+  preferred_language: string | null
 
   // Flexible
   custom_fields: Record<string, unknown>
@@ -119,7 +117,6 @@ export interface CreateContactInput {
   email?: string
   phone?: string
   mobile_phone?: string
-  organization_id?: string
   is_organization?: boolean
   company?: string
   website?: string
