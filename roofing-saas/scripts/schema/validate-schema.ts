@@ -279,19 +279,23 @@ function extractFkTraversals(content: string, filePath: string): FkExtraction[] 
 function parseSelectString(selectStr: string): string[] {
   const columns: string[] = []
 
-  // Remove FK traversals like `contacts:contact_id(first_name, last_name)`
-  // Replace with just the alias/table name (which isn't a real column on this table)
-  let cleaned = selectStr.replace(/([a-z_]+)(?::([a-z_]+))?\s*\([^)]*\)/g, '')
+  // Remove FK traversals - relationship joins, not columns.
+  // Patterns: table(cols), alias:fk_col(cols), table!inner(cols), alias:table!fk_col(cols)
+  // Iteratively remove innermost to handle nesting.
+  let cleaned = selectStr
+  let prev = ''
+  while (prev !== cleaned) {
+    prev = cleaned
+    cleaned = cleaned.replace(/[a-z_]+(?::[a-z_]+)?(?:![a-z_]+)?\s*\([^()]*\)/g, '')
+  }
 
   // Split on commas, trim, filter
   const parts = cleaned.split(',').map(s => s.trim()).filter(s => s.length > 0)
 
   for (const part of parts) {
     if (part === '*') continue
-    // Handle count syntax: `*` inside count is fine
     if (part.startsWith('{')) continue
 
-    // Extract the column name (skip anything that isn't a valid identifier)
     const col = part.split(':')[0].trim()
     if (col && /^[a-z_]+$/.test(col)) {
       columns.push(col)
@@ -351,14 +355,25 @@ function validate(snapshot: DbSnapshot, files: string[]): ValidationReport {
     })
   }
 
+  // Build FK reachability: tables accessible via FK from each table
+  const fkReachable = new Map<string, Set<string>>()
+  for (const [tbl, schema] of Object.entries(snapshot.tables)) {
+    const reachable = new Set<string>()
+    for (const fk of schema.foreign_keys || []) reachable.add(fk.references_table)
+    fkReachable.set(tbl, reachable)
+  }
+
   // Check 2: Phantom columns
   for (const ext of allColumnExtractions) {
     if (!tableNames.has(ext.table)) continue
     if (ext.confidence === 'low') continue
 
     const tableSchema = snapshot.tables[ext.table]
+    const reachable = fkReachable.get(ext.table) || new Set<string>()
     for (const col of ext.columns) {
       columnsChecked.add(`${ext.table}.${col}`)
+      // Skip FK traversal references (column name is actually a related table name)
+      if (tableNames.has(col) && reachable.has(col)) continue
       if (!tableSchema.columns[col]) {
         const existing = issues.find(
           i => i.category === 'phantom_column' && i.table === ext.table && i.column === col
