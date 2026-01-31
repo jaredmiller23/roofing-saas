@@ -41,7 +41,7 @@ export async function GET(
       `)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .is('is_deleted', null)
+      .eq('is_deleted', false)
       .single()
 
     if (error || !task) {

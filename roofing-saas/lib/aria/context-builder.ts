@@ -63,6 +63,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
         )
         .eq('id', context.entityId)
         .eq('tenant_id', context.tenantId)
+        .eq('is_deleted', false)
         .single()
 
       if (contact) {

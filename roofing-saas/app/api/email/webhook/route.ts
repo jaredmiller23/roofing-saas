@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
 import { verifyResendSignature } from '@/lib/webhooks/security'
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       to: data.to,
     })
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Find the activity by email ID
     const { data: activity } = await supabase

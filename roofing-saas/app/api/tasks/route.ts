@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         parent_task:tasks!parent_task_id(id, title)
       `, { count: 'exact' })
       .eq('tenant_id', tenantId)
-      .is('is_deleted', null)
+      .eq('is_deleted', false)
 
     // Apply filters
     if (priority) {
