@@ -6,7 +6,7 @@ import {
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend/email'
 import {
   createDeclineNotificationEmail,
@@ -67,7 +67,7 @@ export async function POST(
         throw ValidationError('Decline reason is required')
       }
 
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
 
       // Get document
       const { data: document, error: fetchError } = await supabase
@@ -203,7 +203,7 @@ export async function POST(
       clientIp
     })
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Get document
     const { data: document, error: fetchError } = await supabase
@@ -571,7 +571,7 @@ export async function GET(
 
     logger.apiRequest('GET', `/api/signature-documents/${id}/sign`, { id })
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     const { data: document, error } = await supabase
       .from('signature_documents')
