@@ -37,25 +37,36 @@ export async function POST(
     const supabase = await createClient()
 
     // Verify project exists and user has access
+    // Only select columns that actually exist on the projects table
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select(`
-        id,
-        name,
-        tenant_id,
-        property_state,
-        property_county,
-        property_city,
-        roof_manufacturer,
-        contacts (
-          insurance_carrier
-        )
-      `)
+      .select('id, name, tenant_id, contact_id, custom_fields')
       .eq('id', projectId)
       .single()
 
     if (projectError || !project) {
+      logger.error('Project lookup failed for packet generation:', { projectId, error: projectError })
       throw NotFoundError('Project')
+    }
+
+    // Fetch contact separately to avoid PostgREST FK ambiguity
+    // (projects has two FKs to contacts: contact_id and adjuster_contact_id)
+    let contactCarrier: string | undefined
+    let contactAddress: { city?: string; state?: string } = {}
+    if (project.contact_id) {
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('insurance_carrier, address_city, address_state')
+        .eq('id', project.contact_id)
+        .single()
+
+      if (contact) {
+        contactCarrier = contact.insurance_carrier
+        contactAddress = {
+          city: contact.address_city || undefined,
+          state: contact.address_state || undefined,
+        }
+      }
     }
 
     // Parse request body for options
@@ -67,10 +78,9 @@ export async function POST(
       // No body provided, use defaults
     }
 
-    // Get carrier from first contact if available
-    const contactCarrier = Array.isArray(project.contacts) && project.contacts.length > 0
-      ? project.contacts[0]?.insurance_carrier
-      : undefined
+    // Read roof_manufacturer from custom_fields if available
+    const customFields = (project.custom_fields || {}) as Record<string, unknown>
+    const projectRoofManufacturer = customFields.roof_manufacturer as string | undefined
 
     // Build input from project data and request options
     const input: PacketGenerationInput = {
@@ -80,11 +90,11 @@ export async function POST(
       include_manufacturer_specs: options.include_manufacturer_specs ?? true,
       include_policy_provisions: options.include_policy_provisions ?? true,
       carrier: options.carrier || contactCarrier,
-      roof_manufacturer: options.roof_manufacturer || project.roof_manufacturer,
+      roof_manufacturer: options.roof_manufacturer || projectRoofManufacturer,
       jurisdiction: options.jurisdiction || {
-        state: project.property_state || 'TN',
-        county: project.property_county,
-        city: project.property_city,
+        state: contactAddress.state || 'TN',
+        county: undefined,
+        city: contactAddress.city,
       },
     }
 

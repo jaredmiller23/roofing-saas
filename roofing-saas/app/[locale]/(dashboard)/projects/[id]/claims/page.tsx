@@ -381,7 +381,7 @@ export default function ProjectClaimsPage() {
         <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Button
             variant="outline"
-            className="h-auto flex-col items-start p-4"
+            className="h-auto flex-col items-start p-4 whitespace-normal overflow-hidden min-w-0"
             onClick={handleStartInspection}
           >
             <FileText className="h-6 w-6 mb-2" />
@@ -394,7 +394,7 @@ export default function ProjectClaimsPage() {
           </Button>
           <Button
             variant="outline"
-            className="h-auto flex-col items-start p-4"
+            className="h-auto flex-col items-start p-4 whitespace-normal overflow-hidden min-w-0"
             onClick={handleGeneratePacket}
             disabled={generatingPacket}
           >
@@ -408,7 +408,7 @@ export default function ProjectClaimsPage() {
           </Button>
           <Button
             variant="outline"
-            className="h-auto flex-col items-start p-4"
+            className="h-auto flex-col items-start p-4 whitespace-normal overflow-hidden min-w-0"
             onClick={() => router.push(`/projects/${projectId}/claims/export`)}
           >
             <DollarSign className="h-6 w-6 mb-2" />
@@ -421,7 +421,7 @@ export default function ProjectClaimsPage() {
           </Button>
           <Button
             variant="outline"
-            className="h-auto flex-col items-start p-4"
+            className="h-auto flex-col items-start p-4 whitespace-normal overflow-hidden min-w-0"
             onClick={() => router.push(`/projects/${projectId}`)}
           >
             <Calendar className="h-6 w-6 mb-2" />

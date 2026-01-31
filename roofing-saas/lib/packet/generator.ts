@@ -52,18 +52,23 @@ export async function generatePacket(
 
   try {
     // 1. Get project and contact data
+    // Use contacts:contact_id to disambiguate (projects has two FKs to contacts)
     const { data: project, error: projectError } = await supabase
       .from('projects')
       .select(`
         *,
-        contacts (
+        contacts:contact_id (
           id,
           first_name,
           last_name,
           email,
           phone,
           insurance_carrier,
-          insurance_policy_number
+          insurance_policy_number,
+          address_street,
+          address_city,
+          address_state,
+          address_zip
         ),
         claims (
           id,
@@ -91,10 +96,15 @@ export async function generatePacket(
       weather_causation = await getWeatherCausation(project_id)
     }
 
-    // 4. Determine jurisdiction
-    const state = jurisdiction?.state || project.property_state || 'TN'
-    const county = jurisdiction?.county || project.property_county
-    const city = jurisdiction?.city || project.property_city
+    // Extract contact (may be object or array depending on PostgREST response)
+    const contactData = Array.isArray(project.contacts)
+      ? project.contacts[0]
+      : project.contacts
+
+    // 4. Determine jurisdiction (address lives on contacts, not projects)
+    const state = jurisdiction?.state || contactData?.address_state || 'TN'
+    const county = jurisdiction?.county
+    const city = jurisdiction?.city || contactData?.address_city
 
     // 5. Get applicable building codes
     const applicable_codes = include_codes
@@ -113,7 +123,7 @@ export async function generatePacket(
       : []
 
     // 7. Get policy provisions
-    const insuranceCarrier = carrier || claim?.insurance_carrier || project.contacts?.insurance_carrier
+    const insuranceCarrier = carrier || claim?.insurance_carrier || contactData?.insurance_carrier
     const policy_provisions = include_policy_provisions && insuranceCarrier
       ? await getPolicyProvisions({ carrier: insuranceCarrier })
       : []
@@ -165,29 +175,30 @@ export async function generatePacket(
       has_steep_sections: project.has_steep_sections,
     })
 
-    // 11. Build property info
+    // 11. Build property info (address lives on contacts, not projects)
+    const customFields = (project.custom_fields || {}) as Record<string, unknown>
     const property: PropertyInfo = {
-      address: project.property_address || '',
-      city: project.property_city || '',
-      state: project.property_state || '',
-      zip: project.property_zip || '',
-      property_type: project.property_type || 'residential',
-      year_built: project.year_built,
-      roof_type: project.roof_type,
-      roof_material: project.roof_material,
+      address: contactData?.address_street || (customFields.property_address as string) || '',
+      city: contactData?.address_city || (customFields.property_city as string) || '',
+      state: contactData?.address_state || (customFields.property_state as string) || '',
+      zip: contactData?.address_zip || (customFields.property_zip as string) || '',
+      property_type: (customFields.property_type as PropertyInfo['property_type']) || 'residential',
+      year_built: customFields.year_built as number | undefined,
+      roof_type: customFields.roof_type as string | undefined,
+      roof_material: customFields.roof_material as string | undefined,
       roof_manufacturer: manufacturer,
-      roof_age_years: project.roof_age,
+      roof_age_years: customFields.roof_age as number | undefined,
     }
 
     // 12. Build contact info
     const contact: ContactInfo = {
-      id: project.contacts?.id || project.contact_id,
-      first_name: project.contacts?.first_name || '',
-      last_name: project.contacts?.last_name || '',
-      email: project.contacts?.email,
-      phone: project.contacts?.phone,
-      insurance_carrier: project.contacts?.insurance_carrier,
-      policy_number: project.contacts?.insurance_policy_number,
+      id: contactData?.id || project.contact_id,
+      first_name: contactData?.first_name || '',
+      last_name: contactData?.last_name || '',
+      email: contactData?.email,
+      phone: contactData?.phone,
+      insurance_carrier: contactData?.insurance_carrier,
+      policy_number: contactData?.insurance_policy_number,
     }
 
     // 13. Determine recommended action
