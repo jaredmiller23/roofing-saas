@@ -87,6 +87,26 @@ const { data } = await supabase
   .single();
 ```
 
+### FK Disambiguation (Multiple FKs to Same Table)
+When a table has multiple foreign keys to the same target table, PostgREST cannot
+resolve bare table names. Use `alias:fk_column(...)` syntax.
+
+The `projects` table has two FKs to `contacts`: `contact_id` and `adjuster_contact_id`.
+```typescript
+// WRONG - PostgREST ambiguity error
+.select('*, contacts(first_name, last_name)')
+
+// CORRECT - disambiguate with FK column name
+.select('*, contacts:contact_id(first_name, last_name)')
+
+// CORRECT - both FKs with distinct aliases
+.select(`
+  *,
+  contact:contact_id(first_name, last_name),
+  adjuster:adjuster_contact_id(first_name, last_name)
+`)
+```
+
 ## Migrations
 
 ### Naming Convention
