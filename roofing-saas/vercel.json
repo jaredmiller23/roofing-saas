@@ -3,6 +3,9 @@
   "functions": {
     "app/api/photos/upload/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/dashboard/consolidated/route.ts": {
+      "maxDuration": 30
     }
   },
   "crons": [

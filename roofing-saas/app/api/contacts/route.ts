@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { getRequestContext } from '@/lib/auth/request-context'
 import { createContactSchema, contactFiltersSchema } from '@/lib/validations/contact'
 import { NextRequest } from 'next/server'
 import {
@@ -11,7 +12,7 @@ import {
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-import type { ContactListResponse, AutoCreateProjectSetting } from '@/lib/types/api'
+import type { AutoCreateProjectSetting } from '@/lib/types/api'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
@@ -24,20 +25,33 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
+    // Read auth context from middleware headers (avoids redundant JWT validation
+    // and tenant_users query). Falls back to direct auth for programmatic access.
+    const ctx = getRequestContext(request)
+    let userId: string
+    let tenantId: string
+
+    if (ctx) {
+      userId = ctx.userId
+      tenantId = ctx.tenantId
+    } else {
+      const user = await getCurrentUser()
+      if (!user) {
+        throw AuthenticationError('User not authenticated')
+      }
+      userId = user.id
+      const tid = await getUserTenantId(userId)
+      if (!tid) {
+        throw AuthorizationError('User is not associated with a tenant')
+      }
+      tenantId = tid
     }
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/contacts', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/contacts', { tenantId, userId })
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
+    const includeProjects = searchParams.get('include') === 'projects'
     const rawFilters = {
       search: searchParams.get('search') || undefined,
       type: searchParams.get('type') || undefined,
@@ -107,11 +121,36 @@ export async function GET(request: NextRequest) {
       throw mapSupabaseError(error)
     }
 
+    // When include=projects, batch-fetch projects for all returned contacts
+    // in a single query (eliminates N+1: 2 queries instead of 50+)
+    let responseContacts: Record<string, unknown>[] = contacts || []
+    if (includeProjects && contacts && contacts.length > 0) {
+      const contactIds = contacts.map(c => c.id)
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id, name, status, estimated_value, approved_value, final_value, contact_id')
+        .in('contact_id', contactIds)
+        .eq('is_deleted', false)
+
+      if (projects) {
+        const projectsByContact = new Map<string, typeof projects>()
+        for (const project of projects) {
+          const list = projectsByContact.get(project.contact_id) || []
+          list.push(project)
+          projectsByContact.set(project.contact_id, list)
+        }
+        responseContacts = contacts.map(contact => ({
+          ...contact,
+          projects: projectsByContact.get(contact.id) || [],
+        }))
+      }
+    }
+
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/contacts', 200, duration)
 
-    const response: ContactListResponse = {
-      contacts: contacts || [],
+    const response = {
+      contacts: responseContacts,
       total: count || 0,
       page,
       limit,
@@ -134,14 +173,26 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
+    // Read auth context from middleware headers (avoids redundant JWT validation
+    // and tenant_users query). Falls back to direct auth for programmatic access.
+    const ctx = getRequestContext(request)
+    let userId: string
+    let tenantId: string
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
+    if (ctx) {
+      userId = ctx.userId
+      tenantId = ctx.tenantId
+    } else {
+      const user = await getCurrentUser()
+      if (!user) {
+        throw AuthenticationError('User not authenticated')
+      }
+      userId = user.id
+      const tid = await getUserTenantId(userId)
+      if (!tid) {
+        throw AuthorizationError('User is not associated with a tenant')
+      }
+      tenantId = tid
     }
 
     // Get audit context for logging
@@ -150,7 +201,7 @@ export async function POST(request: NextRequest) {
       throw AuthenticationError('Failed to get audit context')
     }
 
-    logger.apiRequest('POST', '/api/contacts', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/contacts', { tenantId, userId })
 
     const body = await request.json()
 
@@ -171,7 +222,7 @@ export async function POST(request: NextRequest) {
           .insert({
             ...validatedData.data,
             tenant_id: tenantId,
-            created_by: user.id,
+            created_by: userId,
           })
           .select()
           .single()
@@ -221,7 +272,7 @@ export async function POST(request: NextRequest) {
               name: `${contactName} - Roofing Project`,
               contact_id: contact.id,
               tenant_id: tenantId,
-              created_by: user.id,
+              created_by: userId,
               pipeline_stage: 'prospect',
               type: 'roofing',
               lead_source: contact.contact_category || 'contact',
@@ -253,7 +304,7 @@ export async function POST(request: NextRequest) {
 
     // Award points for creating a contact (non-blocking)
     awardPointsSafe(
-      user.id,
+      userId,
       POINT_VALUES.CONTACT_CREATED,
       'Created new contact',
       contact.id
@@ -263,7 +314,7 @@ export async function POST(request: NextRequest) {
     triggerWorkflow(tenantId, 'contact_created', {
       contact_id: contact.id,
       contact: contact,
-      user_id: user.id,
+      user_id: userId,
     }).catch((error) => {
       logger.error('Failed to trigger contact_created workflows', { error, contactId: contact.id })
     })

@@ -81,6 +81,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         sort_by: fieldMap[sortField],
         sort_order: sortDirection,
         limit: '50',
+        include: 'projects',
       })
 
       if (stageFilter) {
@@ -103,41 +104,21 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       const result = await response.json()
       const data = result.data || result
 
-      // Fetch projects for each contact
-      const contactsWithProjects = await Promise.all(
-        (data.contacts || []).map(async (contact: Contact) => {
-          try {
-            const projectController = new AbortController()
-            const projectTimeoutId = setTimeout(() => projectController.abort(), 5000) // 5 second timeout per project
+      // Projects are embedded via server-side join (single query, no N+1)
+      const contactsWithProjects = (data.contacts || []).map(
+        (contact: Contact & { projects?: Project[] }) => {
+          const projects = contact.projects || []
+          const total_project_value = projects.reduce((sum: number, p: Project) => {
+            const value = p.final_value || p.approved_value || p.estimated_value
+            return sum + (value || 0)
+          }, 0)
 
-            const projectsRes = await fetch(`/api/projects?contact_id=${contact.id}`, {
-              signal: projectController.signal,
-            })
-            clearTimeout(projectTimeoutId)
-
-            const projectsData = await projectsRes.json()
-            const projects = projectsData.data?.projects || []
-
-            // Calculate total project value
-            const total_project_value = projects.reduce((sum: number, p: Project) => {
-              const value = p.final_value || p.approved_value || p.estimated_value
-              return sum + (value || 0)
-            }, 0)
-
-            return {
-              ...contact,
-              projects,
-              total_project_value,
-            }
-          } catch (err) {
-            console.error(`Failed to fetch projects for contact ${contact.id}:`, err)
-            return {
-              ...contact,
-              projects: [],
-              total_project_value: 0,
-            }
+          return {
+            ...contact,
+            projects,
+            total_project_value,
           }
-        })
+        }
       )
 
       setLeads(contactsWithProjects)
@@ -235,7 +216,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         <div className="text-muted-foreground mb-4">No leads found</div>
         <Link
           href="/contacts/new"
-          className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
         >
           Create your first lead
         </Link>
@@ -311,7 +292,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                   {/* Lead Name & Score */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold">
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-semibold">
                         {lead.first_name.charAt(0)}{lead.last_name.charAt(0)}
                       </div>
                       <div>

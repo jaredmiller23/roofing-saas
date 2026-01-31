@@ -15,6 +15,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getRequestContext } from '@/lib/auth/request-context'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
@@ -35,15 +36,26 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    // Single auth check (saves 5 redundant auth checks)
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
+    // Read auth context from middleware headers (avoids redundant JWT validation
+    // and tenant_users query). Falls back to direct auth for programmatic access.
+    const ctx = getRequestContext(request)
+    let userId: string
+    let tenantId: string
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
+    if (ctx) {
+      userId = ctx.userId
+      tenantId = ctx.tenantId
+    } else {
+      const user = await getCurrentUser()
+      if (!user) {
+        throw AuthenticationError('Unauthorized')
+      }
+      userId = user.id
+      const tid = await getUserTenantId(userId)
+      if (!tid) {
+        throw AuthorizationError('No tenant found')
+      }
+      tenantId = tid
     }
 
     // Single Supabase client (saves 5 redundant client instantiations)
@@ -80,16 +92,16 @@ export async function GET(request: NextRequest) {
 
       // Metrics (tier-appropriate)
       mode === 'field'
-        ? getFieldMetrics(supabase, tenantId, user.id)
+        ? getFieldMetrics(supabase, tenantId, userId)
         : mode === 'manager'
-          ? getManagerMetrics(supabase, tenantId, scope, user.id)
-          : getFullMetrics(supabase, tenantId, scope, user.id),
+          ? getManagerMetrics(supabase, tenantId, scope, userId)
+          : getFullMetrics(supabase, tenantId, scope, userId),
 
       // Weekly challenge
-      fetchWeeklyChallenge(supabase, tenantId, user.id),
+      fetchWeeklyChallenge(supabase, tenantId, userId),
 
       // User points
-      fetchUserPoints(supabase, user.id)
+      fetchUserPoints(supabase, userId)
     ])
 
     // Second parallel batch: queries that depend on userInfoMap
@@ -102,10 +114,10 @@ export async function GET(request: NextRequest) {
       fetchActivityFeed(supabase, tenantId, userInfoMap),
 
       // Knock leaderboard (weekly)
-      fetchLeaderboard(supabase, tenantId, user.id, 'knocks', 'weekly', 10, userInfoMap),
+      fetchLeaderboard(supabase, tenantId, userId, 'knocks', 'weekly', 10, userInfoMap),
 
       // Sales leaderboard (weekly)
-      fetchLeaderboard(supabase, tenantId, user.id, 'sales', 'weekly', 10, userInfoMap),
+      fetchLeaderboard(supabase, tenantId, userId, 'sales', 'weekly', 10, userInfoMap),
     ])
 
     const duration = Date.now() - startTime

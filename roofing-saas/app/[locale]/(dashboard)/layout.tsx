@@ -1,4 +1,4 @@
-import { getCurrentUser, getUserRole } from '@/lib/auth/session'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
@@ -8,13 +8,9 @@ import { ARIAChatButton } from '@/components/aria/ARIAChatButton'
 /**
  * Dashboard layout - main application layout with sidebar navigation
  *
- * This layout wraps all authenticated pages and provides:
- * - Left sidebar navigation with dark theme
- * - Responsive mobile menu
- * - User profile and sign out
- * - Admin impersonation UI (for admins only)
- * - Command palette (Cmd+K) for quick navigation
- * - Internationalization support
+ * Auth context is read from middleware-set headers to avoid redundant
+ * JWT validation and tenant_users queries. The middleware has already
+ * validated the session and looked up the tenant context.
  */
 export default async function DashboardLayout({
   children,
@@ -24,29 +20,31 @@ export default async function DashboardLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  const user = await getCurrentUser()
+  const headerStore = await headers()
 
-  if (!user) {
+  // Read auth context from middleware headers (no redundant DB calls)
+  const userId = headerStore.get('x-user-id')
+  const userEmail = headerStore.get('x-user-email') || ''
+  const userRole = headerStore.get('x-user-role') || 'user'
+
+  if (!userId) {
     redirect(`/${locale}/login`)
   }
-
-  // Get user role for admin-only features
-  const userRole = await getUserRole(user.id)
 
   return (
     <CommandPaletteProvider>
       <div className="min-h-screen bg-background">
         {/* Sidebar */}
-        <Sidebar 
-          userEmail={user.email || ''} 
-          userRole={userRole || 'user'} 
+        <Sidebar
+          userEmail={userEmail}
+          userRole={userRole}
         />
 
         {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
         <main className="lg:ml-64 min-h-screen pb-20">
           <DashboardLayoutClient
-            userRole={userRole || 'user'}
-            userEmail={user.email || ''}
+            userRole={userRole}
+            userEmail={userEmail}
           >
             {children}
           </DashboardLayoutClient>

@@ -182,6 +182,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
   }
 
+  // Pass auth context via headers so layout and API routes don't need
+  // to re-validate the JWT or re-query tenant_users. Middleware has already
+  // validated the session — these headers are trustworthy.
+  if (user && !isPublicRoute) {
+    supabaseResponse.headers.set('x-user-id', user.id)
+    supabaseResponse.headers.set('x-user-email', user.email || '')
+
+    // Single tenant_users query replaces 3-5 separate queries downstream
+    const { data: tenantData } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: false })
+      .limit(1)
+
+    if (tenantData && tenantData.length > 0) {
+      supabaseResponse.headers.set('x-tenant-id', tenantData[0].tenant_id)
+      supabaseResponse.headers.set('x-user-role', tenantData[0].role)
+    }
+  }
+
   // Check MFA enforcement for authenticated users accessing protected routes
   if (user && !isPublicRoute) {
     try {

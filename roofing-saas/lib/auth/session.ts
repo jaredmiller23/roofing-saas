@@ -212,6 +212,39 @@ export async function getUserRole(userId: string): Promise<string | null> {
 
 export type UserStatus = 'active' | 'deactivated' | 'suspended' | 'pending'
 
+export interface UserContext {
+  tenantId: string
+  role: string
+  status: UserStatus
+}
+
+/**
+ * Get user's full tenant context in a single query
+ * Returns tenantId, role, and status from the most recently joined active tenant.
+ * Use this instead of calling getUserTenantId + getUserRole + getUserStatus separately.
+ */
+export async function getUserContext(userId: string): Promise<UserContext | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('tenant_users')
+    .select('tenant_id, role, status')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('joined_at', { ascending: false })
+    .limit(1)
+
+  if (error || !data || data.length === 0) {
+    return null
+  }
+
+  return {
+    tenantId: data[0].tenant_id,
+    role: data[0].role,
+    status: (data[0].status as UserStatus) || 'active',
+  }
+}
+
 /**
  * Get user's status in their tenant
  * Returns null if user is not associated with a tenant
