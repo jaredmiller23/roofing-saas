@@ -9,8 +9,11 @@ import { PointsDisplay } from '@/components/gamification/PointsDisplay'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 import { WeatherWidget } from '@/components/dashboard/WeatherWidget'
+import { TodaysWork } from '@/components/dashboard/TodaysWork'
 import { Button } from '@/components/ui/button'
-import { RefreshCw } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { useUIMode } from '@/hooks/useUIMode'
+import { RefreshCw, ChevronDown } from 'lucide-react'
 
 // Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
@@ -116,12 +119,18 @@ interface ConsolidatedDashboardData {
  * Uses a consolidated API endpoint to fetch all dashboard data in a single request,
  * reducing load time from 5-10 seconds to <2 seconds by eliminating 6 separate
  * serverless cold starts.
+ *
+ * Renders different layouts based on UI mode:
+ * - Field mode: Simplified view with TodaysWork, personal stats, collapsed leaderboard
+ * - Manager/Full mode: Full dashboard with all widgets and scope filtering
  */
 export default function DashboardPage() {
+  const { isFieldMode } = useUIMode()
   const [scope, setScope] = useState<DashboardScope>('company')
   const [data, setData] = useState<ConsolidatedDashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false)
 
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true)
@@ -175,6 +184,59 @@ export default function DashboardPage() {
     )
   }
 
+  // Field worker view - simplified, mobile-optimized
+  if (isFieldMode) {
+    return (
+      <div className="p-4 pt-16 lg:p-8 lg:pt-8">
+        <div className="max-w-lg mx-auto space-y-4">
+          {/* Priority: Weather safety check */}
+          <WeatherWidget />
+
+          {/* Priority: What to do now */}
+          {/* TODO: Integrate todaysJobs from API when available */}
+          <TodaysWork
+            isLoading={isLoading}
+          />
+
+          {/* Personal stats - simplified */}
+          <DashboardMetrics
+            scope="personal"
+            data={data?.metrics}
+            isLoading={isLoading}
+          />
+
+          {/* Points display */}
+          <PointsDisplay
+            data={data?.points}
+            isLoading={isLoading}
+          />
+
+          {/* Leaderboard - collapsed by default to reduce cognitive load */}
+          <Collapsible open={leaderboardOpen} onOpenChange={setLeaderboardOpen}>
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center justify-between p-4 bg-card rounded-lg border hover:bg-accent transition-colors">
+                <span className="font-medium">Team Leaderboard</span>
+                <ChevronDown className={`h-5 w-5 transition-transform ${leaderboardOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <Leaderboard
+                period="weekly"
+                limit={5}
+                type="knocks"
+                title="This Week"
+                metricLabel="knocks"
+                data={data?.knockLeaderboard}
+                isLoading={isLoading}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </div>
+    )
+  }
+
+  // Manager/Owner view - full dashboard
   return (
     <div className="p-4 pt-16 lg:p-8 lg:pt-8">
       <div className="max-w-7xl mx-auto space-y-8">
