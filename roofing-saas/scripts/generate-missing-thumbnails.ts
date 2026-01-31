@@ -127,7 +127,7 @@ async function processPhoto(photo: Photo, dryRun: boolean): Promise<boolean> {
 
     // Update photo record
     const { error: updateError } = await supabase
-      .from('photos')
+      .from('project_files')
       .update({ thumbnail_url: urlData.publicUrl })
       .eq('id', photo.id)
 
@@ -162,8 +162,9 @@ async function main() {
   console.log('Querying photos without thumbnails...')
 
   const { data: photos, error } = await supabase
-    .from('photos')
+    .from('project_files')
     .select('id, file_url, file_path, thumbnail_url, tenant_id')
+    .eq('file_type', 'photo')
     .eq('is_deleted', false)
     .or('thumbnail_url.is.null,thumbnail_url.eq.file_url')
     .limit(limit)

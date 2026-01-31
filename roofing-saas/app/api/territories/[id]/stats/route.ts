@@ -71,9 +71,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Count photos (simplified)
     const { count: photoCount } = await supabase
-      .from('photos')
+      .from('project_files')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
+      .eq('file_type', 'photo')
       .eq('is_deleted', false)
 
     // Count activities (simplified)

@@ -418,18 +418,19 @@ export async function generateClaimExportPackage(
 
     // Fetch photos
     const { data: photos } = await supabase
-      .from('photos')
-      .select('id, storage_path, caption, damage_type, severity, created_at')
+      .from('project_files')
+      .select('id, file_path, description, metadata, created_at')
       .eq('project_id', projectId)
+      .eq('file_type', 'photo')
       .eq('is_deleted', false)
       .order('created_at', { ascending: true })
 
     // Fetch documents
     const { data: documents } = await supabase
       .from('documents')
-      .select('id, name, type, storage_path, created_at')
-      .eq('project_id', projectId)
-      .eq('is_deleted', false)
+      .select('id, name, type, file_url, created_at')
+      .eq('entity_id', projectId)
+      .eq('entity_type', 'project')
       .order('created_at', { ascending: true })
 
     // Fetch storm causation - either from linked event or by searching nearby events
@@ -565,37 +566,30 @@ export async function generateClaimExportPackage(
     // Get storage URLs for photos
     const photosWithUrls = await Promise.all(
       (photos || []).map(async photo => {
+        const photoMetadata = (photo.metadata || {}) as Record<string, unknown>
         const { data: urlData } = await supabase.storage
-          .from('photos')
-          .createSignedUrl(photo.storage_path, 3600) // 1 hour expiry
+          .from('property-photos')
+          .createSignedUrl(photo.file_path, 3600) // 1 hour expiry
 
         return {
           id: photo.id,
           url: urlData?.signedUrl || '',
-          caption: photo.caption || undefined,
-          damage_type: photo.damage_type || undefined,
-          severity: photo.severity || undefined,
+          caption: photo.description || undefined,
+          damage_type: (photoMetadata.damage_type as string) || undefined,
+          severity: (photoMetadata.severity as string) || undefined,
           taken_at: photo.created_at,
         }
       })
     )
 
-    // Get storage URLs for documents
-    const documentsWithUrls = await Promise.all(
-      (documents || []).map(async doc => {
-        const { data: urlData } = await supabase.storage
-          .from('documents')
-          .createSignedUrl(doc.storage_path, 3600)
-
-        return {
-          id: doc.id,
-          name: doc.name,
-          type: doc.type,
-          url: urlData?.signedUrl || '',
-          created_at: doc.created_at,
-        }
-      })
-    )
+    // Map document URLs
+    const documentsWithUrls = (documents || []).map(doc => ({
+      id: doc.id,
+      name: doc.name,
+      type: doc.type,
+      url: doc.file_url || '',
+      created_at: doc.created_at,
+    }))
 
     const customFields = (contact.custom_fields || {}) as Record<string, unknown>
 

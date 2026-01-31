@@ -47,6 +47,7 @@ export interface ProjectFile {
   file_extension?: string | null
   mime_type?: string | null
   project_id: string | null
+  contact_id?: string | null
   folder_path?: string | null  // For folder hierarchy: /folder1/subfolder2
   description: string | null
   tenant_id: string

@@ -365,10 +365,11 @@ ariaFunctionRegistry.register({
     let photos: Array<{ id: string; file_url: string; metadata: Record<string, unknown> }> = []
     if (include_photos) {
       const { data: projectPhotos } = await context.supabase
-        .from('photos')
+        .from('project_files')
         .select('id, file_url, metadata, created_at')
         .eq('tenant_id', context.tenantId)
         .eq('project_id', targetProjectId)
+        .eq('file_type', 'photo')
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
         .limit(20)
@@ -830,10 +831,11 @@ ariaFunctionRegistry.register({
 
     // Get photo count
     const { count: photoCount } = await context.supabase
-      .from('photos')
+      .from('project_files')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', context.tenantId)
       .eq('project_id', targetProjectId)
+      .eq('file_type', 'photo')
       .eq('is_deleted', false)
 
     // Get upcoming events

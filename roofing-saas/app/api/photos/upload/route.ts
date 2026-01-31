@@ -220,14 +220,22 @@ export async function POST(request: NextRequest) {
     const { data: mainUrlData } = supabase.storage.from('property-photos').getPublicUrl(mainFilePath)
     const { data: thumbUrlData } = supabase.storage.from('property-photos').getPublicUrl(thumbFilePath)
 
-    // Save photo metadata to database
+    // Save photo metadata to unified project_files table
+    const parsedMetadata = metadata as Record<string, unknown>
+    const fileCategory = parsedMetadata.damage_type ? 'inspection' : undefined
+
     const photoData = {
       tenant_id: tenantId,
       contact_id: contactId || null,
       project_id: projectId || null,
+      file_name: file.name,
+      file_type: 'photo' as const,
+      file_category: fileCategory,
       file_path: mainStorageData.path,
       file_url: mainUrlData.publicUrl,
       thumbnail_url: thumbStorageError ? mainUrlData.publicUrl : thumbUrlData.publicUrl,
+      file_size: processedBuffer.length,
+      mime_type: finalMime,
       metadata: {
         original_name: file.name,
         original_mime_type: actualMime,
@@ -240,9 +248,10 @@ export async function POST(request: NextRequest) {
         ...metadata,
       },
       uploaded_by: user.id,
+      is_deleted: false,
     }
 
-    const { data, error } = await supabase.from('photos').insert(photoData).select().single()
+    const { data, error } = await supabase.from('project_files').insert(photoData).select().single()
 
     if (error) {
       // Rollback: Delete uploaded files if database insert fails
@@ -263,9 +272,10 @@ export async function POST(request: NextRequest) {
     // and award bonus if applicable
     if (contactId || projectId) {
       const { count: photoCount } = await supabase
-        .from('photos')
+        .from('project_files')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
+        .eq('file_type', 'photo')
         .eq('is_deleted', false)
         .or(`contact_id.eq.${contactId},project_id.eq.${projectId}`)
 

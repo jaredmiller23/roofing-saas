@@ -79,9 +79,10 @@ ariaFunctionRegistry.register({
         const supabase = await createClient()
 
         let query = supabase
-          .from('photos')
+          .from('project_files')
           .select('id, file_url')
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
           .limit(limit)
@@ -256,9 +257,10 @@ ariaFunctionRegistry.register({
         const ids = [beforeId, afterId].filter(Boolean) as string[]
 
         const { data: photos, error } = await supabase
-          .from('photos')
+          .from('project_files')
           .select('id, file_url')
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .in('id', ids)
 
         if (error) {
@@ -394,9 +396,10 @@ ariaFunctionRegistry.register({
       // Fetch photo URL and property info if needed
       if (!photoUrl) {
         let query = supabase
-          .from('photos')
+          .from('project_files')
           .select('file_url')
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -549,10 +552,11 @@ ariaFunctionRegistry.register({
       if (!photoUrl && photoId) {
         const supabase = await createClient()
         const { data: photo } = await supabase
-          .from('photos')
+          .from('project_files')
           .select('file_url')
           .eq('id', photoId)
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .single()
 
         if (photo) {
@@ -666,10 +670,11 @@ ariaFunctionRegistry.register({
         urls = [photoUrl]
       } else if (photoId) {
         const { data: photo } = await supabase
-          .from('photos')
+          .from('project_files')
           .select('file_url')
           .eq('id', photoId)
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .single()
 
         if (photo) {
@@ -677,10 +682,11 @@ ariaFunctionRegistry.register({
         }
       } else if (projectId) {
         const { data: photos } = await supabase
-          .from('photos')
+          .from('project_files')
           .select('file_url')
           .eq('project_id', projectId)
           .eq('tenant_id', tenantId)
+          .eq('file_type', 'photo')
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
           .limit(5)

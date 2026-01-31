@@ -43,9 +43,10 @@ export async function GET(request: NextRequest) {
     // Build query - select only fields needed for gallery display
     // Reduces payload size significantly (metadata JSONB can be large)
     let query = supabase
-      .from('photos')
+      .from('project_files')
       .select('id, file_url, thumbnail_url, created_at, contact_id, project_id, metadata')
       .eq('tenant_id', tenantId)
+      .eq('file_type', 'photo')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -114,10 +115,11 @@ export async function DELETE(request: NextRequest) {
 
     // Verify photo belongs to tenant
     const { data: photo, error: fetchError } = await supabase
-      .from('photos')
+      .from('project_files')
       .select('*')
       .eq('id', photoId)
       .eq('tenant_id', tenantId)
+      .eq('file_type', 'photo')
       .single()
 
     if (fetchError || !photo) {
@@ -126,7 +128,7 @@ export async function DELETE(request: NextRequest) {
 
     // Soft delete the photo
     const { error: deleteError } = await supabase
-      .from('photos')
+      .from('project_files')
       .update({ is_deleted: true })
       .eq('id', photoId)
 

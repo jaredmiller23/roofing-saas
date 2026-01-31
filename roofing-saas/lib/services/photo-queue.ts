@@ -182,14 +182,22 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
       }
     }
 
-    // Build insert — only columns that exist in the photos table
+    // Build insert for unified project_files table
+    const fileCategory = damageType ? 'inspection' : undefined;
+
     const insertData: Record<string, unknown> = {
       tenant_id: photo.tenantId,
       contact_id: photo.contactId || null,
       project_id: photo.projectId || null,
+      file_name: photo.fileName || `photo_${Date.now()}.jpg`,
+      file_type: 'photo',
+      file_category: fileCategory,
       file_url: publicUrl,
       file_path: uploadData.path,
+      file_size: photo.fileSize,
+      mime_type: photo.fileType || 'image/jpeg',
       uploaded_by: user.id,
+      is_deleted: false,
       metadata: {
         file_name: photo.fileName,
         file_size: photo.fileSize,
@@ -198,18 +206,16 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
         longitude: photo.metadata.longitude,
         notes: photo.metadata.notes,
         captured_at: photo.metadata.capturedAt,
+        damage_type: damageType,
+        severity: severity,
+        photo_order: photoOrder,
+        claim_id: claimId,
       },
     };
 
-    // Only include optional columns if they have values
-    if (damageType) insertData.damage_type = damageType;
-    if (severity) insertData.severity = severity;
-    if (photoOrder !== undefined) insertData.photo_order = photoOrder;
-    if (claimId) insertData.claim_id = claimId;
-
-    // Insert into photos table
+    // Insert into unified project_files table
     const { error: dbError } = await supabase
-      .from('photos')
+      .from('project_files')
       .insert(insertData)
       .select()
       .single();
