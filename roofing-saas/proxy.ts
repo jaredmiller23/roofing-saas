@@ -8,7 +8,6 @@ import {
   applyRateLimit,
 } from './lib/rate-limit'
 import { locales, defaultLocale } from './lib/i18n/config'
-import { shouldBlockRequest } from './lib/auth/mfa-enforcement'
 
 // Create i18n middleware instance
 const intlMiddleware = createIntlMiddleware({
@@ -18,19 +17,23 @@ const intlMiddleware = createIntlMiddleware({
 })
 
 /**
- * Proxy middleware for authentication, tenant context, and rate limiting
+ * Edge proxy for session management, routing, and rate limiting
  *
- * This proxy:
- * 1. Applies rate limiting to sensitive endpoints
- * 2. Refreshes the Supabase auth session
- * 3. Validates tenant access (future: subdomain routing)
- * 4. Protects authenticated routes
- * 5. Handles cookie management for auth state
+ * This proxy handles lightweight, latency-sensitive concerns:
+ * 1. i18n locale detection and routing
+ * 2. Rate limiting on sensitive endpoints
+ * 3. Supabase session refresh (token rotation via getUser)
+ * 4. Optimistic auth redirects (cookie-based, not security gates)
  *
- * Note: For Phase 1, we're starting with a single tenant.
- * Multi-tenant subdomain routing will be added in a future phase.
+ * Security verification happens at the data access layer:
+ * - Dashboard layout: getCurrentUser() + getUserContext()
+ * - API routes: getCurrentUser() + getUserTenantId()
+ * - MFA enforcement: dashboard layout (not here)
+ *
+ * This proxy CANNOT be relied on for security (CVE-2025-29927).
+ * It exists for UX (fast redirects) and session management only.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
 
@@ -121,6 +124,9 @@ export async function middleware(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
+  // This call serves two purposes:
+  // 1. Refreshes the auth session if the token is near expiry (cookie rotation)
+  // 2. Provides user state for optimistic redirects (UX, not security)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -162,45 +168,22 @@ export async function middleware(request: NextRequest) {
     pathnameWithoutLocale.startsWith(route)
   )
 
-  // Protect authenticated routes
+  // Optimistic auth redirect: no user → login page
+  // Real auth verification happens in layout.tsx and API routes
   if (!user && !isPublicRoute) {
-    // No user, redirect to login page with locale prefix
-    // Extract current locale from path or use default
     const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
     const origin = new URL(request.url).origin
     return NextResponse.redirect(new URL(`/${locale}/login`, origin))
   }
 
-  // If user is logged in and tries to access auth pages, redirect to dashboard
+  // Redirect authenticated users away from auth pages
   if (user && (
     pathnameWithoutLocale.startsWith('/login') ||
     pathnameWithoutLocale.startsWith('/register')
   )) {
-    // Redirect to locale-prefixed dashboard since dashboard pages are under [locale]
     const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
     const origin = new URL(request.url).origin
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
-  }
-
-  // NOTE: Middleware→layout header passthrough was attempted but is incompatible
-  // with the Supabase auth cookie pattern. Creating a new NextResponse breaks
-  // cookie handling (redirect loops), and the x-middleware-request-* mechanism
-  // doesn't reliably expose headers to server component headers().
-  // Layout uses getCurrentUser() + getUserContext() instead (2 queries).
-
-  // Check MFA enforcement for authenticated users accessing protected routes
-  if (user && !isPublicRoute) {
-    try {
-      const blockResult = await shouldBlockRequest(pathnameWithoutLocale)
-      if (blockResult.shouldBlock && blockResult.redirectPath) {
-        const locale = locales.find(l => pathname.startsWith(`/${l}`)) || defaultLocale
-        const origin = new URL(request.url).origin
-        return NextResponse.redirect(new URL(`/${locale}${blockResult.redirectPath}`, origin))
-      }
-    } catch (error) {
-      // Log error but don't block the request - MFA enforcement should be graceful
-      console.error('MFA enforcement check failed:', error)
-    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

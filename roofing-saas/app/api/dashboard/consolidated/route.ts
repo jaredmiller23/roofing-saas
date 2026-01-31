@@ -15,7 +15,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getRequestContext } from '@/lib/auth/request-context'
+
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -36,26 +36,14 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    // Read auth context from middleware headers (avoids redundant JWT validation
-    // and tenant_users query). Falls back to direct auth for programmatic access.
-    const ctx = getRequestContext(request)
-    let userId: string
-    let tenantId: string
-
-    if (ctx) {
-      userId = ctx.userId
-      tenantId = ctx.tenantId
-    } else {
-      const user = await getCurrentUser()
-      if (!user) {
-        throw AuthenticationError('Unauthorized')
-      }
-      userId = user.id
-      const tid = await getUserTenantId(userId)
-      if (!tid) {
-        throw AuthorizationError('No tenant found')
-      }
-      tenantId = tid
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError('Unauthorized')
+    }
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
     }
 
     // Single Supabase client (saves 5 redundant client instantiations)

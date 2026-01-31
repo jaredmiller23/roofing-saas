@@ -1,7 +1,7 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { getRequestContext } from '@/lib/auth/request-context'
+
 import { createContactSchema, contactFiltersSchema } from '@/lib/validations/contact'
 import { NextRequest } from 'next/server'
 import {
@@ -26,26 +26,14 @@ export async function GET(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    // Read auth context from middleware headers (avoids redundant JWT validation
-    // and tenant_users query). Falls back to direct auth for programmatic access.
-    const ctx = getRequestContext(request)
-    let userId: string
-    let tenantId: string
-
-    if (ctx) {
-      userId = ctx.userId
-      tenantId = ctx.tenantId
-    } else {
-      const user = await getCurrentUser()
-      if (!user) {
-        throw AuthenticationError('User not authenticated')
-      }
-      userId = user.id
-      const tid = await getUserTenantId(userId)
-      if (!tid) {
-        throw AuthorizationError('User is not associated with a tenant')
-      }
-      tenantId = tid
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError('User not authenticated')
+    }
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
     }
 
     logger.apiRequest('GET', '/api/contacts', { tenantId, userId })
@@ -167,26 +155,14 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
-    // Read auth context from middleware headers (avoids redundant JWT validation
-    // and tenant_users query). Falls back to direct auth for programmatic access.
-    const ctx = getRequestContext(request)
-    let userId: string
-    let tenantId: string
-
-    if (ctx) {
-      userId = ctx.userId
-      tenantId = ctx.tenantId
-    } else {
-      const user = await getCurrentUser()
-      if (!user) {
-        throw AuthenticationError('User not authenticated')
-      }
-      userId = user.id
-      const tid = await getUserTenantId(userId)
-      if (!tid) {
-        throw AuthorizationError('User is not associated with a tenant')
-      }
-      tenantId = tid
+    const user = await getCurrentUser()
+    if (!user) {
+      throw AuthenticationError('User not authenticated')
+    }
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
     }
 
     // Get audit context for logging
