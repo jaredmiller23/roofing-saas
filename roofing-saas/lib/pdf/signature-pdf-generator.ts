@@ -33,17 +33,26 @@ export async function generateSignedPDF(
   signatures: SignatureData[],
   sourceUrl?: string
 ): Promise<Uint8Array> {
-  let pdfDoc: PDFDocument
+  let pdfDoc!: PDFDocument
+  let loadedFromSource = false
 
-  if (sourceUrl) {
-    // Load existing PDF from URL
-    const response = await fetch(sourceUrl)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch PDF from ${sourceUrl}`)
+  if (sourceUrl && !sourceUrl.startsWith('blob:')) {
+    // Load existing PDF from URL (skip blob: URLs — they're browser-only)
+    try {
+      const response = await fetch(sourceUrl)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const existingPdfBytes = await response.arrayBuffer()
+      pdfDoc = await PDFDocument.load(existingPdfBytes)
+      loadedFromSource = true
+    } catch (error) {
+      console.warn(`Could not load source PDF from ${sourceUrl}:`, error)
+      // Fall through to create from scratch
     }
-    const existingPdfBytes = await response.arrayBuffer()
-    pdfDoc = await PDFDocument.load(existingPdfBytes)
-  } else {
+  }
+
+  if (!loadedFromSource) {
     // Create new PDF from scratch
     pdfDoc = await PDFDocument.create()
     const page = pdfDoc.addPage([612, 792]) // Letter size (8.5" x 11")
