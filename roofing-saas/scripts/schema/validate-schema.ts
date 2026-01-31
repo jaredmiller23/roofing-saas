@@ -431,9 +431,13 @@ function validate(snapshot: DbSnapshot, files: string[]): ValidationReport {
   }
 
   // Check 4: FK target bugs (tenant_id -> wrong table)
+  // Skip if the table also has a direct tenant_id -> tenants.id FK (composite FK is valid)
   for (const [tableName, schema] of Object.entries(snapshot.tables)) {
+    const hasDirectTenantFk = schema.foreign_keys.some(
+      fk => fk.column === 'tenant_id' && fk.references_table === 'tenants' && fk.references_column === 'id'
+    )
     for (const fk of schema.foreign_keys) {
-      if (fk.column === 'tenant_id' && fk.references_table !== 'tenants') {
+      if (fk.column === 'tenant_id' && fk.references_table !== 'tenants' && !hasDirectTenantFk) {
         fkIssues++
         issues.push({
           severity: 'P1',

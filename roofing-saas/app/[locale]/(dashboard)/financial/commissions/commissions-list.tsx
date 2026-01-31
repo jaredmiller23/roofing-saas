@@ -7,11 +7,10 @@ import { approveCommissionAction, markCommissionPaidAction } from './actions'
 interface Commission {
   id: string
   user_id: string
-  commission_type: string
-  base_amount: number
-  commission_amount: number
-  final_amount: number
+  amount: number
+  percentage: number
   status: string
+  notes: string | null
   created_at: string
   project?: {
     id: string
@@ -125,10 +124,9 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
           <thead className="bg-background">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Project</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Base Amount</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Commission</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Rate</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Amount</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
             </tr>
@@ -141,11 +139,6 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                     {formatDate(commission.created_at)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-muted text-foreground capitalize">
-                      {commission.commission_type}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 text-sm text-foreground">
                     {project ? (
                       <div>
@@ -157,10 +150,10 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">
-                    {formatCurrency(commission.base_amount)}
+                    {commission.percentage}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
-                    {formatCurrency(commission.final_amount)}
+                    {formatCurrency(commission.amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(commission.status)}`}>

@@ -315,7 +315,7 @@ export interface SignedNotificationData {
     signer_name: string
     signer_email: string
     signer_type: string
-    created_at: string
+    signed_at: string
   }>
   documentUrl: string
   downloadUrl: string
@@ -350,7 +350,7 @@ function getSignedNotificationBody(data: SignedNotificationData): string {
       <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${s.signer_name}</td>
       <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${s.signer_email}</td>
       <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${s.signer_type}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${new Date(s.created_at).toLocaleString()}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${new Date(s.signed_at).toLocaleString()}</td>
     </tr>`
   ).join('')
 

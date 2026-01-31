@@ -31,10 +31,6 @@ export default async function CommissionsPage() {
     .select(`
       id,
       user_id,
-      commission_type,
-      base_amount,
-      commission_amount,
-      final_amount,
       amount,
       percentage,
       status,

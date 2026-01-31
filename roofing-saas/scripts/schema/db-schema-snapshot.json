@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-01-31T02:09:16.442Z",
+  "snapshot_at": "2026-01-31T02:48:42.443Z",
   "tables": {
     "_encryption_keys": {
       "columns": {
@@ -563,12 +563,12 @@
         {
           "column": "tenant_id",
           "references_table": "tenant_users",
-          "references_column": "user_id"
+          "references_column": "tenant_id"
         },
         {
           "column": "tenant_id",
           "references_table": "tenant_users",
-          "references_column": "tenant_id"
+          "references_column": "user_id"
         },
         {
           "column": "user_id",
@@ -3697,6 +3697,66 @@
           "type": "timestamp with time zone",
           "nullable": true,
           "default_value": "now()"
+        },
+        "plan_type": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "calculation_method": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "base_rate": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "fixed_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "tiers": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": null
+        },
+        "calculation_base": {
+          "type": "text",
+          "nullable": true,
+          "default_value": "'contract_value'::text"
+        },
+        "min_commission": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "max_commission": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "requires_payment": {
+          "type": "boolean",
+          "nullable": true,
+          "default_value": "false"
+        },
+        "effective_date": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "end_date": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_by": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
         }
       },
       "foreign_keys": []
@@ -3757,9 +3817,89 @@
           "type": "timestamp with time zone",
           "nullable": true,
           "default_value": "now()"
+        },
+        "commission_plan_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "commission_type": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "base_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "commission_rate": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "commission_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "adjustment_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": "0"
+        },
+        "adjustment_reason": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "final_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "approved_by": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "approved_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "payment_date": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "payment_method": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "updated_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": "now()"
+        },
+        "created_by": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
         }
       },
       "foreign_keys": [
+        {
+          "column": "commission_plan_id",
+          "references_table": "commission_plans",
+          "references_column": "id"
+        },
         {
           "column": "plan_id",
           "references_table": "commission_plans",
@@ -5230,6 +5370,26 @@
           "type": "boolean",
           "nullable": true,
           "default_value": "true"
+        },
+        "phone_hash": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "listed_date": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "area_code": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "metadata": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'{}'::jsonb"
         }
       },
       "foreign_keys": []
@@ -9278,12 +9438,27 @@
           "type": "jsonb",
           "nullable": true,
           "default_value": "'{}'::jsonb"
+        },
+        "parent_file_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "version": {
+          "type": "integer",
+          "nullable": true,
+          "default_value": "1"
         }
       },
       "foreign_keys": [
         {
           "column": "contact_id",
           "references_table": "contacts",
+          "references_column": "id"
+        },
+        {
+          "column": "parent_file_id",
+          "references_table": "project_files",
           "references_column": "id"
         },
         {
@@ -10329,6 +10504,16 @@
           "type": "uuid",
           "nullable": true,
           "default_value": null
+        },
+        "total_price": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "category": {
+          "type": "text",
+          "nullable": true,
+          "default_value": "'materials'::text"
         }
       },
       "foreign_keys": [
@@ -10390,6 +10575,31 @@
           "type": "timestamp with time zone",
           "nullable": true,
           "default_value": "now()"
+        },
+        "display_order": {
+          "type": "integer",
+          "nullable": true,
+          "default_value": "0"
+        },
+        "tax_rate": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": "0"
+        },
+        "tax_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": "0"
+        },
+        "total_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": "0"
+        },
+        "profit_margin": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
         }
       },
       "foreign_keys": [
@@ -14714,8 +14924,10 @@
     "award_points",
     "binary_quantize",
     "calculate_business_days_deadline",
+    "calculate_commission",
     "calculate_damage_score",
     "calculate_job_duration",
+    "calculate_polygon_area_sq_miles",
     "calculate_project_costs",
     "calculate_project_profit",
     "can_send_email_to_contact",
@@ -14793,7 +15005,9 @@
     "hnsw_halfvec_support",
     "hnsw_sparsevec_support",
     "hnswhandler",
+    "increment",
     "increment_campaign_enrollment",
+    "increment_campaign_enrollments",
     "increment_saved_filter_usage",
     "increment_subscription_usage",
     "inner_product",
@@ -14803,6 +15017,7 @@
     "ivfflat_halfvec_support",
     "ivfflathandler",
     "jaccard_distance",
+    "jsonb_set_nested",
     "l1_distance",
     "l2_distance",
     "l2_norm",

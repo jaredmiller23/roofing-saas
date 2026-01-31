@@ -419,7 +419,7 @@ export async function POST(
           // Get all signatures for the document
           const { data: allSignatures } = await supabase
             .from('signatures')
-            .select('signer_name, signer_email, signer_type, created_at')
+            .select('signer_name, signer_email, signer_type, signed_at')
             .eq('document_id', id)
 
           const emailData = {
@@ -589,6 +589,8 @@ export async function GET(
         requires_company_signature,
         signature_fields,
         project_id,
+        contact_id,
+        contact:contacts(first_name, last_name, email),
         project:projects(name),
         signatures(signer_type)
       `)
