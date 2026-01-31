@@ -132,26 +132,21 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Create file record with enhanced fields
+    // Create file record (columns match project_files table schema)
     const fileData = {
       file_name: body.file_name,
       file_type: body.file_type,
       file_category: body.file_category,
       file_url: body.file_url,
       file_size: body.file_size,
-      file_extension: body.file_extension,
       mime_type: body.mime_type,
       thumbnail_url: body.thumbnail_url,
       project_id: body.project_id,
-      folder_path: body.folder_path || null,
       description: body.description,
+      tags: body.tags || [],
       tenant_id: tenantId,
       uploaded_by: user.id,
-      status: 'active',
-      version: 1,
-      parent_file_id: null,
       is_deleted: false,
-      metadata: body.metadata || {}
     }
 
     const { data: file, error } = await supabase

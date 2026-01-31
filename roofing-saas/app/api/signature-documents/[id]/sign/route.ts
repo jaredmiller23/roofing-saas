@@ -348,7 +348,7 @@ export async function POST(
           const signedPdfUrl = await uploadPDFToStorage(
             pdfBytes,
             fileName,
-            'documents',
+            'signature-pdfs',
             supabase
           )
 
@@ -392,10 +392,12 @@ export async function POST(
           })
         } catch (autoStoreError) {
           // Log but don't fail the signing if auto-store fails
-          logger.error('Failed to auto-store signed document', {
-            error: autoStoreError,
+          logger.error('Failed to auto-store signed document to project files', {
+            error: autoStoreError instanceof Error ? autoStoreError.message : String(autoStoreError),
+            stack: autoStoreError instanceof Error ? autoStoreError.stack : undefined,
             documentId: id,
-            projectId: document.project_id
+            projectId: document.project_id,
+            tenantId: document.tenant_id,
           })
         }
       }

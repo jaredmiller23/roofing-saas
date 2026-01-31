@@ -218,6 +218,39 @@ export default function NewSignatureDocumentPage() {
     }
   }, [searchParams, templates])
 
+  // Handle query params from SendSignatureDialog upload flow
+  useEffect(() => {
+    // Skip if templateId is present (handled by the effect above)
+    if (searchParams.get('templateId')) return
+
+    const pdfUrl = searchParams.get('pdf_url')
+    const projectId = searchParams.get('project_id')
+    const contactId = searchParams.get('contact_id')
+    const title = searchParams.get('title')
+    const description = searchParams.get('description')
+    const documentType = searchParams.get('document_type')
+    const requiresCustomer = searchParams.get('requires_customer_signature')
+    const requiresCompany = searchParams.get('requires_company_signature')
+    const expirationDays = searchParams.get('expiration_days')
+
+    if (pdfUrl || projectId || title) {
+      setFormData(prev => ({
+        ...prev,
+        ...(pdfUrl && { pdfUrl }),
+        ...(projectId && { projectId }),
+        ...(contactId && { contactId }),
+        ...(title && { title }),
+        ...(description && { description }),
+        ...(documentType && { documentType }),
+        ...(requiresCustomer !== null && { requiresCustomerSignature: requiresCustomer === 'true' }),
+        ...(requiresCompany !== null && { requiresCompanySignature: requiresCompany === 'true' }),
+        ...(expirationDays && { expirationDays: parseInt(expirationDays) || 30 }),
+      }))
+      // Skip template selection, go to document info step
+      setStep(2)
+    }
+  }, [searchParams])
+
 
   const loadData = async () => {
     try {
