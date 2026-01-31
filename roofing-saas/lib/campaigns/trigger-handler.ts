@@ -38,8 +38,8 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
       .select(`
         id,
         name,
-        trigger_type,
-        trigger_config,
+        campaign_type,
+        enrollment_type,
         campaign_steps (
           id,
           step_order
@@ -47,7 +47,7 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
       `)
       .eq('tenant_id', event.tenantId)
       .eq('status', 'active')
-      .eq('trigger_type', 'stage_change' as TriggerType)
+      .eq('campaign_type', 'stage_change' as TriggerType)
 
     if (error) {
       logger.error('[Campaign] Error fetching campaigns', { error: error.message })
@@ -61,7 +61,7 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
 
     // Check each campaign's trigger config
     for (const campaign of campaigns) {
-      const config = campaign.trigger_config as StageChangeTriggerConfig
+      const config = campaign.enrollment_type as unknown as StageChangeTriggerConfig
 
       // Check if trigger matches
       if (!matchesStageTrigger(config, event)) {

@@ -66,18 +66,18 @@ export async function GET(request: NextRequest) {
       ? (scopeParam as DashboardScope)
       : 'company'
 
-    // Fetch user info map once (shared across activity feed and leaderboards)
-    const userInfoMap = await fetchUserInfoMap(supabase, tenantId)
-
-    // Execute all queries in parallel
+    // Execute user info map and metrics/data queries in parallel
+    // userInfoMap is needed by activity feed and leaderboards, so fetch it
+    // concurrently with metrics (which don't need it), then pass to dependents
     const [
+      userInfoMap,
       metrics,
-      activity,
       challenge,
-      knockLeaderboard,
-      salesLeaderboard,
       points
     ] = await Promise.all([
+      // User info map (shared across activity feed and leaderboards)
+      fetchUserInfoMap(supabase, tenantId),
+
       // Metrics (tier-appropriate)
       mode === 'field'
         ? getFieldMetrics(supabase, tenantId, user.id)
@@ -85,20 +85,27 @@ export async function GET(request: NextRequest) {
           ? getManagerMetrics(supabase, tenantId, scope, user.id)
           : getFullMetrics(supabase, tenantId, scope, user.id),
 
-      // Activity feed
-      fetchActivityFeed(supabase, tenantId, userInfoMap),
-
       // Weekly challenge
       fetchWeeklyChallenge(supabase, tenantId, user.id),
+
+      // User points
+      fetchUserPoints(supabase, user.id)
+    ])
+
+    // Second parallel batch: queries that depend on userInfoMap
+    const [
+      activity,
+      knockLeaderboard,
+      salesLeaderboard,
+    ] = await Promise.all([
+      // Activity feed
+      fetchActivityFeed(supabase, tenantId, userInfoMap),
 
       // Knock leaderboard (weekly)
       fetchLeaderboard(supabase, tenantId, user.id, 'knocks', 'weekly', 10, userInfoMap),
 
       // Sales leaderboard (weekly)
       fetchLeaderboard(supabase, tenantId, user.id, 'sales', 'weekly', 10, userInfoMap),
-
-      // User points
-      fetchUserPoints(supabase, user.id)
     ])
 
     const duration = Date.now() - startTime

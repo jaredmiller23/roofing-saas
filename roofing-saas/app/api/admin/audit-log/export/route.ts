@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.action_type) {
-      query = query.eq('action_type', filters.action_type)
+      query = query.eq('action', filters.action_type)
     }
 
     if (filters.entity_id) {
@@ -90,12 +90,12 @@ export async function GET(request: NextRequest) {
 
     // Date range filters
     if (filters.start_date) {
-      query = query.gte('timestamp', filters.start_date)
+      query = query.gte('created_at', filters.start_date)
     }
 
     if (filters.end_date) {
       const endDateTime = `${filters.end_date}T23:59:59.999Z`
-      query = query.lte('timestamp', endDateTime)
+      query = query.lte('created_at', endDateTime)
     }
 
     // Search across user name, email, and entity ID
@@ -277,10 +277,10 @@ export async function POST(request: NextRequest) {
     // Apply filters from request body
     if (filters.user_id) query = query.eq('user_id', filters.user_id)
     if (filters.entity_type) query = query.eq('entity_type', filters.entity_type)
-    if (filters.action_type) query = query.eq('action_type', filters.action_type)
+    if (filters.action_type) query = query.eq('action', filters.action_type)
     if (filters.entity_id) query = query.eq('entity_id', filters.entity_id)
-    if (filters.start_date) query = query.gte('timestamp', filters.start_date)
-    if (filters.end_date) query = query.lte('timestamp', `${filters.end_date}T23:59:59.999Z`)
+    if (filters.start_date) query = query.gte('created_at', filters.start_date)
+    if (filters.end_date) query = query.lte('created_at', `${filters.end_date}T23:59:59.999Z`)
 
     // Search
     if (filters.search) {
@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
 
     // Sorting and limits
     query = query
-      .order(filters.sort_by || 'timestamp', { ascending: filters.sort_order === 'asc' })
+      .order(filters.sort_by || 'created_at', { ascending: filters.sort_order === 'asc' })
       .limit(options.max_records || 10000)
 
     const { data: entries, error } = await query

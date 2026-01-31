@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.action_type) {
-      query = query.eq('action_type', filters.action_type)
+      query = query.eq('action', filters.action_type)
     }
 
     if (filters.entity_id) {
@@ -101,13 +101,13 @@ export async function GET(request: NextRequest) {
 
     // Date range filters
     if (filters.start_date) {
-      query = query.gte('timestamp', filters.start_date)
+      query = query.gte('created_at', filters.start_date)
     }
 
     if (filters.end_date) {
       // Add 23:59:59 to end date to include the full day
       const endDateTime = `${filters.end_date}T23:59:59.999Z`
-      query = query.lte('timestamp', endDateTime)
+      query = query.lte('created_at', endDateTime)
     }
 
     // Search across user name, email, and entity ID
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
       user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'System',
       user_email: user.email || 'system@example.com',
       tenant_id: tenantId,
-      action_type: body.action_type,
+      action: body.action_type,
       entity_type: body.entity_type,
       entity_id: body.entity_id,
       before_values: body.before_values || null,
@@ -242,7 +242,6 @@ export async function POST(request: NextRequest) {
         created_by_admin: user.id,
         manual_entry: true
       },
-      timestamp: new Date().toISOString()
     }
 
     const { data: entry, error } = await supabase

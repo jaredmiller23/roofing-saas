@@ -35,7 +35,10 @@ export default async function CommissionsPage() {
       base_amount,
       commission_amount,
       final_amount,
+      amount,
+      percentage,
       status,
+      notes,
       created_at,
       project:projects (
         id,
