@@ -31,7 +31,7 @@ export function DashboardScopeFilter({ currentScope, onScopeChange }: DashboardS
             <Button
               key={scope.value}
               variant={isActive ? 'default' : 'ghost'}
-              size="sm"
+              size="default"
               className={`
                 ${isFirst ? 'rounded-r-none' : ''}
                 ${isLast ? 'rounded-l-none' : ''}

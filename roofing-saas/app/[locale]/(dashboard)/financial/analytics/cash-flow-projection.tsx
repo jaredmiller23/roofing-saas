@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface Project {
   revenue?: number | null
@@ -181,17 +182,13 @@ export function CashFlowProjection({ projects, arAging, costRate }: CashFlowProj
 
         {/* Warning Alert */}
         {cashFlow.hasShortfall && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-red-900">Cash Flow Warning</p>
-                <p className="text-sm text-red-700 mt-1">
-                  Projected cash shortfall detected. Consider accelerating collections or delaying non-essential expenses.
-                </p>
-              </div>
-            </div>
-          </div>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Cash Flow Warning</AlertTitle>
+            <AlertDescription>
+              Projected cash shortfall detected. Consider accelerating collections or delaying non-essential expenses.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Methodology Note */}

@@ -130,8 +130,8 @@ export default function SendSignatureDocumentPage() {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-2xl mx-auto">
-          <Alert className="bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
           <Button
             variant="outline"
@@ -149,8 +149,8 @@ export default function SendSignatureDocumentPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Alert className="max-w-md bg-green-50 border-green-200">
-          <AlertDescription className="text-green-900">
+        <Alert variant="success" className="max-w-md">
+          <AlertDescription>
             Document sent successfully! Redirecting...
           </AlertDescription>
         </Alert>
@@ -162,8 +162,8 @@ export default function SendSignatureDocumentPage() {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-2xl mx-auto">
-          <Alert className="bg-yellow-50 border-yellow-200">
-            <AlertDescription className="text-yellow-900">
+          <Alert variant="warning">
+            <AlertDescription>
               This document has already been {document?.status}. Only draft documents can be sent.
             </AlertDescription>
           </Alert>
@@ -212,8 +212,8 @@ export default function SendSignatureDocumentPage() {
         </div>
 
         {error && (
-          <Alert className="mb-6 bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

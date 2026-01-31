@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -227,9 +228,9 @@ export default function EditProjectPage() {
     return (
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">Project not found</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>Project not found</AlertDescription>
+          </Alert>
           <Link href="/projects" className="text-primary hover:text-primary/80 mt-4 inline-block">
             ← Back to Projects
           </Link>

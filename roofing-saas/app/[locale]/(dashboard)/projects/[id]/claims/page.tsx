@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 import { WeatherEvidence } from '@/components/claims/WeatherEvidence'
 import { apiFetch } from '@/lib/api/client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Project {
   id: string
@@ -275,12 +276,12 @@ export default function ProjectClaimsPage() {
 
                 {/* Timeline indicators */}
                 {claim.status === 'documents_pending' && (
-                  <div className="mt-4 flex items-center gap-2 text-yellow-600 bg-yellow-50 p-3 rounded-lg">
-                    <AlertCircle className="h-5 w-5" />
-                    <span className="text-sm font-medium">
+                  <Alert variant="warning" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
                       Waiting for additional documentation
-                    </span>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
               </CardContent>
             </Card>
@@ -346,20 +347,20 @@ export default function ProjectClaimsPage() {
         </CardHeader>
         {packetError && (
           <CardContent>
-            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
-              <AlertCircle className="h-5 w-5" />
-              <span className="text-sm font-medium">{packetError}</span>
-            </div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{packetError}</AlertDescription>
+            </Alert>
           </CardContent>
         )}
         {packetGenerated && !packetError && (
           <CardContent>
-            <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
-              <FileText className="h-5 w-5" />
-              <span className="text-sm font-medium">
+            <Alert variant="success">
+              <FileText className="h-4 w-4" />
+              <AlertDescription>
                 Packet generated successfully. Click Download PDF to save the complete claims documentation package.
-              </span>
-            </div>
+              </AlertDescription>
+            </Alert>
           </CardContent>
         )}
       </Card>

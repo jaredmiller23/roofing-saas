@@ -190,8 +190,8 @@ export default function NewTemplatePage() {
         </div>
 
         {error && (
-          <Alert className="mb-6 bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

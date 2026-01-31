@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface Material {
   id: string
@@ -236,29 +237,27 @@ export function MaterialWasteTracking({ materials }: MaterialWasteTrackingProps)
 
         {/* High Waste Alerts */}
         {analysis.highWasteItems.length > 0 && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex gap-3 mb-3">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-red-900">High Waste Alert</p>
-                <p className="text-xs text-red-700 mt-1">The following items have waste &gt;15%:</p>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>High Waste Alert</AlertTitle>
+            <AlertDescription>
+              <p className="text-xs mb-2">The following items have waste &gt;15%:</p>
+              <div className="space-y-2">
+                {analysis.highWasteItems.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <div>
+                      <span className="font-medium">{item.name}</span>
+                      <span className="opacity-80 ml-2">({item.supplier})</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold">{item.wastePercent.toFixed(1)}%</span>
+                      <span className="opacity-80 ml-2">{formatCurrency(item.wasteCost)}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="space-y-2 ml-8">
-              {analysis.highWasteItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div>
-                    <span className="font-medium text-red-900">{item.name}</span>
-                    <span className="text-red-700 ml-2">({item.supplier})</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-bold text-red-900">{item.wastePercent.toFixed(1)}%</span>
-                    <span className="text-red-700 ml-2">{formatCurrency(item.wasteCost)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Recommendations */}

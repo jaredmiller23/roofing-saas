@@ -10,6 +10,7 @@ import { QuoteComparison } from '@/components/estimates/QuoteComparison'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 import type { QuoteOption } from '@/lib/types/quote-option'
@@ -292,12 +293,12 @@ export default function ProjectDetailPage() {
     return (
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">Project not found</p>
-          </div>
-          <Link href="/projects" className="text-primary hover:text-primary/80 mt-4 inline-block">
-            ← Back to Projects
-          </Link>
+          <Alert variant="destructive">
+            <AlertDescription>Project not found</AlertDescription>
+          </Alert>
+          <Button variant="ghost" size="default" asChild className="mt-4">
+            <Link href="/projects">← Back to Projects</Link>
+          </Button>
         </div>
       </div>
     )
@@ -312,12 +313,9 @@ export default function ProjectDetailPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Link
-            href="/projects"
-            className="text-sm text-primary hover:text-primary/80 mb-4 inline-block"
-          >
-            ← Back to Projects
-          </Link>
+          <Button variant="ghost" size="default" asChild className="mb-4">
+            <Link href="/projects">← Back to Projects</Link>
+          </Button>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3">
@@ -562,21 +560,21 @@ export default function ProjectDetailPage() {
 
                     {/* Stage-specific actions/info */}
                     {project.pipeline_stage === 'won' && jobs.length === 0 && (
-                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-800 font-medium">Ready to start production!</p>
-                        <p className="text-xs text-green-600 mt-1">
+                      <Alert variant="success">
+                        <AlertTitle>Ready to start production!</AlertTitle>
+                        <AlertDescription>
                           Click &quot;Start Production&quot; to create a job and begin work.
-                        </p>
-                      </div>
+                        </AlertDescription>
+                      </Alert>
                     )}
 
                     {project.pipeline_stage === 'production' && (
-                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800 font-medium">Production in progress</p>
-                        <p className="text-xs text-yellow-600 mt-1">
+                      <Alert variant="warning">
+                        <AlertTitle>Production in progress</AlertTitle>
+                        <AlertDescription>
                           {jobs.length} job{jobs.length !== 1 ? 's' : ''} associated with this project.
-                        </p>
-                      </div>
+                        </AlertDescription>
+                      </Alert>
                     )}
 
                     {/* Legacy pipeline info if exists */}

@@ -632,9 +632,9 @@ export default function SignDocumentPage() {
   if (error && !document) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Alert className="max-w-md bg-red-50 border-red-200">
-          <XCircle className="h-5 w-5 text-red-600" />
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert variant="destructive" className="max-w-md">
+          <XCircle className="h-5 w-5" />
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
     )
@@ -838,9 +838,9 @@ export default function SignDocumentPage() {
       <div className="max-w-5xl mx-auto">
         {/* Offline Mode Indicator */}
         {isOfflineMode && (
-          <Alert className="mb-4 md:mb-6 bg-yellow-50 border-yellow-200">
-            <WifiOff className="h-5 w-5 text-yellow-600" />
-            <AlertDescription className="text-yellow-800">
+          <Alert variant="warning" className="mb-4 md:mb-6">
+            <WifiOff className="h-5 w-5" />
+            <AlertDescription>
               <strong>Offline Mode:</strong> You&apos;re viewing a cached version of this document.
               Your signature will be saved locally and submitted when you reconnect.
             </AlertDescription>
@@ -947,9 +947,9 @@ export default function SignDocumentPage() {
         )}
 
         {error && (
-          <Alert className="mb-4 md:mb-6 bg-red-50 border-red-200">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-4 md:mb-6">
+            <AlertCircle className="h-5 w-5" />
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

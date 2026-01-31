@@ -156,8 +156,8 @@ export default function TemplateEditorPage() {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-7xl mx-auto">
-          <Alert className="bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">
+          <Alert variant="destructive">
+            <AlertDescription>
               Template not found
             </AlertDescription>
           </Alert>
@@ -223,8 +223,8 @@ export default function TemplateEditorPage() {
         </div>
 
         {error && (
-          <Alert className="mb-6 bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

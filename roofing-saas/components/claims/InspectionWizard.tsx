@@ -190,7 +190,8 @@ export function InspectionWizard({
           <div className="flex items-center justify-between mb-2">
             <button
               onClick={onCancel}
-              className="text-muted-foreground hover:text-muted-foreground"
+              className="p-2 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              aria-label="Cancel inspection"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

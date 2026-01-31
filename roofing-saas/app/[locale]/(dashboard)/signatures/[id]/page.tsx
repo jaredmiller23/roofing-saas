@@ -205,8 +205,8 @@ export default function ViewSignatureDocumentPage() {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-4xl mx-auto">
-          <Alert className="bg-red-50 border-red-200">
-            <AlertDescription className="text-red-900">
+          <Alert variant="destructive">
+            <AlertDescription>
               {error || 'Document not found'}
             </AlertDescription>
           </Alert>
@@ -232,17 +232,17 @@ export default function ViewSignatureDocumentPage() {
       <div className="max-w-4xl mx-auto">
         {/* Success/Error Messages */}
         {resendSuccess && (
-          <Alert className="mb-4 bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-green-900 ml-2">
+          <Alert variant="success" className="mb-4">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
               {resendSuccess}
             </AlertDescription>
           </Alert>
         )}
         {error && (
-          <Alert className="mb-4 bg-red-50 border-red-200">
-            <XCircle className="h-4 w-4 text-red-500" />
-            <AlertDescription className="text-red-900 ml-2">
+          <Alert variant="destructive" className="mb-4">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
               {error}
             </AlertDescription>
           </Alert>

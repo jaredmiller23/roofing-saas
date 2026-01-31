@@ -767,8 +767,8 @@ export default function NewSignatureDocumentPage() {
         {step === 3 && (
           <div>
             {!validateStep(step) && (
-              <Alert className="mb-4 border-orange-200 bg-orange-50">
-                <AlertDescription className="text-orange-900">
+              <Alert variant="warning" className="mb-4">
+                <AlertDescription>
                   Please add at least one signature or initials field before proceeding.
                 </AlertDescription>
               </Alert>

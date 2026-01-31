@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { CheckCircle, DollarSign, Clock, XCircle } from 'lucide-react'
 import { approveCommissionAction, markCommissionPaidAction } from './actions'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Commission {
   id: string
@@ -112,9 +113,9 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mx-6 mt-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <div className="overflow-x-auto">

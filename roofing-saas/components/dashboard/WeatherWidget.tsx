@@ -129,8 +129,9 @@ export function WeatherWidget() {
           <h3 className="font-semibold text-foreground">Weather</h3>
           <button
             onClick={fetchWeather}
-            className="p-1 hover:bg-muted rounded-full transition-colors"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
             title="Refresh"
+            aria-label="Refresh weather"
           >
             <RefreshCw className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -147,8 +148,9 @@ export function WeatherWidget() {
         <h3 className="font-semibold text-foreground">{weather.location}</h3>
         <button
           onClick={fetchWeather}
-          className="p-1 hover:bg-muted rounded-full transition-colors"
+          className="p-2 min-h-11 min-w-11 flex items-center justify-center hover:bg-muted rounded-full transition-colors"
           title="Refresh"
+          aria-label="Refresh weather"
         >
           <RefreshCw className="h-4 w-4 text-muted-foreground" />
         </button>

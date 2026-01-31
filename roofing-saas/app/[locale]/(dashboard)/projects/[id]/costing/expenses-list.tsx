@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Trash2, CheckCircle, AlertCircle } from 'lucide-react'
 import { deleteExpenseAction, approveExpenseAction } from './actions'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Expense {
   id: string
@@ -98,9 +99,9 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mx-6 mt-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <div className="overflow-x-auto">

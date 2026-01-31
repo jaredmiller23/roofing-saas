@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface Expense {
   expense_type: string
@@ -187,21 +188,23 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
 
         {/* Cost-Saving Opportunities */}
         {analysis.opportunities.length > 0 && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h3 className="text-sm font-semibold text-green-900 mb-3">Cost-Saving Opportunities</h3>
-            <div className="space-y-2">
-              {analysis.opportunities.map((opp, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <p className="text-sm text-green-800">
-                    Negotiate with <strong>{opp.vendor}</strong> (spend: {formatCurrency(opp.amount)})
-                  </p>
-                  <p className="text-sm font-bold text-green-900">
-                    Save ~{formatCurrency(opp.potentialSavings)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Alert variant="success">
+            <AlertTitle>Cost-Saving Opportunities</AlertTitle>
+            <AlertDescription>
+              <div className="space-y-2">
+                {analysis.opportunities.map((opp, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <p className="text-sm">
+                      Negotiate with <strong>{opp.vendor}</strong> (spend: {formatCurrency(opp.amount)})
+                    </p>
+                    <p className="text-sm font-bold">
+                      Save ~{formatCurrency(opp.potentialSavings)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </AlertDescription>
+          </Alert>
         )}
       </div>
     </div>
