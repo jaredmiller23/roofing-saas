@@ -249,38 +249,13 @@ npm run build         # Must succeed
 
 ## Source of Truth
 
-**This project follows the global source of truth hierarchy (see `~/.claude/CLAUDE.md`):**
+Git is ground truth. If it's not in Git, it didn't happen.
 
-1. **Git** = Ground truth (commits prove work happened)
-2. **Archon** = Record of truth (must match Git)
-3. **VEST** = Execution layer (must match Archon & Git)
+### Related Systems
 
-### Archon Project
-
-| Field | Value |
-|-------|-------|
-| Project ID | `42f928ef-ac24-4eed-b539-61799e3dc325` |
-| API | `http://localhost:8181/api/` |
-| Health Check | `curl -s http://localhost:8181/health` |
-
-### Before Starting Work
-
-1. **Verify Archon is up** (HTTP health check, not MCP)
-2. **Check Git state** (`git status`, `git log`)
-3. **Cross-reference** - if Archon says "done" but Git has no commit, Archon is wrong
-4. If Archon is down, STOP and alert the user
-
-### VEST Task Execution
-
-VEST spawns fresh Claude sessions for complex tasks. **VEST is NOT the source of truth** - it executes tasks defined in Archon.
-
-| Command | Purpose |
-|---------|---------|
-| `/vest-status` | Show pending tasks |
-| `/vest-run TASK-ID` | Execute a task |
-| `/vest-learnings` | Check known risky files |
-
-TaskSpec location: `~/Projects/VEST/aces/tasks/`
+- **Vault**: `/Users/ccai/Second Brain/` (domain knowledge, product context, SOPs)
+- **COS**: `/Users/ccai/CC Mirror/` (Claude operating system, session memory)
+- **Task tracking**: GitHub Issues on this repo
 
 ---
 
