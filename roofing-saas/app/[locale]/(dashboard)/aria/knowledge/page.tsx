@@ -1,6 +1,5 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { KnowledgePageClient } from './knowledge-client'
 
 export const metadata = {
@@ -20,16 +19,8 @@ export default async function KnowledgePage() {
   }
 
   // Verify admin access
-  const supabase = await createClient()
-  const { data: roleAssignment } = await supabase
-    .from('user_role_assignments')
-    .select('role_id, user_roles!inner(name)')
-    .eq('user_id', user.id)
-    .eq('tenant_id', tenantId)
-    .in('user_roles.name', ['owner', 'admin'])
-    .single()
-
-  if (!roleAssignment) {
+  const userIsAdmin = await isAdmin(user.id)
+  if (!userIsAdmin) {
     redirect('/dashboard')
   }
 
