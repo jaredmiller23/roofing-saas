@@ -1,5 +1,5 @@
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { getCurrentUser, getUserContext } from '@/lib/auth/session'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
 import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
@@ -8,9 +8,8 @@ import { ARIAChatButton } from '@/components/aria/ARIAChatButton'
 /**
  * Dashboard layout - main application layout with sidebar navigation
  *
- * Auth context is read from middleware-set headers to avoid redundant
- * JWT validation and tenant_users queries. The middleware has already
- * validated the session and looked up the tenant context.
+ * Uses getCurrentUser() for JWT validation + getUserContext() for role/tenant
+ * in a single tenant_users query (2 total DB calls).
  */
 export default async function DashboardLayout({
   children,
@@ -20,16 +19,16 @@ export default async function DashboardLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  const headerStore = await headers()
+  const user = await getCurrentUser()
 
-  // Read auth context from middleware headers (no redundant DB calls)
-  const userId = headerStore.get('x-user-id')
-  const userEmail = headerStore.get('x-user-email') || ''
-  const userRole = headerStore.get('x-user-role') || 'user'
-
-  if (!userId) {
+  if (!user) {
     redirect(`/${locale}/login`)
   }
+
+  // Single query for tenant context (replaces separate getUserRole call)
+  const ctx = await getUserContext(user.id)
+  const userRole = ctx?.role || 'user'
+  const userEmail = user.email || ''
 
   return (
     <CommandPaletteProvider>

@@ -182,45 +182,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
   }
 
-  // Pass auth context via request headers so layout (headers()) and API
-  // routes (request.headers) can read them without re-validating the JWT
-  // or re-querying tenant_users. Middleware has already validated the
-  // session — these headers are trustworthy and overwrite any client values.
-  //
-  // We use Next.js's internal x-middleware-request-* mechanism to inject
-  // custom request headers into the EXISTING supabaseResponse, preserving
-  // the Supabase cookie handling (creating a new response would break it).
-  if (user && !isPublicRoute) {
-    // Single tenant_users query replaces 3-5 separate queries downstream
-    const { data: tenantData } = await supabase
-      .from('tenant_users')
-      .select('tenant_id, role')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .order('joined_at', { ascending: false })
-      .limit(1)
-
-    // Build the list of custom headers to inject
-    const customHeaders: Record<string, string> = {
-      'x-user-id': user.id,
-      'x-user-email': user.email || '',
-    }
-    if (tenantData && tenantData.length > 0) {
-      customHeaders['x-tenant-id'] = tenantData[0].tenant_id
-      customHeaders['x-user-role'] = tenantData[0].role
-    }
-
-    // Append to Next.js middleware header override mechanism
-    const existingOverrides = supabaseResponse.headers.get('x-middleware-override-headers') || ''
-    const customKeys = Object.keys(customHeaders)
-    const allOverrides = existingOverrides
-      ? `${existingOverrides},${customKeys.join(',')}`
-      : customKeys.join(',')
-    supabaseResponse.headers.set('x-middleware-override-headers', allOverrides)
-    for (const [key, value] of Object.entries(customHeaders)) {
-      supabaseResponse.headers.set(`x-middleware-request-${key}`, value)
-    }
-  }
+  // NOTE: Middleware→layout header passthrough was attempted but is incompatible
+  // with the Supabase auth cookie pattern. Creating a new NextResponse breaks
+  // cookie handling (redirect loops), and the x-middleware-request-* mechanism
+  // doesn't reliably expose headers to server component headers().
+  // Layout uses getCurrentUser() + getUserContext() instead (2 queries).
 
   // Check MFA enforcement for authenticated users accessing protected routes
   if (user && !isPublicRoute) {
