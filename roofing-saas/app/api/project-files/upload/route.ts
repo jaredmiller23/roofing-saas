@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
     const fileCategory = (formData.get('file_category') as string) || 'other'
     const description = (formData.get('description') as string) || ''
     const projectId = (formData.get('project_id') as string) || null
+    const contactId = (formData.get('contact_id') as string) || null
     const folderPath = (formData.get('folder_path') as string) || null
 
     // Validate file
@@ -78,16 +79,59 @@ export async function POST(request: NextRequest) {
       .from('files')
       .getPublicUrl(uploadData.path)
 
+    // Generate thumbnail for image files
+    let thumbnailUrl: string | null = null
+    const isImage = file.type.startsWith('image/')
+
+    if (isImage) {
+      try {
+        const sharp = (await import('sharp')).default
+        const arrayBuffer = await file.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+
+        const thumbnailBuffer = await sharp(buffer)
+          .resize(200, 200, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 75 })
+          .toBuffer()
+
+        const thumbFileName = storageFileName.replace(/\.[^.]+$/, '.jpg')
+        const thumbPath = `project-files/thumbs/${thumbFileName}`
+
+        const { error: thumbUploadError } = await supabase.storage
+          .from('files')
+          .upload(thumbPath, thumbnailBuffer, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: false,
+          })
+
+        if (!thumbUploadError) {
+          const { data: { publicUrl: thumbPublicUrl } } = supabase.storage
+            .from('files')
+            .getPublicUrl(thumbPath)
+          thumbnailUrl = thumbPublicUrl
+        } else {
+          logger.warn('Thumbnail upload failed, continuing without', { error: thumbUploadError })
+        }
+      } catch (thumbError) {
+        logger.warn('Thumbnail generation failed, continuing without', {
+          error: thumbError instanceof Error ? thumbError.message : 'Unknown',
+        })
+      }
+    }
+
     // Create file record in database
     const fileRecord = {
       file_name: fileName,
       file_type: fileType,
       file_category: fileCategory,
       file_url: publicUrl,
+      thumbnail_url: thumbnailUrl,
       file_size: file.size,
       file_extension: fileExt,
       mime_type: file.type,
       project_id: projectId,
+      contact_id: contactId,
       folder_path: folderPath,
       description: description || null,
       tenant_id: tenantId,

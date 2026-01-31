@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   FileText,
-  Image as ImageIcon,
   ExternalLink,
   Search,
   Filter,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react'
 import { ProjectFile, RoofingFileCategory, FileType, FileSearchFilters } from '@/lib/types/file'
 import { FileCategories, CategoryFilterChips } from './FileCategories'
+import { FileThumbnail } from './FileThumbnail'
 import { BulkFileActions, FileSelectionCheckbox } from './BulkFileActions'
 import { CategoryBadge } from './FileCategories'
 import { FolderBreadcrumb } from './FileFolderTree'
@@ -414,13 +414,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded flex items-center justify-center">
-                          {file.file_type === 'photo' ? (
-                            <ImageIcon className="h-5 w-5 text-primary" />
-                          ) : (
-                            <FileText className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
+                        <FileThumbnail file={file} size="sm" />
                         <div className="ml-4">
                           <div className="text-sm font-medium text-foreground">{file.file_name}</div>
                           {file.description && (
