@@ -182,12 +182,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/dashboard`, origin))
   }
 
-  // Pass auth context via headers so layout and API routes don't need
-  // to re-validate the JWT or re-query tenant_users. Middleware has already
-  // validated the session — these headers are trustworthy.
+  // Pass auth context via REQUEST headers so layout (headers()) and API
+  // routes (request.headers) can read them without re-validating the JWT
+  // or re-querying tenant_users. Middleware has already validated the
+  // session — these headers are trustworthy and overwrite any client values.
   if (user && !isPublicRoute) {
-    supabaseResponse.headers.set('x-user-id', user.id)
-    supabaseResponse.headers.set('x-user-email', user.email || '')
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-user-id', user.id)
+    requestHeaders.set('x-user-email', user.email || '')
 
     // Single tenant_users query replaces 3-5 separate queries downstream
     const { data: tenantData } = await supabase
@@ -199,9 +201,19 @@ export async function middleware(request: NextRequest) {
       .limit(1)
 
     if (tenantData && tenantData.length > 0) {
-      supabaseResponse.headers.set('x-tenant-id', tenantData[0].tenant_id)
-      supabaseResponse.headers.set('x-user-role', tenantData[0].role)
+      requestHeaders.set('x-tenant-id', tenantData[0].tenant_id)
+      requestHeaders.set('x-user-role', tenantData[0].role)
     }
+
+    // Recreate response with modified request headers (per Supabase pattern,
+    // lines 222-231 below) while preserving auth cookies
+    const newResponse = NextResponse.next({
+      request: { headers: requestHeaders },
+    })
+    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) =>
+      newResponse.cookies.set(name, value, options)
+    )
+    supabaseResponse = newResponse
   }
 
   // Check MFA enforcement for authenticated users accessing protected routes
