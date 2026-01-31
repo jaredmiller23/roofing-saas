@@ -84,10 +84,8 @@ export async function POST(request: Request) {
       .rpc('check_achievements', { p_user_id: user.id })
 
     return successResponse({
-      data: {
-        points_awarded: points,
-        new_achievements: achievements || []
-      }
+      points_awarded: points,
+      new_achievements: achievements || []
     })
   } catch (error) {
     logger.error('Award points API error:', { error })

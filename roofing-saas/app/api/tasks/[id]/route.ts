@@ -49,7 +49,7 @@ export async function GET(
       throw NotFoundError('Task')
     }
 
-    return successResponse({ task })
+    return successResponse(task)
   } catch (error) {
     logger.error('Error in GET /api/tasks/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -127,7 +127,7 @@ export async function PATCH(
         })
     }
 
-    return successResponse({ task })
+    return successResponse(task)
   } catch (error) {
     logger.error('Error in PATCH /api/tasks/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

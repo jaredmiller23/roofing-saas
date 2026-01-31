@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { X, Send, Loader2, Bot, User, Wrench, History, Plus } from 'lucide-react'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import { apiFetch } from '@/lib/api/client'
 
 interface ARIAChatProps {
   isOpen: boolean
@@ -57,11 +58,8 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
   const fetchConversations = useCallback(async () => {
     setIsLoadingConversations(true)
     try {
-      const res = await fetch('/api/ai/conversations?limit=20')
-      if (res.ok) {
-        const data = await res.json()
-        setConversations(data.data?.conversations || [])
-      }
+      const conversations = await apiFetch<ConversationSummary[]>('/api/ai/conversations?limit=20')
+      setConversations(conversations)
     } catch (err) {
       console.error('Failed to fetch conversations:', err)
     } finally {
@@ -80,26 +78,30 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
     setIsLoadingMessages(true)
     setShowConversationList(false)
     try {
-      const res = await fetch(`/api/ai/conversations/${conversationId}/messages?limit=100`)
-      if (res.ok) {
-        const data = await res.json()
-        const apiMessages = data.data?.messages || []
-
-        // Map API messages to local ChatMessage format
-        const mapped: ChatMessage[] = apiMessages
-          .filter((m: { role: string }) => m.role !== 'system')
-          .map((m: { id: string; role: string; content: string; function_call?: { name: string }; created_at: string }) => ({
-            id: m.id,
-            role: m.role === 'function' ? 'function' : m.role,
-            content: m.content,
-            functionName: m.function_call?.name,
-            functionSuccess: m.role === 'function' ? true : undefined,
-            timestamp: new Date(m.created_at),
-          }))
-
-        setMessages(mapped)
-        setActiveConversationId(conversationId)
+      interface APIMessage {
+        id: string
+        role: string
+        content: string
+        function_call?: { name: string }
+        created_at: string
       }
+
+      const apiMessages = await apiFetch<APIMessage[]>(`/api/ai/conversations/${conversationId}/messages?limit=100`)
+
+      // Map API messages to local ChatMessage format
+      const mapped: ChatMessage[] = (apiMessages || [])
+        .filter((m) => m.role !== 'system')
+        .map((m) => ({
+          id: m.id,
+          role: m.role === 'function' ? 'function' as const : m.role as 'user' | 'assistant',
+          content: m.content,
+          functionName: m.function_call?.name,
+          functionSuccess: m.role === 'function' ? true : undefined,
+          timestamp: new Date(m.created_at),
+        }))
+
+      setMessages(mapped)
+      setActiveConversationId(conversationId)
     } catch (err) {
       console.error('Failed to load conversation:', err)
     } finally {

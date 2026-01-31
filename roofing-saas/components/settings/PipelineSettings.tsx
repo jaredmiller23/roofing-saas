@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -44,9 +45,8 @@ export function PipelineSettings() {
   const loadStages = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/settings/pipeline-stages')
-      const data = await res.json()
-      setStages(data.data?.stages || [])
+      const data = await apiFetch<PipelineStage[]>('/api/settings/pipeline-stages')
+      setStages(data || [])
     } catch (err) {
       console.error('Error loading pipeline stages:', err)
       setError('Failed to load pipeline stages')
@@ -62,23 +62,17 @@ export function PipelineSettings() {
       setSaving(true)
       setError(null)
 
-      const res = await fetch(`/api/settings/pipeline-stages/${editingStage.id}`, {
+      await apiFetch<PipelineStage>(`/api/settings/pipeline-stages/${editingStage.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: formData.name,
           description: formData.description || null,
           color: formData.color,
           icon: formData.icon || null,
           stage_type: formData.stage_type,
           win_probability: formData.win_probability
-        })
+        }
       })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to save stage')
-      }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

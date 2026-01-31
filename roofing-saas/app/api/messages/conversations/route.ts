@@ -48,10 +48,7 @@ export async function GET() {
     const conversationList = (conversations ?? []) as Record<string, unknown>[]
     logger.info('Conversations loaded', { conversationCount: conversationList.length })
 
-    return successResponse({
-      conversations: conversationList,
-      count: conversationList.length,
-    })
+    return successResponse(conversationList)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/messages/conversations', 500, duration)

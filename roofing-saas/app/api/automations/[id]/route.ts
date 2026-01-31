@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import type { Workflow, UpdateWorkflowInput } from '@/lib/automation/workflow-types'
 import { AuthenticationError, NotFoundError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
 // This should be the same reference as in the main route.ts
@@ -65,7 +65,7 @@ export async function GET(
       throw NotFoundError('Workflow')
     }
 
-    return NextResponse.json(workflow)
+    return successResponse(workflow)
   } catch (error) {
     console.error('Error fetching workflow:', error)
     return errorResponse(error as Error)
@@ -112,7 +112,7 @@ export async function PATCH(
 
     mockWorkflows[workflowIndex] = updatedWorkflow
 
-    return NextResponse.json(updatedWorkflow)
+    return successResponse(updatedWorkflow)
   } catch (error) {
     console.error('Error updating workflow:', error)
     return errorResponse(error as Error)
@@ -139,7 +139,7 @@ export async function DELETE(
     // Remove workflow from array (in real app, soft delete in database)
     mockWorkflows.splice(workflowIndex, 1)
 
-    return NextResponse.json({ message: 'Workflow deleted successfully' })
+    return successResponse(null)
   } catch (error) {
     console.error('Error deleting workflow:', error)
     return errorResponse(error as Error)

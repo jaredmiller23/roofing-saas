@@ -15,6 +15,7 @@ import {
 import { StatCard } from './shared/StatCard'
 import { TopItemsTable, TopArgumentsTable } from './shared/TopItemsTable'
 import type { IntelligenceDashboard } from '@/lib/claims/intelligence-types'
+import { apiFetch } from '@/lib/api/client'
 
 /**
  * OutcomeAnalytics - Outcomes tab for Claims Intelligence
@@ -35,10 +36,7 @@ export function OutcomeAnalytics() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/intelligence/dashboard')
-      if (!response.ok) throw new Error('Failed to fetch data')
-
-      const data = await response.json()
+      const data = await apiFetch<IntelligenceDashboard>('/api/intelligence/dashboard')
       setDashboard(data)
     } catch (err) {
       console.error('Error fetching dashboard:', err)

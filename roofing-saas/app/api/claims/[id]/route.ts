@@ -41,7 +41,7 @@ export async function GET(
       throw NotFoundError('Claim')
     }
 
-    return successResponse({ claim: data as ClaimData })
+    return successResponse(data as ClaimData)
   } catch (error) {
     logger.error('Error in GET /api/claims/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -140,7 +140,7 @@ export async function PATCH(
       userId: user.id,
     })
 
-    return successResponse({ claim: data as ClaimData })
+    return successResponse(data as ClaimData)
   } catch (error) {
     logger.error('Error in PATCH /api/claims/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

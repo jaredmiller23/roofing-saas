@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { queryInterpreter } from '@/lib/ai/query-interpreter'
 import { sqlGenerator } from '@/lib/ai/sql-generator'
@@ -8,6 +8,8 @@ import {
   type QueryResult,
   type ResultColumn
 } from '@/lib/ai/query-types'
+import { ValidationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +17,7 @@ export async function POST(request: NextRequest) {
     const { query, userId, tenantId, userRole } = body
 
     if (!query || !userId || !tenantId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Missing required fields'))
     }
 
     const startTime = Date.now()
@@ -41,10 +40,7 @@ export async function POST(request: NextRequest) {
 
       if (accessError || !data) {
         console.error('User access check failed:', { accessError, userId, tenantId })
-        return NextResponse.json(
-          { error: 'Unauthorized access to tenant data. Please ensure you are properly logged in and have access to this workspace.' },
-          { status: 403 }
-        )
+        return errorResponse(AuthorizationError('Unauthorized access to tenant data. Please ensure you are properly logged in and have access to this workspace.'))
       }
 
       userAccess = { role: data.role ?? 'viewer' }
@@ -69,9 +65,7 @@ export async function POST(request: NextRequest) {
     const interpretation = await queryInterpreter.interpret(nlQuery)
 
     if (interpretation.confidence < 0.4) {
-      return NextResponse.json({
-        error: 'Could not understand your question. Please try rephrasing it or be more specific about what data you need.'
-      }, { status: 400 })
+      return errorResponse(ValidationError('Could not understand your question. Please try rephrasing it or be more specific about what data you need.'))
     }
 
     // Step 2: Generate safe SQL
@@ -98,9 +92,7 @@ export async function POST(request: NextRequest) {
           filters: interpretation.filters
         }
       })
-      return NextResponse.json({
-        error: `Could not generate a safe query for your request: ${(sqlError as Error)?.message || 'Unknown error'}. Please try a different question.`
-      }, { status: 400 })
+      return errorResponse(ValidationError(`Could not generate a safe query for your request: ${(sqlError as Error)?.message || 'Unknown error'}. Please try a different question.`))
     }
 
     // Step 3: Execute the query with proper error handling
@@ -377,7 +369,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    return successResponse({
       result: queryResult,
       interpretation: interpretation,
       confidence: interpretation.confidence
@@ -385,10 +377,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Query processing failed:', error)
-
-    return NextResponse.json({
-      error: 'An unexpected error occurred while processing your query. Please try again.'
-    }, { status: 500 })
+    return errorResponse(InternalError('An unexpected error occurred while processing your query. Please try again.'))
   }
 }
 

@@ -145,7 +145,7 @@ export async function DELETE(
       throw NotFoundError('Survey not found')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error in DELETE /api/surveys/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

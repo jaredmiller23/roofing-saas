@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
+import { apiFetch, ApiClientError } from '@/lib/api/client'
 import type {
   UserForImpersonation,
   ImpersonationStatusResponse,
-  ListImpersonationLogsResponse,
   ImpersonationLogWithUsers
 } from '@/lib/impersonation/types'
 
@@ -36,17 +36,16 @@ export function AdminSettings() {
     const checkStatus = async () => {
       try {
         // Check impersonation status
-        const statusResponse = await fetch('/api/admin/impersonate/status')
-        if (statusResponse.ok) {
-          const statusData: ImpersonationStatusResponse = await statusResponse.json()
-          setImpersonationStatus(statusData)
-          setIsAdmin(true) // If we can access the status endpoint, user is admin
-        } else if (statusResponse.status === 403) {
-          setIsAdmin(false)
-        }
+        const statusData = await apiFetch<ImpersonationStatusResponse>('/api/admin/impersonate/status')
+        setImpersonationStatus(statusData)
+        setIsAdmin(true) // If we can access the status endpoint, user is admin
       } catch (err) {
         console.error('Error checking admin status:', err)
-        setIsAdmin(false)
+        if (err instanceof ApiClientError && err.statusCode === 403) {
+          setIsAdmin(false)
+        } else {
+          setIsAdmin(false)
+        }
       } finally {
         setIsLoading(false)
       }
@@ -62,11 +61,8 @@ export function AdminSettings() {
     const loadLogs = async () => {
       setLogsLoading(true)
       try {
-        const response = await fetch('/api/admin/impersonate/logs?limit=5')
-        if (response.ok) {
-          const data: ListImpersonationLogsResponse = await response.json()
-          setRecentLogs(data.logs || [])
-        }
+        const data = await apiFetch<{ logs: ImpersonationLogWithUsers[] }>('/api/admin/impersonate/logs?limit=5')
+        setRecentLogs(data.logs || [])
       } catch (err) {
         console.error('Error loading impersonation logs:', err)
       } finally {
@@ -85,22 +81,15 @@ export function AdminSettings() {
 
   const handleStartImpersonation = async (userId: string, reason?: string) => {
     try {
-      const response = await fetch('/api/admin/impersonate', {
+      await apiFetch('/api/admin/impersonate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, reason }),
+        body: { user_id: userId, reason },
       })
-
-      if (response.ok) {
-        // Reload page to apply impersonation
-        window.location.reload()
-      } else {
-        const data = await response.json()
-        setError(data.error || 'Failed to start impersonation')
-        throw new Error(data.error)
-      }
+      // Reload page to apply impersonation
+      window.location.reload()
     } catch (err) {
       console.error('Error starting impersonation:', err)
+      setError(err instanceof ApiClientError ? err.message : 'Failed to start impersonation')
       throw err
     }
   }

@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { reverseGeocode } from '@/lib/maps/geocoding'
 import { logger } from '@/lib/logger'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/maps/reverse-geocode
@@ -14,24 +16,15 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-      return NextResponse.json(
-        { error: 'Invalid coordinates. latitude and longitude must be numbers.' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid coordinates. latitude and longitude must be numbers.')
     }
 
     if (latitude < -90 || latitude > 90) {
-      return NextResponse.json(
-        { error: 'Invalid latitude. Must be between -90 and 90.' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid latitude. Must be between -90 and 90.')
     }
 
     if (longitude < -180 || longitude > 180) {
-      return NextResponse.json(
-        { error: 'Invalid longitude. Must be between -180 and 180.' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid longitude. Must be between -180 and 180.')
     }
 
     logger.info('Reverse geocoding request', { latitude, longitude })
@@ -40,14 +33,10 @@ export async function POST(request: NextRequest) {
     const result = await reverseGeocode(latitude, longitude)
 
     if (!result) {
-      return NextResponse.json(
-        { error: 'Address not found for these coordinates' },
-        { status: 404 }
-      )
+      throw NotFoundError('Address not found for these coordinates')
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       address: result.formatted_address,
       street_address: result.street_address,
       city: result.city,
@@ -58,9 +47,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     logger.error('Reverse geocoding error', { error })
-    return NextResponse.json(
-      { error: 'Failed to reverse geocode coordinates' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to reverse geocode coordinates'))
   }
 }

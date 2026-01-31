@@ -40,7 +40,7 @@ export async function POST(_request: NextRequest) {
       userId: user.id,
     })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('QuickBooks disconnect error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to disconnect QuickBooks'))

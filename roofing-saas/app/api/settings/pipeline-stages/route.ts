@@ -65,7 +65,7 @@ export async function GET() {
             .eq('tenant_id', tenantId)
             .order('stage_order', { ascending: true })
 
-          return successResponse({ stages: existingStages || [] })
+          return successResponse(existingStages || [])
         }
         logger.error('Error seeding pipeline stages:', { error: seedError })
         throw InternalError(seedError.message)
@@ -74,7 +74,7 @@ export async function GET() {
       stages = seededStages
     }
 
-    return successResponse({ stages: stages || [] })
+    return successResponse(stages || [])
   } catch (error) {
     logger.error('Error fetching pipeline stages:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

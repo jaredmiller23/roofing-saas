@@ -234,7 +234,7 @@ export async function DELETE(
       throw InternalError('Failed to delete card')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Unexpected error in DELETE /api/digital-cards/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

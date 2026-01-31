@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { canMakeCall } from '@/lib/compliance/call-compliance'
 import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/compliance/check
@@ -29,19 +31,13 @@ export async function GET(request: NextRequest) {
     // Get authenticated user
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Get tenant ID from database
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'User not associated with tenant' },
-        { status: 403 }
-      )
+      throw AuthorizationError('User not associated with tenant')
     }
 
     // Get query params
@@ -50,10 +46,7 @@ export async function GET(request: NextRequest) {
     const contactId = searchParams.get('contactId')
 
     if (!phoneNumber) {
-      return NextResponse.json(
-        { success: false, error: 'Phone number is required' },
-        { status: 400 }
-      )
+      throw ValidationError('Phone number is required')
     }
 
     // Perform compliance check
@@ -71,18 +64,9 @@ export async function GET(request: NextRequest) {
       canCall: result.canCall,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    })
+    return successResponse(result)
   } catch (error) {
     logger.error('Error in compliance check API', { error })
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

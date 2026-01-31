@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
-import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { createEventSchema } from '@/lib/validations/event'
 
 /**
@@ -62,12 +62,7 @@ export async function GET(request: NextRequest) {
       throw InternalError(error.message)
     }
 
-    return successResponse({
-      events: events || [],
-      total: count || 0,
-      page,
-      limit,
-    })
+    return paginatedResponse(events || [], { page, limit, total: count || 0 })
   } catch (error) {
     logger.error('Error in GET /api/events:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

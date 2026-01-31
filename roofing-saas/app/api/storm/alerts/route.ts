@@ -4,8 +4,10 @@
  * Fetch active storm alerts for the current tenant
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { StormAlert } from '@/lib/storm/storm-types'
 
 export async function GET(_request: NextRequest) {
@@ -15,10 +17,7 @@ export async function GET(_request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Fetch active alerts (not dismissed and not expired)
@@ -31,10 +30,7 @@ export async function GET(_request: NextRequest) {
 
     if (alertsError) {
       console.error('Error fetching alerts:', alertsError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch alerts' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch alerts')
     }
 
     // Fetch associated storm events for alerts that have storm_event_id
@@ -99,19 +95,12 @@ export async function GET(_request: NextRequest) {
         }
       })
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       alerts: transformedAlerts as unknown as StormAlert[],
       total: transformedAlerts.length,
     })
   } catch (error) {
     console.error('Get alerts error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

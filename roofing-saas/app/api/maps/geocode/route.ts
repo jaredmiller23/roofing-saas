@@ -3,9 +3,11 @@
  * Convert addresses to coordinates and vice versa
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { geocodeAddress, reverseGeocode, validateAddress, batchGeocode } from '@/lib/maps/geocoding'
 import { logger } from '@/lib/logger'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,19 +23,16 @@ export async function GET(request: NextRequest) {
       try {
         const addresses = JSON.parse(batch) as string[]
         const results = await batchGeocode(addresses)
-        return NextResponse.json({ results })
+        return successResponse(results)
       } catch (_error) {
-        return NextResponse.json(
-          { error: 'Invalid batch parameter - must be JSON array of addresses' },
-          { status: 400 }
-        )
+        return errorResponse(ValidationError('Invalid batch parameter - must be JSON array of addresses'))
       }
     }
 
     // Address validation
     if (validate && address) {
       const isValid = await validateAddress(address)
-      return NextResponse.json({ valid: isValid, address })
+      return successResponse({ valid: isValid, address })
     }
 
     // Forward geocoding (address → coordinates)
@@ -41,13 +40,10 @@ export async function GET(request: NextRequest) {
       const result = await geocodeAddress(address)
 
       if (!result) {
-        return NextResponse.json(
-          { error: 'Address not found or geocoding failed' },
-          { status: 404 }
-        )
+        return errorResponse(NotFoundError('Address not found or geocoding failed'))
       }
 
-      return NextResponse.json(result)
+      return successResponse(result)
     }
 
     // Reverse geocoding (coordinates → address)
@@ -56,33 +52,21 @@ export async function GET(request: NextRequest) {
       const longitude = parseFloat(lng)
 
       if (isNaN(latitude) || isNaN(longitude)) {
-        return NextResponse.json(
-          { error: 'Invalid latitude or longitude' },
-          { status: 400 }
-        )
+        return errorResponse(ValidationError('Invalid latitude or longitude'))
       }
 
       const result = await reverseGeocode(latitude, longitude)
 
       if (!result) {
-        return NextResponse.json(
-          { error: 'Location not found or reverse geocoding failed' },
-          { status: 404 }
-        )
+        return errorResponse(NotFoundError('Location not found or reverse geocoding failed'))
       }
 
-      return NextResponse.json(result)
+      return successResponse(result)
     }
 
-    return NextResponse.json(
-      { error: 'Provide either address or lat/lng parameters' },
-      { status: 400 }
-    )
+    return errorResponse(ValidationError('Provide either address or lat/lng parameters'))
   } catch (error) {
     logger.error('Geocoding API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

@@ -14,6 +14,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Task {
   id: string
@@ -62,18 +63,8 @@ export function TasksList({ params = {} }: TasksListProps) {
           }
         })
 
-        const res = await fetch(`/api/tasks?${urlParams.toString()}`)
-        const data = await res.json()
-
-        if (!res.ok) {
-          // Handle error response format: { success: false, error: { code, message, details } }
-          const errorMessage = typeof data.error === 'string'
-            ? data.error
-            : data.error?.message || data.message || 'Failed to load tasks'
-          throw new Error(errorMessage)
-        }
-
-        setTasks(data.tasks || [])
+        const { data: tasksList } = await apiFetchPaginated<Task[]>(`/api/tasks?${urlParams.toString()}`)
+        setTasks(tasksList)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load tasks')
       } finally {
@@ -90,13 +81,7 @@ export function TasksList({ params = {} }: TasksListProps) {
     }
 
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!res.ok) {
-        throw new Error('Failed to delete task')
-      }
+      await apiFetch<void>(`/api/tasks/${id}`, { method: 'DELETE' })
 
       // Remove the deleted task from state
       setTasks(tasks.filter(task => task.id !== id))

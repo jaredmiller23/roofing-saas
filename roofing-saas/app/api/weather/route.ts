@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Default location: Johnson City, TN (Tri-Cities center)
 const DEFAULT_LAT = 36.3134
@@ -262,17 +264,14 @@ export async function GET(request: NextRequest) {
     weatherCache.key === cacheKey &&
     now - weatherCache.timestamp < CACHE_DURATION_MS
   ) {
-    return NextResponse.json(weatherCache.data)
+    return successResponse(weatherCache.data)
   }
 
   // Fetch fresh data
   const data = await fetchWeatherFromAPI(lat, lng)
 
   if (!data) {
-    return NextResponse.json(
-      { error: 'Failed to fetch weather data' },
-      { status: 500 }
-    )
+    return errorResponse(InternalError('Failed to fetch weather data'))
   }
 
   // Update cache
@@ -282,5 +281,5 @@ export async function GET(request: NextRequest) {
     key: cacheKey,
   }
 
-  return NextResponse.json(data)
+  return successResponse(data)
 }

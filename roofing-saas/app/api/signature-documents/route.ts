@@ -6,7 +6,7 @@ import {
   ValidationError,
   InternalError
 } from '@/lib/api/errors'
-import { successResponse, errorResponse } from '@/lib/api/response'
+import { createdResponse, paginatedResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
 // PDF generation moved to post-signing (uses pdf-lib, no Chromium needed)
@@ -115,12 +115,9 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/signature-documents', 200, duration)
 
-    return successResponse({
-      documents: documents || [],
-      total: count || 0,
-      limit,
-      offset
-    })
+    // Convert offset/limit to page for paginatedResponse
+    const page = Math.floor(offset / limit) + 1
+    return paginatedResponse(documents || [], { page, limit, total: count || 0 })
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error fetching signature documents', { error, duration })
@@ -263,7 +260,7 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/signature-documents', 201, duration)
 
-    return successResponse({ document }, 201)
+    return createdResponse(document)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error creating signature document', { error, duration })

@@ -17,6 +17,7 @@ import {
   Trash2,
   Copy,
 } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,11 +40,8 @@ export default function DigitalCardsPage() {
 
   const fetchCards = async () => {
     try {
-      const res = await fetch('/api/digital-cards')
-      if (res.ok) {
-        const data = await res.json()
-        setCards(data.cards)
-      }
+      const data = await apiFetch<{ cards: DigitalBusinessCard[] }>('/api/digital-cards')
+      setCards(data.cards)
     } catch (error) {
       console.error('Error fetching cards:', error)
     } finally {
@@ -65,14 +63,10 @@ export default function DigitalCardsPage() {
     if (!confirm('Are you sure you want to delete this card?')) return
 
     try {
-      const res = await fetch(`/api/digital-cards/${cardId}`, {
+      await apiFetch(`/api/digital-cards/${cardId}`, {
         method: 'DELETE',
       })
-      if (res.ok) {
-        fetchCards()
-      } else {
-        alert('Failed to delete card')
-      }
+      fetchCards()
     } catch (error) {
       console.error('Error deleting card:', error)
       alert('Failed to delete card')

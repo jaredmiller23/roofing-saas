@@ -29,6 +29,7 @@ import {
   Smartphone,
 } from 'lucide-react'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
@@ -255,40 +256,13 @@ export default function NewSignatureDocumentPage() {
 
   const loadData = async () => {
     try {
-      const [contactsRes, projectsRes] = await Promise.all([
-        fetch('/api/contacts?limit=1000'),
-        fetch('/api/projects?limit=1000'),
+      const [contactsResult, projectsResult] = await Promise.all([
+        apiFetchPaginated<Contact[]>('/api/contacts?limit=1000'),
+        apiFetchPaginated<Project[]>('/api/projects?limit=1000'),
       ])
 
-      // Log response status for debugging
-      console.log('[Signatures] Contacts API status:', contactsRes.status)
-      console.log('[Signatures] Projects API status:', projectsRes.status)
-
-      const contactsResult = await contactsRes.json()
-      const projectsResult = await projectsRes.json()
-
-      // Log full responses for debugging
-      console.log('[Signatures] Contacts response:', contactsResult)
-      console.log('[Signatures] Projects response:', projectsResult)
-
-      // Check for API errors and surface them
-      if (!contactsRes.ok || !contactsResult.success) {
-        console.error('[Signatures] Contacts API error:', contactsResult.error)
-        setError(`Failed to load contacts: ${contactsResult.error?.message || 'Unknown error'}`)
-      }
-      if (!projectsRes.ok || !projectsResult.success) {
-        console.error('[Signatures] Projects API error:', projectsResult.error)
-        setError(`Failed to load projects: ${projectsResult.error?.message || 'Unknown error'}`)
-      }
-
-      const contactsData = contactsResult.data || contactsResult
-      const projectsData = projectsResult.data || projectsResult
-
-      console.log('[Signatures] Setting contacts:', contactsData.contacts?.length || 0)
-      console.log('[Signatures] Setting projects:', projectsData.projects?.length || 0)
-
-      setContacts(contactsData.contacts || [])
-      setProjects(projectsData.projects || [])
+      setContacts(contactsResult.data)
+      setProjects(projectsResult.data)
     } catch (err) {
       console.error('[Signatures] Error loading data:', err)
       setError(`Failed to load data: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -297,20 +271,8 @@ export default function NewSignatureDocumentPage() {
 
   const loadTemplates = async () => {
     try {
-      const res = await fetch('/api/signature-templates?active_only=true')
-      console.log('[Signatures] Templates API status:', res.status)
-
-      const result = await res.json()
-      console.log('[Signatures] Templates response:', result)
-
-      if (res.ok && result.success) {
-        const data = result.data || result
-        console.log('[Signatures] Setting templates:', data.templates?.length || 0)
-        setTemplates(data.templates || [])
-      } else {
-        console.error('[Signatures] Templates API error:', result.error)
-        setError(`Failed to load templates: ${result.error?.message || 'Unknown error'}`)
-      }
+      const { data: templatesList } = await apiFetchPaginated<SignatureTemplate[]>('/api/signature-templates?active_only=true')
+      setTemplates(templatesList)
     } catch (err) {
       console.error('[Signatures] Error loading templates:', err)
       setError(`Failed to load templates: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -434,10 +396,9 @@ export default function NewSignatureDocumentPage() {
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + formData.expirationDays)
 
-      const res = await fetch('/api/signature-documents', {
+      const doc = await apiFetch<{ id: string }>('/api/signature-documents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           title: formData.title,
           description: formData.description,
           document_type: formData.documentType,
@@ -449,16 +410,10 @@ export default function NewSignatureDocumentPage() {
           requires_customer_signature: formData.requiresCustomerSignature,
           requires_company_signature: formData.requiresCompanySignature,
           expires_at: expiresAt.toISOString(),
-        }),
+        },
       })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error?.message || 'Failed to create document')
-      }
-
-      const documentId = data.data?.document?.id
+      const documentId = doc?.id
 
       if (mode === 'sign-now' && documentId) {
         // Open the signing page directly for in-person signing (phone/iPad)
@@ -475,21 +430,15 @@ export default function NewSignatureDocumentPage() {
 
         if (documentId && contactEmail) {
           try {
-            const sendRes = await fetch(`/api/signature-documents/${documentId}/send`, {
+            await apiFetch(`/api/signature-documents/${documentId}/send`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+              body: {
                 recipient_email: contactEmail,
                 recipient_name: `${selectedContact.first_name} ${selectedContact.last_name}`.trim(),
                 message: formData.description || 'Please review and sign this document.',
                 expiration_days: formData.expirationDays,
-              }),
+              },
             })
-
-            if (!sendRes.ok) {
-              const sendData = await sendRes.json()
-              console.warn('Document created but email send failed:', sendData.error?.message)
-            }
           } catch (sendErr) {
             console.warn('Document created but failed to send email:', sendErr)
           }

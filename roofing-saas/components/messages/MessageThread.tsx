@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { logger } from '@/lib/logger'
+import { apiFetch } from '@/lib/api/client'
 
 interface MessageThreadProps {
   contactId: string
@@ -43,15 +44,8 @@ export function MessageThread({
   const loadMessages = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/messages/${contactId}`)
-      const data = await response.json()
-
-      if (!response.ok) {
-        logger.error('Failed to load messages', { error: data.error })
-        return
-      }
-
-      setMessages(data.messages || [])
+      const data = await apiFetch<Message[]>(`/api/messages/${contactId}`)
+      setMessages(data)
     } catch (error) {
       logger.error('Failed to load messages', { error })
     } finally {

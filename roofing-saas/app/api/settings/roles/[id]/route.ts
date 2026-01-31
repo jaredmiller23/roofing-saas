@@ -59,7 +59,7 @@ export async function PATCH(
       throw NotFoundError('Role not found')
     }
 
-    return successResponse({ role })
+    return successResponse(role)
   } catch (error) {
     logger.error('Error updating role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -110,7 +110,7 @@ export async function DELETE(
       throw InternalError(error.message)
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error deleting role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

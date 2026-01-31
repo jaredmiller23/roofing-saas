@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateRevenueForecast } from '@/lib/analytics/forecasting'
@@ -6,7 +6,7 @@ import { createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
 import { PipelineStage, Project } from '@/lib/types/api'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/analytics/forecast
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     if (!projects || projects.length === 0) {
       // Return empty forecast for no data
-      return NextResponse.json({
+      return successResponse({
         periods: [],
         totalPipelineValue: 0,
         overallWinRate: 0,
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     // Generate revenue forecast
     const forecast = generateRevenueForecast(projects as unknown as Project[], filters)
 
-    return NextResponse.json(forecast)
+    return successResponse(forecast)
 
   } catch (error) {
     console.error('Error generating revenue forecast:', error)

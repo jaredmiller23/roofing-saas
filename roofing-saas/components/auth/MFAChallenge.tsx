@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface MFAChallengeProps {
   /** The factor ID to challenge */
@@ -40,19 +41,10 @@ export function MFAChallenge({
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/challenge', {
+      const data = await apiFetch<{ challengeId: string; expiresAt: string }>('/api/auth/mfa/challenge', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ factorId }),
+        body: { factorId },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create challenge')
-      }
 
       setChallengeId(data.challengeId)
       setExpiresAt(data.expiresAt)
@@ -77,23 +69,14 @@ export function MFAChallenge({
         ? '/api/auth/mfa/verify-recovery'
         : '/api/auth/mfa/verify'
 
-      const response = await fetch(endpoint, {
+      await apiFetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           factorId,
           challengeId,
           code: code.trim(),
-        }),
+        },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Verification failed')
-      }
 
       onVerified()
     } catch (err) {

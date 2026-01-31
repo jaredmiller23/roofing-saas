@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { KnowledgeForm } from './KnowledgeForm'
 import { CATEGORY_LABELS } from '@/lib/aria/knowledge-types'
 import type { KnowledgeEntry } from '@/lib/aria/knowledge-types'
+import { apiFetch } from '@/lib/api/client'
 
 export function KnowledgeTable() {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([])
@@ -26,11 +27,8 @@ export function KnowledgeTable() {
       if (categoryFilter) params.set('category', categoryFilter)
       if (manufacturerFilter) params.set('manufacturer', manufacturerFilter)
 
-      const res = await fetch(`/api/knowledge?${params.toString()}`)
-      if (res.ok) {
-        const data = await res.json()
-        setEntries(data.data?.knowledge || [])
-      }
+      const data = await apiFetch<KnowledgeEntry[]>(`/api/knowledge?${params.toString()}`)
+      setEntries(data)
     } catch (err) {
       console.error('Failed to fetch knowledge entries:', err)
     } finally {
@@ -47,10 +45,8 @@ export function KnowledgeTable() {
 
     setDeletingId(id)
     try {
-      const res = await fetch(`/api/knowledge?id=${id}`, { method: 'DELETE' })
-      if (res.ok) {
-        setEntries(prev => prev.filter(e => e.id !== id))
-      }
+      await apiFetch<void>(`/api/knowledge?id=${id}`, { method: 'DELETE' })
+      setEntries(prev => prev.filter(e => e.id !== id))
     } catch (err) {
       console.error('Failed to delete entry:', err)
     } finally {

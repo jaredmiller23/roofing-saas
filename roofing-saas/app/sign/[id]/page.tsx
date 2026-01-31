@@ -284,11 +284,12 @@ export default function SignDocumentPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error?.message || data.error || 'Failed to load document')
+        const errMsg = data.error?.message || data.error || 'Failed to load document'
+        throw new Error(errMsg)
       }
 
-      // API returns { success, data: { document } }
-      const doc = data.data?.document
+      // API returns { success, data: <document> }
+      const doc = data.data
       if (!doc) {
         throw new Error('Document not found')
       }

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
-import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 /**
  * GET /api/jobs
@@ -57,12 +57,7 @@ export async function GET(request: NextRequest) {
       throw InternalError(error.message)
     }
 
-    return successResponse({
-      jobs: jobs || [],
-      total: count || 0,
-      page,
-      limit,
-    })
+    return paginatedResponse(jobs || [], { page, limit, total: count || 0 })
   } catch (error) {
     logger.error('Error in GET /api/jobs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

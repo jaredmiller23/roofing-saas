@@ -215,7 +215,7 @@ export async function POST(
     logger.apiResponse('POST', `/api/signature-documents/${id}/send`, 200, duration)
 
     return successResponse({
-      document: updatedDocument,
+      ...updatedDocument,
       message: emailSent
         ? 'Document sent successfully and email notification delivered'
         : 'Document sent successfully (email notification skipped)',

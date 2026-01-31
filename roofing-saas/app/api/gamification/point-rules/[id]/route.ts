@@ -74,7 +74,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       action_type: data.action_type,
     })
 
-    return successResponse({ data, success: true })
+    return successResponse(data)
   } catch (error) {
     logger.error('Point rule PATCH error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -115,7 +115,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     logger.info('Deleted point rule', { tenant_id, rule_id: id })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Point rule DELETE error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

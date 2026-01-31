@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Play, Pause, Trash2, Copy, Activity, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/api/client'
 import type { Workflow, WorkflowExecution } from '@/lib/automation/workflow-types'
 
 export default function WorkflowDetailsPage() {
@@ -29,11 +30,8 @@ export default function WorkflowDetailsPage() {
 
   const loadWorkflow = async () => {
     try {
-      const response = await fetch(`/api/automations/${workflowId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setWorkflow(data)
-      }
+      const data = await apiFetch<Workflow>(`/api/automations/${workflowId}`)
+      setWorkflow(data)
     } catch (error) {
       console.error('Error loading workflow:', error)
     } finally {
@@ -43,11 +41,8 @@ export default function WorkflowDetailsPage() {
 
   const loadExecutions = async () => {
     try {
-      const response = await fetch(`/api/automations/${workflowId}/executions`)
-      if (response.ok) {
-        const data = await response.json()
-        setExecutions(data.executions || [])
-      }
+      const data = await apiFetch<{ executions: WorkflowExecution[] }>(`/api/automations/${workflowId}/executions`)
+      setExecutions(data.executions || [])
     } catch (error) {
       console.error('Error loading executions:', error)
     }
@@ -55,19 +50,11 @@ export default function WorkflowDetailsPage() {
 
   const handleSave = async (workflowData: Partial<Workflow>) => {
     try {
-      const response = await fetch(`/api/automations/${workflowId}`, {
+      const updatedWorkflow = await apiFetch<Workflow>(`/api/automations/${workflowId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(workflowData)
+        body: workflowData
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to update workflow')
-      }
-
-      const updatedWorkflow = await response.json()
       setWorkflow(updatedWorkflow)
     } catch (error) {
       console.error('Error updating workflow:', error)
@@ -77,12 +64,9 @@ export default function WorkflowDetailsPage() {
 
   const handleTest = async (testWorkflow: Workflow) => {
     try {
-      const response = await fetch(`/api/automations/${workflowId}/test`, {
+      const result = await apiFetch<{ status: string }>(`/api/automations/${workflowId}/test`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+        body: {
           workflow: testWorkflow,
           test_data: {
             contact: {
@@ -93,16 +77,11 @@ export default function WorkflowDetailsPage() {
               stage: 'new'
             }
           }
-        })
+        }
       })
 
-      if (response.ok) {
-        const result = await response.json()
-        alert(`Test completed: ${result.status}`)
-        loadExecutions() // Refresh executions
-      } else {
-        throw new Error('Test failed')
-      }
+      alert(`Test completed: ${result.status}`)
+      loadExecutions() // Refresh executions
     } catch (error) {
       console.error('Error testing workflow:', error)
       throw error
@@ -114,18 +93,12 @@ export default function WorkflowDetailsPage() {
 
     try {
       const newStatus = workflow.status === 'active' ? 'paused' : 'active'
-      const response = await fetch(`/api/automations/${workflowId}`, {
+      const updatedWorkflow = await apiFetch<Workflow>(`/api/automations/${workflowId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
+        body: { status: newStatus }
       })
 
-      if (response.ok) {
-        const updatedWorkflow = await response.json()
-        setWorkflow(updatedWorkflow)
-      }
+      setWorkflow(updatedWorkflow)
     } catch (error) {
       console.error('Error updating workflow status:', error)
     }
@@ -135,22 +108,16 @@ export default function WorkflowDetailsPage() {
     if (!workflow) return
 
     try {
-      const response = await fetch('/api/automations', {
+      const newWorkflow = await apiFetch<Workflow>('/api/automations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+        body: {
           ...workflow,
           name: `${workflow.name} (Copy)`,
           status: 'draft'
-        })
+        }
       })
 
-      if (response.ok) {
-        const newWorkflow = await response.json()
-        router.push(`/automations/${newWorkflow.id}`)
-      }
+      router.push(`/automations/${newWorkflow.id}`)
     } catch (error) {
       console.error('Error duplicating workflow:', error)
     }
@@ -160,13 +127,11 @@ export default function WorkflowDetailsPage() {
     if (!workflow || !confirm('Are you sure you want to delete this workflow?')) return
 
     try {
-      const response = await fetch(`/api/automations/${workflowId}`, {
+      await apiFetch(`/api/automations/${workflowId}`, {
         method: 'DELETE'
       })
 
-      if (response.ok) {
-        router.push('/automations')
-      }
+      router.push('/automations')
     } catch (error) {
       console.error('Error deleting workflow:', error)
     }

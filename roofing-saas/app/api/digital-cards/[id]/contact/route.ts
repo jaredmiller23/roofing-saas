@@ -7,12 +7,14 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type {
   SubmitContactFormRequest,
   SubmitContactFormResponse,
 } from '@/lib/digital-cards/types'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { createdResponse, errorResponse } from '@/lib/api/response'
 
 // =============================================
 // Helper: Basic email validation
@@ -36,28 +38,19 @@ export async function POST(
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Missing required parameter: id' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required parameter: id')
     }
 
     const body: SubmitContactFormRequest = await request.json()
 
     // Validate required fields
     if (!body.name || !body.email || !body.message) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, email, message' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: name, email, message')
     }
 
     // Validate email format
     if (!isValidEmail(body.email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid email format')
     }
 
     const supabase = await createClient()
@@ -71,17 +64,11 @@ export async function POST(
       .single()
 
     if (cardError || !card) {
-      return NextResponse.json(
-        { error: 'Card not found or inactive' },
-        { status: 404 }
-      )
+      throw NotFoundError('Card not found or inactive')
     }
 
     if (!card.enable_contact_form) {
-      return NextResponse.json(
-        { error: 'Contact form is disabled for this card' },
-        { status: 403 }
-      )
+      throw ValidationError('Contact form is disabled for this card')
     }
 
     // Extract tracking data
@@ -202,12 +189,9 @@ export async function POST(
       message: `Thank you for your message, ${body.name}! ${card.full_name} will get back to you soon.`,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
     console.error('Unexpected error in POST /api/digital-cards/:id/contact:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

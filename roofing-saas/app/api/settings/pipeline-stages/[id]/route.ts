@@ -79,7 +79,7 @@ export async function PATCH(
       throw NotFoundError('Stage not found')
     }
 
-    return successResponse({ stage })
+    return successResponse(stage)
   } catch (error) {
     logger.error('Error updating pipeline stage:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

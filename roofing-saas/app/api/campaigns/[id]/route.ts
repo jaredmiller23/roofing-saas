@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger'
 import type {
   Campaign,
   UpdateCampaignRequest,
-  UpdateCampaignResponse,
 } from '@/lib/campaigns/types'
 
 /**
@@ -47,7 +46,7 @@ export async function GET(
       throw InternalError('Failed to fetch campaign')
     }
 
-    return successResponse({ campaign: data as Campaign })
+    return successResponse(data as Campaign)
   } catch (error) {
     logger.error('Error in GET /api/campaigns/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -139,11 +138,7 @@ export async function PATCH(
       throw InternalError('Failed to update campaign')
     }
 
-    const response: UpdateCampaignResponse = {
-      campaign: data as Campaign,
-    }
-
-    return successResponse(response)
+    return successResponse(data as Campaign)
   } catch (error) {
     logger.error('Error in PATCH /api/campaigns/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -189,7 +184,7 @@ export async function DELETE(
       throw InternalError('Failed to delete campaign')
     }
 
-    return successResponse({ success: true })
+    return successResponse({ deleted: true, id })
   } catch (error) {
     logger.error('Error in DELETE /api/campaigns/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

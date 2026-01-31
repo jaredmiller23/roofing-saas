@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { ARIAExecutionResult } from '@/lib/aria/types'
+import { apiFetch } from '@/lib/api/client'
 
 interface ApprovalModalProps {
   /** The draft content to be approved */
@@ -43,36 +44,27 @@ export function ApprovalModal({
     setErrorMessage('')
 
     try {
-      let response: Response
-
       if (draft.type === 'sms') {
-        response = await fetch('/api/sms/send', {
+        await apiFetch('/api/sms/send', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             to: draft.recipient,
             body: draft.body,
             contactId: draft.metadata?.contactId,
-          }),
+          },
         })
       } else if (draft.type === 'email') {
-        response = await fetch('/api/email/send', {
+        await apiFetch('/api/email/send', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             to: draft.recipient,
             subject: draft.subject || 'Message',
             text: draft.body,
             contactId: draft.metadata?.contactId,
-          }),
+          },
         })
       } else {
         throw new Error(`Unsupported draft type: ${draft.type}`)
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Send failed' }))
-        throw new Error(errorData.message || `Failed to send ${draft.type}`)
       }
 
       setSendState('success')

@@ -4,9 +4,11 @@
  * Send notifications to affected customers
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { AffectedCustomer, NotificationResponse } from '@/lib/storm/storm-types'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +17,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Parse request body
@@ -30,10 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!customers || customers.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No customers specified' },
-        { status: 400 }
-      )
+      throw ValidationError('No customers specified')
     }
 
     const details: NotificationResponse['details'] = []
@@ -107,16 +103,10 @@ export async function POST(request: NextRequest) {
       details,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     console.error('Notification error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -130,10 +120,7 @@ export async function GET(_request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Default storm notification templates
@@ -176,18 +163,9 @@ Schedule your free inspection: {{schedulingLink}}
       },
     ]
 
-    return NextResponse.json({
-      success: true,
-      templates,
-    })
+    return successResponse(templates)
   } catch (error) {
     console.error('Get templates error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

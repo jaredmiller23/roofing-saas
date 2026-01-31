@@ -4,8 +4,10 @@
  * POST: Acknowledge a storm alert (add current user to acknowledgedBy list)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -21,10 +23,7 @@ export async function POST(
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const { id } = await context.params
@@ -37,10 +36,7 @@ export async function POST(
       .single()
 
     if (fetchError || !alert) {
-      return NextResponse.json(
-        { success: false, error: 'Alert not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Alert')
     }
 
     // Add user to acknowledgedBy array if not already present
@@ -60,25 +56,12 @@ export async function POST(
 
     if (updateError) {
       console.error('Error acknowledging alert:', updateError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to acknowledge alert' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to acknowledge alert')
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Alert acknowledged successfully',
-      acknowledgedBy,
-    })
+    return successResponse({ acknowledgedBy })
   } catch (error) {
     console.error('Acknowledge alert error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

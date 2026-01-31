@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
+import { apiFetch } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -115,15 +116,7 @@ export default function EditProjectPage() {
   async function fetchProject() {
     try {
       setLoading(true)
-      const response = await fetch(`/api/projects/${projectId}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch project')
-      }
-
-      const result = await response.json()
-      // API returns { success: true, data: { project: {...} } }
-      const projectData = result.data?.project || result.project || result
+      const projectData = await apiFetch<Project>(`/api/projects/${projectId}`)
 
       setProject(projectData)
 
@@ -195,19 +188,10 @@ export default function EditProjectPage() {
       }
       updateData.custom_fields = customFields
 
-      const response = await fetch(`/api/projects/${projectId}`, {
+      await apiFetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
+        body: updateData,
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        // API returns { success: false, error: { message: '...' } }
-        throw new Error(errorData.error?.message || errorData.message || 'Failed to update project')
-      }
 
       toast.success('Project updated successfully')
       router.push(`/projects/${projectId}`)

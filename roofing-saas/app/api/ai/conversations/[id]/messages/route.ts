@@ -66,11 +66,7 @@ export async function GET(
       throw InternalError('Failed to fetch messages')
     }
 
-    return successResponse({
-      messages: messages as AIMessage[],
-      total: messages?.length || 0,
-      has_more: (messages?.length || 0) === limit,
-    })
+    return successResponse(messages as AIMessage[])
   } catch (error) {
     logger.error('Error in GET /api/ai/conversations/[id]/messages:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

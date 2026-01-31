@@ -9,6 +9,7 @@ import { createContactSchema, type CreateContactInput } from '@/lib/validations/
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { apiFetch } from '@/lib/api/client'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,20 +157,14 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
     setDuplicateCheckPending(fieldType)
 
     try {
-      const response = await fetch('/api/contacts/check-duplicate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(checkData),
-      })
+      const result = await apiFetch<{ has_duplicates: boolean; matches: DuplicateMatch[] }>(
+        '/api/contacts/check-duplicate',
+        { method: 'POST', body: checkData }
+      )
 
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success && result.data.has_duplicates) {
-          setDuplicateMatches(result.data.matches)
-          setShowDuplicateDialog(true)
-        }
+      if (result.has_duplicates) {
+        setDuplicateMatches(result.matches)
+        setShowDuplicateDialog(true)
       }
     } catch (error) {
       console.error('Error checking duplicates:', error)
@@ -206,24 +201,14 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       const url = mode === 'edit' && contact ? `/api/contacts/${contact.id}` : '/api/contacts'
       const method = mode === 'edit' ? 'PATCH' : 'POST'
 
-      const response = await fetch(url, {
+      const result = await apiFetch<{ contact: Contact; prompt_for_project?: boolean }>(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData),
+        body: submitData,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to save contact')
-      }
-
-      const result = await response.json()
-
       // Check if we should prompt for project creation
-      if (result.data.prompt_for_project && mode === 'create') {
-        const newContact = result.data.contact
+      if (result.prompt_for_project && mode === 'create') {
+        const newContact = result.contact
         setCreatedContactInfo({
           id: newContact.id,
           name: `${newContact.first_name} ${newContact.last_name}`.trim()
@@ -233,8 +218,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       }
 
       // Redirect to contact detail page
-      // API returns { success, data: { contact } } structure
-      router.push(`/contacts/${result.data.contact.id}`)
+      router.push(`/contacts/${result.contact.id}`)
       router.refresh()
     } catch (err) {
       setError('root', {
@@ -870,29 +854,20 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
                 setIsCreatingProject(true)
                 try {
                   const projectName = `${createdContactInfo.name} - Roofing Project`
-                  const response = await fetch('/api/projects', {
+                  const result = await apiFetch<{ project: { id: string } }>('/api/projects', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                    body: {
                       name: projectName,
                       contact_id: createdContactInfo.id,
                       pipeline_stage: 'prospect',
                       type: 'roofing',
                       lead_source: 'homeowner_contact',
                       priority: 'normal',
-                    }),
+                    },
                   })
 
-                  if (response.ok) {
-                    const result = await response.json()
-                    router.push(`/projects/${result.data.project.id}`)
-                    router.refresh()
-                  } else {
-                    // If project creation fails, navigate to contact page
-                    console.error('Failed to create project')
-                    router.push(`/contacts/${createdContactInfo.id}`)
-                    router.refresh()
-                  }
+                  router.push(`/projects/${result.project.id}`)
+                  router.refresh()
                 } catch (error) {
                   console.error('Error creating project:', error)
                   router.push(`/contacts/${createdContactInfo.id}`)

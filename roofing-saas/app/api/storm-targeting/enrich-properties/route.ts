@@ -55,21 +55,11 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!addresses || !Array.isArray(addresses) || addresses.length === 0) {
-      return NextResponse.json(
-        { error: 'Missing or invalid addresses array' },
-        { status: 400 }
-      );
+      throw ValidationError('Missing or invalid addresses array');
     }
 
     if (addresses.length > 1000) {
-      return NextResponse.json(
-        {
-          error: 'Too many addresses. Maximum 1000 addresses per batch.',
-          max_allowed: 1000,
-          provided: addresses.length,
-        },
-        { status: 400 }
-      );
+      throw ValidationError('Too many addresses. Maximum 1000 addresses per batch.');
     }
 
     // Validate provider
@@ -83,34 +73,16 @@ export async function POST(request: NextRequest) {
     ];
 
     if (!validProviders.includes(provider)) {
-      return NextResponse.json(
-        {
-          error: `Invalid provider: ${provider}`,
-          valid_providers: validProviders,
-        },
-        { status: 400 }
-      );
+      throw ValidationError(`Invalid provider: ${provider}`);
     }
 
     // Check if API key is configured for provider
     if (provider === 'batchdata' && !process.env.BATCHDATA_API_KEY) {
-      return NextResponse.json(
-        {
-          error: 'BatchData API key not configured',
-          message: 'Please add BATCHDATA_API_KEY to your environment variables',
-        },
-        { status: 500 }
-      );
+      throw InternalError('BatchData API key not configured');
     }
 
     if (provider === 'tracerfy' && !process.env.TRACERFY_API_KEY) {
-      return NextResponse.json(
-        {
-          error: 'Tracerfy API key not configured',
-          message: 'Please add TRACERFY_API_KEY to your environment variables',
-        },
-        { status: 500 }
-      );
+      throw InternalError('Tracerfy API key not configured');
     }
 
     // Validate Tracerfy-specific requirements
@@ -121,16 +93,10 @@ export async function POST(request: NextRequest) {
       );
 
       if (addressesWithoutNames.length > 0) {
-        return NextResponse.json(
-          {
-            error: 'Tracerfy requires owner names',
-            message: 'Tracerfy skip tracing requires first_name and last_name for each address. ' +
-                     'Use this provider for door-knock follow-ups when you have owner names. ' +
-                     'For storm targeting (addresses only), use a different approach like DealMachine or PropertyRadar.',
-            addresses_missing_names: addressesWithoutNames.length,
-            total_addresses: addresses.length,
-          },
-          { status: 400 }
+        throw ValidationError(
+          'Tracerfy requires owner names. Tracerfy skip tracing requires first_name and last_name for each address. ' +
+          'Use this provider for door-knock follow-ups when you have owner names. ' +
+          'For storm targeting (addresses only), use a different approach like DealMachine or PropertyRadar.'
         );
       }
     }
@@ -181,29 +147,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     logger.error('Enrichment API error:', { error });
-
-    if (error instanceof Error) {
-      // Handle specific error types
-      if (error.message.includes('cost')) {
-        return NextResponse.json(
-          {
-            error: 'Cost limit exceeded',
-            message: error.message,
-          },
-          { status: 402 } // Payment Required
-        );
-      }
-
-      if (error.message.includes('API key')) {
-        return NextResponse.json(
-          {
-            error: 'Configuration error',
-            message: error.message,
-          },
-          { status: 500 }
-        );
-      }
-    }
 
     return errorResponse(error instanceof Error ? error : InternalError());
   }

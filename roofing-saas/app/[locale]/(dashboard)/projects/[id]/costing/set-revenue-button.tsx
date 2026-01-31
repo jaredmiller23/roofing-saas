@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api/client'
 
 interface SetRevenueButtonProps {
   projectId: string
@@ -73,16 +74,10 @@ export function SetRevenueButton({
 
     setSaving(true)
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      await apiFetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ total_revenue: newRevenue }),
+        body: { total_revenue: newRevenue },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to update revenue')
-      }
 
       toast.success('Revenue updated successfully')
       setOpen(false)

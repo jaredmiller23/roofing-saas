@@ -18,6 +18,7 @@ import { RealtimeToast } from '@/components/collaboration/RealtimeToast'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { hexToTailwindBg } from '@/lib/utils/colors'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 // Default stages - used as fallback if DB fetch fails
 const DEFAULT_STAGES: Array<{ id: PipelineStage; name: string; color: string }> = [
@@ -105,12 +106,9 @@ export function PipelineBoard() {
   // Fetch pipeline stages from database
   async function fetchStages() {
     try {
-      const response = await fetch('/api/settings/pipeline-stages')
-      if (response.ok) {
-        const result = await response.json()
-        const dbStages: DBPipelineStage[] = result.data?.stages || result.stages || []
+      const dbStages = await apiFetch<DBPipelineStage[]>('/api/settings/pipeline-stages')
 
-        if (dbStages.length > 0) {
+        if (dbStages && dbStages.length > 0) {
           // Map DB stages to our format using stage_key for stable mapping
           const mappedStages = dbStages
             .filter(s => s.is_active !== false)
@@ -138,7 +136,6 @@ export function PipelineBoard() {
             setStages(mappedStages)
           }
         }
-      }
     } catch (error) {
       console.error('Failed to fetch pipeline stages:', error)
       // Keep using default stages on error
@@ -160,13 +157,8 @@ export function PipelineBoard() {
   async function fetchProjects() {
     try {
       // Fetch all projects for pipeline view (increased limit to 2000)
-      const response = await fetch('/api/projects?limit=2000')
-      if (response.ok) {
-        const result = await response.json()
-        // Handle response format: { success, data: { projects, ... } } or { projects, ... }
-        const data = result.data || result
-        setProjects(data.projects || [])
-      }
+      const { data: projectList } = await apiFetchPaginated<Project[]>('/api/projects?limit=2000')
+      setProjects(projectList)
     } catch (error) {
       console.error('Failed to fetch projects:', error)
     } finally {
@@ -272,26 +264,20 @@ export function PipelineBoard() {
 
     // Update on server
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      await apiFetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pipeline_stage: newStage }),
+        body: { pipeline_stage: newStage },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        // Show server validation error
-        setValidationError({
-          message: errorData.error?.message || 'Failed to update project',
-          projectName: project.name || 'Unnamed Project',
-          fromStage: STAGE_DISPLAY_NAMES[currentStage],
-          toStage: STAGE_DISPLAY_NAMES[newStage],
-        })
-        setTimeout(() => setValidationError(null), 5000)
-        throw new Error(errorData.error?.message || 'Failed to update project')
-      }
     } catch (error) {
       console.error('Failed to update project stage:', error)
+      // Show server validation error
+      setValidationError({
+        message: error instanceof Error ? error.message : 'Failed to update project',
+        projectName: project.name || 'Unnamed Project',
+        fromStage: STAGE_DISPLAY_NAMES[currentStage],
+        toStage: STAGE_DISPLAY_NAMES[newStage],
+      })
+      setTimeout(() => setValidationError(null), 5000)
       // Clean up tracking on error
       locallyDraggingRef.current.delete(projectId)
       recentUpdatesRef.current.delete(projectId)

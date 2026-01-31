@@ -9,6 +9,7 @@
 // =============================================
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -43,11 +44,8 @@ export function NotificationPreferences() {
   const fetchPreferences = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/profile/notifications')
-      if (!response.ok) throw new Error('Failed to fetch preferences')
-
-      const data = await response.json()
-      setPreferences(data.data?.preferences)
+      const data = await apiFetch<NotificationPrefsType>('/api/profile/notifications')
+      setPreferences(data)
     } catch (error) {
       console.error('Error fetching notification preferences:', error)
       setMessage({ type: 'error', text: 'Failed to load notification preferences' })
@@ -71,19 +69,12 @@ export function NotificationPreferences() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/profile/notifications', {
+      const data = await apiFetch<NotificationPrefsType>('/api/profile/notifications', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(preferences),
+        body: preferences,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save preferences')
-      }
-
-      setPreferences(data.data?.preferences)
+      setPreferences(data)
       setMessage({ type: 'success', text: 'Notification preferences saved!' })
       setHasChanges(false)
     } catch (error) {

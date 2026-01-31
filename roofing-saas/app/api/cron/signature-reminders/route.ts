@@ -17,7 +17,7 @@
  * }
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/logger'
 import { sendEmail } from '@/lib/resend/email'
@@ -28,8 +28,8 @@ import {
   shouldSendReminder,
   type SignatureReminderData
 } from '@/lib/email/signature-reminder-templates'
-import { AuthenticationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Verify cron secret for security
 function verifyCronSecret(request: NextRequest): boolean {
@@ -76,8 +76,7 @@ export async function GET(request: NextRequest) {
   // Check if email is configured
   if (!isResendConfigured()) {
     logger.warn('Resend not configured, skipping signature reminders')
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       message: 'Email not configured, no reminders sent',
       stats: { processed: 0, sent: 0, skipped: 0, errors: 0 }
     })
@@ -89,7 +88,7 @@ export async function GET(request: NextRequest) {
 
   if (!supabaseUrl || !supabaseServiceKey) {
     logger.error('Supabase service role not configured')
-    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    return errorResponse(InternalError('Server configuration error'))
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -121,7 +120,7 @@ export async function GET(request: NextRequest) {
 
     if (fetchError) {
       logger.error('Error fetching documents for reminders', { error: fetchError })
-      return NextResponse.json({ error: 'Database error' }, { status: 500 })
+      return errorResponse(InternalError('Database error'))
     }
 
     const documents = (rawDocuments || []) as unknown as SignatureDocument[]
@@ -240,8 +239,7 @@ export async function GET(request: NextRequest) {
       stats
     })
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       message: 'Signature reminder cron completed',
       stats,
       results,

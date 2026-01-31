@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface ActivityItem {
   id: string
@@ -204,17 +203,14 @@ export async function GET() {
     // Limit to most recent 15
     const limitedActivities = activities.slice(0, 15)
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    return successResponse(
+      {
         activities: limitedActivities,
         count: limitedActivities.length
-      }
-    }, {
-      headers: {
-        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
-      }
-    })
+      },
+      200,
+      { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
+    )
   } catch (error) {
     console.error('Error fetching activity feed:', error)
     return errorResponse(error as Error)

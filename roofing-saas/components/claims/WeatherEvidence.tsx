@@ -17,6 +17,7 @@ import {
   Calendar,
   Loader2,
 } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface StormEvent {
   event_date: string
@@ -90,13 +91,14 @@ export function WeatherEvidence({
 
       try {
         // First try to get causation from the export package
-        const exportRes = await fetch(`/api/projects/${projectId}/claims/export`)
-        if (exportRes.ok) {
-          const data = await exportRes.json()
-          if (data.success && data.data?.storm_causation) {
-            setCausationData(data.data.storm_causation)
+        try {
+          const exportData = await apiFetch<{ storm_causation?: CausationData }>(`/api/projects/${projectId}/claims/export`)
+          if (exportData.storm_causation) {
+            setCausationData(exportData.storm_causation)
             return
           }
+        } catch {
+          // Export may not exist yet, continue to query causation API
         }
 
         // If no export data and we have location + date, query causation API directly

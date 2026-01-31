@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -103,11 +104,8 @@ export function RewardsTab() {
 
   const fetchRewards = useCallback(async () => {
     try {
-      const response = await fetch('/api/gamification/rewards')
-      if (response.ok) {
-        const result = await response.json()
-        setRewards(result.data || [])
-      }
+      const data = await apiFetch<RewardConfigDB[]>('/api/gamification/rewards')
+      setRewards(data || [])
     } catch (error) {
       console.error('Failed to fetch rewards:', error)
     } finally {
@@ -121,16 +119,13 @@ export function RewardsTab() {
 
   const toggleReward = async (rewardId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/gamification/rewards/${rewardId}`, {
+      await apiFetch(`/api/gamification/rewards/${rewardId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setRewards(prev => prev.map(r =>
-          r.id === rewardId ? { ...r, is_active: isActive } : r
-        ))
-      }
+      setRewards(prev => prev.map(r =>
+        r.id === rewardId ? { ...r, is_active: isActive } : r
+      ))
     } catch (error) {
       console.error('Failed to toggle reward:', error)
     }
@@ -139,22 +134,19 @@ export function RewardsTab() {
   const createFromTemplate = async (template: typeof REWARD_TEMPLATES[0]) => {
     setCreating(template.id)
     try {
-      const response = await fetch('/api/gamification/rewards', {
+      await apiFetch('/api/gamification/rewards', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: template.name,
           description: template.description,
           reward_type: template.reward_type,
           points_required: template.points_required,
           reward_value: template.reward_value,
           quantity_available: template.quantity_available,
-          is_active: true
-        })
+          is_active: true,
+        },
       })
-      if (response.ok) {
-        await fetchRewards()
-      }
+      await fetchRewards()
     } catch (error) {
       console.error('Failed to create reward:', error)
     } finally {
@@ -166,12 +158,8 @@ export function RewardsTab() {
     if (!confirm('Are you sure you want to delete this reward?')) return
 
     try {
-      const response = await fetch(`/api/gamification/rewards/${rewardId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setRewards(prev => prev.filter(r => r.id !== rewardId))
-      }
+      await apiFetch(`/api/gamification/rewards/${rewardId}`, { method: 'DELETE' })
+      setRewards(prev => prev.filter(r => r.id !== rewardId))
     } catch (error) {
       console.error('Failed to delete reward:', error)
     }

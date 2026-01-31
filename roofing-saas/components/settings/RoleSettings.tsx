@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Plus, Pencil, Trash2, Shield, Lock } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface UserRole {
   id: string
@@ -66,9 +67,8 @@ export function RoleSettings() {
   const loadRoles = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/settings/roles')
-      const data = await res.json()
-      setRoles(data.data?.roles || [])
+      const data = await apiFetch<UserRole[]>('/api/settings/roles')
+      setRoles(data || [])
     } catch (err) {
       console.error('Error loading roles:', err)
       setError('Failed to load roles')
@@ -88,16 +88,7 @@ export function RoleSettings() {
 
       const method = editingRole ? 'PATCH' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to save role')
-      }
+      await apiFetch(url, { method, body: formData })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -125,14 +116,7 @@ export function RoleSettings() {
     if (!confirm('Are you sure you want to delete this role? Users with this role will need to be reassigned.')) return
 
     try {
-      const res = await fetch(`/api/settings/roles/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to delete role')
-      }
+      await apiFetch(`/api/settings/roles/${id}`, { method: 'DELETE' })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

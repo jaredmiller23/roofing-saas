@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
-import type { AIMessage, SendMessageRequest, SendMessageResponse } from '@/lib/ai-assistant/types'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import type { AIMessage, SendMessageRequest } from '@/lib/ai-assistant/types'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 // ARIA - AI Roofing Intelligent Assistant
 import { ariaFunctionRegistry, buildARIAContext, getARIASystemPrompt, executeARIAFunction } from '@/lib/aria'
@@ -221,13 +221,11 @@ export async function POST(request: NextRequest) {
       throw InternalError('Conversation ID not set')
     }
 
-    const response: SendMessageResponse = {
+    return successResponse({
       message: userMessage as AIMessage,
       assistant_message: savedAssistantMessage as AIMessage,
       conversation_id: conversationId,
-    }
-
-    return NextResponse.json(response)
+    })
   } catch (error) {
     logger.error('Error in POST /api/ai/messages:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

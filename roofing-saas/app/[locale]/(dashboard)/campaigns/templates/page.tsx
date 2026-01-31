@@ -29,6 +29,8 @@ import {
   Zap,
 } from 'lucide-react'
 import { getAllTemplates, type CampaignTemplate } from '@/lib/campaigns/templates'
+import { apiFetch } from '@/lib/api/client'
+import type { Campaign } from '@/lib/campaigns/types'
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   lead_nurture: <Mail className="h-5 w-5" />,
@@ -70,33 +72,28 @@ export default function CampaignTemplatesPage() {
     setLoading(true)
     try {
       // Create campaign
-      const campaignRes = await fetch('/api/campaigns', {
+      const campaign = await apiFetch<Campaign>('/api/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: customization.name,
           description: customization.description,
           campaign_type: selectedTemplate.campaign_type,
           goal_type: selectedTemplate.goal_type,
           goal_target: selectedTemplate.goal_target,
-        }),
+        },
       })
 
-      if (!campaignRes.ok) throw new Error('Failed to create campaign')
-
-      const campaignData = await campaignRes.json()
-      const campaignId = campaignData.campaign.id
+      const campaignId = campaign.id
 
       // Create steps
       for (const step of selectedTemplate.steps) {
-        const stepRes = await fetch(`/api/campaigns/${campaignId}/steps`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(step),
-        })
-
-        if (!stepRes.ok) {
-          console.error('Failed to create step:', step)
+        try {
+          await apiFetch(`/api/campaigns/${campaignId}/steps`, {
+            method: 'POST',
+            body: step,
+          })
+        } catch (err) {
+          console.error('Failed to create step:', step, err)
         }
       }
 

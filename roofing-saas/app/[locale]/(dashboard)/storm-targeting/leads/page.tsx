@@ -12,6 +12,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,12 +84,8 @@ export default function StormLeadsPage() {
 
   const loadTargetingAreas = async () => {
     try {
-      const response = await fetch('/api/storm-targeting/areas');
-      const data = await response.json();
-
-      if (data.success && data.areas) {
-        setTargetingAreas(data.areas);
-      }
+      const data = await apiFetch<{ areas: TargetingArea[] }>('/api/storm-targeting/areas');
+      setTargetingAreas(data.areas || []);
     } catch (err) {
       console.error('Failed to load targeting areas:', err);
     }
@@ -104,13 +101,7 @@ export default function StormLeadsPage() {
     setSelectedAreaId(areaId);
 
     try {
-      const response = await fetch(`/api/storm-targeting/addresses?areaId=${areaId}`);
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to load addresses');
-      }
-
+      const data = await apiFetch<{ addresses: ExtractedAddress[] }>(`/api/storm-targeting/addresses?areaId=${areaId}`);
       setAddresses(data.addresses || []);
     } catch (err) {
       console.error('Failed to load addresses:', err);
@@ -187,19 +178,12 @@ export default function StormLeadsPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/storm-targeting/import-enriched', {
+      const data = await apiFetch<{ imported: number }>('/api/storm-targeting/import-enriched', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetingAreaId: selectedAreaId }),
+        body: { targetingAreaId: selectedAreaId },
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to import contacts');
-      }
-
-      alert(`✅ Successfully imported ${data.imported} enriched contacts!`);
+      alert(`Successfully imported ${data.imported} enriched contacts!`);
 
       // Reload to show updated status
       await loadAddresses(selectedAreaId);

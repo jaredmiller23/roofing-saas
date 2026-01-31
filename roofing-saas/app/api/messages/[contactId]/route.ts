@@ -84,11 +84,7 @@ export async function GET(
     logger.apiResponse('GET', `/api/messages/${contactId}`, 200, duration)
     logger.info('Messages loaded', { messageCount: messages?.length || 0, contactId })
 
-    return successResponse({
-      messages: messages || [],
-      count: messages?.length || 0,
-      contactId,
-    })
+    return successResponse(messages || [])
   } catch (error) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/messages/[contactId]', 500, duration)

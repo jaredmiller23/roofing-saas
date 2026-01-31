@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -144,11 +145,8 @@ export function AchievementsTab() {
 
   const fetchAchievements = useCallback(async () => {
     try {
-      const response = await fetch('/api/gamification/achievements')
-      if (response.ok) {
-        const result = await response.json()
-        setAchievements(result.data || [])
-      }
+      const data = await apiFetch<AchievementConfigDB[]>('/api/gamification/achievements')
+      setAchievements(data || [])
     } catch (error) {
       console.error('Failed to fetch achievements:', error)
     } finally {
@@ -162,16 +160,13 @@ export function AchievementsTab() {
 
   const toggleAchievement = async (achievementId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/gamification/achievements/${achievementId}`, {
+      await apiFetch(`/api/gamification/achievements/${achievementId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setAchievements(prev => prev.map(a =>
-          a.id === achievementId ? { ...a, is_active: isActive } : a
-        ))
-      }
+      setAchievements(prev => prev.map(a =>
+        a.id === achievementId ? { ...a, is_active: isActive } : a
+      ))
     } catch (error) {
       console.error('Failed to toggle achievement:', error)
     }
@@ -180,10 +175,9 @@ export function AchievementsTab() {
   const createFromTemplate = async (template: typeof ACHIEVEMENT_TEMPLATES[0]) => {
     setCreating(template.id)
     try {
-      const response = await fetch('/api/gamification/achievements', {
+      await apiFetch('/api/gamification/achievements', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: template.name,
           description: template.description,
           icon: template.icon,
@@ -192,12 +186,10 @@ export function AchievementsTab() {
           requirement_config: template.requirement_config,
           points_reward: template.points_reward,
           tier: template.tier,
-          is_active: true
-        })
+          is_active: true,
+        },
       })
-      if (response.ok) {
-        await fetchAchievements()
-      }
+      await fetchAchievements()
     } catch (error) {
       console.error('Failed to create achievement:', error)
     } finally {
@@ -209,12 +201,8 @@ export function AchievementsTab() {
     if (!confirm('Are you sure you want to delete this achievement?')) return
 
     try {
-      const response = await fetch(`/api/gamification/achievements/${achievementId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setAchievements(prev => prev.filter(a => a.id !== achievementId))
-      }
+      await apiFetch(`/api/gamification/achievements/${achievementId}`, { method: 'DELETE' })
+      setAchievements(prev => prev.filter(a => a.id !== achievementId))
     } catch (error) {
       console.error('Failed to delete achievement:', error)
     }

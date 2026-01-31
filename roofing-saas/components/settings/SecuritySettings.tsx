@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -38,11 +39,8 @@ export function SecuritySettings() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const response = await fetch('/api/auth/user-role')
-      if (response.ok) {
-        const data = await response.json()
-        setUserRole(data.role)
-      }
+      const data = await apiFetch<{ userId: string; role: string }>('/api/auth/user-role')
+      setUserRole(data.role)
     } catch (err) {
       console.error('Failed to load user role:', err)
     }
@@ -53,13 +51,7 @@ export function SecuritySettings() {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/status')
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to load MFA status')
-      }
-
+      const data = await apiFetch<{ mfa: MFAStatus }>('/api/auth/mfa/status')
       setMfaStatus(data.mfa)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load MFA status')
@@ -80,19 +72,10 @@ export function SecuritySettings() {
     }
 
     try {
-      const response = await fetch('/api/auth/mfa/disable', {
+      await apiFetch('/api/auth/mfa/disable', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ factorId }),
+        body: { factorId },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to disable MFA')
-      }
 
       await loadMFAStatus()
     } catch (err) {

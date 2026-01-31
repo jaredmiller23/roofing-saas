@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { workflowEngine } from '@/lib/automation/workflow-engine'
 import type { VariableContext } from '@/lib/automation/workflow-types'
 import { AuthenticationError, ValidationError, NotFoundError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       executionContext
     )
 
-    return NextResponse.json({
+    return successResponse({
       execution_id: execution.id,
       status: execution.status,
       started_at: execution.started_at,
@@ -76,7 +76,7 @@ export async function PUT(request: NextRequest) {
     // Trigger manual workflow execution
     await workflowEngine.triggerManual(workflow_id, manual_data || {})
 
-    return NextResponse.json({
+    return successResponse({
       message: 'Manual workflow triggered successfully'
     })
   } catch (error) {

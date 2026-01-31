@@ -13,7 +13,7 @@ import { googlePlacesClient } from '@/lib/address-extraction/google-places-clien
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
-import { errorResponse } from '@/lib/api/response';
+import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   ExtractAddressesRequest,
   ExtractAddressesResponse,
@@ -112,13 +112,7 @@ export async function POST(request: NextRequest) {
     // Validate area size
     const MAX_AREA_SQ_MILES = 10; // Limit to 10 sq mi to prevent timeouts
     if (areaSquareMiles > MAX_AREA_SQ_MILES) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Area too large (${areaSquareMiles.toFixed(1)} sq mi). Please draw a smaller area (max ${MAX_AREA_SQ_MILES} sq mi). For large areas, break them into smaller sections.`,
-        },
-        { status: 400 }
-      );
+      throw ValidationError(`Area too large (${areaSquareMiles.toFixed(1)} sq mi). Please draw a smaller area (max ${MAX_AREA_SQ_MILES} sq mi). For large areas, break them into smaller sections.`);
     }
 
     // STEP 1: Extract addresses using Google Places API
@@ -140,7 +134,7 @@ export async function POST(request: NextRequest) {
 
       logger.warn('[1/4] No residential addresses found', { debugMessage });
 
-      return NextResponse.json<ExtractAddressesResponse>({
+      return successResponse({
         success: true,
         addresses: [],
         error: debugMessage,
@@ -152,7 +146,7 @@ export async function POST(request: NextRequest) {
           estimatedProperties: 0,
           processingTimeMs: extractionResult.stats.processingTimeMs,
         },
-      });
+      } as ExtractAddressesResponse);
     }
 
     logger.info('[1/4] Found residential addresses', { count: extractionResult.stats.residentialCount });
@@ -244,7 +238,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Address extraction complete', { tenantId });
 
-    return NextResponse.json(response);
+    return successResponse(response);
   } catch (error) {
     logger.error('Address extraction error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());

@@ -284,7 +284,7 @@ export async function DELETE(request: NextRequest) {
 
     logger.info('Timesheet deleted', { timesheetId: id, tenantId })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Timesheets API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

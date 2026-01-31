@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,9 +66,7 @@ export function CarrierIntelligence() {
   const fetchCarriers = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/intelligence/dashboard')
-      if (!response.ok) throw new Error('Failed to fetch carriers')
-      const data = await response.json()
+      const data = await apiFetch<{ carriers: CarrierIntelligenceType[] }>('/api/intelligence/dashboard')
       setCarriers(data.carriers || [])
     } catch (error) {
       console.error('Error fetching carriers:', error)
@@ -91,9 +90,7 @@ export function CarrierIntelligence() {
         params.set('carrier_name', carrierName)
       }
 
-      const response = await fetch(`/api/carriers/patterns?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch patterns')
-      const data = await response.json()
+      const data = await apiFetch<{ patterns: CarrierPattern[] }>(`/api/carriers/patterns?${params}`)
       setCarrierPatterns(data.patterns || [])
     } catch (error) {
       console.error('Error fetching carrier patterns:', error)
@@ -127,13 +124,10 @@ export function CarrierIntelligence() {
 
     try {
       setAddPatternLoading(true)
-      const response = await fetch('/api/carriers/patterns', {
+      await apiFetch('/api/carriers/patterns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patternData),
+        body: patternData,
       })
-
-      if (!response.ok) throw new Error('Failed to add pattern')
 
       setIsAddPatternOpen(false)
       // Refresh patterns

@@ -5,6 +5,21 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
+import { apiFetchPaginated } from '@/lib/api/client'
+
+interface PageCalendarEvent {
+  id: string
+  title: string
+  start: Date
+  end: Date
+  allDay?: boolean
+  description?: string
+  location?: string
+  event_type?: string
+  status?: string
+  contact_id?: string
+  project_id?: string
+}
 
 // Lazy load calendar components to reduce initial bundle
 const StandardCalendar = dynamic(() => import('@/components/calendar/StandardCalendar').then(mod => ({ default: mod.StandardCalendar })), {
@@ -30,7 +45,7 @@ const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalenda
 export default function EventsPage() {
   const [view, setView] = useState<'calendar' | 'list'>('calendar')
   const [calendarType, setCalendarType] = useState<'standard' | 'google'>('standard')
-  const [events, setEvents] = useState([])
+  const [events, setEvents] = useState<PageCalendarEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -45,23 +60,35 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/events')
-      const data = await response.json()
+      interface ApiEvent {
+        id: string
+        title: string
+        start_at: string
+        end_at: string
+        all_day?: boolean
+        description?: string | null
+        location?: string | null
+        event_type?: string | null
+        status?: string | null
+        contact_id?: string | null
+        project_id?: string | null
+      }
+      const { data: eventsList } = await apiFetchPaginated<ApiEvent[]>('/api/events')
 
       // Transform events for calendar
-      const calendarEvents = data.events?.map((event: Record<string, unknown>) => ({
+      const calendarEvents: PageCalendarEvent[] = eventsList.map((event) => ({
         id: event.id,
         title: event.title,
-        start: new Date(event.start_at as string),
-        end: new Date(event.end_at as string),
+        start: new Date(event.start_at),
+        end: new Date(event.end_at),
         allDay: event.all_day || false,
-        description: event.description,
-        location: event.location,
-        event_type: event.event_type,
-        status: event.status,
-        contact_id: event.contact_id,
-        project_id: event.project_id
-      })) || []
+        description: event.description || undefined,
+        location: event.location || undefined,
+        event_type: event.event_type || undefined,
+        status: event.status || undefined,
+        contact_id: event.contact_id || undefined,
+        project_id: event.project_id || undefined,
+      }))
 
       setEvents(calendarEvents)
     } catch (error) {

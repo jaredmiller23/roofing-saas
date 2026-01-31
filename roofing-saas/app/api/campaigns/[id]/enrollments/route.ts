@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger'
 import type {
   CampaignEnrollment,
   EnrollContactRequest,
-  EnrollContactResponse,
   EnrollmentStatus,
 } from '@/lib/campaigns/types'
 
@@ -88,7 +87,7 @@ export async function GET(
     const { count } = await countQuery
 
     return paginatedResponse(
-      { enrollments: (data || []) as CampaignEnrollment[] },
+      (data || []) as CampaignEnrollment[],
       { page: Math.floor(offset / limit) + 1, limit, total: count || 0 }
     )
   } catch (error) {
@@ -216,11 +215,7 @@ export async function POST(
       throw InternalError('Failed to enroll contact')
     }
 
-    const response: EnrollContactResponse = {
-      enrollment: data as CampaignEnrollment,
-    }
-
-    return createdResponse(response)
+    return createdResponse(data as CampaignEnrollment)
   } catch (error) {
     logger.error('Error in POST /api/campaigns/:id/enrollments', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

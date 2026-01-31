@@ -11,6 +11,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -85,15 +86,7 @@ export default function MyCardPage() {
   const fetchCard = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/digital-cards?user_id=current')
-      if (!response.ok) {
-        // Card doesn't exist yet
-        setCard(null)
-        setLoading(false)
-        return
-      }
-
-      const data = await response.json()
+      const data = await apiFetch<{ cards: DigitalBusinessCard[] }>('/api/digital-cards?user_id=current')
       if (data.cards && data.cards.length > 0) {
         const cardData = data.cards[0]
         setCard(cardData)
@@ -101,9 +94,13 @@ export default function MyCardPage() {
 
         // Fetch analytics
         fetchAnalytics(cardData.id)
+      } else {
+        setCard(null)
       }
     } catch (error) {
       console.error('Error fetching card:', error)
+      // Card doesn't exist yet or fetch failed
+      setCard(null)
     } finally {
       setLoading(false)
     }
@@ -111,10 +108,7 @@ export default function MyCardPage() {
 
   const fetchAnalytics = async (cardId: string) => {
     try {
-      const response = await fetch(`/api/digital-cards/${cardId}/analytics?days=30`)
-      if (!response.ok) return
-
-      const data = await response.json()
+      const data = await apiFetch<{ summary: CardAnalyticsSummary; interactions_by_type: InteractionTypeSummary[] }>(`/api/digital-cards/${cardId}/analytics?days=30`)
       setAnalytics({
         summary: data.summary,
         interactions_by_type: data.interactions_by_type,
@@ -153,27 +147,19 @@ export default function MyCardPage() {
     try {
       if (card) {
         // Update existing card
-        const response = await fetch(`/api/digital-cards/${card.id}`, {
+        const data = await apiFetch<{ card: DigitalBusinessCard }>(`/api/digital-cards/${card.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: formData,
         })
 
-        if (!response.ok) throw new Error('Failed to update card')
-
-        const data = await response.json()
         setCard(data.card)
       } else {
         // Create new card
-        const response = await fetch('/api/digital-cards', {
+        const data = await apiFetch<{ card: DigitalBusinessCard }>('/api/digital-cards', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: formData,
         })
 
-        if (!response.ok) throw new Error('Failed to create card')
-
-        const data = await response.json()
         setCard(data.card)
       }
     } catch (error) {

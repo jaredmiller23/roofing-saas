@@ -5,6 +5,7 @@ import { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Phone, MessageSquare, Mail, DollarSign, Briefcase, TrendingUp, Clock } from 'lucide-react'
+import { apiFetchPaginated } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -92,21 +93,15 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
         queryParams.set('search', searchQuery)
       }
 
-      const response = await fetch(`/api/contacts?${queryParams.toString()}`, {
-        signal: controller.signal,
-      })
+      const { data: contacts, pagination } = await apiFetchPaginated<(Contact & { projects?: Project[] })[]>(
+        `/api/contacts?${queryParams.toString()}`,
+        { signal: controller.signal }
+      )
       clearTimeout(timeoutId)
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch leads')
-      }
-
-      const result = await response.json()
-      const data = result.data || result
-
       // Projects are embedded via server-side join (single query, no N+1)
-      const contactsWithProjects = (data.contacts || []).map(
-        (contact: Contact & { projects?: Project[] }) => {
+      const contactsWithProjects = contacts.map(
+        (contact) => {
           const projects = contact.projects || []
           const total_project_value = projects.reduce((sum: number, p: Project) => {
             const value = p.final_value || p.approved_value || p.estimated_value
@@ -122,7 +117,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
       )
 
       setLeads(contactsWithProjects)
-      setTotal(data.total || 0)
+      setTotal(pagination.total)
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === 'AbortError') {

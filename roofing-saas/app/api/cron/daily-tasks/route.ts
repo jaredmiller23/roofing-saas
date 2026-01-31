@@ -18,10 +18,10 @@
  * }
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
 import { AuthenticationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Import the handlers from individual cron endpoints
 import { GET as signatureRemindersHandler } from '@/app/api/cron/signature-reminders/route'
@@ -144,8 +144,7 @@ export async function GET(request: NextRequest) {
     failureCount,
   })
 
-  return NextResponse.json({
-    success: failureCount === 0,
+  return successResponse({
     message: `Daily tasks completed: ${successCount} succeeded, ${failureCount} failed`,
     results,
     totalDuration,

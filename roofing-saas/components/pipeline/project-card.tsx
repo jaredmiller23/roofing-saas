@@ -5,6 +5,7 @@ import { Project, PipelineStage } from '@/lib/types/api'
 import Link from 'next/link'
 import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/api/client'
 
 interface ProjectCardProps {
   project: Project
@@ -33,28 +34,21 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
 
     try {
       setStartingProduction(true)
-      const response = await fetch(`/api/projects/${project.id}/start-production`, {
+      const data = await apiFetch<{ job?: { id: string } }>(`/api/projects/${project.id}/start-production`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_type: 'roof_replacement' }),
+        body: { job_type: 'roof_replacement' },
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        // Navigate to the newly created job
-        if (data.job?.id) {
-          router.push(`/jobs/${data.job.id}`)
-        } else {
-          // Refresh the page to show updated pipeline
-          router.refresh()
-        }
+      // Navigate to the newly created job
+      if (data.job?.id) {
+        router.push(`/jobs/${data.job.id}`)
       } else {
-        const errorData = await response.json()
-        alert(errorData.error?.message || 'Failed to start production')
+        // Refresh the page to show updated pipeline
+        router.refresh()
       }
     } catch (error) {
       console.error('Error starting production:', error)
-      alert('Failed to start production. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to start production. Please try again.')
     } finally {
       setStartingProduction(false)
     }
@@ -73,24 +67,18 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
 
     try {
       setMarkingLost(true)
-      const response = await fetch(`/api/projects/${project.id}`, {
+      await apiFetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pipeline_stage: 'lost' }),
+        body: { pipeline_stage: 'lost' },
       })
 
-      if (response.ok) {
-        // Use the callback to update parent state immediately
-        if (onMoveProject) {
-          onMoveProject(project.id, 'lost')
-        }
-      } else {
-        const errorData = await response.json()
-        alert(errorData.error?.message || 'Failed to mark as lost')
+      // Use the callback to update parent state immediately
+      if (onMoveProject) {
+        onMoveProject(project.id, 'lost')
       }
     } catch (error) {
       console.error('Error marking as lost:', error)
-      alert('Failed to mark as lost. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to mark as lost. Please try again.')
     } finally {
       setMarkingLost(false)
     }
@@ -104,24 +92,18 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
 
     try {
       setReactivating(true)
-      const response = await fetch(`/api/projects/${project.id}`, {
+      await apiFetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pipeline_stage: 'prospect' }),
+        body: { pipeline_stage: 'prospect' },
       })
 
-      if (response.ok) {
-        // Use the callback to update parent state immediately
-        if (onMoveProject) {
-          onMoveProject(project.id, 'prospect')
-        }
-      } else {
-        const errorData = await response.json()
-        alert(errorData.error?.message || 'Failed to reactivate opportunity')
+      // Use the callback to update parent state immediately
+      if (onMoveProject) {
+        onMoveProject(project.id, 'prospect')
       }
     } catch (error) {
       console.error('Error reactivating:', error)
-      alert('Failed to reactivate. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to reactivate. Please try again.')
     } finally {
       setReactivating(false)
     }

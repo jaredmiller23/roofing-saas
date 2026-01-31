@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle2, XCircle, RefreshCw, ExternalLink, AlertCircle, Upload, Users, FileText } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 import { logger } from '@/lib/logger'
 
 interface QuickBooksStatus {
@@ -39,13 +40,7 @@ export function QuickBooksIntegration() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/quickbooks/status')
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch status')
-      }
-
+      const data = await apiFetch<QuickBooksStatus>('/api/quickbooks/status')
       setStatus(data)
     } catch (err) {
       logger.error('Failed to fetch QuickBooks status', { error: err })
@@ -92,15 +87,7 @@ export function QuickBooksIntegration() {
       setActionLoading(true)
       setError(null)
 
-      const response = await fetch('/api/quickbooks/disconnect', {
-        method: 'POST',
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to disconnect')
-      }
+      await apiFetch('/api/quickbooks/disconnect', { method: 'POST' })
 
       // Refresh status
       await fetchStatus()
@@ -118,17 +105,10 @@ export function QuickBooksIntegration() {
       setError(null)
       setSyncSuccess(null)
 
-      const response = await fetch('/api/quickbooks/sync/contact', {
+      const data = await apiFetch<{ synced?: number }>('/api/quickbooks/sync/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bulkSync }),
+        body: { bulkSync },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sync contacts')
-      }
 
       setSyncSuccess(bulkSync
         ? `Successfully synced ${data.synced || 0} contacts to QuickBooks`
@@ -148,15 +128,7 @@ export function QuickBooksIntegration() {
       setError(null)
       setSyncSuccess(null)
 
-      const response = await fetch('/api/quickbooks/sync/project', {
-        method: 'POST',
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sync projects')
-      }
+      await apiFetch('/api/quickbooks/sync/project', { method: 'POST' })
 
       setSyncSuccess('Projects synced to QuickBooks successfully')
     } catch (err) {

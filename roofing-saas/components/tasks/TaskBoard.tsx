@@ -15,6 +15,7 @@ import {
   Clock,
   Flag
 } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Task {
   id: string
@@ -57,14 +58,8 @@ export function TaskBoard() {
         params.append('priority', priorityFilter)
       }
 
-      const res = await fetch(`/api/tasks?${params.toString()}`)
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to load tasks')
-      }
-
-      setTasks(data.tasks || [])
+      const { data: tasksList } = await apiFetchPaginated<Task[]>(`/api/tasks?${params.toString()}`)
+      setTasks(tasksList)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tasks')
     } finally {
@@ -91,15 +86,10 @@ export function TaskBoard() {
     }
 
     try {
-      const res = await fetch(`/api/tasks/${draggedTask.id}`, {
+      await apiFetch(`/api/tasks/${draggedTask.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: { status: newStatus },
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to update task')
-      }
 
       // Optimistically update the UI
       setTasks(tasks.map(task =>
@@ -151,7 +141,7 @@ export function TaskBoard() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary rounded-lg">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-6 w-6 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                 </svg>
               </div>

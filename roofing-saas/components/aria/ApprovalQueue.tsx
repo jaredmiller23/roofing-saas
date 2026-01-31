@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ApprovalItem } from './ApprovalItem'
+import { apiFetch } from '@/lib/api/client'
 
 interface QueueItem {
   id: string
@@ -44,11 +45,7 @@ export function ApprovalQueue({ initialStatus = 'pending' }: ApprovalQueueProps)
     setError(null)
 
     try {
-      const response = await fetch(`/api/aria/queue?status=${statusFilter}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch queue')
-      }
-      const data = await response.json()
+      const data = await apiFetch<{ items: QueueItem[]; pendingCount: number }>(`/api/aria/queue?status=${statusFilter}`)
       setItems(data.items || [])
       setPendingCount(data.pendingCount || 0)
     } catch (err) {
@@ -72,16 +69,10 @@ export function ApprovalQueue({ initialStatus = 'pending' }: ApprovalQueueProps)
 
   const handleItemAction = async (id: string, action: 'approve' | 'modify' | 'reject', finalResponse?: string, rejectionReason?: string) => {
     try {
-      const response = await fetch('/api/aria/queue', {
+      await apiFetch('/api/aria/queue', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action, finalResponse, rejectionReason }),
+        body: { id, action, finalResponse, rejectionReason },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Action failed')
-      }
 
       // Refresh the list
       fetchQueue()

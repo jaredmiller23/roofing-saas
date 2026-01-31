@@ -40,7 +40,7 @@ export async function GET() {
       throw InternalError(error.message)
     }
 
-    return successResponse({ data, success: true })
+    return successResponse(data)
   } catch (error) {
     logger.error('Challenges GET error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 
     logger.info('Created challenge', { tenantId, challenge_id: data.id, title: data.title })
 
-    return createdResponse({ data, success: true })
+    return createdResponse(data)
   } catch (error) {
     logger.error('Challenges POST error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

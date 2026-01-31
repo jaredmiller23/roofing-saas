@@ -61,10 +61,8 @@ export async function GET(
     logger.apiResponse('GET', `/api/signature-templates/${templateId}`, 200, duration)
 
     return successResponse({
-      template: {
-        ...template,
-        has_html_content: !!template.html_content
-      }
+      ...template,
+      has_html_content: !!template.html_content
     })
 
   } catch (error) {

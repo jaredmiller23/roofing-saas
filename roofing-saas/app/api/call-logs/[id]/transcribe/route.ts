@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { transcribeAndSummarize } from '@/lib/transcription/whisper'
+import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/call-logs/[id]/transcribe
@@ -20,18 +22,12 @@ export async function POST(
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'No tenant found' },
-        { status: 403 }
-      )
+      throw AuthorizationError('No tenant found')
     }
 
     const { id } = await params
@@ -48,26 +44,17 @@ export async function POST(
 
     if (fetchError || !call) {
       logger.error('Call log not found', { id, tenantId, error: fetchError })
-      return NextResponse.json(
-        { success: false, error: 'Call log not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Call log')
     }
 
     if (!call.recording_url) {
-      return NextResponse.json(
-        { success: false, error: 'No recording available for this call' },
-        { status: 400 }
-      )
+      throw ValidationError('No recording available for this call')
     }
 
     // Check if transcription already exists (optional - allow re-transcription)
     const { force } = await request.json().catch(() => ({ force: false }))
     if (call.transcription && !force) {
-      return NextResponse.json(
-        { success: false, error: 'Transcription already exists. Use force=true to re-transcribe.' },
-        { status: 400 }
-      )
+      throw ValidationError('Transcription already exists. Use force=true to re-transcribe.')
     }
 
     logger.info('Starting manual transcription', { callId: id, userId: user.id })
@@ -96,10 +83,7 @@ export async function POST(
         error: updateError,
         callId: id,
       })
-      return NextResponse.json(
-        { success: false, error: 'Failed to save transcription' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to save transcription')
     }
 
     logger.info('Manual transcription complete', {
@@ -108,22 +92,16 @@ export async function POST(
       sentiment: summary.sentiment,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        transcription: transcription.text,
-        summary: summary.summary,
-        sentiment: summary.sentiment,
-        key_points: summary.key_points,
-        confidence: transcription.confidence,
-        provider: transcription.provider,
-      },
+    return successResponse({
+      transcription: transcription.text,
+      summary: summary.summary,
+      sentiment: summary.sentiment,
+      key_points: summary.key_points,
+      confidence: transcription.confidence,
+      provider: transcription.provider,
     })
   } catch (error) {
     logger.error('Manual transcription error', { error })
-    return NextResponse.json(
-      { success: false, error: 'Transcription failed' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError('Transcription failed'))
   }
 }

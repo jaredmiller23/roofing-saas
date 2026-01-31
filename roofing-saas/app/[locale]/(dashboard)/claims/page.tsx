@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 import { useFeatureAccess } from '@/lib/billing/hooks'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 import { FeatureGate } from '@/components/billing/FeatureGate'
 
 interface Project {
@@ -106,17 +107,15 @@ export default function ClaimsPage() {
     const fetchData = async () => {
       try {
         // Fetch claims
-        const claimsRes = await fetch('/api/claims')
-        if (claimsRes.ok) {
-          const claimsData = await claimsRes.json()
-          setClaims(claimsData.data?.claims || claimsData.claims || [])
-        }
+        const claimsData = await apiFetch<{ claims: ClaimData[] }>('/api/claims')
+        setClaims(claimsData.claims || [])
 
         // Fetch projects for filter dropdown
-        const projectsRes = await fetch('/api/projects')
-        if (projectsRes.ok) {
-          const projectsData = await projectsRes.json()
-          setProjects(projectsData.data?.projects || projectsData.projects || [])
+        try {
+          const { data: projectsList } = await apiFetchPaginated<Project[]>('/api/projects')
+          setProjects(projectsList)
+        } catch {
+          // Projects fetch failed - filters will be empty
         }
       } catch (error) {
         console.error('Error fetching data:', error)

@@ -56,10 +56,7 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to fetch conversations')
     }
 
-    return successResponse({
-      conversations: conversations as AIConversation[],
-      total: conversations?.length || 0,
-    })
+    return successResponse(conversations as AIConversation[])
   } catch (error) {
     logger.error('Error in GET /api/ai/conversations:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -104,9 +101,7 @@ export async function POST(request: NextRequest) {
       throw InternalError('Failed to create conversation')
     }
 
-    return createdResponse({
-      conversation: conversation as AIConversation,
-    })
+    return createdResponse(conversation as AIConversation)
   } catch (error) {
     logger.error('Error in POST /api/ai/conversations:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface DiagnosticResult {
   key: string
@@ -57,22 +58,17 @@ export function VoiceDiagnostics() {
 
     // 3. Test API endpoint
     try {
-      const response = await fetch('/api/voice/session/elevenlabs', {
+      const data = await apiFetch<{ session_id: string }>('/api/voice/session/elevenlabs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           agent_id: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID
-        })
+        },
       })
-
-      const data = await response.json()
 
       results.apiEndpoint = {
         key: '/api/voice/session/elevenlabs',
-        status: response.ok ? 'success' : 'error',
-        message: response.ok ?
-          `✓ API working! Session ID: ${data.data?.session_id}` :
-          `✗ API error: ${data.error?.message || response.statusText}`
+        status: 'success',
+        message: `✓ API working! Session ID: ${data.session_id}`
       }
     } catch (err) {
       results.apiEndpoint = {
@@ -173,7 +169,7 @@ export function VoiceDiagnostics() {
           setIsOpen(true)
           runDiagnostics()
         }}
-        className="fixed bottom-4 right-4 px-4 py-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primary/90 text-sm font-medium"
+        className="fixed bottom-4 right-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 text-sm font-medium"
       >
         🔍 Run Diagnostics
       </button>
@@ -237,7 +233,7 @@ export function VoiceDiagnostics() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={runDiagnostics}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
               Run Again
             </button>

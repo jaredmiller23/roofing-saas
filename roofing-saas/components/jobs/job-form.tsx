@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Briefcase, Calendar, DollarSign } from 'lucide-react'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -62,15 +63,8 @@ export function JobForm({ job, initialProjectId }: JobFormProps) {
     const fetchProjects = async () => {
       try {
         setLoadingProjects(true)
-        const res = await fetch('/api/projects?limit=1000')
-        const result = await res.json()
-
-        if (res.ok && result.success) {
-          const projectsData = result.data?.projects || result.projects || []
-          setProjects(projectsData)
-        } else {
-          console.error('Failed to load projects:', result.error)
-        }
+        const { data: projectsData } = await apiFetchPaginated<Project[]>('/api/projects?limit=1000')
+        setProjects(projectsData)
       } catch (err) {
         console.error('Failed to fetch projects:', err)
       } finally {
@@ -105,17 +99,10 @@ export function JobForm({ job, initialProjectId }: JobFormProps) {
         scheduled_end_time: formData.scheduled_end_time || null,
       }
 
-      const response = await fetch(url, {
+      await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       })
-
-      if (!response.ok) {
-        const result = await response.json()
-        const message = result.error?.message || result.error || 'Failed to save job'
-        throw new Error(message)
-      }
 
       // Add timestamp to force jobs table to refetch (params change triggers useEffect)
       router.push(`/jobs?_t=${Date.now()}`)

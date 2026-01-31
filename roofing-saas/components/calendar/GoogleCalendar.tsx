@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Loader2, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { apiFetch } from '@/lib/api/client'
 
 interface GoogleCalendarProps {
   onDisconnect?: () => void
@@ -23,12 +24,10 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
   const checkGoogleConnection = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/calendar/google/status')
-      const data = await response.json()
+      const data = await apiFetch<{ connected: boolean; calendarUrl?: string }>('/api/calendar/google/status')
 
       if (data.connected) {
         setIsConnected(true)
-        // If user has a public calendar URL, we can embed it
         if (data.calendarUrl) {
           setCalendarUrl(data.calendarUrl)
         }
@@ -45,26 +44,19 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/calendar/google/connect', {
+      const data = await apiFetch<{ authUrl?: string }>('/api/calendar/google/connect', {
         method: 'POST'
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error?.message || 'Failed to initiate Google Calendar connection')
-        return
-      }
-
-      if (data.data?.authUrl) {
+      if (data.authUrl) {
         // Redirect to Google OAuth
-        window.location.href = data.data.authUrl
+        window.location.href = data.authUrl
       } else {
         setError('Failed to initiate Google Calendar connection')
       }
     } catch (err) {
       console.error('Error connecting Google Calendar:', err)
-      setError('An error occurred while connecting to Google Calendar')
+      setError(err instanceof Error ? err.message : 'An error occurred while connecting to Google Calendar')
     } finally {
       setIsLoading(false)
     }
@@ -77,16 +69,14 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/calendar/google/disconnect', {
+      await apiFetch('/api/calendar/google/disconnect', {
         method: 'POST'
       })
 
-      if (response.ok) {
-        setIsConnected(false)
-        setCalendarUrl(null)
-        if (onDisconnect) {
-          onDisconnect()
-        }
+      setIsConnected(false)
+      setCalendarUrl(null)
+      if (onDisconnect) {
+        onDisconnect()
       }
     } catch (err) {
       console.error('Error disconnecting Google Calendar:', err)

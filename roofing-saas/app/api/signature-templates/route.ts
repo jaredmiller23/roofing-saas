@@ -106,10 +106,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/signature-templates', 200, duration)
 
-    return paginatedResponse(
-      { templates: templates || [], total: count || 0, page, limit },
-      { page, limit, total: count || 0 }
-    )
+    return paginatedResponse(templates || [], { page, limit, total: count || 0 })
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Signature templates API error', { error, duration })
@@ -171,7 +168,7 @@ export async function POST(request: NextRequest) {
       category: template.category,
     })
 
-    return createdResponse({ template })
+    return createdResponse(template)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Create signature template error', { error, duration })

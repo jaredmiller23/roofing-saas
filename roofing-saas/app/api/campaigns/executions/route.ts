@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return successResponse({ executions, total: executions.length })
+    return successResponse(executions)
   } catch (error) {
     logger.error('Error in GET /api/campaigns/executions', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

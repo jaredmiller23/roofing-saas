@@ -3,12 +3,12 @@
  * Handles server-side synchronization for offline data
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { AuthenticationError, ValidationError } from '@/lib/api/errors';
-import { errorResponse } from '@/lib/api/response';
+import { successResponse, errorResponse } from '@/lib/api/response';
 
 export interface SyncRequest {
   operations: SyncOperation[];
@@ -130,14 +130,11 @@ export async function POST(request: NextRequest) {
       conflicts: conflicts.length
     });
 
-    const response: SyncResponse = {
-      success: failureCount === 0,
+    return successResponse({
       results,
       conflicts,
       server_timestamp: serverTimestamp,
-    };
-
-    return NextResponse.json(response);
+    });
 
   } catch (error) {
     logger.error('Sync request failed', { error });
@@ -446,7 +443,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(syncMetadata);
+    return successResponse(syncMetadata);
 
   } catch (error) {
     logger.error('Sync metadata request failed', { error });

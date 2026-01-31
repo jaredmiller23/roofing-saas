@@ -4,11 +4,13 @@
  * Get list of customers affected by a storm event
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { findAffectedCustomers } from '@/lib/storm/storm-intelligence'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import type { Contact } from '@/lib/types/contact'
-import type { StormEvent, AffectedCustomersResponse } from '@/lib/storm/storm-types'
+import type { StormEvent } from '@/lib/storm/storm-types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,10 +19,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Parse request body
@@ -33,10 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!stormEvent) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required field: stormEvent' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required field: stormEvent')
     }
 
     // Get all contacts with coordinates
@@ -49,10 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (contactsError) {
       console.error('Error fetching contacts:', contactsError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch contacts' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch contacts')
     }
 
     // Find affected customers
@@ -69,8 +62,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response: AffectedCustomersResponse = {
-      success: true,
+    return successResponse({
       customers: affectedCustomers,
       total: affectedCustomers.length,
       filters: {
@@ -78,17 +70,9 @@ export async function POST(request: NextRequest) {
         minProbability,
         priority,
       },
-    }
-
-    return NextResponse.json(response)
+    })
   } catch (error) {
     console.error('Affected customers error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

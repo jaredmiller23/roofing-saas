@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -67,12 +68,8 @@ export function GeneralSettings() {
   const loadSettings = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/settings')
-      const data = await res.json()
-
-      if (data.settings) {
-        setSettings(data.settings)
-      }
+      const data = await apiFetch<GeneralSettingsData>('/api/settings')
+      setSettings(data)
     } catch (err) {
       console.error('Error loading settings:', err)
       setError('Failed to load settings')
@@ -87,15 +84,10 @@ export function GeneralSettings() {
       setError(null)
       setSuccess(false)
 
-      const res = await fetch('/api/settings', {
+      await apiFetch<GeneralSettingsData>('/api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: settings
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to save settings')
-      }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

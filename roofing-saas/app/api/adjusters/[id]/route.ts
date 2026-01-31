@@ -322,10 +322,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       throw InternalError(`Failed to delete adjuster: ${deleteError.message}`)
     }
 
-    return successResponse({
-      success: true,
-      message: 'Adjuster deleted successfully',
-    })
+    return successResponse(null)
   } catch (error) {
     logger.error('[API] Error in DELETE /api/adjusters/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,10 +10,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
 
     if (!tenantId || !userId) {
-      return NextResponse.json(
-        { error: 'Missing tenant or userId parameter' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Missing tenant or userId parameter'))
     }
 
     const supabase = await createClient()
@@ -27,10 +26,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Failed to fetch query history:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch query history' },
-        { status: 500 }
-      )
+      return errorResponse(InternalError('Failed to fetch query history'))
     }
 
     // Transform the data to match the expected format
@@ -45,15 +41,10 @@ export async function GET(request: NextRequest) {
       userId: item.user_id
     }))
 
-    return NextResponse.json({
-      history: transformedHistory
-    })
+    return successResponse(transformedHistory)
 
   } catch (error) {
     console.error('Query history fetch failed:', error)
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    )
+    return errorResponse(InternalError('An unexpected error occurred'))
   }
 }

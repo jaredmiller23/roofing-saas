@@ -9,6 +9,7 @@
 // =============================================
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,10 +90,7 @@ export function TwoFactorSetup() {
   const fetchStatus = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/mfa/status')
-      if (!response.ok) throw new Error('Failed to fetch MFA status')
-
-      const data = await response.json()
+      const data = await apiFetch<{ mfa: MFAStatus }>('/api/auth/mfa/status')
       setStatus(data.mfa)
     } catch (error) {
       console.error('Error fetching MFA status:', error)
@@ -107,17 +105,10 @@ export function TwoFactorSetup() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/enroll', {
+      const data = await apiFetch<{ enrollment: EnrollmentData }>('/api/auth/mfa/enroll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ friendlyName: 'Authenticator App' }),
+        body: { friendlyName: 'Authenticator App' },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to start MFA setup')
-      }
 
       setEnrollmentData(data.enrollment)
       setSetupDialogOpen(true)
@@ -138,20 +129,13 @@ export function TwoFactorSetup() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/verify', {
+      const data = await apiFetch<{ recoveryCodes: string[] }>('/api/auth/mfa/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           factorId: enrollmentData.factorId,
           code: verificationCode,
-        }),
+        },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Verification failed')
-      }
 
       // Show recovery codes
       setRecoveryCodes(data.recoveryCodes)
@@ -180,17 +164,10 @@ export function TwoFactorSetup() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/disable', {
+      await apiFetch('/api/auth/mfa/disable', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: {},
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to disable MFA')
-      }
 
       setMessage({ type: 'success', text: 'Two-factor authentication disabled' })
       setDisableDialogOpen(false)

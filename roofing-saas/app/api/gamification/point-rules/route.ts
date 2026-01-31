@@ -43,7 +43,7 @@ export async function GET() {
 
     logger.info('Fetched point rules', { tenantId, count: data?.length || 0 })
 
-    return successResponse({ data, success: true })
+    return successResponse(data)
   } catch (error) {
     logger.error('Point rules GET error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
       points: data.points_value,
     })
 
-    return createdResponse({ data, success: true })
+    return createdResponse(data)
   } catch (error) {
     logger.error('Point rules POST error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

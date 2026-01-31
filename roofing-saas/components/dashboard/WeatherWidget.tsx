@@ -13,6 +13,7 @@ import {
   XCircle,
   RefreshCw,
 } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface WeatherData {
   current: {
@@ -94,9 +95,7 @@ export function WeatherWidget() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch('/api/weather')
-      if (!res.ok) throw new Error('Failed to fetch weather')
-      const data = await res.json()
+      const data = await apiFetch<WeatherData>('/api/weather')
       setWeather(data)
     } catch (err) {
       setError('Unable to load weather')

@@ -7,9 +7,7 @@ import { successResponse, errorResponse, createdResponse } from '@/lib/api/respo
 import { logger } from '@/lib/logger'
 import type {
   CampaignStep,
-  GetCampaignStepsResponse,
   CreateCampaignStepRequest,
-  CreateCampaignStepResponse,
 } from '@/lib/campaigns/types'
 
 /**
@@ -57,12 +55,7 @@ export async function GET(
       throw InternalError('Failed to fetch steps')
     }
 
-    const response: GetCampaignStepsResponse = {
-      steps: (data || []) as CampaignStep[],
-      total: data?.length || 0,
-    }
-
-    return successResponse(response)
+    return successResponse((data || []) as CampaignStep[])
   } catch (error) {
     logger.error('Error in GET /api/campaigns/:id/steps', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -174,11 +167,7 @@ export async function POST(
       throw InternalError('Failed to create step')
     }
 
-    const response: CreateCampaignStepResponse = {
-      step: data as CampaignStep,
-    }
-
-    return createdResponse(response)
+    return createdResponse(data as CampaignStep)
   } catch (error) {
     logger.error('Error in POST /api/campaigns/:id/steps', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

@@ -8,9 +8,7 @@ import { logger } from '@/lib/logger'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import type {
   Campaign,
-  GetCampaignsResponse,
   CreateCampaignRequest,
-  CreateCampaignResponse,
   CampaignStatus,
   CampaignType,
 } from '@/lib/campaigns/types'
@@ -79,12 +77,7 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to fetch campaigns')
     }
 
-    const response: GetCampaignsResponse = {
-      campaigns: (data || []) as Campaign[],
-      total: data?.length || 0,
-    }
-
-    return successResponse(response)
+    return successResponse((data || []) as Campaign[])
   } catch (error) {
     logger.error('Error in GET /api/campaigns', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -178,11 +171,7 @@ export async function POST(request: NextRequest) {
       throw InternalError('Failed to create campaign')
     }
 
-    const response: CreateCampaignResponse = {
-      campaign: data as Campaign,
-    }
-
-    return createdResponse(response)
+    return createdResponse(data as Campaign)
   } catch (error) {
     logger.error('Error in POST /api/campaigns', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

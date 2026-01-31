@@ -151,7 +151,7 @@ export async function DELETE(
       throw InternalError('Failed to delete substatus configuration')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error in DELETE /api/substatus/configs/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

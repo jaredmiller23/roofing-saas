@@ -61,7 +61,6 @@ export async function GET() {
     const assignees = Array.from(assigneesSet).sort()
 
     return successResponse({
-      success: true,
       pipelines,
       stages,
       assignees,

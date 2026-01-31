@@ -9,6 +9,7 @@ import { Plus, FileText, Calendar, DollarSign, AlertCircle, ArrowLeft, Package, 
 import { format } from 'date-fns'
 import type { ClaimData, ClaimStatus } from '@/lib/claims/types'
 import { WeatherEvidence } from '@/components/claims/WeatherEvidence'
+import { apiFetch } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -62,33 +63,32 @@ export default function ProjectClaimsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      // Fetch project
-      const projectRes = await fetch(`/api/projects/${projectId}`)
-      if (projectRes.ok) {
-        const projectData = await projectRes.json()
-        // API returns { success: true, data: { project: {...} } }
-        const proj = projectData.data?.project || projectData.project
+      // Fetch project - API returns: { success: true, data: <project> }
+      try {
+        const proj = await apiFetch<Project>(`/api/projects/${projectId}`)
         setProject(proj)
 
         // Fetch contact for lat/lng (for weather evidence)
         if (proj?.contact_id) {
-          const contactRes = await fetch(`/api/contacts/${proj.contact_id}`)
-          if (contactRes.ok) {
-            const contactData = await contactRes.json()
-            const ct = contactData.data?.contact || contactData.contact
+          try {
+            const ct = await apiFetch<Contact & { latitude?: number; longitude?: number }>(`/api/contacts/${proj.contact_id}`)
             setContact({
               latitude: ct?.latitude,
               longitude: ct?.longitude,
             })
+          } catch {
+            // Contact may not exist
           }
         }
+      } catch {
+        // Project fetch failed
       }
 
       // Fetch claims for this project
+      // Note: /api/claims is NOT in Group A scope, so we keep the old pattern
       const claimsRes = await fetch(`/api/claims?project_id=${projectId}`)
       if (claimsRes.ok) {
         const claimsData = await claimsRes.json()
-        // API returns { success: true, data: { claims: [...] } }
         setClaims(claimsData.data?.claims || claimsData.claims || [])
       }
     } catch (error) {
@@ -115,21 +115,15 @@ export default function ProjectClaimsPage() {
     setPacketError(null)
 
     try {
-      const res = await fetch(`/api/projects/${projectId}/claims/packet`, {
+      await apiFetch(`/api/projects/${projectId}/claims/packet`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           include_weather: true,
           include_codes: true,
           include_manufacturer_specs: true,
           include_policy_provisions: true,
-        }),
+        },
       })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.message || 'Failed to generate packet')
-      }
 
       setPacketGenerated(true)
     } catch (error) {

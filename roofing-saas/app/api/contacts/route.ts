@@ -151,15 +151,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/contacts', 200, duration)
 
-    const response = {
-      contacts: responseContacts,
-      total: count || 0,
-      page,
-      limit,
-      has_more: count ? from + limit < count : false,
-    }
-
-    return paginatedResponse(response, { page, limit, total: count || 0 })
+    return paginatedResponse(responseContacts, { page, limit, total: count || 0 })
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Contacts API error', { error, duration })

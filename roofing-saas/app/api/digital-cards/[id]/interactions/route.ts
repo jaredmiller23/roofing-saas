@@ -7,7 +7,7 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type {
   CreateInteractionRequest,
@@ -15,6 +15,8 @@ import type {
   BusinessCardInteraction,
 } from '@/lib/digital-cards/types'
 import { isValidInteractionType } from '@/lib/digital-cards/types'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { createdResponse, errorResponse } from '@/lib/api/response'
 
 // =============================================
 // Helper: Extract device info from user agent
@@ -88,20 +90,14 @@ export async function POST(
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Missing required parameter: id' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required parameter: id')
     }
 
     const body: CreateInteractionRequest = await request.json()
 
     // Validate interaction type
     if (!body.interaction_type || !isValidInteractionType(body.interaction_type)) {
-      return NextResponse.json(
-        { error: 'Invalid or missing interaction_type' },
-        { status: 400 }
-      )
+      throw ValidationError('Invalid or missing interaction_type')
     }
 
     const supabase = await createClient()
@@ -115,10 +111,7 @@ export async function POST(
       .single()
 
     if (cardError || !card) {
-      return NextResponse.json(
-        { error: 'Card not found or inactive' },
-        { status: 404 }
-      )
+      throw NotFoundError('Card not found or inactive')
     }
 
     // Extract tracking data
@@ -163,22 +156,16 @@ export async function POST(
 
     if (error) {
       console.error('Error creating interaction:', error)
-      return NextResponse.json(
-        { error: 'Failed to track interaction' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to track interaction')
     }
 
     const response: CreateInteractionResponse = {
       interaction: data as BusinessCardInteraction,
     }
 
-    return NextResponse.json(response, { status: 201 })
+    return createdResponse(response)
   } catch (error) {
     console.error('Unexpected error in POST /api/digital-cards/:id/interactions:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

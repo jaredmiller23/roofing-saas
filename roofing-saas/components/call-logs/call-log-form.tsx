@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Phone } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface CallLogFormProps {
   call?: {
@@ -46,15 +47,10 @@ export function CallLogForm({ call }: CallLogFormProps) {
         duration: formData.duration ? parseInt(formData.duration) : null,
       }
 
-      const response = await fetch(url, {
+      await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to save call log')
-      }
 
       router.push('/call-logs')
       router.refresh()
@@ -183,7 +179,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? 'Saving...' : call ? 'Update Call Log' : 'Save Call Log'}
         </button>

@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       throw InternalError(error.message)
     }
 
-    return successResponse({ templates: templates || [] })
+    return successResponse(templates || [])
   } catch (error) {
     logger.error('Error fetching SMS templates:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       throw InternalError(error.message)
     }
 
-    return createdResponse({ template })
+    return createdResponse(template)
   } catch (error) {
     logger.error('Error creating SMS template:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

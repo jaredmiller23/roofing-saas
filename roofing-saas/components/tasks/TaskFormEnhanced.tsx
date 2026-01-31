@@ -15,6 +15,7 @@ import {
   Bell,
   BarChart3
 } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Task {
   id: string
@@ -71,19 +72,15 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
 
   const loadData = useCallback(async () => {
     try {
-      const [projectsRes, contactsRes, tasksRes] = await Promise.all([
-        fetch('/api/projects?limit=100'),
-        fetch('/api/contacts?limit=100'),
-        fetch('/api/tasks?limit=100'),
+      const [projectsResult, contactsResult, tasksResult] = await Promise.all([
+        apiFetchPaginated<Array<{ id: string; name: string }>>('/api/projects?limit=100'),
+        apiFetchPaginated<Array<{ id: string; first_name: string; last_name: string }>>('/api/contacts?limit=100'),
+        apiFetchPaginated<Array<{ id: string; title: string }>>('/api/tasks?limit=100'),
       ])
 
-      const projectsData = await projectsRes.json()
-      const contactsData = await contactsRes.json()
-      const tasksData = await tasksRes.json()
-
-      setProjects(projectsData.data?.projects || [])
-      setContacts(contactsData.data?.contacts || [])
-      setTasks((tasksData.data?.tasks || []).filter((t: { id: string }) => t.id !== task?.id))
+      setProjects(projectsResult.data)
+      setContacts(contactsResult.data)
+      setTasks(tasksResult.data.filter((t) => t.id !== task?.id))
     } catch (err) {
       console.error('Failed to load data:', err)
     }
@@ -121,16 +118,10 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
         reminder_date: formData.reminder_date || null,
       }
 
-      const response = await fetch(url, {
+      await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to save task')
-      }
 
       router.push('/tasks')
       router.refresh()

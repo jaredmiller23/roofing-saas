@@ -3,7 +3,7 @@
  * Plan efficient routes for canvassing
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import {
   planCanvassingRoute,
   optimizeRouteNearestNeighbor,
@@ -11,6 +11,8 @@ import {
   type RouteWaypoint,
 } from '@/lib/maps/routes'
 import { logger } from '@/lib/logger'
+import { ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,27 +20,18 @@ export async function POST(request: NextRequest) {
     const { start, waypoints, return_to_start, action } = body
 
     if (!start || !waypoints || !Array.isArray(waypoints)) {
-      return NextResponse.json(
-        { error: 'Missing required fields: start, waypoints (array)' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required fields: start, waypoints (array)')
     }
 
     // Validate start location
     if (!start.latitude || !start.longitude) {
-      return NextResponse.json(
-        { error: 'Start location must have latitude and longitude' },
-        { status: 400 }
-      )
+      throw ValidationError('Start location must have latitude and longitude')
     }
 
     // Validate waypoints
     for (const waypoint of waypoints) {
       if (!waypoint.latitude || !waypoint.longitude) {
-        return NextResponse.json(
-          { error: 'All waypoints must have latitude and longitude' },
-          { status: 400 }
-        )
+        throw ValidationError('All waypoints must have latitude and longitude')
       }
     }
 
@@ -51,7 +44,7 @@ export async function POST(request: NextRequest) {
         max_distance_per_day || 50000
       )
 
-      return NextResponse.json({
+      return successResponse({
         daily_routes: dailyRoutes,
         total_days: dailyRoutes.length,
       })
@@ -64,13 +57,10 @@ export async function POST(request: NextRequest) {
       return_to_start !== false // Default to true
     )
 
-    return NextResponse.json(optimized)
+    return successResponse(optimized)
   } catch (error) {
     logger.error('Route optimization API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -85,10 +75,7 @@ export async function GET(request: NextRequest) {
       const waypoints = searchParams.get('waypoints')
 
       if (!start || !waypoints) {
-        return NextResponse.json(
-          { error: 'Missing start or waypoints parameters' },
-          { status: 400 }
-        )
+        throw ValidationError('Missing start or waypoints parameters')
       }
 
       try {
@@ -97,24 +84,15 @@ export async function GET(request: NextRequest) {
 
         const optimized = optimizeRouteNearestNeighbor(startLocation, waypointsList)
 
-        return NextResponse.json(optimized)
+        return successResponse(optimized)
       } catch {
-        return NextResponse.json(
-          { error: 'Invalid JSON in start or waypoints parameters' },
-          { status: 400 }
-        )
+        throw ValidationError('Invalid JSON in start or waypoints parameters')
       }
     }
 
-    return NextResponse.json(
-      { error: 'Provide action=nearest_neighbor parameter' },
-      { status: 400 }
-    )
+    throw ValidationError('Provide action=nearest_neighbor parameter')
   } catch (error) {
     logger.error('Route API error', { error })
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

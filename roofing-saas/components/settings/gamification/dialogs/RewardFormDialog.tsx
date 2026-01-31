@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -84,19 +85,9 @@ export function RewardFormDialog({ open, onOpenChange, reward, onSave }: RewardF
         : '/api/gamification/rewards'
       const method = reward ? 'PATCH' : 'POST'
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (response.ok) {
-        onSave()
-        form.reset()
-      } else {
-        const error = await response.json()
-        console.error('Failed to save reward:', error)
-      }
+      await apiFetch(url, { method, body: data })
+      onSave()
+      form.reset()
     } catch (error) {
       console.error('Failed to save reward:', error)
     }

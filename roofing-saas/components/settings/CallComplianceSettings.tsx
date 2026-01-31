@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -86,13 +87,8 @@ export function CallComplianceSettings() {
 
   const loadRecentImports = async () => {
     try {
-      const response = await fetch('/api/compliance/dnc/imports?limit=5')
-      if (response.ok) {
-        const result = await response.json()
-        // Handle wrapped response structure
-        const data = result.data || result
-        setRecentImports(data.imports || [])
-      }
+      const data = await apiFetch<{ imports: DNCImport[]; total: number }>('/api/compliance/dnc/imports?limit=5')
+      setRecentImports(data.imports || [])
     } catch (err) {
       console.error('Error loading recent imports:', err)
     }
@@ -100,32 +96,28 @@ export function CallComplianceSettings() {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/compliance/stats')
-      if (response.ok) {
-        const result = await response.json()
-        // Handle wrapped response structure and map API fields to component format
-        const data = result.data || result
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await apiFetch<any>('/api/compliance/stats')
 
-        // Transform API response to component format
-        const stats: ComplianceStats = {
-          total_checks: data.complianceChecks?.totalChecks || 0,
-          allowed: data.complianceChecks?.allowed || 0,
-          blocked: data.complianceChecks?.blocked || 0,
-          block_rate: parseFloat(String(data.complianceChecks?.blockRate || '0').replace('%', '')) || 0,
-          by_reason: Object.fromEntries(
-            Object.entries(data.blockedByReason || {}).map(([key, value]) => [
-              key,
-              typeof value === 'object' && value !== null ? (value as { count: number }).count : 0
-            ])
-          ),
-          dnc_counts: {
-            federal: data.dncRegistry?.federal || 0,
-            state_tn: data.dncRegistry?.state || 0,
-            internal: data.dncRegistry?.internal || 0,
-          },
-        }
-        setStats(stats)
+      // Transform API response to component format
+      const stats: ComplianceStats = {
+        total_checks: data.complianceChecks?.totalChecks || 0,
+        allowed: data.complianceChecks?.allowed || 0,
+        blocked: data.complianceChecks?.blocked || 0,
+        block_rate: parseFloat(String(data.complianceChecks?.blockRate || '0').replace('%', '')) || 0,
+        by_reason: Object.fromEntries(
+          Object.entries(data.blockedByReason || {}).map(([key, value]) => [
+            key,
+            typeof value === 'object' && value !== null ? (value as { count: number }).count : 0
+          ])
+        ),
+        dnc_counts: {
+          federal: data.dncRegistry?.federal || 0,
+          state_tn: data.dncRegistry?.state || 0,
+          internal: data.dncRegistry?.internal || 0,
+        },
       }
+      setStats(stats)
     } catch (err) {
       console.error('Error loading stats:', err)
     }
@@ -141,14 +133,9 @@ export function CallComplianceSettings() {
         params.append('result', auditFilter)
       }
 
-      const response = await fetch(`/api/compliance/audit?${params}`)
-      if (response.ok) {
-        const result = await response.json()
-        // Handle wrapped response structure
-        const data = result.data || result
-        setAuditLogs(data.logs || [])
-        setTotalAuditLogs(data.total || 0)
-      }
+      const data = await apiFetch<{ logs: AuditLogEntry[]; total?: number }>(`/api/compliance/audit?${params}`)
+      setAuditLogs(data.logs || [])
+      setTotalAuditLogs(data.total || 0)
     } catch (err) {
       console.error('Error loading audit logs:', err)
     }

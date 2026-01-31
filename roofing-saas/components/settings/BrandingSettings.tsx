@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
+import { apiFetch } from '@/lib/api/client'
 
 interface BrandingSettingsData {
   company_name: string | null
@@ -44,20 +45,19 @@ export function BrandingSettings() {
   const loadSettings = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/settings')
-      const data = await res.json()
+      const data = await apiFetch<BrandingSettingsData>('/api/settings')
 
-      if (data.data?.settings) {
+      if (data) {
         setSettings({
-          company_name: data.data.settings.company_name,
-          company_tagline: data.data.settings.company_tagline,
-          logo_url: data.data.settings.logo_url,
-          primary_color: data.data.settings.primary_color,
-          secondary_color: data.data.settings.secondary_color,
-          accent_color: data.data.settings.accent_color,
-          email_header_logo_url: data.data.settings.email_header_logo_url,
-          email_footer_text: data.data.settings.email_footer_text,
-          email_signature: data.data.settings.email_signature,
+          company_name: data.company_name,
+          company_tagline: data.company_tagline,
+          logo_url: data.logo_url,
+          primary_color: data.primary_color,
+          secondary_color: data.secondary_color,
+          accent_color: data.accent_color,
+          email_header_logo_url: data.email_header_logo_url,
+          email_footer_text: data.email_footer_text,
+          email_signature: data.email_signature,
         })
       }
     } catch (err) {
@@ -74,15 +74,10 @@ export function BrandingSettings() {
       setError(null)
       setSuccess(false)
 
-      const res = await fetch('/api/settings', {
+      await apiFetch('/api/settings', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: settings,
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to save settings')
-      }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

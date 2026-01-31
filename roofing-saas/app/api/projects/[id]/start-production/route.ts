@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { canStartProduction, getStatusForPipelineStage } from '@/lib/pipeline/validation'
@@ -86,14 +86,9 @@ export async function POST(
     // Validate project is in 'won' stage
     const currentStage = project.pipeline_stage as PipelineStage
     if (!canStartProduction(currentStage)) {
-      // Keep NextResponse for custom error object structure
-      return NextResponse.json(
-        {
-          error: `Cannot start production. Project must be in 'Won' stage. Current stage: ${currentStage}`,
-          code: 'INVALID_STATE',
-          current_stage: currentStage,
-        },
-        { status: 400 }
+      throw ValidationError(
+        `Cannot start production. Project must be in 'Won' stage. Current stage: ${currentStage}`,
+        { code: 'INVALID_STATE', current_stage: currentStage }
       )
     }
 
@@ -170,7 +165,6 @@ export async function POST(
     }
 
     return successResponse({
-      success: true,
       message: 'Production started successfully',
       job: job,
       project: updatedProject || project,

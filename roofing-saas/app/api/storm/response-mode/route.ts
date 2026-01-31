@@ -6,9 +6,11 @@
  * GET: Get current response mode configuration
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { StormResponseConfig, ResponseMode } from '@/lib/storm/storm-types'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -17,10 +19,7 @@ export async function GET(_request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Fetch current response mode configuration
@@ -32,10 +31,7 @@ export async function GET(_request: NextRequest) {
 
     if (fetchError) {
       console.error('Error fetching response mode:', fetchError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch response mode' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch response mode')
     }
 
     // If no config exists, return default normal mode
@@ -59,10 +55,7 @@ export async function GET(_request: NextRequest) {
           estimatedRevenue: 0,
         },
       }
-      return NextResponse.json({
-        success: true,
-        config: defaultConfig,
-      })
+      return successResponse(defaultConfig)
     }
 
     // Transform database record to StormResponseConfig type
@@ -75,19 +68,10 @@ export async function GET(_request: NextRequest) {
       metrics: config.metrics as StormResponseConfig['metrics'],
     }
 
-    return NextResponse.json({
-      success: true,
-      config: responseConfig,
-    })
+    return successResponse(responseConfig)
   } catch (error) {
     console.error('Get response mode error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -98,10 +82,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Parse request body
@@ -166,10 +147,7 @@ export async function POST(request: NextRequest) {
 
     if (result.error) {
       console.error('Error activating response mode:', result.error)
-      return NextResponse.json(
-        { success: false, error: 'Failed to activate response mode' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to activate response mode')
     }
 
     // Transform to response type
@@ -182,20 +160,10 @@ export async function POST(request: NextRequest) {
       metrics: result.data.metrics as StormResponseConfig['metrics'],
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Storm response mode activated',
-      config: responseConfig,
-    })
+    return successResponse(responseConfig)
   } catch (error) {
     console.error('Activate response mode error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -206,10 +174,7 @@ export async function DELETE(_request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Reset to normal mode
@@ -233,24 +198,12 @@ export async function DELETE(_request: NextRequest) {
 
     if (updateError) {
       console.error('Error deactivating response mode:', updateError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to deactivate response mode' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to deactivate response mode')
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Storm response mode deactivated',
-    })
+    return successResponse(null)
   } catch (error) {
     console.error('Deactivate response mode error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

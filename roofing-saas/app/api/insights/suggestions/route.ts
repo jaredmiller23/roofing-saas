@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { type QuerySuggestion } from '@/lib/ai/query-types'
+import { ValidationError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,10 +11,7 @@ export async function GET(request: NextRequest) {
     const tenantId = url.searchParams.get('tenant')
 
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID required' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Tenant ID required'))
     }
 
     const supabase = await createClient()
@@ -315,7 +314,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({
+    return successResponse({
       suggestions: allSuggestions,
       hasData: {
         contacts: hasContacts,
@@ -328,7 +327,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Failed to generate suggestions:', error)
 
-    return NextResponse.json({
+    // Return fallback suggestions even on error
+    return successResponse({
       suggestions: [
         {
           id: 'fallback-query',

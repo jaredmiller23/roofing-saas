@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Plus, Pencil, Trash2, Filter, Zap, Settings2, X } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 import type {
   FilterConfig,
   FilterFieldType,
@@ -82,9 +83,8 @@ export function FilterSettings() {
         entity_type: entityTypeFilter,
         include_inactive: 'true'
       })
-      const res = await fetch(`/api/filters/configs?${params.toString()}`)
-      const data = await res.json()
-      setConfigs(data.data?.configs || [])
+      const data = await apiFetch<{ configs: FilterConfig[]; total: number }>(`/api/filters/configs?${params.toString()}`)
+      setConfigs(data.configs || [])
     } catch (err) {
       console.error('Error loading filter configs:', err)
       setError('Failed to load filter configurations')
@@ -115,16 +115,7 @@ export function FilterSettings() {
 
       const method = editingConfig ? 'PATCH' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to save filter configuration')
-      }
+      await apiFetch(url, { method, body: formData })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -160,14 +151,7 @@ export function FilterSettings() {
     if (!confirm('Are you sure you want to delete this filter configuration?')) return
 
     try {
-      const res = await fetch(`/api/filters/configs/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to delete filter configuration')
-      }
+      await apiFetch(`/api/filters/configs/${id}`, { method: 'DELETE' })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -179,16 +163,10 @@ export function FilterSettings() {
 
   const handleToggleActive = async (config: FilterConfig) => {
     try {
-      const res = await fetch(`/api/filters/configs/${config.id}`, {
+      await apiFetch(`/api/filters/configs/${config.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !config.is_active })
+        body: { is_active: !config.is_active },
       })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to update filter')
-      }
 
       loadConfigs()
     } catch (err) {

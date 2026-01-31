@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Save, X, RefreshCw } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 import type {
   FilterConfig,
   SavedFilter,
@@ -37,14 +38,8 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
   const fetchConfigs = useCallback(async () => {
     setError(null)
     try {
-      const response = await fetch(`/api/filters/configs?entity_type=${entity_type}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to load filter configuration')
-      }
-
-      const data = await response.json()
-      setConfigs(data.data?.configs || [])
+      const data = await apiFetch<{ configs: FilterConfig[] }>(`/api/filters/configs?entity_type=${entity_type}`)
+      setConfigs(data.configs || [])
       onError?.(null) // Clear any previous errors
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load filter configuration'
@@ -58,9 +53,8 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
 
   const fetchSavedFilters = useCallback(async () => {
     try {
-      const response = await fetch(`/api/filters/saved?entity_type=${entity_type}`)
-      const data = await response.json()
-      setSavedFilters(data.data?.filters || [])
+      const data = await apiFetch<{ filters: SavedFilter[] }>(`/api/filters/saved?entity_type=${entity_type}`)
+      setSavedFilters(data.filters || [])
     } catch (error) {
       console.error('Error fetching saved filters:', error)
     }
@@ -132,13 +126,12 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
 
     // Update usage count
     try {
-      await fetch(`/api/filters/saved/${filter_id}`, {
+      await apiFetch(`/api/filters/saved/${filter_id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           usage_count: savedFilter.usage_count + 1,
           last_used_at: new Date().toISOString(),
-        }),
+        },
       })
     } catch (error) {
       console.error('Error updating filter usage:', error)
@@ -158,29 +151,23 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
     })
 
     try {
-      const response = await fetch('/api/filters/saved', {
+      await apiFetch('/api/filters/saved', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           entity_type,
           name,
           description,
           filter_criteria,
           is_shared: false,
           is_default: false,
-        }),
+        },
       })
 
-      if (response.ok) {
-        await fetchSavedFilters() // Refresh list
-        setIsSaveDialogOpen(false)
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to save filter')
-      }
+      await fetchSavedFilters() // Refresh list
+      setIsSaveDialogOpen(false)
     } catch (error) {
       console.error('Error saving filter:', error)
-      alert('Failed to save filter')
+      alert(error instanceof Error ? error.message : 'Failed to save filter')
     }
   }
 

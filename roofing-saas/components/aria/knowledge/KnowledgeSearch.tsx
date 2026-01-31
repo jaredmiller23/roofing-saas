@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { CATEGORY_LABELS, KNOWLEDGE_CATEGORIES } from '@/lib/aria/knowledge-types'
 import type { KnowledgeSearchResult } from '@/lib/aria/knowledge-types'
+import { apiFetch } from '@/lib/api/client'
 
 export function KnowledgeSearch() {
   const [query, setQuery] = useState('')
@@ -24,22 +25,17 @@ export function KnowledgeSearch() {
     setHasSearched(true)
 
     try {
-      const res = await fetch('/api/knowledge/search', {
+      const data = await apiFetch<{ results: KnowledgeSearchResult[]; tokens_used: number }>('/api/knowledge/search', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           query: query.trim(),
           category: category || undefined,
           threshold,
           limit: 10,
-        }),
+        },
       })
-
-      if (res.ok) {
-        const data = await res.json()
-        setResults(data.data?.results || [])
-        setTokensUsed(data.data?.tokens_used || null)
-      }
+      setResults(data.results || [])
+      setTokensUsed(data.tokens_used || null)
     } catch (err) {
       console.error('Search failed:', err)
     } finally {

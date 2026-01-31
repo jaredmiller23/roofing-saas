@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Briefcase, Calendar, ExternalLink } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Job {
   id: string
@@ -43,17 +44,12 @@ export function JobsTable({ params }: JobsTableProps) {
           }
         })
 
-        const response = await fetch(`/api/jobs?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch jobs')
-        }
-
-        const result = await response.json()
-        const data = result.data || result
-        setJobs(data.jobs || data)
-        setTotal(data.total || 0)
-        setPage(data.page || 1)
+        const { data: jobsList, pagination } = await apiFetchPaginated<Job[]>(
+          `/api/jobs?${queryParams.toString()}`
+        )
+        setJobs(jobsList)
+        setTotal(pagination.total)
+        setPage(pagination.page)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -70,13 +66,7 @@ export function JobsTable({ params }: JobsTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/jobs/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete job')
-      }
+      await apiFetch<void>(`/api/jobs/${id}`, { method: 'DELETE' })
 
       // Remove deleted job from local state immediately (optimistic update)
       setJobs(prev => prev.filter(job => job.id !== id))

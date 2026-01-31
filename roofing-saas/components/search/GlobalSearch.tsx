@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, X, User, Briefcase, MapPin, FileText, Phone, Loader2 } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface SearchResult {
   id: string
@@ -102,11 +103,8 @@ export function GlobalSearch() {
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setResults(data.results || [])
-      }
+      const data = await apiFetch<{ results: SearchResult[]; total: number; query: string }>(`/api/search?q=${encodeURIComponent(searchQuery)}`)
+      setResults(data.results || [])
     } catch (error) {
       console.error('Search failed:', error)
       setResults([])

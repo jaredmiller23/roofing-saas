@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import type {
   Workflow,
@@ -7,7 +7,7 @@ import type {
   WorkflowListResponse
 } from '@/lib/automation/workflow-types'
 import { AuthenticationError, ValidationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
 const mockWorkflows: Workflow[] = [
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       has_more: endIndex < filteredWorkflows.length
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     console.error('Error fetching workflows:', error)
     return errorResponse(error as Error)
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     // Add to mock data (in real app, save to database)
     mockWorkflows.push(newWorkflow)
 
-    return NextResponse.json(newWorkflow, { status: 201 })
+    return createdResponse(newWorkflow)
   } catch (error) {
     console.error('Error creating workflow:', error)
     return errorResponse(error as Error)

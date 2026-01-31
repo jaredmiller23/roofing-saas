@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Plus, AlertCircle } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface CreateProjectDialogProps {
   contactId: string
@@ -60,12 +61,9 @@ export function CreateProjectDialog({ contactId, contactName }: CreateProjectDia
     setError(null)
 
     try {
-      const response = await fetch('/api/projects', {
+      await apiFetch('/api/projects', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           name: projectName,
           contact_id: contactId,
           pipeline_stage: pipelineStage,
@@ -73,13 +71,8 @@ export function CreateProjectDialog({ contactId, contactName }: CreateProjectDia
           lead_source: 'contact_page',
           priority,
           estimated_value: estimatedValue ? parseFloat(estimatedValue) : null,
-        }),
+        },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to create project')
-      }
 
       setOpen(false)
 

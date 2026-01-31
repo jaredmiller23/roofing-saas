@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/analytics', 200, duration)
 
-    return successResponse({ analytics: data, period, type })
+    return successResponse(data)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Analytics API error', { error, duration })

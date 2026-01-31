@@ -21,6 +21,7 @@ import type {
   StormResponseConfig,
 } from '@/lib/storm/storm-types'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch } from '@/lib/api/client'
 import { CloudLightning, RefreshCw, Loader2 } from 'lucide-react'
 import { useFeatureAccess } from '@/lib/billing/hooks'
 import { FeatureGate } from '@/components/billing/FeatureGate'
@@ -85,34 +86,26 @@ export default function StormTrackingPage() {
     setLoading(true)
     try {
       // Fetch alerts, predictions, and response mode in parallel
-      const [alertsRes, predictionsRes, modeRes] = await Promise.all([
-        fetch('/api/storm/alerts'),
-        fetch('/api/storm/predictions'),
-        fetch('/api/storm/response-mode'),
+      // Use individual try/catch so one failure doesn't block others
+      const [alertsResult, predictionsResult, modeResult] = await Promise.allSettled([
+        apiFetch<{ alerts: StormAlert[] }>('/api/storm/alerts'),
+        apiFetch<{ predictions: StormEvent[] }>('/api/storm/predictions'),
+        apiFetch<{ config: StormResponseConfig }>('/api/storm/response-mode'),
       ])
 
       // Process alerts
-      if (alertsRes.ok) {
-        const alertsData = await alertsRes.json()
-        if (alertsData.success && alertsData.alerts) {
-          setAlerts(alertsData.alerts)
-        }
+      if (alertsResult.status === 'fulfilled' && alertsResult.value.alerts) {
+        setAlerts(alertsResult.value.alerts)
       }
 
       // Process predictions (storm events)
-      if (predictionsRes.ok) {
-        const predictionsData = await predictionsRes.json()
-        if (predictionsData.success && predictionsData.predictions) {
-          setStormEvents(predictionsData.predictions)
-        }
+      if (predictionsResult.status === 'fulfilled' && predictionsResult.value.predictions) {
+        setStormEvents(predictionsResult.value.predictions)
       }
 
       // Process response mode config
-      if (modeRes.ok) {
-        const modeData = await modeRes.json()
-        if (modeData.success && modeData.config) {
-          setResponseConfig(modeData.config)
-        }
+      if (modeResult.status === 'fulfilled' && modeResult.value.config) {
+        setResponseConfig(modeResult.value.config)
       }
 
       // Note: Affected customers will be populated when we have storm events
@@ -132,20 +125,15 @@ export default function StormTrackingPage() {
 
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
-      const res = await fetch(`/api/storm/alerts/${alertId}/acknowledge`, {
+      const data = await apiFetch<{ acknowledgedBy: string[] }>(`/api/storm/alerts/${alertId}/acknowledge`, {
         method: 'POST',
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.success) {
-          // Update local state to reflect acknowledgment
-          setAlerts(alerts.map(a =>
-            a.id === alertId
-              ? { ...a, acknowledgedBy: data.acknowledgedBy }
-              : a
-          ))
-        }
-      }
+      // Update local state to reflect acknowledgment
+      setAlerts(alerts.map(a =>
+        a.id === alertId
+          ? { ...a, acknowledgedBy: data.acknowledgedBy }
+          : a
+      ))
     } catch (error) {
       console.error('Failed to acknowledge alert:', error)
     }
@@ -153,16 +141,11 @@ export default function StormTrackingPage() {
 
   const handleDismissAlert = async (alertId: string) => {
     try {
-      const res = await fetch(`/api/storm/alerts/${alertId}/dismiss`, {
+      await apiFetch(`/api/storm/alerts/${alertId}/dismiss`, {
         method: 'POST',
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.success) {
-          // Remove dismissed alert from local state
-          setAlerts(alerts.filter(a => a.id !== alertId))
-        }
-      }
+      // Remove dismissed alert from local state
+      setAlerts(alerts.filter(a => a.id !== alertId))
     } catch (error) {
       console.error('Failed to dismiss alert:', error)
     }
@@ -170,19 +153,15 @@ export default function StormTrackingPage() {
 
   const handleActivateResponse = async (settings: Partial<StormResponseConfig['settings']>) => {
     try {
-      const res = await fetch('/api/storm/response-mode', {
+      const data = await apiFetch<{ config: StormResponseConfig }>('/api/storm/response-mode', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           mode: 'storm_response',
           settings: { ...responseConfig.settings, ...settings },
-        }),
+        },
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.success && data.config) {
-          setResponseConfig(data.config)
-        }
+      if (data.config) {
+        setResponseConfig(data.config)
       }
     } catch (error) {
       console.error('Failed to activate response mode:', error)
@@ -191,34 +170,29 @@ export default function StormTrackingPage() {
 
   const handleDeactivateResponse = async () => {
     try {
-      const res = await fetch('/api/storm/response-mode', {
+      await apiFetch('/api/storm/response-mode', {
         method: 'DELETE',
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.success) {
-          // Reset to normal mode
-          setResponseConfig({
-            mode: 'normal',
-            activatedAt: null,
-            activatedBy: null,
-            stormEventId: null,
-            settings: {
-              autoNotifications: false,
-              autoLeadGeneration: false,
-              priorityRouting: false,
-              crewPrePositioning: false,
-              extendedHours: false,
-            },
-            metrics: {
-              leadsGenerated: 0,
-              customersNotified: 0,
-              appointmentsScheduled: 0,
-              estimatedRevenue: 0,
-            },
-          })
-        }
-      }
+      // Reset to normal mode
+      setResponseConfig({
+        mode: 'normal',
+        activatedAt: null,
+        activatedBy: null,
+        stormEventId: null,
+        settings: {
+          autoNotifications: false,
+          autoLeadGeneration: false,
+          priorityRouting: false,
+          crewPrePositioning: false,
+          extendedHours: false,
+        },
+        metrics: {
+          leadsGenerated: 0,
+          customersNotified: 0,
+          appointmentsScheduled: 0,
+          estimatedRevenue: 0,
+        },
+      })
     } catch (error) {
       console.error('Failed to deactivate response mode:', error)
     }

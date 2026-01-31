@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Mail, MessageSquare, CheckCircle, TrendingUp, Users, Loader2 } from 'lucide-react'
 import type { Campaign, CampaignEnrollment } from '@/lib/campaigns/types'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 export default function CampaignAnalyticsPage() {
   const router = useRouter()
@@ -27,18 +28,14 @@ export default function CampaignAnalyticsPage() {
     setLoading(true)
     try {
       // Fetch campaign
-      const campaignRes = await fetch(`/api/campaigns/${campaignId}`)
-      if (!campaignRes.ok) throw new Error('Failed to fetch campaign')
-      const campaignData = await campaignRes.json()
-      setCampaign(campaignData.campaign)
+      const campaignData = await apiFetch<Campaign>(`/api/campaigns/${campaignId}`)
+      setCampaign(campaignData)
 
       // Fetch enrollments
-      const enrollmentsRes = await fetch(
+      const { data: enrollmentsData } = await apiFetchPaginated<CampaignEnrollment[]>(
         `/api/campaigns/${campaignId}/enrollments`
       )
-      if (!enrollmentsRes.ok) throw new Error('Failed to fetch enrollments')
-      const enrollmentsData = await enrollmentsRes.json()
-      setEnrollments(enrollmentsData.enrollments || [])
+      setEnrollments(enrollmentsData)
     } catch (error) {
       console.error('Error fetching analytics:', error)
     } finally {

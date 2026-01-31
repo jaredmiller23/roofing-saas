@@ -32,7 +32,7 @@ export async function GET() {
       throw InternalError(error.message)
     }
 
-    return successResponse({ roles: roles || [] })
+    return successResponse(roles || [])
   } catch (error) {
     logger.error('Error fetching roles:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       throw InternalError(error.message)
     }
 
-    return createdResponse({ role })
+    return createdResponse(role)
   } catch (error) {
     logger.error('Error creating role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

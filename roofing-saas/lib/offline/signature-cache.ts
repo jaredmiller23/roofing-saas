@@ -31,14 +31,16 @@ export async function cacheSignatureDocument(
 
   const data = await res.json()
 
-  if (!data.document) {
+  // API returns { success, data: <document> }
+  const document = data.data
+  if (!document) {
     throw new Error('Invalid response: missing document data')
   }
 
   const now = Date.now()
   const cacheEntry: OfflineSignatureDocument = {
     id: documentId,
-    document_data: data.document,
+    document_data: document,
     cached_at: now,
     expires_at: now + Math.min(ttlMs, SIGNATURE_CACHE_CONFIG.MAX_TTL_MS),
     synced: true, // Cached documents are considered "synced" (no pending changes)
@@ -48,7 +50,7 @@ export async function cacheSignatureDocument(
   const db = await getEnhancedDB()
   await db.put('offline_documents', {
     id: documentId,
-    name: data.document.title,
+    name: document.title,
     type: 'signature_document',
     blob_data: JSON.stringify(cacheEntry),
     size: JSON.stringify(cacheEntry).length,
@@ -110,7 +112,8 @@ export async function cacheAllPendingDocuments(): Promise<number> {
   }
 
   const data = await res.json()
-  const documents = data.documents || []
+  // API returns { success, data: [...documents], pagination: {...} }
+  const documents = data.data || []
 
   let cached = 0
 

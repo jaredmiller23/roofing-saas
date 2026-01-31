@@ -5,12 +5,12 @@
  * GET /api/projects/[id]/claims/packet - Get latest packet for project
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import { generatePacket } from '@/lib/packet'
 import type { PacketGenerationInput } from '@/lib/packet/types'
 
@@ -114,8 +114,7 @@ export async function POST(
       recommendedAction: result.packet.summary.recommended_action,
     })
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       packet: result.packet,
     })
   } catch (error) {
@@ -166,15 +165,13 @@ export async function GET(
     }
 
     if (!packet) {
-      return NextResponse.json({
-        success: true,
+      return successResponse({
         packet: null,
         message: 'No packet has been generated for this project yet',
       })
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       packet: packet.packet_data,
       generated_at: packet.generated_at,
       status: packet.status,

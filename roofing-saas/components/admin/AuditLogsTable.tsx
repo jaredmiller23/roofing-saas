@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -31,13 +32,7 @@ export function AuditLogsTable() {
       params.append('limit', logsPerPage.toString())
       params.append('offset', (page * logsPerPage).toString())
 
-      const response = await fetch(`/api/admin/impersonate/logs?${params}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch logs')
-      }
-
-      const data = await response.json()
+      const data = await apiFetch<{ logs: ImpersonationLogWithUsers[] }>(`/api/admin/impersonate/logs?${params}`)
       setLogs(data.logs || [])
       setHasMore(data.logs?.length === logsPerPage)
     } catch (error) {

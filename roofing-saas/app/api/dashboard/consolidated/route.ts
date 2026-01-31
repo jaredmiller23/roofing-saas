@@ -13,12 +13,12 @@
  * - scope: 'company' | 'team' | 'personal' (default: 'company') - data scope
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getRequestContext } from '@/lib/auth/request-context'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   getFieldMetrics,
   getManagerMetrics,
@@ -128,29 +128,23 @@ export async function GET(request: NextRequest) {
       console.log(`[Dashboard Consolidated] Response time: ${duration}ms`)
     }
 
-    // Return consolidated response
-    return NextResponse.json(
+    // Return consolidated response (meta folded into data payload)
+    return successResponse(
       {
-        success: true,
-        data: {
-          metrics,
-          activity,
-          challenge,
-          knockLeaderboard,
-          salesLeaderboard,
-          points
-        },
+        metrics,
+        activity,
+        challenge,
+        knockLeaderboard,
+        salesLeaderboard,
+        points,
         meta: {
           latencyMs: duration,
           tier: mode,
           scope
         }
       },
-      {
-        headers: {
-          'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
-        }
-      }
+      200,
+      { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
     )
   } catch (error) {
     const duration = Date.now() - startTime

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Trophy, Lock, CheckCircle, Star } from 'lucide-react'
 
 interface Achievement {
@@ -26,14 +27,13 @@ export function Achievements() {
 
   const fetchAchievements = async () => {
     try {
-      const response = await fetch('/api/gamification/achievements')
-      const result = await response.json()
-
-      if (result.success) {
-        setAchievements(result.data.achievements)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await apiFetch<any>('/api/gamification/achievements')
+      setAchievements(data.achievements || data)
+      if (data.total !== undefined) {
         setStats({
-          total: result.data.total,
-          unlocked: result.data.unlocked
+          total: data.total,
+          unlocked: data.unlocked
         })
       }
     } catch (error) {

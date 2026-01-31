@@ -20,6 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/api/client'
 
 interface Campaign {
   id: string
@@ -103,23 +104,23 @@ export default function AutomationsPage() {
       setError(null)
 
       // Fetch campaigns
-      const campaignsRes = await fetch('/api/campaigns')
-      if (!campaignsRes.ok) throw new Error('Failed to load campaigns')
-      const campaignsData = await campaignsRes.json()
-      setCampaigns(campaignsData.data?.campaigns || [])
+      const campaigns = await apiFetch<Campaign[]>('/api/campaigns')
+      setCampaigns(campaigns)
 
       // Fetch recent executions
-      const executionsRes = await fetch('/api/campaigns/executions?limit=20')
-      if (executionsRes.ok) {
-        const executionsData = await executionsRes.json()
-        setExecutions(executionsData.data?.executions || [])
+      try {
+        const executions = await apiFetch<CampaignExecution[]>('/api/campaigns/executions?limit=20')
+        setExecutions(executions)
+      } catch {
+        // Non-critical - continue without executions
       }
 
       // Fetch stats
-      const statsRes = await fetch('/api/campaigns/stats')
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        setStats(statsData.data || null)
+      try {
+        const stats = await apiFetch<CampaignStats>('/api/campaigns/stats')
+        setStats(stats)
+      } catch {
+        // Non-critical - continue without stats
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -131,12 +132,10 @@ export default function AutomationsPage() {
   async function toggleCampaignStatus(campaignId: string, currentStatus: string) {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active'
     try {
-      const res = await fetch(`/api/campaigns/${campaignId}`, {
+      await apiFetch(`/api/campaigns/${campaignId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: { status: newStatus },
       })
-      if (!res.ok) throw new Error('Failed to update campaign')
       loadData() // Refresh data
     } catch (err) {
       console.error('Error toggling campaign status:', err)

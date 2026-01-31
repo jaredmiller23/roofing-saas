@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, UserPlus, Mail, Shield, Trash2, Crown, Clock, MoreVertical, UserX, UserCheck, Filter } from 'lucide-react'
+import { apiFetch, ApiClientError } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -103,19 +104,15 @@ export function TeamSettings() {
   const loadMembers = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/admin/team')
-      if (response.ok) {
-        const result = await response.json()
-        const data = result.data || result
-        setMembers(data.members || [])
-      } else if (response.status === 403) {
+      const data = await apiFetch<{ members: TeamMember[]; total: number }>('/api/admin/team')
+      setMembers(data.members || [])
+    } catch (err) {
+      console.error('Error loading team members:', err)
+      if (err instanceof ApiClientError && err.statusCode === 403) {
         setError('You do not have permission to manage the team')
       } else {
         setError('Failed to load team members')
       }
-    } catch (err) {
-      console.error('Error loading team members:', err)
-      setError('Failed to load team members')
     } finally {
       setIsLoading(false)
     }
@@ -150,26 +147,18 @@ export function TeamSettings() {
       setIsInviting(true)
       setError(null)
 
-      const response = await fetch('/api/admin/team', {
+      const data = await apiFetch<{ message?: string }>('/api/admin/team', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inviteForm),
+        body: inviteForm,
       })
 
-      const result = await response.json()
-      const data = result.data || result
-
-      if (response.ok) {
-        setSuccessMessage(data.message || 'Team member invited successfully')
-        setIsInviteOpen(false)
-        setInviteForm({ email: '', name: '', role: 'user' })
-        loadMembers()
-      } else {
-        setError(data.error || 'Failed to invite team member')
-      }
+      setSuccessMessage(data.message || 'Team member invited successfully')
+      setIsInviteOpen(false)
+      setInviteForm({ email: '', name: '', role: 'user' })
+      loadMembers()
     } catch (err) {
       console.error('Error inviting team member:', err)
-      setError('Failed to invite team member')
+      setError(err instanceof ApiClientError ? err.message : 'Failed to invite team member')
     } finally {
       setIsInviting(false)
     }
@@ -180,24 +169,16 @@ export function TeamSettings() {
       setRoleChangeInProgress(member.user_id)
       setError(null)
 
-      const response = await fetch(`/api/admin/team/${member.user_id}`, {
+      await apiFetch(`/api/admin/team/${member.user_id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
+        body: { role: newRole },
       })
 
-      const result = await response.json()
-      const data = result.data || result
-
-      if (response.ok) {
-        setSuccessMessage(`Updated ${member.name || member.email}'s role to ${newRole}`)
-        loadMembers()
-      } else {
-        setError(data.error || 'Failed to update role')
-      }
+      setSuccessMessage(`Updated ${member.name || member.email}'s role to ${newRole}`)
+      loadMembers()
     } catch (err) {
       console.error('Error updating role:', err)
-      setError('Failed to update role')
+      setError(err instanceof ApiClientError ? err.message : 'Failed to update role')
     } finally {
       setRoleChangeInProgress(null)
     }
@@ -210,23 +191,16 @@ export function TeamSettings() {
       setIsRemoving(true)
       setError(null)
 
-      const response = await fetch(`/api/admin/team/${memberToRemove.user_id}`, {
+      await apiFetch(`/api/admin/team/${memberToRemove.user_id}`, {
         method: 'DELETE',
       })
 
-      const result = await response.json()
-      const data = result.data || result
-
-      if (response.ok) {
-        setSuccessMessage(`Removed ${memberToRemove.name || memberToRemove.email} from the team`)
-        setMemberToRemove(null)
-        loadMembers()
-      } else {
-        setError(data.error || 'Failed to remove team member')
-      }
+      setSuccessMessage(`Removed ${memberToRemove.name || memberToRemove.email} from the team`)
+      setMemberToRemove(null)
+      loadMembers()
     } catch (err) {
       console.error('Error removing team member:', err)
-      setError('Failed to remove team member')
+      setError(err instanceof ApiClientError ? err.message : 'Failed to remove team member')
     } finally {
       setIsRemoving(false)
     }
@@ -239,26 +213,18 @@ export function TeamSettings() {
       setIsDeactivating(true)
       setError(null)
 
-      const response = await fetch(`/api/admin/team/${memberToDeactivate.user_id}/deactivate`, {
+      await apiFetch(`/api/admin/team/${memberToDeactivate.user_id}/deactivate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: deactivationReason || undefined }),
+        body: { reason: deactivationReason || undefined },
       })
 
-      const result = await response.json()
-      const data = result.data || result
-
-      if (response.ok) {
-        setSuccessMessage(`Deactivated ${memberToDeactivate.name || memberToDeactivate.email}'s account`)
-        setMemberToDeactivate(null)
-        setDeactivationReason('')
-        loadMembers()
-      } else {
-        setError(data.error || 'Failed to deactivate team member')
-      }
+      setSuccessMessage(`Deactivated ${memberToDeactivate.name || memberToDeactivate.email}'s account`)
+      setMemberToDeactivate(null)
+      setDeactivationReason('')
+      loadMembers()
     } catch (err) {
       console.error('Error deactivating team member:', err)
-      setError('Failed to deactivate team member')
+      setError(err instanceof ApiClientError ? err.message : 'Failed to deactivate team member')
     } finally {
       setIsDeactivating(false)
     }
@@ -271,23 +237,16 @@ export function TeamSettings() {
       setIsReactivating(true)
       setError(null)
 
-      const response = await fetch(`/api/admin/team/${memberToReactivate.user_id}/reactivate`, {
+      await apiFetch(`/api/admin/team/${memberToReactivate.user_id}/reactivate`, {
         method: 'POST',
       })
 
-      const result = await response.json()
-      const data = result.data || result
-
-      if (response.ok) {
-        setSuccessMessage(`Reactivated ${memberToReactivate.name || memberToReactivate.email}'s account`)
-        setMemberToReactivate(null)
-        loadMembers()
-      } else {
-        setError(data.error || 'Failed to reactivate team member')
-      }
+      setSuccessMessage(`Reactivated ${memberToReactivate.name || memberToReactivate.email}'s account`)
+      setMemberToReactivate(null)
+      loadMembers()
     } catch (err) {
       console.error('Error reactivating team member:', err)
-      setError('Failed to reactivate team member')
+      setError(err instanceof ApiClientError ? err.message : 'Failed to reactivate team member')
     } finally {
       setIsReactivating(false)
     }

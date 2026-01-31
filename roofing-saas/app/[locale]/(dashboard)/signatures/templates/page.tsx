@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -100,15 +101,7 @@ export default function SignatureTemplatesPage() {
         params.append('category', categoryFilter)
       }
 
-      const res = await fetch(`/api/signature-templates?${params.toString()}`)
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to load templates')
-      }
-
-      // Handle response format: { success, data: { templates, ... } } or { templates, ... }
-      const data = result.data || result
+      const data = await apiFetch<{ templates: SignatureTemplate[] }>(`/api/signature-templates?${params.toString()}`)
       setTemplates(data.templates || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load templates')
@@ -123,15 +116,10 @@ export default function SignatureTemplatesPage() {
 
   const handleToggleActive = async (template: SignatureTemplate) => {
     try {
-      const res = await fetch(`/api/signature-templates/${template.id}`, {
+      await apiFetch(`/api/signature-templates/${template.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !template.is_active }),
+        body: { is_active: !template.is_active },
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to update template')
-      }
 
       loadTemplates()
     } catch (err) {
@@ -145,13 +133,9 @@ export default function SignatureTemplatesPage() {
     }
 
     try {
-      const res = await fetch(`/api/signature-templates/${template.id}`, {
+      await apiFetch(`/api/signature-templates/${template.id}`, {
         method: 'DELETE',
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to delete template')
-      }
 
       loadTemplates()
     } catch (err) {
@@ -161,10 +145,9 @@ export default function SignatureTemplatesPage() {
 
   const handleDuplicate = async (template: SignatureTemplate) => {
     try {
-      const res = await fetch('/api/signature-templates', {
+      await apiFetch('/api/signature-templates', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: `${template.name} (Copy)`,
           description: template.description,
           category: template.category,
@@ -173,12 +156,8 @@ export default function SignatureTemplatesPage() {
           requires_company_signature: template.requires_company_signature,
           expiration_days: template.expiration_days,
           is_active: false,
-        }),
+        },
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to duplicate template')
-      }
 
       loadTemplates()
     } catch (err) {

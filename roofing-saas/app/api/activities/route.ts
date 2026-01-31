@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       notes: activity.content, // Alias content as notes for frontend
     }))
 
-    return successResponse({ activities: mappedActivities })
+    return successResponse(mappedActivities)
   } catch (error) {
     logger.error('Error in GET /api/activities', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

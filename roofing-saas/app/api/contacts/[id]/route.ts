@@ -42,7 +42,7 @@ export async function GET(
       throw NotFoundError('Contact')
     }
 
-    return successResponse({ contact })
+    return successResponse(contact)
   } catch (error) {
     logger.error('Error in GET /api/contacts/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -119,7 +119,7 @@ export async function PATCH(
       }
     )
 
-    return successResponse({ contact })
+    return successResponse(contact)
   } catch (error) {
     logger.error('Error in PATCH /api/contacts/:id', { error })
 

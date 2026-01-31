@@ -57,6 +57,7 @@ import {
 } from '@/lib/signatures/status'
 import { usePermissions } from '@/hooks/usePermissions'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface SignatureDocument {
   id: string
@@ -116,16 +117,8 @@ export default function SignaturesPage() {
         params.append('status', statusFilter)
       }
 
-      const res = await fetch(`/api/signature-documents?${params.toString()}`)
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to load documents')
-      }
-
-      // Handle response format: { success, data: { documents, ... } } or { documents, ... }
-      const data = result.data || result
-      setDocuments(data.documents || [])
+      const { data: docs } = await apiFetchPaginated<SignatureDocument[]>(`/api/signature-documents?${params.toString()}`)
+      setDocuments(docs)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load documents')
     } finally {
@@ -161,13 +154,7 @@ export default function SignaturesPage() {
     if (!documentToDelete) return
     setActionLoading(documentToDelete.id)
     try {
-      const res = await fetch(`/api/signature-documents/${documentToDelete.id}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error?.message || 'Failed to delete document')
-      }
+      await apiFetch<void>(`/api/signature-documents/${documentToDelete.id}`, { method: 'DELETE' })
       setDocuments((prev) => prev.filter((d) => d.id !== documentToDelete.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete document')
@@ -181,15 +168,10 @@ export default function SignaturesPage() {
     if (!documentToCancel) return
     setActionLoading(documentToCancel.id)
     try {
-      const res = await fetch(`/api/signature-documents/${documentToCancel.id}`, {
+      await apiFetch(`/api/signature-documents/${documentToCancel.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'expired' }),
+        body: { status: 'expired' },
       })
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error?.message || 'Failed to cancel document')
-      }
       setDocuments((prev) =>
         prev.map((d) =>
           d.id === documentToCancel.id ? { ...d, status: 'expired' } : d
@@ -214,21 +196,14 @@ export default function SignaturesPage() {
     if (!documentToEdit) return
     setActionLoading(documentToEdit.id)
     try {
-      const res = await fetch(`/api/signature-documents/${documentToEdit.id}`, {
+      const updated = await apiFetch<SignatureDocument>(`/api/signature-documents/${documentToEdit.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           title: editTitle,
           description: editDescription,
           document_type: editDocumentType,
-        }),
+        },
       })
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error?.message || 'Failed to update document')
-      }
-      const result = await res.json()
-      const updated = result.data?.document || result.document
       setDocuments((prev) =>
         prev.map((d) => (d.id === documentToEdit.id ? { ...d, ...updated } : d))
       )

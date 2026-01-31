@@ -36,49 +36,47 @@ export async function GET() {
     // If no settings exist, return defaults
     if (!settings) {
       return successResponse({
-        settings: {
-          tenant_id: tenantId,
-          company_name: null,
-          company_tagline: null,
-          logo_url: null,
-          primary_color: '#3B82F6',
-          secondary_color: '#10B981',
-          accent_color: '#8B5CF6',
-          email_header_logo_url: null,
-          email_footer_text: null,
-          email_signature: null,
-          timezone: 'America/New_York',
-          locale: 'en-US',
-          date_format: 'MM/DD/YYYY',
-          time_format: '12h',
-          currency: 'USD',
-          business_hours: {
-            monday: { open: '09:00', close: '17:00', enabled: true },
-            tuesday: { open: '09:00', close: '17:00', enabled: true },
-            wednesday: { open: '09:00', close: '17:00', enabled: true },
-            thursday: { open: '09:00', close: '17:00', enabled: true },
-            friday: { open: '09:00', close: '17:00', enabled: true },
-            saturday: { open: '09:00', close: '13:00', enabled: false },
-            sunday: { open: '09:00', close: '13:00', enabled: false }
-          },
-          email_notifications_enabled: true,
-          sms_notifications_enabled: true,
-          push_notifications_enabled: true,
-          integrations: {
-            quickbooks: { enabled: false, company_id: null, realm_id: null },
-            twilio: { enabled: false, account_sid: null, auth_token: null, phone_number: null },
-            google_maps: { enabled: false, api_key: null },
-            stripe: { enabled: false, publishable_key: null, secret_key: null }
-          },
-          default_lead_assignee: null,
-          auto_assign_leads: false,
-          round_robin_assignment: false,
-          custom_settings: {}
-        }
+        tenant_id: tenantId,
+        company_name: null,
+        company_tagline: null,
+        logo_url: null,
+        primary_color: '#3B82F6',
+        secondary_color: '#10B981',
+        accent_color: '#8B5CF6',
+        email_header_logo_url: null,
+        email_footer_text: null,
+        email_signature: null,
+        timezone: 'America/New_York',
+        locale: 'en-US',
+        date_format: 'MM/DD/YYYY',
+        time_format: '12h',
+        currency: 'USD',
+        business_hours: {
+          monday: { open: '09:00', close: '17:00', enabled: true },
+          tuesday: { open: '09:00', close: '17:00', enabled: true },
+          wednesday: { open: '09:00', close: '17:00', enabled: true },
+          thursday: { open: '09:00', close: '17:00', enabled: true },
+          friday: { open: '09:00', close: '17:00', enabled: true },
+          saturday: { open: '09:00', close: '13:00', enabled: false },
+          sunday: { open: '09:00', close: '13:00', enabled: false }
+        },
+        email_notifications_enabled: true,
+        sms_notifications_enabled: true,
+        push_notifications_enabled: true,
+        integrations: {
+          quickbooks: { enabled: false, company_id: null, realm_id: null },
+          twilio: { enabled: false, account_sid: null, auth_token: null, phone_number: null },
+          google_maps: { enabled: false, api_key: null },
+          stripe: { enabled: false, publishable_key: null, secret_key: null }
+        },
+        default_lead_assignee: null,
+        auto_assign_leads: false,
+        round_robin_assignment: false,
+        custom_settings: {}
       })
     }
 
-    return successResponse({ settings })
+    return successResponse(settings)
   } catch (error) {
     logger.error('Error fetching settings:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -191,7 +189,7 @@ export async function PUT(request: Request) {
       result = data
     }
 
-    return successResponse({ settings: result })
+    return successResponse(result)
   } catch (error) {
     logger.error('Error updating settings:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

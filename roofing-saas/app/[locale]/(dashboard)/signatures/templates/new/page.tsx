@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -145,21 +146,14 @@ export default function NewTemplatePage() {
       }
 
       // Create the template
-      const res = await fetch('/api/signature-templates', {
+      await apiFetch('/api/signature-templates', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           ...formData,
           pdf_template_url: uploadedPdfUrl,
           signature_fields: fields,
-        }),
+        },
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create template')
-      }
 
       router.push('/signatures/templates')
     } catch (err) {

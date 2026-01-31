@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest) {
       featured: plan.featured,
     }));
 
-    return successResponse({ plans: publicPlans });
+    return successResponse(publicPlans);
   } catch (error) {
     logger.error('Error fetching plans', { error });
     return errorResponse(error instanceof Error ? error : InternalError());

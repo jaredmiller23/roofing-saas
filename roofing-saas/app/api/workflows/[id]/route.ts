@@ -156,7 +156,7 @@ export async function DELETE(
       throw NotFoundError('Workflow not found')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('[API] Delete workflow error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

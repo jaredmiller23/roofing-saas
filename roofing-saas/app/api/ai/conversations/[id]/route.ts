@@ -40,7 +40,7 @@ export async function GET(
       throw NotFoundError('Conversation not found')
     }
 
-    return successResponse({ conversation })
+    return successResponse(conversation)
   } catch (error) {
     logger.error('Error in GET /api/ai/conversations/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -92,7 +92,7 @@ export async function PATCH(
       throw InternalError('Failed to update conversation')
     }
 
-    return successResponse({ conversation })
+    return successResponse(conversation)
   } catch (error) {
     logger.error('Error in PATCH /api/ai/conversations/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -135,7 +135,7 @@ export async function DELETE(
       throw InternalError('Failed to delete conversation')
     }
 
-    return successResponse({ success: true })
+    return successResponse({ deleted: true, id })
   } catch (error) {
     logger.error('Error in DELETE /api/ai/conversations/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

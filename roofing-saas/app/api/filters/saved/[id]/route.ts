@@ -150,7 +150,7 @@ export async function DELETE(
       throw InternalError('Failed to delete saved filter')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error in DELETE /api/filters/saved/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

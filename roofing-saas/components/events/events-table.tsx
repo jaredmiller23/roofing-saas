@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Clock, MapPin, ExternalLink, User } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Event {
   id: string
@@ -41,11 +42,8 @@ export function EventsTable({ params }: EventsTableProps) {
   useEffect(() => {
     async function fetchTeamMembers() {
       try {
-        const response = await fetch('/api/team-members')
-        if (response.ok) {
-          const data = await response.json()
-          setTeamMembers(data.members || [])
-        }
+        const data = await apiFetch<{ members: TeamMember[] }>('/api/team-members')
+        setTeamMembers(data.members || [])
       } catch (err) {
         console.error('Failed to fetch team members:', err)
       }
@@ -73,17 +71,12 @@ export function EventsTable({ params }: EventsTableProps) {
           }
         })
 
-        const response = await fetch(`/api/events?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch events')
-        }
-
-        const result = await response.json()
-        const data = result.data || result
-        setEvents(data.events || data)
-        setTotal(data.total || 0)
-        setPage(data.page || 1)
+        const { data: eventsList, pagination } = await apiFetchPaginated<Event[]>(
+          `/api/events?${queryParams.toString()}`
+        )
+        setEvents(eventsList)
+        setTotal(pagination.total)
+        setPage(pagination.page)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -100,14 +93,7 @@ export function EventsTable({ params }: EventsTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/events/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete event')
-      }
-
+      await apiFetch<void>(`/api/events/${id}`, { method: 'DELETE' })
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete event')

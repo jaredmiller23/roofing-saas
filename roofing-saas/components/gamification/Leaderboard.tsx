@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import Image from 'next/image'
 import { Crown, Medal, Award, Trophy, Star, TrendingUp, Zap, Target } from 'lucide-react'
 
@@ -79,15 +80,12 @@ export function Leaderboard({
 
     setInternalLoading(true)
     try {
-      const response = await fetch(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await apiFetch<any>(
         `/api/gamification/leaderboard?period=${selectedPeriod}&limit=${limit}&type=${type}`
       )
-      const result = await response.json()
-
-      if (result.success) {
-        setLeaderboard(result.data.leaderboard)
-        setCurrentUserRank(result.data.currentUserRank)
-      }
+      setLeaderboard(data.leaderboard)
+      setCurrentUserRank(data.currentUserRank)
     } catch (error) {
       console.error('Error fetching leaderboard:', error)
     } finally {

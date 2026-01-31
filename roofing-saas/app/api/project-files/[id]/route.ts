@@ -122,7 +122,7 @@ export async function DELETE(
       throw InternalError('Failed to delete file')
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Delete project file error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

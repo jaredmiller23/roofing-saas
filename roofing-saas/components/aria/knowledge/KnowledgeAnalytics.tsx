@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Loader2, Search, TrendingUp, ThumbsUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { apiFetch } from '@/lib/api/client'
 
 interface AnalyticsData {
   period: { days: number; since: string }
@@ -34,11 +35,8 @@ export function KnowledgeAnalytics({ tenantId: _tenantId }: KnowledgeAnalyticsPr
     const fetchAnalytics = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/knowledge/analytics?days=${days}`)
-        if (res.ok) {
-          const json = await res.json()
-          setData(json.data)
-        }
+        const data = await apiFetch<AnalyticsData>(`/api/knowledge/analytics?days=${days}`)
+        setData(data)
       } catch (err) {
         console.error('Failed to fetch analytics:', err)
       } finally {

@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StatCard } from './shared/StatCard'
 import { TopItemsTable, TopArgumentsTable } from './shared/TopItemsTable'
 import type { IntelligenceDashboard } from '@/lib/claims/intelligence-types'
+import { apiFetch } from '@/lib/api/client'
 
 /**
  * IntelligenceSummary - Overview tab for Claims Intelligence
@@ -26,12 +27,7 @@ export function IntelligenceSummary() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/intelligence/dashboard')
-      if (!response.ok) {
-        throw new Error('Failed to fetch intelligence data')
-      }
-
-      const data = await response.json()
+      const data = await apiFetch<IntelligenceDashboard>('/api/intelligence/dashboard')
       setDashboard(data)
     } catch (err) {
       console.error('Error fetching intelligence dashboard:', err)

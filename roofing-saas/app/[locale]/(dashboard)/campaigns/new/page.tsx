@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import type { CampaignType, GoalType } from '@/lib/campaigns/types'
+import type { Campaign, CampaignType, GoalType } from '@/lib/campaigns/types'
+import { apiFetch } from '@/lib/api/client'
 
 export default function NewCampaignPage() {
   const router = useRouter()
@@ -33,18 +34,12 @@ export default function NewCampaignPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/campaigns', {
+      const campaign = await apiFetch<Campaign>('/api/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: formData,
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to create campaign')
-      }
-
-      const data = await response.json()
-      router.push(`/campaigns/${data.data.campaign.id}/builder`)
+      router.push(`/campaigns/${campaign.id}/builder`)
     } catch (error) {
       console.error('Error creating campaign:', error)
       alert('Failed to create campaign. Please try again.')

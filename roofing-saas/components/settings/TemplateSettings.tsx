@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Plus, Pencil, Trash2, Mail, MessageSquare } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface EmailTemplate {
   id: string
@@ -60,13 +61,11 @@ export function TemplateSettings() {
       setLoading(true)
 
       if (activeType === 'email') {
-        const res = await fetch('/api/settings/email-templates')
-        const data = await res.json()
-        setEmailTemplates(data.templates || [])
+        const data = await apiFetch<EmailTemplate[]>('/api/settings/email-templates')
+        setEmailTemplates(data || [])
       } else {
-        const res = await fetch('/api/settings/sms-templates')
-        const data = await res.json()
-        setSMSTemplates(data.templates || [])
+        const data = await apiFetch<SMSTemplate[]>('/api/settings/sms-templates')
+        setSMSTemplates(data || [])
       }
     } catch (err) {
       console.error('Error loading templates:', err)
@@ -91,16 +90,7 @@ export function TemplateSettings() {
 
       const method = editingTemplate ? 'PATCH' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailFormData)
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to save template')
-      }
+      await apiFetch(url, { method, body: emailFormData })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -130,16 +120,7 @@ export function TemplateSettings() {
 
       const method = editingTemplate ? 'PATCH' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(smsFormData)
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to save template')
-      }
+      await apiFetch(url, { method, body: smsFormData })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -181,14 +162,7 @@ export function TemplateSettings() {
 
     try {
       const endpoint = activeType === 'email' ? 'email-templates' : 'sms-templates'
-      const res = await fetch(`/api/settings/${endpoint}/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Failed to delete template')
-      }
+      await apiFetch(`/api/settings/${endpoint}/${id}`, { method: 'DELETE' })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

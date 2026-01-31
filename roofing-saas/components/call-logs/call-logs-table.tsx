@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink, Mic } from 'lucide-react'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface CallLog {
   id: string
@@ -43,17 +44,12 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
           }
         })
 
-        const response = await fetch(`/api/call-logs?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch call logs')
-        }
-
-        const result = await response.json()
-        const data = result.data || result
-        setCalls(data.calls || data)
-        setTotal(data.total || 0)
-        setPage(data.page || 1)
+        const { data: callsList, pagination } = await apiFetchPaginated<CallLog[]>(
+          `/api/call-logs?${queryParams.toString()}`
+        )
+        setCalls(callsList)
+        setTotal(pagination.total)
+        setPage(pagination.page)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -70,14 +66,7 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/call-logs/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete call log')
-      }
-
+      await apiFetch<void>(`/api/call-logs/${id}`, { method: 'DELETE' })
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete call log')
@@ -118,7 +107,7 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
         <div className="mt-6">
           <Link
             href="/call-logs/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
           >
             + Log Call
           </Link>

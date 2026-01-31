@@ -10,11 +10,11 @@
  * and evidence score for claim documentation.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   type StormEventData,
   type CausationResult,
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
 function buildCausationResponse(
   events: StormEventData[],
   _property: { latitude: number; longitude: number }
-): NextResponse {
+) {
   // Sort by distance (closest first), then by magnitude (largest first)
   const sortedEvents = [...events].sort((a, b) => {
     const distA = a.distance_miles ?? 999
@@ -215,10 +215,7 @@ function buildCausationResponse(
     ],
   }
 
-  return NextResponse.json({
-    success: true,
-    data: response,
-  })
+  return successResponse(response)
 }
 
 /**

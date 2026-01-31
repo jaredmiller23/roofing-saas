@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Campaign, CampaignType, CampaignStatus } from '@/lib/campaigns/types'
 import { useFeatureAccess } from '@/lib/billing/hooks'
+import { apiFetch } from '@/lib/api/client'
 import { FeatureGate } from '@/components/billing/FeatureGate'
 
 export default function CampaignsPage() {
@@ -53,11 +54,8 @@ export default function CampaignsPage() {
         params.set('status', statusFilter)
       }
 
-      const response = await fetch(`/api/campaigns?${params.toString()}`)
-      if (!response.ok) throw new Error('Failed to fetch campaigns')
-
-      const data = await response.json()
-      setCampaigns(data.campaigns || [])
+      const data = await apiFetch<Campaign[]>(`/api/campaigns?${params.toString()}`)
+      setCampaigns(data)
     } catch (error) {
       console.error('Error fetching campaigns:', error)
     } finally {
@@ -75,10 +73,9 @@ export default function CampaignsPage() {
 
   const handleDuplicateCampaign = async (campaign: Campaign) => {
     try {
-      const response = await fetch('/api/campaigns', {
+      const newCampaign = await apiFetch<Campaign>('/api/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: `${campaign.name} (Copy)`,
           description: campaign.description,
           campaign_type: campaign.campaign_type,
@@ -90,13 +87,10 @@ export default function CampaignsPage() {
           business_hours: campaign.business_hours,
           enrollment_type: campaign.enrollment_type,
           max_enrollments: campaign.max_enrollments,
-        }),
+        },
       })
 
-      if (!response.ok) throw new Error('Failed to duplicate campaign')
-
-      const data = await response.json()
-      router.push(`/campaigns/${data.campaign.id}/builder`)
+      router.push(`/campaigns/${newCampaign.id}/builder`)
     } catch (error) {
       console.error('Error duplicating campaign:', error)
     }
@@ -109,13 +103,10 @@ export default function CampaignsPage() {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active'
 
     try {
-      const response = await fetch(`/api/campaigns/${id}`, {
+      await apiFetch(`/api/campaigns/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: { status: newStatus },
       })
-
-      if (!response.ok) throw new Error('Failed to update campaign status')
 
       await fetchCampaigns()
     } catch (error) {
@@ -125,13 +116,10 @@ export default function CampaignsPage() {
 
   const handleArchiveCampaign = async (id: string) => {
     try {
-      const response = await fetch(`/api/campaigns/${id}`, {
+      await apiFetch(`/api/campaigns/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'archived' }),
+        body: { status: 'archived' },
       })
-
-      if (!response.ok) throw new Error('Failed to archive campaign')
 
       await fetchCampaigns()
     } catch (error) {

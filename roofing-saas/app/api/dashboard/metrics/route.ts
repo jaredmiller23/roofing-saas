@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   getFieldMetrics,
   getManagerMetrics,
@@ -86,18 +86,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Return response with tier-appropriate cache headers
-    return NextResponse.json(
+    return successResponse(
       {
-        success: true,
-        data: {
-          metrics,
-          tier: mode,
-          latencyMs: duration,
-        },
+        metrics,
+        tier: mode,
+        latencyMs: duration,
       },
-      {
-        headers: getCacheHeaders(mode),
-      }
+      200,
+      getCacheHeaders(mode)
     )
   } catch (error) {
     console.error('Dashboard metrics error:', error)

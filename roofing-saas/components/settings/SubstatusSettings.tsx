@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Plus, Pencil, Trash2, Tag, Star } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 import type { SubstatusConfig } from '@/lib/substatus/types'
 
 export function SubstatusSettings() {
@@ -46,8 +47,7 @@ export function SubstatusSettings() {
       if (statusValueFilter) {
         params.append('status_value', statusValueFilter)
       }
-      const res = await fetch(`/api/substatus/configs?${params.toString()}`)
-      const data = await res.json()
+      const data = await apiFetch<{ configs: SubstatusConfig[]; total: number }>(`/api/substatus/configs?${params.toString()}`)
       setSubstatuses(data.configs || [])
     } catch (err) {
       console.error('Error loading substatuses:', err)
@@ -79,16 +79,7 @@ export function SubstatusSettings() {
 
       const method = editingSubstatus ? 'PATCH' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to save substatus')
-      }
+      await apiFetch(url, { method, body: formData })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
@@ -128,14 +119,7 @@ export function SubstatusSettings() {
     if (!confirm('Are you sure you want to delete this substatus?')) return
 
     try {
-      const res = await fetch(`/api/substatus/configs/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error?.message || 'Failed to delete substatus')
-      }
+      await apiFetch(`/api/substatus/configs/${id}`, { method: 'DELETE' })
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

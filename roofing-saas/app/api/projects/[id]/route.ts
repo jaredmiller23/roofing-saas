@@ -109,7 +109,7 @@ export async function GET(
       throw NotFoundError('Project')
     }
 
-    return successResponse({ project })
+    return successResponse(project)
   } catch (error) {
     logger.error('Error in GET /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -308,7 +308,7 @@ export async function PATCH(
       }
     )
 
-    return successResponse({ project: updatedProject })
+    return successResponse(updatedProject)
   } catch (error) {
     logger.error('Error in PATCH /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

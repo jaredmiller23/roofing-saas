@@ -29,6 +29,7 @@ import type {
   CampaignTrigger,
   StepType,
 } from '@/lib/campaigns/types'
+import { apiFetch } from '@/lib/api/client'
 
 export default function CampaignBuilderPage() {
   const router = useRouter()
@@ -52,16 +53,12 @@ export default function CampaignBuilderPage() {
     setLoading(true)
     try {
       // Fetch campaign details
-      const campaignRes = await fetch(`/api/campaigns/${campaignId}`)
-      if (!campaignRes.ok) throw new Error('Failed to fetch campaign')
-      const campaignData = await campaignRes.json()
-      setCampaign(campaignData.campaign)
+      const campaignData = await apiFetch<Campaign>(`/api/campaigns/${campaignId}`)
+      setCampaign(campaignData)
 
       // Fetch steps
-      const stepsRes = await fetch(`/api/campaigns/${campaignId}/steps`)
-      if (!stepsRes.ok) throw new Error('Failed to fetch steps')
-      const stepsData = await stepsRes.json()
-      setSteps(stepsData.steps || [])
+      const stepsData = await apiFetch<CampaignStep[]>(`/api/campaigns/${campaignId}/steps`)
+      setSteps(stepsData)
     } catch (error) {
       console.error('Error fetching campaign data:', error)
     } finally {
@@ -72,16 +69,11 @@ export default function CampaignBuilderPage() {
   const handleUpdateCampaign = async (updates: Partial<Campaign>) => {
     setSaving(true)
     try {
-      const response = await fetch(`/api/campaigns/${campaignId}`, {
+      const updated = await apiFetch<Campaign>(`/api/campaigns/${campaignId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
+        body: updates,
       })
-
-      if (!response.ok) throw new Error('Failed to update campaign')
-
-      const data = await response.json()
-      setCampaign(data.campaign)
+      setCampaign(updated)
     } catch (error) {
       console.error('Error updating campaign:', error)
       alert('Failed to save changes')
@@ -105,13 +97,7 @@ export default function CampaignBuilderPage() {
     if (!confirm('Are you sure you want to delete this step?')) return
 
     try {
-      const response = await fetch(
-        `/api/campaigns/${campaignId}/steps/${stepId}`,
-        { method: 'DELETE' }
-      )
-
-      if (!response.ok) throw new Error('Failed to delete step')
-
+      await apiFetch<void>(`/api/campaigns/${campaignId}/steps/${stepId}`, { method: 'DELETE' })
       await fetchCampaignData()
     } catch (error) {
       console.error('Error deleting step:', error)

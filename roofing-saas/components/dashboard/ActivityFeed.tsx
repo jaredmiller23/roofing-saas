@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -107,29 +108,19 @@ export function ActivityFeed({ data: externalData, isLoading: externalLoading }:
     const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
 
     try {
-      const response = await fetch('/api/dashboard/activity', {
-        signal: abortController.signal
-      })
-
+      const result = await apiFetch<ActivityFeedData>(
+        '/api/dashboard/activity',
+        { signal: abortController.signal }
+      )
       clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      if (result.success && result.data) {
-        setActivities(transformApiData(result.data))
-      } else {
-        setError('Failed to load activity data')
-      }
+      setActivities(transformApiData(result))
     } catch (error) {
       clearTimeout(timeoutId)
       console.error('Failed to fetch activity feed:', error)
 
       if (error instanceof Error && error.name === 'AbortError') {
         setError('Request timeout - please try again')
-      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+      } else if (error instanceof Error && error.message?.includes('Server error')) {
         setError('Server error - please try again')
       } else {
         setError('Failed to connect to server')

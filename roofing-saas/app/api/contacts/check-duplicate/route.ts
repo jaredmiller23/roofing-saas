@@ -8,7 +8,7 @@ import {
   mapSupabaseError,
   mapZodError,
 } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type { Contact } from '@/lib/types/contact'
 
@@ -248,10 +248,7 @@ export async function POST(request: NextRequest) {
       matches: potentialMatches
     }
 
-    return Response.json({
-      success: true,
-      data: response
-    })
+    return successResponse(response)
 
   } catch (error) {
     const duration = Date.now() - startTime

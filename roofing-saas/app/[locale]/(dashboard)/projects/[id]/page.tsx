@@ -18,6 +18,7 @@ import { ProjectFilesTable } from '@/components/project-files/project-files-tabl
 import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
 import { usePresence, type PresenceUser } from '@/lib/hooks/usePresence'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -145,41 +146,39 @@ export default function ProjectDetailPage() {
     try {
       setLoading(true)
 
-      // Fetch project
-      // API returns: { success: true, data: { project: { ... } } }
-      const projectRes = await fetch(`/api/projects/${projectId}`)
-      if (projectRes.ok) {
-        const projectData = await projectRes.json()
-        const projectObj = projectData.data?.project || projectData.project || projectData
-        setProject(projectObj)
+      // Fetch project - API returns: { success: true, data: <project> }
+      const projectObj = await apiFetch<Project>(`/api/projects/${projectId}`)
+      setProject(projectObj)
 
-        // Fetch contact if exists
-        if (projectObj?.contact_id) {
-          const contactRes = await fetch(`/api/contacts/${projectObj.contact_id}`)
-          if (contactRes.ok) {
-            const contactData = await contactRes.json()
-            setContact(contactData.data?.contact || contactData.contact || contactData)
-          }
+      // Fetch contact if exists
+      if (projectObj?.contact_id) {
+        try {
+          const contactObj = await apiFetch<Contact>(`/api/contacts/${projectObj.contact_id}`)
+          setContact(contactObj)
+        } catch {
+          // Contact may not exist
         }
+      }
 
-        // Fetch quote options if this is an estimate/quote project
-        if (projectObj && isEstimateProject(projectObj)) {
-          await fetchQuoteOptions()
-        }
+      // Fetch quote options if this is an estimate/quote project
+      if (projectObj && isEstimateProject(projectObj)) {
+        await fetchQuoteOptions()
       }
 
       // Fetch jobs for this project
-      const jobsRes = await fetch(`/api/jobs?project_id=${projectId}`)
-      if (jobsRes.ok) {
-        const jobsData = await jobsRes.json()
-        setJobs(jobsData.data?.jobs || jobsData.jobs || [])
+      try {
+        const { data: jobsList } = await apiFetchPaginated<Job[]>(`/api/jobs?project_id=${projectId}`)
+        setJobs(jobsList)
+      } catch {
+        // Jobs may not exist
       }
 
       // Fetch activities
-      const activitiesRes = await fetch(`/api/activities?project_id=${projectId}&limit=20`)
-      if (activitiesRes.ok) {
-        const activitiesData = await activitiesRes.json()
-        setActivities(activitiesData.data?.activities || activitiesData.activities || [])
+      try {
+        const activitiesList = await apiFetch<Activity[]>(`/api/activities?project_id=${projectId}&limit=20`)
+        setActivities(activitiesList)
+      } catch {
+        // Activities may not exist
       }
     } catch (error) {
       console.error('Failed to fetch project data:', error)
@@ -233,30 +232,20 @@ export default function ProjectDetailPage() {
 
     try {
       setStartingProduction(true)
-      const response = await fetch(`/api/projects/${projectId}/start-production`, {
+      const data = await apiFetch<{ job?: { id: string } }>(`/api/projects/${projectId}/start-production`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job_type: 'roof_replacement',
-        }),
+        body: { job_type: 'roof_replacement' },
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        // Refresh project data to show updated stage
-        await fetchProjectData()
-        // Navigate to the newly created job
-        if (data.job?.id) {
-          router.push(`/jobs/${data.job.id}`)
-        }
-      } else {
-        const errorData = await response.json()
-        console.error('Failed to start production:', errorData.error)
-        alert(errorData.error?.message || 'Failed to start production')
+      // Refresh project data to show updated stage
+      await fetchProjectData()
+      // Navigate to the newly created job
+      if (data.job?.id) {
+        router.push(`/jobs/${data.job.id}`)
       }
     } catch (error) {
       console.error('Error starting production:', error)
-      alert('Failed to start production. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to start production. Please try again.')
     } finally {
       setStartingProduction(false)
     }

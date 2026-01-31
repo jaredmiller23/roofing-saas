@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import dynamic from 'next/dynamic'
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics'
 import { DashboardScopeFilter, type DashboardScope } from '@/components/dashboard/DashboardScopeFilter'
@@ -102,6 +103,11 @@ interface ConsolidatedDashboardData {
     weekly_points: number
     monthly_points: number
   }
+  meta: {
+    latencyMs: number
+    tier: string
+    scope: string
+  }
 }
 
 /**
@@ -125,23 +131,12 @@ export default function DashboardPage() {
     const timeoutId = setTimeout(() => abortController.abort(), 30000)
 
     try {
-      const response = await fetch(
+      const result = await apiFetch<ConsolidatedDashboardData>(
         `/api/dashboard/consolidated?scope=${scope}&mode=full`,
         { signal: abortController.signal }
       )
-
       clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`)
-      }
-
-      const result = await response.json()
-      if (result.success && result.data) {
-        setData(result.data)
-      } else {
-        throw new Error('Invalid response format')
-      }
+      setData(result)
     } catch (err) {
       clearTimeout(timeoutId)
       console.error('Failed to fetch dashboard data:', err)

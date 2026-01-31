@@ -6,6 +6,7 @@ import { Conversation } from './types'
 import { ConversationList } from './ConversationList'
 import { MessageThread } from './MessageThread'
 import { logger } from '@/lib/logger'
+import { apiFetch } from '@/lib/api/client'
 
 export function MessagesSplitView() {
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -16,15 +17,8 @@ export function MessagesSplitView() {
 
   const loadConversations = useCallback(async () => {
     try {
-      const response = await fetch('/api/messages/conversations')
-      const data = await response.json()
-
-      if (!response.ok) {
-        logger.error('Failed to load conversations', { error: data.error })
-        return
-      }
-
-      setConversations(data.conversations || [])
+      const data = await apiFetch<Conversation[]>('/api/messages/conversations')
+      setConversations(data)
     } catch (error) {
       logger.error('Failed to load conversations', { error })
     } finally {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -51,11 +52,8 @@ export function AdjusterList() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
 
-      const response = await fetch(`/api/adjusters?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch adjusters')
-
-      const data = await response.json()
-      setAdjusters(data.data?.adjusters || [])
+      const data = await apiFetch<{ adjusters: AdjusterWithPatterns[] }>(`/api/adjusters?${params}`)
+      setAdjusters(data.adjusters || [])
     } catch (error) {
       console.error('Error fetching adjusters:', error)
     } finally {
@@ -72,10 +70,8 @@ export function AdjusterList() {
 
   const fetchAdjusterDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/adjusters/${id}`)
-      if (!response.ok) throw new Error('Failed to fetch adjuster details')
-      const data = await response.json()
-      setSelectedAdjuster(data.data || data)
+      const data = await apiFetch<AdjusterWithPatterns>(`/api/adjusters/${id}`)
+      setSelectedAdjuster(data)
     } catch (error) {
       console.error('Error fetching adjuster details:', error)
     }
@@ -83,20 +79,17 @@ export function AdjusterList() {
 
   const handleAddAdjuster = async (formData: FormData) => {
     try {
-      const response = await fetch('/api/adjusters', {
+      await apiFetch('/api/adjusters', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           first_name: formData.get('first_name'),
           last_name: formData.get('last_name'),
           carrier_name: formData.get('carrier_name'),
           email: formData.get('email'),
           phone: formData.get('phone'),
           notes: formData.get('notes'),
-        }),
+        },
       })
-
-      if (!response.ok) throw new Error('Failed to create adjuster')
 
       setIsAddDialogOpen(false)
       fetchAdjusters()

@@ -7,11 +7,11 @@
  * Configure in vercel.json with schedule: every 5 minutes
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
 import { processPendingExecutions } from '@/lib/campaigns/execution-engine'
-import { AuthenticationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Verify cron secret for security
 function verifyCronSecret(request: NextRequest): boolean {
@@ -48,8 +48,7 @@ export async function GET(request: NextRequest) {
       ...result,
     })
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       message: 'Campaign processing completed',
       stats: {
         processed: result.processed,
@@ -60,21 +59,13 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     const duration = Date.now() - startTime
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
     logger.error('[Campaign Cron] Campaign processing job failed', {
-      error: errorMessage,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration,
     })
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: errorMessage,
-        duration,
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 

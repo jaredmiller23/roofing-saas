@@ -70,18 +70,14 @@ export async function GET(
     const format = request.nextUrl.searchParams.get('format') || 'json'
 
     if (format === 'json') {
-      return successResponse({
-        success: true,
-        data: exportPackage,
-      })
+      return successResponse(exportPackage)
     }
 
     // For future: ZIP download format
     // This would bundle all files into a downloadable ZIP
     // For now, return JSON with signed URLs
     return successResponse({
-      success: true,
-      data: exportPackage,
+      ...exportPackage,
       note: 'ZIP format not yet implemented. Use JSON format and download files individually.',
     })
   } catch (error) {

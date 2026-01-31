@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -164,13 +165,8 @@ export function AutomationSettings() {
 
   const fetchWorkflows = useCallback(async () => {
     try {
-      const response = await fetch('/api/workflows')
-      if (response.ok) {
-        const result = await response.json()
-        // API returns { success, data: { workflows, ... }, pagination }
-        const workflows = result.data?.workflows || result.workflows || []
-        setWorkflows(workflows)
-      }
+      const data = await apiFetch<{ workflows: Workflow[]; total: number }>('/api/workflows')
+      setWorkflows(data.workflows || [])
     } catch (error) {
       console.error('Failed to fetch workflows:', error)
     } finally {
@@ -184,16 +180,13 @@ export function AutomationSettings() {
 
   const toggleWorkflow = async (workflowId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/workflows/${workflowId}`, {
+      await apiFetch(`/api/workflows/${workflowId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setWorkflows(prev => prev.map(w =>
-          w.id === workflowId ? { ...w, is_active: isActive } : w
-        ))
-      }
+      setWorkflows(prev => prev.map(w =>
+        w.id === workflowId ? { ...w, is_active: isActive } : w
+      ))
     } catch (error) {
       console.error('Failed to toggle workflow:', error)
     }
@@ -202,21 +195,18 @@ export function AutomationSettings() {
   const createFromTemplate = async (template: typeof WORKFLOW_TEMPLATES[0]) => {
     setCreating(template.id)
     try {
-      const response = await fetch('/api/workflows', {
+      await apiFetch('/api/workflows', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: template.name,
           description: template.description,
           trigger_type: template.trigger_type,
           trigger_config: {},
           is_active: true,
-          steps: template.steps
-        })
+          steps: template.steps,
+        },
       })
-      if (response.ok) {
-        await fetchWorkflows()
-      }
+      await fetchWorkflows()
     } catch (error) {
       console.error('Failed to create workflow:', error)
     } finally {
@@ -228,12 +218,8 @@ export function AutomationSettings() {
     if (!confirm('Are you sure you want to delete this workflow?')) return
 
     try {
-      const response = await fetch(`/api/workflows/${workflowId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setWorkflows(prev => prev.filter(w => w.id !== workflowId))
-      }
+      await apiFetch(`/api/workflows/${workflowId}`, { method: 'DELETE' })
+      setWorkflows(prev => prev.filter(w => w.id !== workflowId))
     } catch (error) {
       console.error('Failed to delete workflow:', error)
     }

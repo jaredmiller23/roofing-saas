@@ -62,7 +62,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     logger.info('Updated challenge', { tenantId, challenge_id: data.id })
 
-    return successResponse({ data, success: true })
+    return successResponse(data)
   } catch (error) {
     logger.error('Challenge PATCH error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -101,7 +101,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     logger.info('Deleted challenge', { tenantId, challenge_id: id })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Challenge DELETE error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

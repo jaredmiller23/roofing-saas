@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
       action_type: body.action_type
     })
 
-    return successResponse({ entry }, 201)
+    return successResponse(entry, 201)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Manual audit log creation error', { error, duration })

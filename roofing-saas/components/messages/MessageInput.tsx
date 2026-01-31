@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Send } from 'lucide-react'
 import { logger } from '@/lib/logger'
+import { apiFetch } from '@/lib/api/client'
 
 interface MessageInputProps {
   contactId: string
@@ -23,30 +24,21 @@ export function MessageInput({ contactId, contactPhone, onSent }: MessageInputPr
 
     setIsSending(true)
     try {
-      const response = await fetch('/api/sms/send', {
+      await apiFetch('/api/sms/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           to: contactPhone,
           body: message.trim(),
           contactId,
-        }),
+        },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        logger.error('Failed to send message', { error: data.error })
-        alert(data.error || 'Failed to send message. Please try again.')
-        return
-      }
 
       // Success - clear input and notify parent
       setMessage('')
       onSent?.()
     } catch (error) {
       logger.error('Failed to send message', { error })
-      alert('Failed to send message. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
     } finally {
       setIsSending(false)
     }

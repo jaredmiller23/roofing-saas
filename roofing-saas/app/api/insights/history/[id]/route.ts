@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function DELETE(
   request: NextRequest,
@@ -12,10 +14,7 @@ export async function DELETE(
     const queryId = resolvedParams.id
 
     if (!userId || !tenantId || !queryId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Missing required fields'))
     }
 
     const supabase = await createClient()
@@ -30,21 +29,13 @@ export async function DELETE(
 
     if (error) {
       console.error('Failed to delete query history:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete query history' },
-        { status: 500 }
-      )
+      return errorResponse(InternalError('Failed to delete query history'))
     }
 
-    return NextResponse.json({
-      success: true
-    })
+    return successResponse(null)
 
   } catch (error) {
     console.error('Query history deletion failed:', error)
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    )
+    return errorResponse(InternalError('An unexpected error occurred'))
   }
 }

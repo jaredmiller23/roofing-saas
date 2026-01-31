@@ -9,6 +9,7 @@
 // =============================================
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -88,10 +89,7 @@ export function LoginActivity() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/auth/activity?limit=20&offset=${offset}`)
-      if (!response.ok) throw new Error('Failed to fetch activity')
-
-      const data = await response.json()
+      const data = await apiFetch<{ activities: LoginActivityItem[]; pagination: Pagination }>(`/api/auth/activity?limit=20&offset=${offset}`)
 
       if (append) {
         setActivities(prev => [...prev, ...data.activities])

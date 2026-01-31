@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -27,11 +28,8 @@ export function KpisTab() {
 
   const fetchKpis = useCallback(async () => {
     try {
-      const response = await fetch('/api/gamification/kpis')
-      if (response.ok) {
-        const result = await response.json()
-        setKpis(result.data || [])
-      }
+      const data = await apiFetch<KpiDefinitionDB[]>('/api/gamification/kpis')
+      setKpis(data || [])
     } catch (error) {
       console.error('Failed to fetch KPIs:', error)
     } finally {
@@ -45,16 +43,13 @@ export function KpisTab() {
 
   const toggleKpi = async (kpiId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/gamification/kpis/${kpiId}`, {
+      await apiFetch(`/api/gamification/kpis/${kpiId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setKpis(prev => prev.map(k =>
-          k.id === kpiId ? { ...k, is_active: isActive } : k
-        ))
-      }
+      setKpis(prev => prev.map(k =>
+        k.id === kpiId ? { ...k, is_active: isActive } : k
+      ))
     } catch (error) {
       console.error('Failed to toggle KPI:', error)
     }
@@ -69,12 +64,8 @@ export function KpisTab() {
     if (!confirm('Are you sure you want to delete this KPI?')) return
 
     try {
-      const response = await fetch(`/api/gamification/kpis/${kpiId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setKpis(prev => prev.filter(k => k.id !== kpiId))
-      }
+      await apiFetch(`/api/gamification/kpis/${kpiId}`, { method: 'DELETE' })
+      setKpis(prev => prev.filter(k => k.id !== kpiId))
     } catch (error) {
       console.error('Failed to delete KPI:', error)
     }

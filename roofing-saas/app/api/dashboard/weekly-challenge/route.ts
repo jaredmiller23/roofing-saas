@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
-import { errorResponse } from '@/lib/api/response'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/dashboard/weekly-challenge
@@ -54,29 +53,24 @@ export async function GET() {
     // Rolling window - always show "rolling 7 days"
     const timeRemaining = 'rolling'
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        challenge: {
-          id: 'weekly-knock-challenge',
-          title: 'Weekly Knock Challenge',
-          description: `Complete ${target} door knocks in 7 days to earn the bonus!`,
-          startDate: weekStart.toISOString(),
-          endDate: weekEnd.toISOString(),
-          target,
-          current: userKnockCount || 0,
-          unit: 'knocks',
-          timeRemaining,
-          participants: participantCount,
-          reward: '$500 bonus for hitting the target',
-          status: 'active',
-        },
+    return successResponse(
+      {
+        id: 'weekly-knock-challenge',
+        title: 'Weekly Knock Challenge',
+        description: `Complete ${target} door knocks in 7 days to earn the bonus!`,
+        startDate: weekStart.toISOString(),
+        endDate: weekEnd.toISOString(),
+        target,
+        current: userKnockCount || 0,
+        unit: 'knocks',
+        timeRemaining,
+        participants: participantCount,
+        reward: '$500 bonus for hitting the target',
+        status: 'active',
       },
-    }, {
-      headers: {
-        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60'
-      }
-    })
+      200,
+      { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
+    )
   } catch (error) {
     console.error('Weekly challenge API error:', error)
     return errorResponse(error as Error)

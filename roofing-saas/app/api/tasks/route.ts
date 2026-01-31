@@ -91,15 +91,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/tasks', 200, duration)
 
-    const response = {
-      tasks: tasks || [],
-      total: count || 0,
-      page,
-      limit,
-      has_more: count ? from + limit < count : false,
-    }
-
-    return paginatedResponse(response, { page, limit, total: count || 0 })
+    return paginatedResponse(tasks || [], { page, limit, total: count || 0 })
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Tasks API error', { error, duration })
@@ -192,7 +184,7 @@ export async function POST(request: NextRequest) {
     logger.apiResponse('POST', '/api/tasks', 201, duration)
     logger.info('Task created', { taskId: task.id, tenantId })
 
-    return createdResponse({ task })
+    return createdResponse(task)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Create task error', { error, duration })

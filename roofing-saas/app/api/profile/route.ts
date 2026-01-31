@@ -47,7 +47,7 @@ export async function GET() {
       updated_at: user.updated_at || user.created_at,
     }
 
-    return successResponse({ success: true, profile })
+    return successResponse(profile)
   } catch (error) {
     logger.error('Error fetching profile:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -125,11 +125,7 @@ export async function PATCH(request: NextRequest) {
       updated_at: data.user.updated_at || data.user.created_at,
     }
 
-    return successResponse({
-      success: true,
-      profile: updatedProfile,
-      message: 'Profile updated successfully',
-    })
+    return successResponse(updatedProfile)
   } catch (error) {
     logger.error('Error updating profile:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

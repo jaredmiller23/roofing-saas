@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { apiFetch } from '@/lib/api/client';
 import { SubscriptionStatus } from './SubscriptionStatus';
 import { UsageCard } from './UsageCard';
 import { PlanSelector } from './PlanSelector';
@@ -59,16 +60,10 @@ export function BillingSettings() {
   const fetchSubscription = useCallback(async () => {
     try {
       setError(null);
-      const response = await fetch('/api/billing/subscription');
-      const result = await response.json();
-
-      if (result.success) {
-        setData(result.data);
-      } else {
-        setError(result.error?.message || 'Failed to load subscription');
-      }
-    } catch {
-      setError('Failed to load subscription data');
+      const data = await apiFetch<SubscriptionData>('/api/billing/subscription');
+      setData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load subscription data');
     } finally {
       setLoading(false);
     }
@@ -81,23 +76,20 @@ export function BillingSettings() {
   const handleManageClick = async () => {
     try {
       setError(null);
-      const response = await fetch('/api/billing/portal', {
+      const data = await apiFetch<{ portalUrl: string }>('/api/billing/portal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           returnUrl: window.location.href,
-        }),
+        },
       });
 
-      const result = await response.json();
-
-      if (result.success && result.data.portalUrl) {
-        window.location.href = result.data.portalUrl;
+      if (data.portalUrl) {
+        window.location.href = data.portalUrl;
       } else {
-        setError(result.error?.message || 'Failed to open billing portal');
+        setError('Failed to open billing portal');
       }
-    } catch {
-      setError('Failed to open billing portal');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to open billing portal');
     }
   };
 
@@ -106,26 +98,23 @@ export function BillingSettings() {
     setError(null);
 
     try {
-      const response = await fetch('/api/billing/checkout', {
+      const data = await apiFetch<{ checkoutUrl: string }>('/api/billing/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           planTier,
           billingInterval,
           successUrl: `${window.location.origin}/settings?tab=billing&checkout=success`,
           cancelUrl: `${window.location.origin}/settings?tab=billing&checkout=canceled`,
-        }),
+        },
       });
 
-      const result = await response.json();
-
-      if (result.success && result.data.checkoutUrl) {
-        window.location.href = result.data.checkoutUrl;
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
       } else {
-        setError(result.error?.message || 'Failed to create checkout session');
+        setError('Failed to create checkout session');
       }
-    } catch {
-      setError('Failed to create checkout session');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create checkout session');
     } finally {
       setCheckoutLoading(false);
     }

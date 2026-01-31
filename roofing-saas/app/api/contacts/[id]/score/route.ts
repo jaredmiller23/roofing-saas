@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { calculateLeadScore } from '@/lib/scoring/lead-scorer'
 import type { Contact } from '@/lib/types/contact'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/contacts/[id]/score
@@ -14,22 +17,16 @@ export async function GET(
 ) {
   try {
     const params = await context.params
-    
+
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Unauthorized' } },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const contactId = params.id
     if (!contactId) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact ID is required' } },
-        { status: 400 }
-      )
+      throw ValidationError('Contact ID is required')
     }
 
     // Fetch contact from database
@@ -42,10 +39,7 @@ export async function GET(
       .single()
 
     if (fetchError || !contact) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact not found' } },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
     // Calculate lead score
@@ -62,30 +56,18 @@ export async function GET(
       .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
-      console.error('Failed to update lead score in database:', updateError)
+      logger.error('Failed to update lead score in database:', { error: updateError })
       // Continue anyway - we can still return the calculated score
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        contactId,
-        leadScore,
-        updatedInDatabase: !updateError,
-      },
+    return successResponse({
+      contactId,
+      leadScore,
+      updatedInDatabase: !updateError,
     })
   } catch (error) {
-    console.error('Error calculating lead score:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          message: 'Internal server error',
-          details: error instanceof Error ? error.message : 'Unknown error'
-        } 
-      },
-      { status: 500 }
-    )
+    logger.error('Error calculating lead score:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -99,22 +81,16 @@ export async function POST(
 ) {
   try {
     const params = await context.params
-    
+
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Unauthorized' } },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const contactId = params.id
     if (!contactId) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact ID is required' } },
-        { status: 400 }
-      )
+      throw ValidationError('Contact ID is required')
     }
 
     // Get force recalculation flag from request body
@@ -131,10 +107,7 @@ export async function POST(
       .single()
 
     if (fetchError || !contact) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact not found' } },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
     // Calculate new lead score
@@ -152,42 +125,21 @@ export async function POST(
       .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
-      console.error('Failed to update lead score in database:', updateError)
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            message: 'Failed to update lead score',
-            details: updateError.message 
-          } 
-        },
-        { status: 500 }
-      )
+      logger.error('Failed to update lead score in database:', { error: updateError })
+      throw InternalError('Failed to update lead score')
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        contactId,
-        leadScore,
-        previousScore,
-        scoreChange: leadScore.total - previousScore,
-        forceRecalculated: forceRecalculate,
-        updatedAt: new Date().toISOString(),
-      },
+    return successResponse({
+      contactId,
+      leadScore,
+      previousScore,
+      scoreChange: leadScore.total - previousScore,
+      forceRecalculated: forceRecalculate,
+      updatedAt: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Error recalculating lead score:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          message: 'Internal server error',
-          details: error instanceof Error ? error.message : 'Unknown error'
-        } 
-      },
-      { status: 500 }
-    )
+    logger.error('Error recalculating lead score:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -201,22 +153,16 @@ export async function PATCH(
 ) {
   try {
     const params = await context.params
-    
+
     // Authenticate user
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Unauthorized' } },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const contactId = params.id
     if (!contactId) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact ID is required' } },
-        { status: 400 }
-      )
+      throw ValidationError('Contact ID is required')
     }
 
     // Parse request body
@@ -224,10 +170,7 @@ export async function PATCH(
     const { score, reason } = body
 
     if (typeof score !== 'number' || score < 0 || score > 100) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Score must be a number between 0 and 100' } },
-        { status: 400 }
-      )
+      throw ValidationError('Score must be a number between 0 and 100')
     }
 
     // Verify contact exists and belongs to user's tenant
@@ -240,10 +183,7 @@ export async function PATCH(
       .single()
 
     if (fetchError || !contact) {
-      return NextResponse.json(
-        { success: false, error: { message: 'Contact not found' } },
-        { status: 404 }
-      )
+      throw NotFoundError('Contact')
     }
 
     const previousScore = contact.lead_score || 0
@@ -259,46 +199,25 @@ export async function PATCH(
       .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
-      console.error('Failed to update lead score in database:', updateError)
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            message: 'Failed to update lead score',
-            details: updateError.message 
-          } 
-        },
-        { status: 500 }
-      )
+      logger.error('Failed to update lead score in database:', { error: updateError })
+      throw InternalError('Failed to update lead score')
     }
 
     // TODO: Log manual override in audit trail
     // This would typically create an audit entry showing who manually changed the score
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        contactId,
-        newScore: score,
-        previousScore,
-        scoreChange: score - previousScore,
-        manualOverride: true,
-        reason: reason || 'Manual override',
-        updatedBy: (user as unknown as { id?: string }).id,
-        updatedAt: new Date().toISOString(),
-      },
+    return successResponse({
+      contactId,
+      newScore: score,
+      previousScore,
+      scoreChange: score - previousScore,
+      manualOverride: true,
+      reason: reason || 'Manual override',
+      updatedBy: (user as unknown as { id?: string }).id,
+      updatedAt: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Error updating lead score:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          message: 'Internal server error',
-          details: error instanceof Error ? error.message : 'Unknown error'
-        } 
-      },
-      { status: 500 }
-    )
+    logger.error('Error updating lead score:', { error })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

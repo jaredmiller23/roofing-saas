@@ -52,7 +52,7 @@ export async function PATCH(
       throw NotFoundError('Template not found')
     }
 
-    return successResponse({ template })
+    return successResponse(template)
   } catch (error) {
     logger.error('Error updating email template:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -91,7 +91,7 @@ export async function DELETE(
       throw InternalError(error.message)
     }
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error deleting email template:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

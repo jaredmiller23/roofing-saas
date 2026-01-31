@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useState, useMemo, createContext, useContext, ReactNode } from 'react'
+import { apiFetch } from '@/lib/api/client'
 
 export interface SearchResult {
   id: string
@@ -127,20 +128,16 @@ export function useCommandPalette() {
       context.setLoading(true)
 
       try {
-        const response = await fetch(`/api/search/global?q=${encodeURIComponent(context.query)}`)
+        const data = await apiFetch<{ results: SearchResult[]; total: number; query: string }>(`/api/search/global?q=${encodeURIComponent(context.query)}`)
+        context.setResults(data.results || [])
 
-        if (response.ok) {
-          const data = await response.json()
-          context.setResults(data.results || [])
-
-          // Filter quick actions based on query
-          const filteredActions = getDefaultQuickActions().filter(action =>
-            action.title.toLowerCase().includes(context.query.toLowerCase()) ||
-            action.description.toLowerCase().includes(context.query.toLowerCase()) ||
-            action.keywords.some(keyword => keyword.toLowerCase().includes(context.query.toLowerCase()))
-          )
-          context.setActions(filteredActions)
-        }
+        // Filter quick actions based on query
+        const filteredActions = getDefaultQuickActions().filter(action =>
+          action.title.toLowerCase().includes(context.query.toLowerCase()) ||
+          action.description.toLowerCase().includes(context.query.toLowerCase()) ||
+          action.keywords.some(keyword => keyword.toLowerCase().includes(context.query.toLowerCase()))
+        )
+        context.setActions(filteredActions)
       } catch (error) {
         console.error('Search error:', error)
         context.setResults([])

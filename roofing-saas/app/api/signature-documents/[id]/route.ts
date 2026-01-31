@@ -59,7 +59,7 @@ export async function GET(
     const duration = Date.now() - startTime
     logger.apiResponse('GET', `/api/signature-documents/${id}`, 200, duration)
 
-    return successResponse({ document })
+    return successResponse(document)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error fetching signature document', { error, duration })
@@ -180,7 +180,7 @@ export async function PATCH(
     const duration = Date.now() - startTime
     logger.apiResponse('PATCH', `/api/signature-documents/${id}`, 200, duration)
 
-    return successResponse({ document })
+    return successResponse(document)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error updating signature document', { error, duration })
@@ -282,7 +282,7 @@ export async function DELETE(
       tenantId
     })
 
-    return successResponse({ message: 'Signature document deleted successfully' })
+    return successResponse({ message: 'Signature document deleted successfully', id })
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error deleting signature document', { error, duration })

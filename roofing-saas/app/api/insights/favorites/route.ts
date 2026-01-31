@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,10 +9,7 @@ export async function POST(request: NextRequest) {
     const { queryId, userId, tenantId } = body
 
     if (!queryId || !userId || !tenantId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return errorResponse(ValidationError('Missing required fields'))
     }
 
     const supabase = await createClient()
@@ -25,10 +24,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (fetchError || !currentQuery) {
-      return NextResponse.json(
-        { error: 'Query not found' },
-        { status: 404 }
-      )
+      return errorResponse(NotFoundError('Query not found'))
     }
 
     // Update favorite status
@@ -41,22 +37,15 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error('Failed to update favorite status:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update favorite status' },
-        { status: 500 }
-      )
+      return errorResponse(InternalError('Failed to update favorite status'))
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       isFavorite: !currentQuery.is_favorite
     })
 
   } catch (error) {
     console.error('Favorite toggle failed:', error)
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    )
+    return errorResponse(InternalError('An unexpected error occurred'))
   }
 }

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, InternalError, NotFoundError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -64,10 +64,7 @@ export async function GET(
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project')
     }
 
     // Get quote options for this project
@@ -155,10 +152,7 @@ export async function POST(
       .single()
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Project')
     }
 
     // Calculate totals from line items
@@ -278,10 +272,7 @@ export async function PATCH(
       .single()
 
     if (optionError || !option) {
-      return NextResponse.json(
-        { error: 'Quote option not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Quote option')
     }
 
     // Verify project belongs to tenant
@@ -412,10 +403,7 @@ export async function DELETE(
       .single()
 
     if (optionError || !option) {
-      return NextResponse.json(
-        { error: 'Quote option not found' },
-        { status: 404 }
-      )
+      throw NotFoundError('Quote option')
     }
 
     // Delete line items first (due to foreign key constraint)
@@ -435,7 +423,7 @@ export async function DELETE(
       throw InternalError('Failed to delete quote option')
     }
 
-    return successResponse({ deleted: true, option_id: optionId })
+    return successResponse(null)
 
   } catch (error) {
     logger.error('Error in DELETE /api/estimates/[id]/options', { error })

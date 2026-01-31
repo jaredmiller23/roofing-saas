@@ -4,7 +4,7 @@
  * Generate storm event predictions and affected customer analysis
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
   enhanceStormEvent,
@@ -15,6 +15,8 @@ import {
 import type { StormEventData } from '@/lib/weather/causation-generator'
 import type { Contact } from '@/lib/types/contact'
 import type { StormPredictionResponse } from '@/lib/storm/storm-types'
+import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +25,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Parse request body
@@ -38,10 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!noaaEvent) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required field: noaaEvent' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required field: noaaEvent')
     }
 
     // Enhance storm event with intelligence
@@ -57,10 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (contactsError) {
       console.error('Error fetching contacts:', contactsError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch contacts' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch contacts')
     }
 
     // Find affected customers
@@ -109,16 +102,10 @@ export async function POST(request: NextRequest) {
       recommendations,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     console.error('Storm prediction error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -129,10 +116,7 @@ export async function GET(_request: NextRequest) {
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     // Get recent storm events (last 14 days)
@@ -148,10 +132,7 @@ export async function GET(_request: NextRequest) {
 
     if (eventsError) {
       console.error('Error fetching storm events:', eventsError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch storm events' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch storm events')
     }
 
     // Enhance each event with intelligence metadata
@@ -181,19 +162,12 @@ export async function GET(_request: NextRequest) {
       return enhanceStormEvent(stormEventData, status as 'approaching' | 'active' | 'passed' | 'dissipated')
     })
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       predictions,
       generatedAt: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Get predictions error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

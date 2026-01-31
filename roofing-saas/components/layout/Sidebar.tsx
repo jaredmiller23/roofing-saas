@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import { UserPicker, ConfirmImpersonationDialog } from '@/components/impersonation'
+import { apiFetch } from '@/lib/api/client'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
 import { useFeatureAccess } from '@/lib/billing/hooks'
 import type { PlanFeatures } from '@/lib/billing/types'
@@ -129,19 +130,12 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
 
   const handleStartImpersonation = async (userId: string, reason?: string) => {
     try {
-      const response = await fetch('/api/admin/impersonate', {
+      await apiFetch('/api/admin/impersonate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, reason }),
+        body: { user_id: userId, reason },
       })
-
-      if (response.ok) {
-        // Reload page to start impersonation session
-        window.location.reload()
-      } else {
-        const data = await response.json()
-        alert(`Failed to start impersonation: ${data.error}`)
-      }
+      // Reload page to start impersonation session
+      window.location.reload()
     } catch (error) {
       console.error('Error starting impersonation:', error)
       alert('Failed to start impersonation. Please try again.')

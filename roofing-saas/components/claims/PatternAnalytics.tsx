@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -54,9 +55,7 @@ export function PatternAnalytics() {
   const fetchAdjusterData = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/intelligence/dashboard')
-      if (!response.ok) throw new Error('Failed to fetch data')
-      const data = await response.json()
+      const data = await apiFetch<{ adjusters: AdjusterIntelligence[] }>('/api/intelligence/dashboard')
       setAdjusters(data.adjusters || [])
     } catch (error) {
       console.error('Error fetching adjuster data:', error)
@@ -69,9 +68,7 @@ export function PatternAnalytics() {
   const fetchCarrierPatterns = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/carriers/patterns')
-      if (!response.ok) throw new Error('Failed to fetch patterns')
-      const data = await response.json()
+      const data = await apiFetch<{ patterns: ExtendedCarrierPattern[] }>('/api/carriers/patterns')
       setCarrierPatterns(data.patterns || [])
     } catch (error) {
       console.error('Error fetching carrier patterns:', error)

@@ -9,6 +9,7 @@
 // =============================================
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -79,10 +80,7 @@ export function ActiveSessions() {
   const fetchSessions = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/sessions')
-      if (!response.ok) throw new Error('Failed to fetch sessions')
-
-      const data = await response.json()
+      const data = await apiFetch<{ sessions: Session[]; count: number }>('/api/auth/sessions')
       setSessions(data.sessions || [])
     } catch (error) {
       console.error('Error fetching sessions:', error)
@@ -99,15 +97,9 @@ export function ActiveSessions() {
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/auth/sessions?id=${sessionToRevoke.id}`, {
+      await apiFetch(`/api/auth/sessions?id=${sessionToRevoke.id}`, {
         method: 'DELETE',
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign out session')
-      }
 
       setMessage({ type: 'success', text: 'Session signed out successfully' })
       setSessions(prev => prev.filter(s => s.id !== sessionToRevoke.id))
@@ -127,15 +119,9 @@ export function ActiveSessions() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/auth/sessions/revoke-all', {
+      const data = await apiFetch<{ message: string }>('/api/auth/sessions/revoke-all', {
         method: 'POST',
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign out sessions')
-      }
 
       setMessage({ type: 'success', text: data.message })
       // Keep only the current session

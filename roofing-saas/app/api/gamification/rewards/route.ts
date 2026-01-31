@@ -6,20 +6,20 @@
  * Returns 501 Not Implemented until the feature is built.
  */
 
-import { NextResponse } from 'next/server'
+import { ApiError, ErrorCode } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
 
-const NOT_IMPLEMENTED_RESPONSE = {
-  success: false,
-  error: {
-    code: 'NOT_IMPLEMENTED',
-    message: 'Rewards feature is not yet available. This feature is planned for a future release.',
-  },
-}
+const notImplementedError = () =>
+  new ApiError(
+    ErrorCode.INTERNAL_ERROR,
+    'Rewards feature is not yet available. This feature is planned for a future release.',
+    501
+  )
 
 export async function GET() {
-  return NextResponse.json(NOT_IMPLEMENTED_RESPONSE, { status: 501 })
+  return errorResponse(notImplementedError())
 }
 
 export async function POST() {
-  return NextResponse.json(NOT_IMPLEMENTED_RESPONSE, { status: 501 })
+  return errorResponse(notImplementedError())
 }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Shield, ShieldCheck, AlertTriangle, Copy, Check } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface MFASetupProps {
   onComplete?: () => void
@@ -39,21 +40,12 @@ export function MFASetup({ onComplete, onCancel }: MFASetupProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/enroll', {
+      const data = await apiFetch<{ enrollment: MFAEnrollmentData; recoveryCodes: string[] }>('/api/auth/mfa/enroll', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           friendlyName: 'Admin Authenticator',
-        }),
+        },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to start enrollment')
-      }
 
       setEnrollmentData(data.enrollment)
       setRecoveryCodes(data.recoveryCodes)
@@ -74,22 +66,13 @@ export function MFASetup({ onComplete, onCancel }: MFASetupProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/mfa/verify', {
+      await apiFetch('/api/auth/mfa/verify', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           factorId: enrollmentData.factorId,
           code: verifyCode.trim(),
-        }),
+        },
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Verification failed')
-      }
 
       setStep('success')
     } catch (err) {

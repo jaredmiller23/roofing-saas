@@ -7,9 +7,11 @@
 // Date: 2025-11-18
 // =============================================
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import type { GetCardBySlugResponse, PublicCardData } from '@/lib/digital-cards/types'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 // =============================================
 // GET /api/digital-cards/slug/:slug
@@ -25,10 +27,7 @@ export async function GET(
     const { slug } = await params
 
     if (!slug) {
-      return NextResponse.json(
-        { error: 'Missing required parameter: slug' },
-        { status: 400 }
-      )
+      throw ValidationError('Missing required parameter: slug')
     }
 
     const supabase = await createClient()
@@ -67,28 +66,19 @@ export async function GET(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Card not found' },
-          { status: 404 }
-        )
+        throw NotFoundError('Card')
       }
       console.error('Error fetching card by slug:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch card' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to fetch card')
     }
 
     const response: GetCardBySlugResponse = {
       card: data as PublicCardData,
     }
 
-    return NextResponse.json(response)
+    return successResponse(response)
   } catch (error) {
     console.error('Unexpected error in GET /api/digital-cards/slug/:slug:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

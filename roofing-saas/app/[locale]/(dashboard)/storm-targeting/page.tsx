@@ -13,6 +13,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { GoogleMap, DrawingManager, useJsApiLoader } from '@react-google-maps/api';
+import { apiFetch } from '@/lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -339,22 +340,13 @@ export default function StormTargetingPage() {
     setExtractionResult(null);
 
     try {
-      const response = await fetch('/api/storm-targeting/extract-addresses', {
+      const data = await apiFetch<ExtractionResult>('/api/storm-targeting/extract-addresses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           polygon: drawnPolygon,
           targetingAreaName: areaName || undefined,
-        }),
+        },
       });
-
-      const data: ExtractionResult = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Address extraction failed');
-      }
 
       // Show error message if present (even if success=true)
       if (data.error) {
@@ -446,21 +438,12 @@ export default function StormTargetingPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/storm-targeting/bulk-import-contacts', {
+      const data = await apiFetch<{ imported: number }>('/api/storm-targeting/bulk-import-contacts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           targetingAreaId: extractionResult.targetingAreaId,
-        }),
+        },
       });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to import contacts');
-      }
 
       // Success! Show message and clear results
       alert(

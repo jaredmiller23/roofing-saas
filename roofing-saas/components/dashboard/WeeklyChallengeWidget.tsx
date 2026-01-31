@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -62,29 +63,19 @@ export function WeeklyChallengeWidget({ data: externalData, isLoading: externalL
     const timeoutId = setTimeout(() => abortController.abort(), 30000) // 30s timeout
 
     try {
-      const response = await fetch('/api/dashboard/weekly-challenge', {
-        signal: abortController.signal
-      })
-
+      const result = await apiFetch<Challenge>(
+        '/api/dashboard/weekly-challenge',
+        { signal: abortController.signal }
+      )
       clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      if (result.success && result.data) {
-        setChallenge(result.data.challenge)
-      } else {
-        setError('Failed to load challenge data')
-      }
+      setChallenge(result)
     } catch (error) {
       clearTimeout(timeoutId)
       console.error('Failed to fetch weekly challenge:', error)
 
       if (error instanceof Error && error.name === 'AbortError') {
         setError('Request timeout - please try again')
-      } else if (error instanceof Error && error.message?.includes('Server error:')) {
+      } else if (error instanceof Error && error.message?.includes('Server error')) {
         setError('Server error - please try again')
       } else {
         setError('Failed to connect to server')

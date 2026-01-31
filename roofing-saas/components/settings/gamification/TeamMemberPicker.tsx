@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Check, Search, User, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,14 +69,9 @@ export function TeamMemberPicker({
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/admin/users?exclude_admins=true')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.users || [])
-        setFilteredUsers(data.users || [])
-      } else {
-        console.error('Failed to fetch users')
-      }
+      const data = await apiFetch<{ users: UserForImpersonation[] }>('/api/admin/users?exclude_admins=true')
+      setUsers(data.users || [])
+      setFilteredUsers(data.users || [])
     } catch (error) {
       console.error('Error fetching users:', error)
     } finally {

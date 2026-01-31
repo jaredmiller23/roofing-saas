@@ -6,6 +6,7 @@ import { VoiceDiagnostics } from '@/components/voice/VoiceDiagnostics'
 import { getAvailableProviders, VoiceProviderType } from '@/lib/voice/providers'
 import { Mic, Info, AlertCircle, RefreshCw } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiFetchPaginated } from '@/lib/api/client'
 
 interface Contact {
   id: string
@@ -41,35 +42,16 @@ export default function VoiceAssistantPage() {
     setError(null)
 
     try {
-      const [contactsRes, projectsRes] = await Promise.all([
-        fetch('/api/contacts?limit=50'),
-        fetch('/api/projects?limit=50')
+      const [contactsResult, projectsResult] = await Promise.all([
+        apiFetchPaginated<Contact[]>('/api/contacts?limit=50'),
+        apiFetchPaginated<Project[]>('/api/projects?limit=50'),
       ])
 
-      // Handle contacts response
-      if (contactsRes.ok) {
-        const contactsData = await contactsRes.json()
-        console.log('Contacts data:', contactsData)
-        setContacts(contactsData.contacts || [])
-      } else {
-        const contactsError = await contactsRes.text()
-        console.error('Contacts API error:', contactsRes.status, contactsError)
-        setError(`Failed to load contacts: ${contactsRes.status} ${contactsError}`)
-      }
-
-      // Handle projects response
-      if (projectsRes.ok) {
-        const projectsData = await projectsRes.json()
-        console.log('Projects data:', projectsData)
-        setProjects(projectsData.projects || [])
-      } else {
-        const projectsError = await projectsRes.text()
-        console.error('Projects API error:', projectsRes.status, projectsError)
-        setError(`Failed to load projects: ${projectsRes.status} ${projectsError}`)
-      }
+      setContacts(contactsResult.data)
+      setProjects(projectsResult.data)
     } catch (err) {
       console.error('Error loading context data:', err)
-      setError(`Network error loading context data: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setError(`Error loading context data: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoadingData(false)
     }

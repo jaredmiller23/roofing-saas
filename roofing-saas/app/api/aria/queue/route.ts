@@ -3,10 +3,11 @@
  * Manages SMS/Email approval queue for HITL (Human-in-the-Loop) workflow
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { getUserTenantId } from '@/lib/auth/session'
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,12 +45,12 @@ export async function GET(request: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 403 })
+      throw AuthorizationError('Tenant not found')
     }
 
     const { searchParams } = new URL(request.url)
@@ -91,7 +92,7 @@ export async function GET(request: Request) {
 
     if (error) {
       logger.error('Error fetching approval queue', { error })
-      return NextResponse.json({ error: 'Failed to fetch queue' }, { status: 500 })
+      throw InternalError('Failed to fetch queue')
     }
 
     // Fetch contact names for items with contact_id
@@ -129,14 +130,14 @@ export async function GET(request: Request) {
       .eq('tenant_id', tenantId)
       .eq('status', 'pending')
 
-    return NextResponse.json({
+    return successResponse({
       items: enrichedItems,
       pendingCount: pendingCount || 0,
     })
 
   } catch (error) {
     logger.error('Approval queue GET error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }
 
@@ -150,23 +151,23 @@ export async function PATCH(request: Request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw AuthenticationError()
     }
 
     const tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 403 })
+      throw AuthorizationError('Tenant not found')
     }
 
     const body = await request.json()
     const { id, action, finalResponse, rejectionReason } = body
 
     if (!id || !action) {
-      return NextResponse.json({ error: 'Missing id or action' }, { status: 400 })
+      throw ValidationError('Missing id or action')
     }
 
     if (!['approve', 'modify', 'reject'].includes(action)) {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+      throw ValidationError('Invalid action')
     }
 
     // Fetch the queue item
@@ -178,11 +179,11 @@ export async function PATCH(request: Request) {
       .single()
 
     if (fetchError || !item) {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 })
+      throw NotFoundError('Queue item')
     }
 
     if (item.status !== 'pending') {
-      return NextResponse.json({ error: 'Item already reviewed' }, { status: 400 })
+      throw ValidationError('Item already reviewed')
     }
 
     // Determine the status and final response
@@ -194,7 +195,7 @@ export async function PATCH(request: Request) {
       responseToSend = item.suggested_response
     } else if (action === 'modify') {
       if (!finalResponse) {
-        return NextResponse.json({ error: 'Modified response required' }, { status: 400 })
+        throw ValidationError('Modified response required')
       }
       newStatus = 'modified'
       responseToSend = finalResponse
@@ -220,7 +221,7 @@ export async function PATCH(request: Request) {
 
     if (updateError) {
       logger.error('Error updating queue item', { error: updateError })
-      return NextResponse.json({ error: 'Failed to update item' }, { status: 500 })
+      throw InternalError('Failed to update item')
     }
 
     // If approved or modified, send the SMS
@@ -272,14 +273,13 @@ export async function PATCH(request: Request) {
       })
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       status: newStatus,
       messageSent: !!responseToSend,
     })
 
   } catch (error) {
     logger.error('Approval queue PATCH error', { error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

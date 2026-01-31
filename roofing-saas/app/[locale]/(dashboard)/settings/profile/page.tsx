@@ -10,6 +10,7 @@
 // =============================================
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -98,10 +99,7 @@ export default function ProfileSettingsPage() {
   const fetchProfile = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/profile')
-      if (!response.ok) throw new Error('Failed to fetch profile')
-
-      const data = await response.json()
+      const data = await apiFetch<{ profile: UserProfile }>('/api/profile')
       setProfile(data.profile)
       setProfileForm({
         full_name: data.profile.full_name || '',
@@ -130,17 +128,10 @@ export default function ProfileSettingsPage() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/profile', {
+      const data = await apiFetch<{ profile: UserProfile }>('/api/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileForm),
+        body: profileForm,
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update profile')
-      }
 
       setProfile(data.profile)
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
@@ -173,17 +164,10 @@ export default function ProfileSettingsPage() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/profile/change-password', {
+      await apiFetch('/api/profile/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordForm),
+        body: passwordForm,
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to change password')
-      }
 
       setMessage({ type: 'success', text: 'Password changed successfully!' })
       setPasswordForm({
@@ -259,15 +243,9 @@ export default function ProfileSettingsPage() {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/profile/upload-photo', {
+      await apiFetch('/api/profile/upload-photo', {
         method: 'DELETE',
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete photo')
-      }
 
       setProfile((prev) => prev ? { ...prev, avatar_url: null } : null)
       setMessage({ type: 'success', text: 'Profile photo deleted' })

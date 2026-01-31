@@ -20,6 +20,7 @@ import { PenLine, Send, Loader2, LayoutTemplate, AlertCircle, Upload, FileCheck,
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { uploadSignaturePdf } from '@/lib/storage/signature-pdfs'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface Template {
   id: string
@@ -111,14 +112,8 @@ export function SendSignatureDialog({
     try {
       setIsLoading(true)
       setError(null)
-      const res = await fetch('/api/signature-templates?is_active=true')
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to load templates')
-      }
-
-      setTemplates(data.templates || [])
+      const { data: templatesList } = await apiFetchPaginated<Template[]>('/api/signature-templates?is_active=true')
+      setTemplates(templatesList)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load templates')
     } finally {
@@ -180,10 +175,9 @@ export function SendSignatureDialog({
     expiresAt.setDate(expiresAt.getDate() + template.expiration_days)
 
     // Create signature document
-    const createRes = await fetch('/api/signature-documents', {
+    const doc = await apiFetch<{ id: string }>('/api/signature-documents', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body: {
         title,
         description: message || null,
         document_type: template.category || 'contract',
@@ -193,21 +187,14 @@ export function SendSignatureDialog({
         requires_customer_signature: template.requires_customer_signature,
         requires_company_signature: template.requires_company_signature,
         expires_at: expiresAt.toISOString(),
-      }),
+      },
     })
 
-    const createData = await createRes.json()
-
-    if (!createRes.ok) {
-      throw new Error(createData.error || 'Failed to create document')
-    }
-
-    const documentId = createData.document?.id
-    if (!documentId) {
+    if (!doc?.id) {
       throw new Error('Document ID not returned')
     }
 
-    return documentId
+    return doc.id
   }
 
   const handleTemplateMode = async () => {
@@ -222,19 +209,17 @@ export function SendSignatureDialog({
 
       // Send for signature if contact has email
       if (contactEmail) {
-        const sendRes = await fetch(`/api/signature-documents/${documentId}/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipient_email: contactEmail,
-            recipient_name: contactName || 'Customer',
-            message: message || undefined,
-          }),
-        })
-
-        if (!sendRes.ok) {
-          const sendData = await sendRes.json()
-          console.warn('Failed to send document:', sendData.error)
+        try {
+          await apiFetch(`/api/signature-documents/${documentId}/send`, {
+            method: 'POST',
+            body: {
+              recipient_email: contactEmail,
+              recipient_name: contactName || 'Customer',
+              message: message || undefined,
+            },
+          })
+        } catch (sendErr) {
+          console.warn('Failed to send document:', sendErr)
           // Don't throw - document was created, just not sent
         }
       }

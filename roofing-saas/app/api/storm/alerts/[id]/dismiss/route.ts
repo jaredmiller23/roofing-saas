@@ -4,8 +4,10 @@
  * POST: Dismiss a storm alert (mark as dismissed)
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface RouteContext {
   params: Promise<{ id: string }>
@@ -21,10 +23,7 @@ export async function POST(
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      throw AuthenticationError()
     }
 
     const { id } = await context.params
@@ -40,24 +39,12 @@ export async function POST(
 
     if (updateError) {
       console.error('Error dismissing alert:', updateError)
-      return NextResponse.json(
-        { success: false, error: 'Failed to dismiss alert' },
-        { status: 500 }
-      )
+      throw InternalError('Failed to dismiss alert')
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Alert dismissed successfully',
-    })
+    return successResponse(null)
   } catch (error) {
     console.error('Dismiss alert error:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    )
+    return errorResponse(error instanceof Error ? error : InternalError())
   }
 }

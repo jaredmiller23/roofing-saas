@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { InspectionState } from '@/lib/claims/inspection-state'
+import { apiFetch } from '@/lib/api/client'
 
 interface Project {
   id: string
@@ -35,16 +36,8 @@ export default function InspectionPage() {
 
   const fetchProject = useCallback(async () => {
     try {
-      const res = await fetch(`/api/projects/${projectId}`)
-      if (res.ok) {
-        const result = await res.json()
-        // API returns { success: true, data: { project: {...} } }
-        const projectData = result.data?.project || result.project
-        setProject(projectData)
-      } else {
-        console.error('Failed to fetch project')
-        router.push(`/projects/${projectId}/claims`)
-      }
+      const projectData = await apiFetch<Project>(`/api/projects/${projectId}`)
+      setProject(projectData)
     } catch (error) {
       console.error('Error fetching project:', error)
       router.push(`/projects/${projectId}/claims`)
@@ -60,25 +53,15 @@ export default function InspectionPage() {
   const handleComplete = async (state: InspectionState) => {
     try {
       // Submit inspection to API
-      const res = await fetch(`/api/projects/${projectId}/claims/inspection`, {
+      const result = await apiFetch<{ claimId: string }>(`/api/projects/${projectId}/claims/inspection`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state),
+        body: state,
       })
 
-      if (res.ok) {
-        const result = await res.json()
-        // API returns { success: true, data: { claimId: '...' } }
-        const claimId = result.data?.claimId || result.claimId
-        router.push(`/projects/${projectId}/claims/${claimId}`)
-      } else {
-        const errorData = await res.json().catch(() => null)
-        console.error('Failed to submit inspection:', res.status, errorData)
-        alert('Failed to submit inspection. Please try again.')
-      }
+      router.push(`/projects/${projectId}/claims/${result.claimId}`)
     } catch (error) {
       console.error('Error submitting inspection:', error)
-      alert('Failed to submit inspection. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to submit inspection. Please try again.')
     }
   }
 

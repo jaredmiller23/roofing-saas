@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger'
 import type {
   CampaignStep,
   UpdateCampaignStepRequest,
-  UpdateCampaignStepResponse,
 } from '@/lib/campaigns/types'
 
 /**
@@ -119,11 +118,7 @@ export async function PATCH(
       throw InternalError('Failed to update step')
     }
 
-    const response: UpdateCampaignStepResponse = {
-      step: data as CampaignStep,
-    }
-
-    return successResponse(response)
+    return successResponse(data as CampaignStep)
   } catch (error) {
     logger.error('Error in PATCH /api/campaigns/:id/steps/:stepId', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -181,7 +176,7 @@ export async function DELETE(
       throw InternalError('Failed to delete step')
     }
 
-    return successResponse({ success: true })
+    return successResponse({ deleted: true, id: stepId })
   } catch (error) {
     logger.error('Error in DELETE /api/campaigns/:id/steps/:stepId', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

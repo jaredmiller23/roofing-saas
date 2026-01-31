@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -158,11 +159,8 @@ export function PointRulesTab() {
 
   const fetchPointRules = useCallback(async () => {
     try {
-      const response = await fetch('/api/gamification/point-rules')
-      if (response.ok) {
-        const result = await response.json()
-        setPointRules(result.data || [])
-      }
+      const data = await apiFetch<PointRuleConfigDB[]>('/api/gamification/point-rules')
+      setPointRules(data || [])
     } catch (error) {
       console.error('Failed to fetch point rules:', error)
     } finally {
@@ -176,16 +174,13 @@ export function PointRulesTab() {
 
   const togglePointRule = async (ruleId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/gamification/point-rules/${ruleId}`, {
+      await apiFetch(`/api/gamification/point-rules/${ruleId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setPointRules(prev => prev.map(r =>
-          r.id === ruleId ? { ...r, is_active: isActive } : r
-        ))
-      }
+      setPointRules(prev => prev.map(r =>
+        r.id === ruleId ? { ...r, is_active: isActive } : r
+      ))
     } catch (error) {
       console.error('Failed to toggle point rule:', error)
     }
@@ -194,20 +189,17 @@ export function PointRulesTab() {
   const createFromTemplate = async (template: typeof POINT_RULE_TEMPLATES[0]) => {
     setCreating(template.id)
     try {
-      const response = await fetch('/api/gamification/point-rules', {
+      await apiFetch('/api/gamification/point-rules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           action_type: template.action_type,
           action_name: template.action_name,
           points_value: template.points_value,
           category: template.category,
-          is_active: true
-        })
+          is_active: true,
+        },
       })
-      if (response.ok) {
-        await fetchPointRules()
-      }
+      await fetchPointRules()
     } catch (error) {
       console.error('Failed to create point rule:', error)
     } finally {
@@ -219,12 +211,8 @@ export function PointRulesTab() {
     if (!confirm('Are you sure you want to delete this point rule?')) return
 
     try {
-      const response = await fetch(`/api/gamification/point-rules/${ruleId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setPointRules(prev => prev.filter(r => r.id !== ruleId))
-      }
+      await apiFetch(`/api/gamification/point-rules/${ruleId}`, { method: 'DELETE' })
+      setPointRules(prev => prev.filter(r => r.id !== ruleId))
     } catch (error) {
       console.error('Failed to delete point rule:', error)
     }

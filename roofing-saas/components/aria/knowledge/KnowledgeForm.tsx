@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { KNOWLEDGE_CATEGORIES, CATEGORY_LABELS } from '@/lib/aria/knowledge-types'
 import type { KnowledgeEntry } from '@/lib/aria/knowledge-types'
+import { apiFetch } from '@/lib/api/client'
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -73,10 +74,9 @@ export function KnowledgeForm({ entry, onClose, onSuccess }: KnowledgeFormProps)
         const contentChanged = data.content !== entry.content
         const titleChanged = data.title !== entry.title
 
-        const res = await fetch('/api/knowledge', {
+        await apiFetch('/api/knowledge', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             id: entry.id,
             title: data.title,
             content: data.content,
@@ -87,19 +87,13 @@ export function KnowledgeForm({ entry, onClose, onSuccess }: KnowledgeFormProps)
             source_url: data.source_url || null,
             is_global: data.is_global,
             regenerate_embedding: contentChanged || titleChanged,
-          }),
+          },
         })
-
-        if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error?.message || 'Failed to update entry')
-        }
       } else {
         // POST - create
-        const res = await fetch('/api/knowledge', {
+        await apiFetch('/api/knowledge', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             title: data.title,
             content: data.content,
             category: data.category,
@@ -109,13 +103,8 @@ export function KnowledgeForm({ entry, onClose, onSuccess }: KnowledgeFormProps)
             source_url: data.source_url || null,
             is_global: data.is_global,
             generate_embedding: true,
-          }),
+          },
         })
-
-        if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error?.message || 'Failed to create entry')
-        }
       }
 
       onSuccess()

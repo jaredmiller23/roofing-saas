@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { useUIMode } from '@/hooks/useUIMode'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -94,30 +95,19 @@ export function DashboardMetrics({ scope, data: externalData, isLoading: externa
     const timeoutId = setTimeout(() => abortController.abort(), 30000)
 
     try {
-      const response = await fetch(
+      const result = await apiFetch<{ metrics: TieredMetrics; tier: string; latencyMs: number }>(
         `/api/dashboard/metrics?scope=${scope}&mode=${tier}`,
         { signal: abortController.signal }
       )
-
       clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      if (result.success && result.data) {
-        setMetrics(result.data.metrics)
-      } else {
-        setError('Failed to load metrics data')
-      }
+      setMetrics(result.metrics)
     } catch (err) {
       clearTimeout(timeoutId)
       console.error('Failed to fetch dashboard metrics:', err)
 
       if (err instanceof Error && err.name === 'AbortError') {
         setError('Request timeout - please try again')
-      } else if (err instanceof Error && err.message?.includes('Server error:')) {
+      } else if (err instanceof Error && err.message?.includes('Server error')) {
         setError('Server error - please try again')
       } else {
         setError('Failed to connect to server')

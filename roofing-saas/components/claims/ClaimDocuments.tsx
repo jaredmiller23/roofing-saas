@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -154,13 +155,9 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
   const handleDelete = async (documentId: string) => {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/claims/documents/${documentId}`, {
+      await apiFetch(`/api/claims/documents/${documentId}`, {
         method: 'DELETE',
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to delete document')
-      }
 
       // Refresh documents list
       onDocumentsChange()

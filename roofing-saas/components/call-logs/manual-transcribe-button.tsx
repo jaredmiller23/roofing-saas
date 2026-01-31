@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Loader2, FileAudio } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/api/client'
 
 interface ManualTranscribeButtonProps {
   callId: string
@@ -31,19 +32,10 @@ export function ManualTranscribeButton({
     setError(null)
 
     try {
-      const response = await fetch(`/api/call-logs/${callId}/transcribe`, {
+      await apiFetch(`/api/call-logs/${callId}/transcribe`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ force: hasTranscription }),
+        body: { force: hasTranscription },
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Transcription failed')
-      }
 
       // Refresh the page to show new transcription
       router.refresh()

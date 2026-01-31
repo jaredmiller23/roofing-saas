@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { SubstatusSelector } from '@/components/substatus/SubstatusSelector'
 import type { SubstatusConfig } from '@/lib/substatus/types'
+import { apiFetch } from '@/lib/api/client'
 
 interface ContactSubstatusManagerProps {
   contactId: string
@@ -53,15 +54,10 @@ export function ContactSubstatusManager({
       setLoading(true)
 
       // Update contact substatus via API
-      const response = await fetch(`/api/contacts/${contactId}`, {
+      await apiFetch(`/api/contacts/${contactId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ substatus: substatusValue })
+        body: { substatus: substatusValue },
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to update substatus')
-      }
 
       setSubstatus(substatusValue)
       setSubstatusConfig(config)

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, X, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { apiFetch } from '@/lib/api/client'
 import type { ImpersonationStatusResponse } from '@/lib/impersonation/types'
 import { IMPERSONATION_WARNING_MINUTES } from '@/lib/impersonation/types'
 
@@ -23,15 +24,12 @@ export function ImpersonationBanner() {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const response = await fetch('/api/admin/impersonate/status')
-        if (response.ok) {
-          const data: ImpersonationStatusResponse = await response.json()
-          if (data.is_impersonating) {
-            setStatus(data)
-            setTimeRemaining(data.time_remaining_seconds || 0)
-          } else {
-            setStatus(null)
-          }
+        const data = await apiFetch<ImpersonationStatusResponse>('/api/admin/impersonate/status')
+        if (data.is_impersonating) {
+          setStatus(data)
+          setTimeRemaining(data.time_remaining_seconds || 0)
+        } else {
+          setStatus(null)
         }
       } catch (error) {
         console.error('Error checking impersonation status:', error)
@@ -71,18 +69,9 @@ export function ImpersonationBanner() {
     setIsExiting(true)
 
     try {
-      const response = await fetch('/api/admin/impersonate', {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        // Reload page to clear session
-        window.location.reload()
-      } else {
-        const data = await response.json()
-        alert(`Failed to exit impersonation: ${data.error}`)
-        setIsExiting(false)
-      }
+      await apiFetch('/api/admin/impersonate', { method: 'DELETE' })
+      // Reload page to clear session
+      window.location.reload()
     } catch (error) {
       console.error('Error exiting impersonation:', error)
       alert('Failed to exit impersonation. Please try again.')

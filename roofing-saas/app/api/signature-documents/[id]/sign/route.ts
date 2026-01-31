@@ -174,7 +174,7 @@ export async function POST(
       logger.apiResponse('POST', `/api/signature-documents/${id}/sign`, 200, duration)
 
       return successResponse({
-        document: declinedDoc,
+        ...declinedDoc,
         message: 'Document has been declined. The document owner will be notified.'
       })
     }
@@ -589,7 +589,7 @@ export async function POST(
 
     return successResponse({
       signature,
-      document: updatedDocument,
+      document: updatedDocument, // POST returns multiple related items
       all_signatures_complete: allSignaturesComplete,
       message: allSignaturesComplete
         ? 'Document signed successfully!'
@@ -658,7 +658,7 @@ export async function GET(
     const duration = Date.now() - startTime
     logger.apiResponse('GET', `/api/signature-documents/${id}/sign`, 200, duration)
 
-    return successResponse({ document })
+    return successResponse(document)
   } catch (error) {
     const duration = Date.now() - startTime
     logger.error('Error fetching document for signing', { error, duration })

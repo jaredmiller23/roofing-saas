@@ -3,7 +3,7 @@ import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
-import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
+import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
 import { createProjectSchema } from '@/lib/validations/project'
@@ -138,13 +138,7 @@ export async function GET(request: NextRequest) {
       }
     }) || []
 
-    return successResponse({
-      projects: transformedProjects,
-      total: count || 0,
-      page,
-      limit,
-      totalPages: Math.ceil((count || 0) / limit),
-    })
+    return paginatedResponse(transformedProjects, { page, limit, total: count || 0 })
   } catch (error) {
     logger.error('Error in GET /api/projects', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

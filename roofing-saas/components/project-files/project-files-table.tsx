@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/api/client'
 import {
   FileText,
   ExternalLink,
@@ -83,15 +84,8 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
         const hasFilters = searchTerm || selectedCategories.length > 0 || selectedFileTypes.length > 0 || currentFolderPath !== null
         const endpoint = hasFilters ? '/api/project-files/search' : '/api/project-files'
 
-        const response = await fetch(`${endpoint}?${queryParams.toString()}`)
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch files')
-        }
-
-        const result = await response.json()
-        const data = result.data || result
-        setFiles(data.files || data)
+        const data = await apiFetch<{ files: ProjectFile[]; total: number }>(`${endpoint}?${queryParams.toString()}`)
+        setFiles(data.files || [])
         setTotal(data.total || 0)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
@@ -109,13 +103,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/project-files/${id}`, {
+      await apiFetch(`/api/project-files/${id}`, {
         method: 'DELETE',
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete file')
-      }
 
       router.refresh()
     } catch (err) {
@@ -125,15 +115,10 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
   const handleBulkAction = async (operation: string, data: Record<string, unknown>) => {
     try {
-      const response = await fetch('/api/project-files/bulk', {
+      await apiFetch('/api/project-files/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operation, ...data })
+        body: { operation, ...data }
       })
-
-      if (!response.ok) {
-        throw new Error('Bulk operation failed')
-      }
 
       // Refresh the file list
       router.refresh()

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Sparkles, Plus, Clock, Star, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -40,11 +41,8 @@ export function InsightsPageClient({
   // Load initial data functions wrapped in useCallback
   const loadSuggestions = React.useCallback(async () => {
     try {
-      const response = await fetch(`/api/insights/suggestions?role=${userRole}&tenant=${tenantId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSuggestions(data.suggestions || [])
-      }
+      const data = await apiFetch<{ suggestions: QuerySuggestion[] }>(`/api/insights/suggestions?role=${userRole}&tenant=${tenantId}`)
+      setSuggestions(data.suggestions || [])
     } catch (error) {
       console.error('Failed to load suggestions:', error)
     }
@@ -52,25 +50,22 @@ export function InsightsPageClient({
 
   const loadQueryHistory = React.useCallback(async () => {
     try {
-      const response = await fetch(`/api/insights/history?tenant=${tenantId}&userId=${userId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setQueryHistory(data.history || [])
+      const data = await apiFetch<{ history: QueryHistoryType[] }>(`/api/insights/history?tenant=${tenantId}&userId=${userId}`)
+      setQueryHistory(data.history || [])
 
-        // Extract recent and favorite queries
-        const recent = data.history
-          ?.filter((h: QueryHistoryType) => h.result.success)
-          .slice(0, 5)
-          .map((h: QueryHistoryType) => h.query) || []
+      // Extract recent and favorite queries
+      const recent = data.history
+        ?.filter((h: QueryHistoryType) => h.result.success)
+        .slice(0, 5)
+        .map((h: QueryHistoryType) => h.query) || []
 
-        const favorites = data.history
-          ?.filter((h: QueryHistoryType) => h.isFavorite && h.result.success)
-          .slice(0, 5)
-          .map((h: QueryHistoryType) => h.query) || []
+      const favorites = data.history
+        ?.filter((h: QueryHistoryType) => h.isFavorite && h.result.success)
+        .slice(0, 5)
+        .map((h: QueryHistoryType) => h.query) || []
 
-        setRecentQueries(recent)
-        setFavoriteQueries(favorites)
-      }
+      setRecentQueries(recent)
+      setFavoriteQueries(favorites)
     } catch (error) {
       console.error('Failed to load query history:', error)
     }
@@ -88,51 +83,29 @@ export function InsightsPageClient({
     setActiveTab('results')
 
     try {
-      const response = await fetch('/api/insights/query', {
+      const data = await apiFetch<{ result: QueryResult }>('/api/insights/query', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           query,
           userId,
           tenantId,
           userRole
-        })
+        }
       })
 
-      const data = await response.json()
+      setCurrentResult(data.result)
 
-      if (response.ok) {
-        setCurrentResult(data.result)
+      // Add to recent queries if not already there
+      setRecentQueries(prev => {
+        const filtered = prev.filter(q => q !== query)
+        return [query, ...filtered].slice(0, 5)
+      })
 
-        // Add to recent queries if not already there
-        setRecentQueries(prev => {
-          const filtered = prev.filter(q => q !== query)
-          return [query, ...filtered].slice(0, 5)
-        })
-
-        // Reload history to include this new query
-        loadQueryHistory()
-      } else {
-        setCurrentResult({
-          success: false,
-          data: [],
-          columns: [],
-          metadata: {
-            executionTime: 0,
-            rowCount: 0,
-            fromCache: false,
-            sql: '',
-            riskLevel: 'HIGH',
-            timestamp: new Date()
-          },
-          visualization: 'table',
-          error: data.error || 'Query failed'
-        })
-      }
+      // Reload history to include this new query
+      loadQueryHistory()
     } catch (error) {
       console.error('Query execution failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Query failed'
       setCurrentResult({
         success: false,
         data: [],
@@ -146,7 +119,7 @@ export function InsightsPageClient({
           timestamp: new Date()
         },
         visualization: 'table',
-        error: 'Network error occurred'
+        error: errorMessage
       })
     } finally {
       setIsLoading(false)
@@ -157,21 +130,16 @@ export function InsightsPageClient({
     if (queryId) {
       // Toggle favorite for history item
       try {
-        const response = await fetch(`/api/insights/favorites`, {
+        await apiFetch('/api/insights/favorites', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          body: {
             queryId,
             userId,
             tenantId
-          })
+          }
         })
 
-        if (response.ok) {
-          loadQueryHistory() // Reload to reflect changes
-        }
+        loadQueryHistory() // Reload to reflect changes
       } catch (error) {
         console.error('Failed to toggle favorite:', error)
       }
@@ -186,20 +154,15 @@ export function InsightsPageClient({
 
   const handleDeleteQuery = async (queryId: string) => {
     try {
-      const response = await fetch(`/api/insights/history/${queryId}`, {
+      await apiFetch(`/api/insights/history/${queryId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           userId,
           tenantId
-        })
+        }
       })
 
-      if (response.ok) {
-        loadQueryHistory() // Reload to reflect changes
-      }
+      loadQueryHistory() // Reload to reflect changes
     } catch (error) {
       console.error('Failed to delete query:', error)
     }

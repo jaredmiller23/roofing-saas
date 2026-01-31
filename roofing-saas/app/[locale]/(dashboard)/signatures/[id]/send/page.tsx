@@ -17,6 +17,7 @@ import {
   Mail,
   Calendar
 } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface SignatureDocument {
   id: string
@@ -58,17 +59,7 @@ export default function SendSignatureDocumentPage() {
       setIsLoading(true)
       setError(null)
 
-      const res = await fetch(`/api/signature-documents/${documentId}`)
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to load document')
-      }
-
-      // Handle response format
-      const data = result.data || result
-      const doc = data.document
-
+      const doc = await apiFetch<SignatureDocument>(`/api/signature-documents/${documentId}`)
       setDocument(doc)
 
       // Pre-fill from contact if available
@@ -101,22 +92,15 @@ export default function SendSignatureDocumentPage() {
       setIsSending(true)
       setError(null)
 
-      const res = await fetch(`/api/signature-documents/${documentId}/send`, {
+      await apiFetch(`/api/signature-documents/${documentId}/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           recipient_email: recipientEmail,
           recipient_name: recipientName,
           message,
           expiration_days: expirationDays
-        })
+        }
       })
-
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to send document')
-      }
 
       setSuccess(true)
       setTimeout(() => {

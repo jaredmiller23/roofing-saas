@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to fetch knowledge')
     }
 
-    return successResponse({ knowledge: knowledge || [] })
+    return successResponse(knowledge || [])
   } catch (error) {
     logger.error('Knowledge API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       throw InternalError('Failed to create knowledge entry')
     }
 
-    return createdResponse({ knowledge })
+    return createdResponse(knowledge)
   } catch (error) {
     logger.error('Knowledge creation API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
@@ -224,7 +224,7 @@ export async function PATCH(request: NextRequest) {
       throw InternalError('Failed to update knowledge entry')
     }
 
-    return successResponse({ knowledge })
+    return successResponse(knowledge)
   } catch (error) {
     logger.error('Knowledge update API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

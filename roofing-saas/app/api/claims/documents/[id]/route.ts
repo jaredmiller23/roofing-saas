@@ -72,7 +72,7 @@ export async function DELETE(
       userId: user.id,
     })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Error in DELETE /api/claims/documents/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

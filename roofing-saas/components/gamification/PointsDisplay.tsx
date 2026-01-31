@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Trophy, TrendingUp, Target } from 'lucide-react'
 import {
   Tooltip,
@@ -44,12 +45,9 @@ export function PointsDisplay({ data: externalData, isLoading: externalLoading }
     if (externalData !== undefined) return
 
     try {
-      const response = await fetch('/api/gamification/points')
-      const result = await response.json()
-
-      if (result.success) {
-        setPoints(result.data)
-      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await apiFetch<any>('/api/gamification/points')
+      setPoints(data)
     } catch (error) {
       console.error('Error fetching points:', error)
     } finally {

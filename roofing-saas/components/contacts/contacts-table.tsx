@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Phone, MessageSquare, Mail, Building2, RefreshCw } from 'lucide-react'
 import { DNCBadge } from './DNCBadge'
 import { Button } from '@/components/ui/button'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -44,22 +45,16 @@ export function ContactsTable({ params }: ContactsTableProps) {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-      const response = await fetch(`/api/contacts?${queryParams.toString()}`, {
-        signal: controller.signal
-      })
+      const { data: contacts, pagination } = await apiFetchPaginated<Contact[]>(
+        `/api/contacts?${queryParams.toString()}`,
+        { signal: controller.signal }
+      )
 
       clearTimeout(timeoutId)
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch contacts')
-      }
-
-      const result = await response.json()
-      // Handle new response format: { success, data: { contacts, total, page, ... } }
-      const data = result.data || result
-      setContacts(data.contacts || [])
-      setTotal(data.total || 0)
-      setPage(data.page || 1)
+      setContacts(contacts)
+      setTotal(pagination.total)
+      setPage(pagination.page)
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         setError('Request timed out. Please check your connection and try again.')
@@ -105,13 +100,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/contacts/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete contact')
-      }
+      await apiFetch<void>(`/api/contacts/${id}`, { method: 'DELETE' })
 
       // Refresh the list
       setContacts(contacts.filter((c) => c.id !== id))
@@ -145,7 +134,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
     setBulkActionLoading(true)
 
     try {
-      const updates: Promise<Response>[] = []
+      const updates: Promise<unknown>[] = []
 
       for (const contactId of selectedContacts) {
         let body = {}
@@ -153,15 +142,14 @@ export function ContactsTable({ params }: ContactsTableProps) {
         if (action === 'stage') body = { stage: value }
         else if (action === 'priority') body = { priority: value }
         else if (action === 'delete') {
-          updates.push(fetch(`/api/contacts/${contactId}`, { method: 'DELETE' }))
+          updates.push(apiFetch<void>(`/api/contacts/${contactId}`, { method: 'DELETE' }))
           continue
         }
 
         updates.push(
-          fetch(`/api/contacts/${contactId}`, {
+          apiFetch(`/api/contacts/${contactId}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            body,
           })
         )
       }

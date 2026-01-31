@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiFetch } from '@/lib/api/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -90,11 +91,8 @@ export function ChallengesTab() {
 
   const fetchChallenges = useCallback(async () => {
     try {
-      const response = await fetch('/api/gamification/challenges')
-      if (response.ok) {
-        const result = await response.json()
-        setChallenges(result.data || [])
-      }
+      const data = await apiFetch<ChallengeConfigDB[]>('/api/gamification/challenges')
+      setChallenges(data || [])
     } catch (error) {
       console.error('Failed to fetch challenges:', error)
     } finally {
@@ -108,16 +106,13 @@ export function ChallengesTab() {
 
   const toggleChallenge = async (challengeId: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/gamification/challenges/${challengeId}`, {
+      await apiFetch(`/api/gamification/challenges/${challengeId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: isActive })
+        body: { is_active: isActive },
       })
-      if (response.ok) {
-        setChallenges(prev => prev.map(c =>
-          c.id === challengeId ? { ...c, is_active: isActive } : c
-        ))
-      }
+      setChallenges(prev => prev.map(c =>
+        c.id === challengeId ? { ...c, is_active: isActive } : c
+      ))
     } catch (error) {
       console.error('Failed to toggle challenge:', error)
     }
@@ -130,10 +125,9 @@ export function ChallengesTab() {
       const endDate = new Date(startDate)
       endDate.setDate(endDate.getDate() + template.duration_days)
 
-      const response = await fetch('/api/gamification/challenges', {
+      await apiFetch('/api/gamification/challenges', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           title: template.title,
           description: template.description,
           challenge_type: template.challenge_type,
@@ -144,12 +138,10 @@ export function ChallengesTab() {
           reward_type: template.reward_type,
           reward_points: template.reward_points,
           reward_description: template.reward_description,
-          is_active: true
-        })
+          is_active: true,
+        },
       })
-      if (response.ok) {
-        await fetchChallenges()
-      }
+      await fetchChallenges()
     } catch (error) {
       console.error('Failed to create challenge:', error)
     } finally {
@@ -161,12 +153,8 @@ export function ChallengesTab() {
     if (!confirm('Are you sure you want to delete this challenge?')) return
 
     try {
-      const response = await fetch(`/api/gamification/challenges/${challengeId}`, {
-        method: 'DELETE'
-      })
-      if (response.ok) {
-        setChallenges(prev => prev.filter(c => c.id !== challengeId))
-      }
+      await apiFetch(`/api/gamification/challenges/${challengeId}`, { method: 'DELETE' })
+      setChallenges(prev => prev.filter(c => c.id !== challengeId))
     } catch (error) {
       console.error('Failed to delete challenge:', error)
     }

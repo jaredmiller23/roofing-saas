@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { reverseGeocode } from '@/lib/geocoding'
+import { apiFetch } from '@/lib/api/client'
 
 type Disposition = 'not_home' | 'interested' | 'not_interested' | 'appointment_set' | 'callback_later'
 
@@ -110,27 +111,18 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
         device_location_accuracy: accuracy
       }
 
-      const response = await fetch('/api/knocks', {
+      await apiFetch('/api/knocks', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(knockData)
+        body: knockData
       })
 
-      const result = await response.json()
+      // Show success briefly
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      if (result.success) {
-        // Show success briefly
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        if (onSuccess) {
-          onSuccess()
-        } else {
-          router.push('/knocks')
-        }
+      if (onSuccess) {
+        onSuccess()
       } else {
-        alert(`Error: ${result.error}`)
+        router.push('/knocks')
       }
     } catch (error) {
       console.error('Error submitting knock:', error)
@@ -191,7 +183,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
         <CardContent className="space-y-3">
           {gettingLocation ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <span className="ml-3 text-muted-foreground">Getting your location...</span>
             </div>
           ) : latitude && longitude ? (

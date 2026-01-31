@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
-import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
+import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/call-logs
@@ -61,12 +61,7 @@ export async function GET(request: NextRequest) {
       throw InternalError(error.message)
     }
 
-    return successResponse({
-      calls: calls || [],
-      total: count || 0,
-      page,
-      limit,
-    })
+    return paginatedResponse(calls || [], { page, limit, total: count || 0 })
   } catch (error) {
     logger.error('Error in GET /api/call-logs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())

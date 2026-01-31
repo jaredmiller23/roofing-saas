@@ -34,6 +34,7 @@ import {
   getStatusIconColor,
   type StatusColor
 } from '@/lib/signatures/status'
+import { apiFetch } from '@/lib/api/client'
 
 interface SignatureDocument {
   id: string
@@ -91,16 +92,8 @@ export default function ViewSignatureDocumentPage() {
       setIsLoading(true)
       setError(null)
 
-      const res = await fetch('/api/signature-documents/' + documentId)
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to load document')
-      }
-
-      // Handle response format: { success, data: { document } } or { document }
-      const data = result.data || result
-      setDocument(data.document)
+      const doc = await apiFetch<SignatureDocument>('/api/signature-documents/' + documentId)
+      setDocument(doc)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load document')
     } finally {
@@ -119,15 +112,7 @@ export default function ViewSignatureDocumentPage() {
 
     try {
       setIsDeleting(true)
-      const res = await fetch('/api/signature-documents/' + documentId, {
-        method: 'DELETE',
-      })
-
-      if (!res.ok) {
-        const result = await res.json()
-        throw new Error(result.error?.message || 'Failed to delete document')
-      }
-
+      await apiFetch<void>('/api/signature-documents/' + documentId, { method: 'DELETE' })
       router.push('/signatures')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete document')
@@ -146,24 +131,12 @@ export default function ViewSignatureDocumentPage() {
       setError(null)
       setResendSuccess(null)
 
-      const url = `/api/signature-documents/${documentId}/resend`
-      console.log('Resend: Making request to:', url)
+      const result = await apiFetch<{ message: string; recipient: { email: string; name: string }; reminderType: string }>(
+        `/api/signature-documents/${documentId}/resend`,
+        { method: 'POST' }
+      )
+      setResendSuccess('Reminder sent to ' + result.recipient.email)
 
-      const res = await fetch(url, {
-        method: 'POST',
-      })
-
-      console.log('Resend: Response status:', res.status)
-
-      const result = await res.json()
-
-      if (!res.ok) {
-        throw new Error(result.error?.message || 'Failed to send reminder')
-      }
-
-      const data = result.data || result
-      setResendSuccess('Reminder sent to ' + data.recipient.email)
-      
       // Reload document to update reminder count
       loadDocument()
     } catch (err) {

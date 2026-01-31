@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { WorkflowBuilder } from '@/components/automation/WorkflowBuilder'
+import { apiFetch } from '@/lib/api/client'
 import type { Workflow } from '@/lib/automation/workflow-types'
 
 export default function NewWorkflowPage() {
@@ -12,19 +13,11 @@ export default function NewWorkflowPage() {
   const handleSave = async (workflowData: Partial<Workflow>) => {
     _setIsSaving(true)
     try {
-      const response = await fetch('/api/automations', {
+      const workflow = await apiFetch<Workflow>('/api/automations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(workflowData)
+        body: workflowData
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to create workflow')
-      }
-
-      const workflow = await response.json()
       router.push(`/automations/${workflow.id}`)
     } catch (error) {
       console.error('Error creating workflow:', error)

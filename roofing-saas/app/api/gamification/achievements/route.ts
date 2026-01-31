@@ -45,11 +45,9 @@ export async function GET(request: Request) {
     })) || []
 
     return successResponse({
-      data: {
-        achievements: achievementsWithStatus,
-        total: allAchievements?.length || 0,
-        unlocked: userAchievements?.length || 0
-      }
+      achievements: achievementsWithStatus,
+      total: allAchievements?.length || 0,
+      unlocked: userAchievements?.length || 0
     })
   } catch (error) {
     logger.error('Achievements API error:', { error })

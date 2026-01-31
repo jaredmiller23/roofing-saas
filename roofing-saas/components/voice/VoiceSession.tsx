@@ -5,6 +5,7 @@ import { Mic, MicOff, PhoneOff, Loader2 } from 'lucide-react'
 import { createVoiceProvider, VoiceProviderType, VoiceProvider, FunctionCallEvent, VoiceFunction } from '@/lib/voice/providers'
 import { ApprovalModal } from '@/components/aria/ApprovalModal'
 import type { ARIAExecutionResult } from '@/lib/aria/types'
+import { apiFetch } from '@/lib/api/client'
 
 interface VoiceSessionProps {
   provider?: VoiceProviderType
@@ -200,14 +201,9 @@ export function VoiceSession({
       // This includes CRM, QuickBooks, SMS, Email, Weather, and more
       let ariaTools: VoiceFunction[] = []
       try {
-        const toolsResponse = await fetch('/api/aria/execute')
-        if (toolsResponse.ok) {
-          const toolsData = await toolsResponse.json()
-          ariaTools = toolsData.data?.functions || []
-          console.log(`✓ Loaded ${ariaTools.length} ARIA functions`)
-        } else {
-          console.warn('Failed to load ARIA functions, using fallback')
-        }
+        const toolsData = await apiFetch<{ functions: VoiceFunction[]; count: number }>('/api/aria/execute')
+        ariaTools = toolsData.functions || []
+        console.log(`Loaded ${ariaTools.length} ARIA functions`)
       } catch (err) {
         console.warn('Error loading ARIA functions:', err)
       }
@@ -216,12 +212,9 @@ export function VoiceSession({
       let contactLanguage: string | undefined
       if (contactId) {
         try {
-          const contactRes = await fetch(`/api/contacts/${contactId}`)
-          if (contactRes.ok) {
-            const contactData = await contactRes.json()
-            contactLanguage = contactData.data?.preferred_language
-          }
-        } catch { /* ignore — language is optional */ }
+          const contactData = await apiFetch<{ preferred_language?: string }>(`/api/contacts/${contactId}`)
+          contactLanguage = contactData.preferred_language
+        } catch { /* ignore - language is optional */ }
       }
 
       // Step 5: Initialize session with provider
@@ -300,10 +293,9 @@ export function VoiceSession({
       console.log(`Executing ARIA function: ${functionName}`, parameters)
 
       // Call ARIA execute endpoint - handles all function types
-      const response = await fetch('/api/aria/execute', {
+      const result = await apiFetch<ARIAExecutionResult>('/api/aria/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           function_name: functionName,
           parameters,
           context: {
@@ -312,16 +304,14 @@ export function VoiceSession({
             channel: 'voice_outbound',
             session_id: sessionId,
           },
-        }),
+        },
       })
 
-      const result = await response.json()
-
       // Check if result requires human approval
-      if (result.data?.awaitingApproval && result.data?.draft) {
+      if (result.awaitingApproval && result.draft) {
         console.log('Function result requires approval, showing modal')
         setPendingApproval({
-          result: result.data,
+          result,
           callId,
         })
         setShowApprovalModal(true)
@@ -333,10 +323,10 @@ export function VoiceSession({
         voiceProviderRef.current.sendFunctionResult({
           call_id: callId,
           result: {
-            success: result.data?.success ?? result.success,
-            data: result.data?.data ?? result.data,
-            message: result.data?.message,
-            error: result.data?.error,
+            success: result.success,
+            data: result.data as Record<string, unknown> | undefined,
+            message: result.message,
+            error: result.error,
           },
         })
       }

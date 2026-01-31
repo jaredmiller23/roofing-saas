@@ -10,6 +10,7 @@ import { DNCBadge } from './DNCBadge'
 import { CallComplianceCheck } from './CallComplianceCheck'
 import type { Contact } from '@/lib/types/contact'
 import { getCombinedTypeLabel, formatStage } from '@/lib/types/contact'
+import { apiFetch } from '@/lib/api/client'
 
 interface ContactCardProps {
   contact: Contact
@@ -38,19 +39,14 @@ export function ContactCard({
 
     setAddingToDNC(true)
     try {
-      const response = await fetch('/api/compliance/internal-dnc', {
+      await apiFetch('/api/compliance/internal-dnc', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           contactId: contact.id,
           phoneNumber: primaryPhone,
           reason: 'Added manually from contact card'
-        })
+        }
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to add to Internal DNC')
-      }
 
       // Refresh the page to update the DNC status
       window.location.reload()

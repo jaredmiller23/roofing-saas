@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CalendarDays, Clock, MapPin, User } from 'lucide-react'
+import { apiFetch } from '@/lib/api/client'
 
 interface TeamMember {
   id: string
@@ -45,11 +46,8 @@ export function EventForm({ event }: EventFormProps) {
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
-        const response = await fetch('/api/team-members')
-        if (response.ok) {
-          const data = await response.json()
-          setTeamMembers(data.members || [])
-        }
+        const data = await apiFetch<{ members: TeamMember[] }>('/api/team-members')
+        setTeamMembers(data.members || [])
       } catch (err) {
         console.error('Failed to fetch team members:', err)
       } finally {
@@ -107,15 +105,10 @@ export function EventForm({ event }: EventFormProps) {
         organizer: formData.organizer || null,
       }
 
-      const response = await fetch(url, {
+      await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to save event')
-      }
 
       router.push('/events')
       router.refresh()

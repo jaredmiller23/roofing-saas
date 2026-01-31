@@ -216,7 +216,7 @@ export async function DELETE(request: NextRequest) {
 
     logger.info('Job expense deleted', { expenseId: id, tenantId })
 
-    return successResponse({ success: true })
+    return successResponse(null)
   } catch (error) {
     logger.error('Job expenses API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
