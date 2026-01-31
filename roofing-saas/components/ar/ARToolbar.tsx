@@ -2,9 +2,7 @@
 
 import React, { useState } from 'react'
 import { ARTool, ARSession } from '@/lib/ar/ar-types'
-// import { measurementTools } from '@/lib/ar/measurement-tools'
-// import { damageClassifier } from '@/lib/ar/damage-classifier'
-import { 
+import {
   Ruler, 
   Square, 
   Triangle, 

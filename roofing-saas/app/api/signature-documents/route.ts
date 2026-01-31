@@ -9,15 +9,7 @@ import {
 import { createdResponse, paginatedResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
-// PDF generation moved to post-signing (uses pdf-lib, no Chromium needed)
-// These imports are no longer needed at document creation time:
-// import { generateProfessionalPDF } from '@/lib/pdf/html-to-pdf'
-// import { mergeTemplateWithContactAndProject } from '@/lib/templates/merge'
-// import { uploadSignaturePdfFromServer } from '@/lib/storage/signature-pdfs-server'
 import { z } from 'zod'
-
-// No longer need extended timeout - PDF generation moved to post-signing
-// export const maxDuration = 60
 
 // Zod schema for signature field placements
 const signatureFieldSchema = z.object({
