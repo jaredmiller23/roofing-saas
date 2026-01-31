@@ -122,7 +122,7 @@ ariaFunctionRegistry.register({
         const supabase = await createClient()
         const { data: contact } = await supabase
           .from('contacts')
-          .select('latitude, longitude, city, state')
+          .select('latitude, longitude, address_city, address_state')
           .eq('id', contactId)
           .eq('tenant_id', tenantId)
           .eq('is_deleted', false)

@@ -21,9 +21,7 @@ import {
 const createQuoteOptionSchema = z.object({
   name: z.string().min(1, 'Option name is required').max(100),
   description: z.string().optional(),
-  is_recommended: z.boolean().optional().default(false),
-  display_order: z.number().int().min(0).optional().default(0),
-  tax_rate: z.number().min(0).max(100).optional().default(0),
+  is_selected: z.boolean().optional().default(false),
   line_items: z.array(z.object({
     description: z.string().min(1, 'Description is required'),
     quantity: z.number().positive('Quantity must be positive'),
@@ -80,13 +78,8 @@ export async function GET(
         project_id,
         name,
         description,
-        is_recommended,
-        display_order,
+        is_selected,
         subtotal,
-        tax_rate,
-        tax_amount,
-        total_amount,
-        profit_margin,
         created_at,
         updated_at,
         quote_line_items (
@@ -100,7 +93,7 @@ export async function GET(
         )
       `)
       .eq('project_id', projectId)
-      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: true })
 
     if (error) {
       logger.error('Quote options fetch error', { error, projectId })
@@ -169,9 +162,9 @@ export async function POST(
     }
 
     // Calculate totals from line items
-    const { subtotal, taxAmount, total } = calculateQuoteOptionTotals(
+    const { subtotal } = calculateQuoteOptionTotals(
       data.line_items,
-      data.tax_rate || 0
+      0
     )
 
     // Create the quote option
@@ -181,12 +174,8 @@ export async function POST(
         project_id: projectId,
         name: data.name,
         description: data.description,
-        is_recommended: data.is_recommended,
-        display_order: data.display_order,
+        is_selected: data.is_selected,
         subtotal,
-        tax_rate: data.tax_rate,
-        tax_amount: taxAmount,
-        total_amount: total
       })
       .select()
       .single()
@@ -310,22 +299,18 @@ export async function PATCH(
     let updateData: Record<string, unknown> = {
       name: data.name,
       description: data.description,
-      is_recommended: data.is_recommended,
-      display_order: data.display_order,
-      tax_rate: data.tax_rate
+      is_selected: data.is_selected,
     }
 
     if (data.line_items) {
-      const { subtotal, taxAmount, total } = calculateQuoteOptionTotals(
+      const { subtotal } = calculateQuoteOptionTotals(
         data.line_items,
-        data.tax_rate || 0
+        0
       )
 
       updateData = {
         ...updateData,
         subtotal,
-        tax_amount: taxAmount,
-        total_amount: total
       }
 
       // Update line items - delete old ones and create new ones

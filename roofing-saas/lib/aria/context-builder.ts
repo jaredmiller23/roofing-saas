@@ -298,7 +298,7 @@ async function getRecentActivities(
 
   let query = context.supabase
     .from('activities')
-    .select('id, type, subject, content, direction, created_at, metadata')
+    .select('id, type, subject, content, direction, created_at')
     .eq('tenant_id', context.tenantId)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -323,7 +323,6 @@ async function getRecentActivities(
     content: activity.content,
     direction: activity.direction,
     created_at: activity.created_at,
-    metadata: activity.metadata,
   }))
 }
 

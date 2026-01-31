@@ -34,8 +34,7 @@ export async function GET() {
       .from('point_rules')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order('category', { ascending: true })
-      .order('action_name', { ascending: true })
+      .order('action_type', { ascending: true })
 
     if (error) {
       logger.error('Failed to fetch point rules', { error, tenantId })

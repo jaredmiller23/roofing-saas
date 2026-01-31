@@ -46,7 +46,7 @@ export async function GET() {
       `
       )
       .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: true })
+      .order('joined_at', { ascending: true })
 
     if (usersError) {
       logger.error('Error fetching team members:', { error: usersError })

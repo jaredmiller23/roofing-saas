@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Verify all files exist and belong to user's tenant
     const { data: files, error: filesError } = await supabase
       .from('project_files')
-      .select('id, file_name, file_url, project_id, folder_path, file_category, file_type')
+      .select('id, file_name, file_url, project_id, file_path, file_category, file_type')
       .in('id', actionData.file_ids)
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
@@ -132,7 +132,7 @@ async function handleMoveToFolder(
   const { error } = await supabase
     .from('project_files')
     .update({
-      folder_path: targetFolderPath || null,
+      file_path: targetFolderPath || null,
       updated_at: new Date().toISOString()
     })
     .in('id', fileIds)

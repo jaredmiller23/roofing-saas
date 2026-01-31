@@ -50,24 +50,20 @@ export async function POST(request: NextRequest) {
     // Try to find existing activity for this call
     const { data: activity } = await supabase
       .from('activities')
-      .select('id, tenant_id, contact_id, metadata')
+      .select('id, tenant_id, contact_id')
       .eq('type', 'call')
-      .eq('metadata->>call_sid', callSid)
+      .eq('external_id', callSid)
       .limit(1)
       .single()
 
     if (activity) {
       // Update existing activity with call status
-      const updatedMetadata = {
-        ...(activity.metadata as Record<string, unknown> || {}),
-        status: callStatus,
-        duration: duration ? parseInt(duration) : null,
-        last_status_update: new Date().toISOString(),
-      }
-
       const { error: updateError } = await supabase
         .from('activities')
-        .update({ metadata: updatedMetadata })
+        .update({
+          outcome: callStatus,
+          duration_seconds: duration ? parseInt(duration) : null,
+        })
         .eq('id', activity.id)
 
       if (updateError) {
@@ -99,13 +95,11 @@ export async function POST(request: NextRequest) {
         type: 'call',
         direction: 'inbound',
         content: 'Inbound call',
-        metadata: {
-          call_sid: callSid,
-          from,
-          to,
-          status: callStatus,
-          duration: duration ? parseInt(duration) : null,
-        },
+        external_id: callSid,
+        from_address: from,
+        to_address: to,
+        outcome: callStatus,
+        duration_seconds: duration ? parseInt(duration) : null,
       })
 
       if (activityError) {

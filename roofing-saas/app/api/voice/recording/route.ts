@@ -24,39 +24,23 @@ async function triggerWhisperTranscription(
 
     const supabase = await createClient()
 
-    // Update activity metadata
-    const { data: activity } = await supabase
+    // Update activity with transcription data
+    const { error: activityError } = await supabase
       .from('activities')
-      .select('metadata')
+      .update({
+        transcript: transcription.text,
+        outcome: summary.sentiment || 'completed',
+        content: summary.summary || undefined,
+      })
       .eq('id', activityId)
-      .single()
 
-    if (activity) {
-      const existingMetadata = activity.metadata as Record<string, unknown> || {}
-      const { error: activityError } = await supabase
-        .from('activities')
-        .update({
-          metadata: {
-            ...existingMetadata,
-            transcription: transcription.text,
-            transcription_confidence: transcription.confidence,
-            transcription_provider: transcription.provider,
-            summary: summary.summary,
-            sentiment: summary.sentiment,
-            key_points: summary.key_points,
-            transcription_completed_at: new Date().toISOString(),
-          }
-        })
-        .eq('id', activityId)
-
-      if (activityError) {
-        logger.error('Failed to update activity with transcription', {
-          error: activityError,
-          activityId,
-        })
-      } else {
-        logger.info('Activity updated with Whisper transcription', { activityId })
-      }
+    if (activityError) {
+      logger.error('Failed to update activity with transcription', {
+        error: activityError,
+        activityId,
+      })
+    } else {
+      logger.info('Activity updated with Whisper transcription', { activityId })
     }
 
     // Also update call_logs if it exists
@@ -141,9 +125,9 @@ export async function POST(request: NextRequest) {
     // Find the activity for this call
     const { data: activity } = await supabase
       .from('activities')
-      .select('id, tenant_id, metadata')
+      .select('id, tenant_id')
       .eq('type', 'call')
-      .eq('metadata->>call_sid', callSid)
+      .eq('external_id', callSid)
       .limit(1)
       .single()
 
@@ -153,18 +137,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update activity with recording information
-    const updatedMetadata = {
-      ...(activity.metadata as Record<string, unknown> || {}),
-      recording_sid: recordingSid,
-      recording_url: recordingUrl ? `${recordingUrl}.mp3` : null,
-      recording_status: recordingStatus,
-      recording_duration: recordingDuration ? parseInt(recordingDuration) : null,
-      recording_received_at: new Date().toISOString(),
-    }
-
     const { error: updateError } = await supabase
       .from('activities')
-      .update({ metadata: updatedMetadata })
+      .update({
+        recording_url: recordingUrl ? `${recordingUrl}.mp3` : null,
+        duration_seconds: recordingDuration ? parseInt(recordingDuration) : null,
+      })
       .eq('id', activity.id)
 
     if (updateError) {

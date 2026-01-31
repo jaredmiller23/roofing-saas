@@ -74,7 +74,7 @@ ariaFunctionRegistry.register({
     // Fetch activities
     let activitiesQuery = context.supabase
       .from('activities')
-      .select('id, type, subject, content, direction, created_at, metadata, created_by')
+      .select('id, type, subject, content, direction, created_at, created_by')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', targetContactId)
       .gte('created_at', cutoffDate.toISOString())
@@ -110,7 +110,7 @@ ariaFunctionRegistry.register({
     // Fetch projects
     const { data: projects, error: projectsError } = await context.supabase
       .from('projects')
-      .select('id, name, stage, status, created_at, custom_fields')
+      .select('id, name, pipeline_stage, created_at, custom_fields')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', targetContactId)
       .eq('is_deleted', false)
@@ -240,7 +240,7 @@ ariaFunctionRegistry.register({
 
     const { data: activities, error } = await context.supabase
       .from('activities')
-      .select('id, type, subject, content, direction, created_at, metadata')
+      .select('id, type, subject, content, direction, created_at')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', targetContactId)
       .gte('created_at', thirtyDaysAgo.toISOString())
@@ -394,7 +394,7 @@ ariaFunctionRegistry.register({
     // Fetch all projects for this contact
     const { data: projects, error: projectsError } = await context.supabase
       .from('projects')
-      .select('id, name, stage, status, created_at, custom_fields')
+      .select('id, name, pipeline_stage, created_at, custom_fields')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', targetContactId)
       .eq('is_deleted', false)
@@ -417,17 +417,16 @@ ariaFunctionRegistry.register({
     }
 
     for (const project of projects || []) {
-      const stage = project.stage?.toLowerCase() || ''
-      const status = project.status?.toLowerCase() || ''
+      const stage = project.pipeline_stage?.toLowerCase() || ''
 
-      if (stage === 'won' || status === 'won' || stage === 'completed') {
+      if (stage === 'won' || stage === 'completed') {
         metrics.wonProjects++
         // Try to get value from custom_fields
         const value = project.custom_fields?.contract_value || project.custom_fields?.estimate_total || 0
         if (typeof value === 'number') {
           metrics.totalValue += value
         }
-      } else if (stage === 'lost' || status === 'lost') {
+      } else if (stage === 'lost') {
         metrics.lostProjects++
       } else {
         metrics.activeProjects++
@@ -551,7 +550,7 @@ ariaFunctionRegistry.register({
     // Get project history
     const { data: projects } = await context.supabase
       .from('projects')
-      .select('id, name, stage, status, created_at, custom_fields')
+      .select('id, name, pipeline_stage, created_at, custom_fields')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', targetContactId)
       .eq('is_deleted', false)
@@ -612,7 +611,7 @@ ariaFunctionRegistry.register({
 
     // Check last project timing
     const lastWonProject = projects?.find(p =>
-      p.stage?.toLowerCase() === 'won' || p.status?.toLowerCase() === 'won'
+      p.pipeline_stage?.toLowerCase() === 'won'
     )
 
     if (lastWonProject) {
@@ -631,8 +630,7 @@ ariaFunctionRegistry.register({
 
     // Check for abandoned estimates
     const pendingProjects = projects?.filter(p =>
-      !['won', 'lost', 'completed'].includes(p.stage?.toLowerCase() || '') &&
-      !['won', 'lost'].includes(p.status?.toLowerCase() || '')
+      !['won', 'lost', 'completed'].includes(p.pipeline_stage?.toLowerCase() || '')
     )
 
     if (pendingProjects && pendingProjects.length > 0) {

@@ -65,7 +65,7 @@ export async function getPointValueForAction(
     const { data, error } = await supabase
       .from('point_rule_configs')
       .select('points_value')
-      .eq('org_id', orgId)
+      .eq('tenant_id', orgId)
       .eq('action_type', actionType)
       .eq('is_active', true)
       .single()

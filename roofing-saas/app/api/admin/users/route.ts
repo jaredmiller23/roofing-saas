@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
     // Fetch all users in tenant with their roles (without auth.users join)
     let query = supabase
       .from('tenant_users')
-      .select('user_id, role, created_at')
+      .select('user_id, role, joined_at')
       .eq('tenant_id', tenantId)
-      .order('created_at', { ascending: false })
+      .order('joined_at', { ascending: false })
 
     // Exclude admins if requested
     if (excludeAdmins) {

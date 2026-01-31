@@ -50,16 +50,14 @@ export async function GET(request: NextRequest) {
       .from('templates')
       .select('*', { count: 'exact' })
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .eq('is_active', true)
       .order('created_at', { ascending: false })
 
     if (type) {
       query = query.eq('type', type)
     }
 
-    if (category) {
-      query = query.eq('category', category)
-    }
+    // category column doesn't exist on templates table, skip filter
 
     // Pagination
     const from = (page - 1) * limit

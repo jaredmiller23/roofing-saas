@@ -46,7 +46,7 @@ export async function GET(
     // Fetch all SMS messages for this contact
     const { data: messages, error: fetchError } = await supabase
       .from('activities')
-      .select('id, content, direction, created_at, from_address, to_address, metadata, read_at')
+      .select('id, content, direction, created_at, from_address, to_address, read_at')
       .eq('tenant_id', tenantId)
       .eq('contact_id', contactId)
       .eq('type', 'sms')

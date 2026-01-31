@@ -70,10 +70,10 @@ ariaFunctionRegistry.register({
       // Search for workflow by name
       const { data: workflows } = await context.supabase
         .from('workflows')
-        .select('id, name, status')
+        .select('id, name, is_active')
         .eq('tenant_id', context.tenantId)
         .ilike('name', `%${workflow_name}%`)
-        .eq('status', 'active')
+        .eq('is_active', true)
         .limit(5)
 
       if (!workflows || workflows.length === 0) {
@@ -98,7 +98,7 @@ ariaFunctionRegistry.register({
     // Fetch the workflow
     const { data: workflow, error: workflowError } = await context.supabase
       .from('workflows')
-      .select('id, name, status, trigger, actions')
+      .select('id, name, is_active, trigger_type, trigger_config')
       .eq('id', targetWorkflowId)
       .eq('tenant_id', context.tenantId)
       .single()
@@ -107,8 +107,8 @@ ariaFunctionRegistry.register({
       return { success: false, error: 'Workflow not found' }
     }
 
-    if (workflow.status !== 'active') {
-      return { success: false, error: `Workflow "${workflow.name}" is ${workflow.status}, not active` }
+    if (!workflow.is_active) {
+      return { success: false, error: `Workflow "${workflow.name}" is inactive, not active` }
     }
 
     // Get contact/project info for context
@@ -146,8 +146,6 @@ ariaFunctionRegistry.register({
       .insert({
         tenant_id: context.tenantId,
         workflow_id: targetWorkflowId,
-        contact_id: targetContactId,
-        project_id: targetProjectId,
         status: 'pending',
         trigger_data: {
           triggered_by: 'aria',
@@ -171,11 +169,6 @@ ariaFunctionRegistry.register({
         subject: `Workflow Started: ${workflow.name}`,
         content: `Workflow "${workflow.name}" triggered via ARIA`,
         created_by: context.userId,
-        metadata: {
-          workflow_id: targetWorkflowId,
-          workflow_name: workflow.name,
-          via: 'aria',
-        },
       })
 
       return {
@@ -198,9 +191,9 @@ ariaFunctionRegistry.register({
         workflowName: workflow.name,
         contactId: targetContactId,
         projectId: targetProjectId,
-        actionCount: workflow.actions?.length || 0,
+        actionCount: 0,
       },
-      message: `✅ Started workflow "${workflow.name}" (${workflow.actions?.length || 0} actions).`,
+      message: `✅ Started workflow "${workflow.name}".`,
     }
   },
 })
@@ -248,22 +241,18 @@ ariaFunctionRegistry.register({
 
     let query = context.supabase
       .from('workflows')
-      .select('id, name, description, status, trigger, execution_count, last_executed_at, template_category')
+      .select('id, name, description, is_active, trigger_type, updated_at')
       .eq('tenant_id', context.tenantId)
 
     if (status !== 'all') {
-      query = query.eq('status', status)
-    }
-
-    if (category) {
-      query = query.eq('template_category', category)
+      query = query.eq('is_active', status === 'active')
     }
 
     if (search) {
       query = query.ilike('name', `%${search}%`)
     }
 
-    query = query.order('execution_count', { ascending: false }).limit(20)
+    query = query.order('updated_at', { ascending: false }).limit(20)
 
     const { data: workflows, error } = await query
 
@@ -283,10 +272,10 @@ ariaFunctionRegistry.register({
     let message = `📋 Available Workflows (${workflows.length}):\n\n`
 
     for (const wf of workflows) {
-      const statusIcon = wf.status === 'active' ? '✅' : wf.status === 'paused' ? '⏸️' : '📝'
-      const triggerType = wf.trigger?.type || 'manual'
+      const statusIcon = wf.is_active ? '✅' : '📝'
+      const triggerType = wf.trigger_type || 'manual'
       message += `${statusIcon} ${wf.name}\n`
-      message += `   Trigger: ${triggerType} | Runs: ${wf.execution_count || 0}\n`
+      message += `   Trigger: ${triggerType}\n`
       if (wf.description) {
         message += `   ${wf.description.substring(0, 60)}\n`
       }
@@ -353,18 +342,12 @@ ariaFunctionRegistry.register({
       .from('workflow_executions')
       .select(`
         id, workflow_id, status, started_at, completed_at, error_message,
-        workflows(name, actions)
+        workflows(name)
       `)
       .eq('tenant_id', context.tenantId)
       .order('started_at', { ascending: false })
       .limit(10)
 
-    if (targetContactId) {
-      query = query.eq('contact_id', targetContactId)
-    }
-    if (targetProjectId) {
-      query = query.eq('project_id', targetProjectId)
-    }
     if (workflow_id) {
       query = query.eq('workflow_id', workflow_id)
     }
@@ -375,7 +358,7 @@ ariaFunctionRegistry.register({
       // Table might not exist, check activities instead
       const { data: activities } = await context.supabase
         .from('activities')
-        .select('subject, content, created_at, metadata')
+        .select('subject, content, created_at')
         .eq('tenant_id', context.tenantId)
         .or(`contact_id.eq.${targetContactId},project_id.eq.${targetProjectId}`)
         .ilike('subject', '%workflow%')
@@ -503,12 +486,6 @@ ariaFunctionRegistry.register({
       .eq('tenant_id', context.tenantId)
       .in('status', ['pending', 'running'])
 
-    if (targetContactId) {
-      query = query.eq('contact_id', targetContactId)
-    }
-    if (targetProjectId) {
-      query = query.eq('project_id', targetProjectId)
-    }
     if (workflow_id) {
       query = query.eq('workflow_id', workflow_id)
     }
@@ -524,7 +501,6 @@ ariaFunctionRegistry.register({
       subject: 'Workflow Paused',
       content: reason || 'Workflow paused via ARIA',
       created_by: context.userId,
-      metadata: { via: 'aria', workflow_id, action: 'pause' },
     })
 
     if (error) {
@@ -582,9 +558,10 @@ ariaFunctionRegistry.register({
     // Get workflow stats
     const { data: workflows } = await context.supabase
       .from('workflows')
-      .select('id, name, status, execution_count, last_executed_at')
+      .select('id, name, is_active, updated_at')
       .eq('tenant_id', context.tenantId)
-      .order('execution_count', { ascending: false })
+      .eq('is_deleted', false)
+      .order('updated_at', { ascending: false })
 
     // Get execution stats if table exists
     const executionStats = {
@@ -609,8 +586,7 @@ ariaFunctionRegistry.register({
 
     // Calculate totals
     const totalWorkflows = workflows?.length || 0
-    const activeWorkflows = workflows?.filter(w => w.status === 'active').length || 0
-    const totalExecutions = workflows?.reduce((sum, w) => sum + (w.execution_count || 0), 0) || 0
+    const activeWorkflows = workflows?.filter(w => w.is_active).length || 0
 
     const successRate = executionStats.total > 0
       ? Math.round((executionStats.completed / executionStats.total) * 100)
@@ -621,8 +597,7 @@ ariaFunctionRegistry.register({
     message += `WORKFLOWS\n`
     message += `────────────────────\n`
     message += `Total: ${totalWorkflows}\n`
-    message += `Active: ${activeWorkflows}\n`
-    message += `Total Executions: ${totalExecutions.toLocaleString()}\n\n`
+    message += `Active: ${activeWorkflows}\n\n`
 
     if (executionStats.total > 0) {
       message += `RECENT EXECUTIONS\n`
@@ -636,12 +611,11 @@ ariaFunctionRegistry.register({
 
     // Top workflows
     if (workflows && workflows.length > 0) {
-      message += `TOP PERFORMERS\n`
+      message += `TOP WORKFLOWS\n`
       message += `────────────────────\n`
       for (const wf of workflows.slice(0, 5)) {
-        if (wf.execution_count > 0) {
-          message += `• ${wf.name}: ${wf.execution_count} runs\n`
-        }
+        const status = wf.is_active ? 'active' : 'inactive'
+        message += `• ${wf.name} (${status})\n`
       }
     }
 
@@ -650,7 +624,6 @@ ariaFunctionRegistry.register({
       data: {
         totalWorkflows,
         activeWorkflows,
-        totalExecutions,
         recentExecutions: executionStats,
         successRate,
         topWorkflows: workflows?.slice(0, 5) || [],

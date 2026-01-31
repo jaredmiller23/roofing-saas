@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const { data: allAchievements, error: achievementsError } = await supabase
       .from('achievements')
       .select('*')
-      .order('points_required', { ascending: true })
+      .order('points_reward', { ascending: true })
 
     if (achievementsError) {
       logger.error('Error fetching achievements:', { error: achievementsError })
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     // Get user's unlocked achievements
     const { data: userAchievements, error: userError } = await supabase
       .from('user_achievements')
-      .select('achievement_id, unlocked_at')
+      .select('achievement_id, earned_at')
       .eq('user_id', user.id)
 
     if (userError) {
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     const achievementsWithStatus = allAchievements?.map(achievement => ({
       ...achievement,
       unlocked: unlockedIds.has(achievement.id),
-      unlocked_at: userAchievements?.find(ua => ua.achievement_id === achievement.id)?.unlocked_at
+      earned_at: userAchievements?.find(ua => ua.achievement_id === achievement.id)?.earned_at
     })) || []
 
     return successResponse({

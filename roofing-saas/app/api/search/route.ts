@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
     // 4. Search Territories
     const { data: territories } = await supabase
       .from('territories')
-      .select('id, name, description, status')
+      .select('id, name, description')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .or(
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
           id: territory.id,
           type: 'territory',
           title: territory.name,
-          subtitle: territory.status || '',
+          subtitle: '',
           description: territory.description || '',
           url: `/territories/${territory.id}`,
         })

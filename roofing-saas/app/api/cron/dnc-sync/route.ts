@@ -45,7 +45,7 @@ const SYNC_WARNING_DAYS = 5
 
 interface SyncJob {
   tenant_id: string
-  source: string
+  sync_type: string
   completed_at: string
 }
 
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     const { data: tenants, error: tenantError } = await supabase
       .from('tenants')
       .select('id, name')
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
     if (tenantError) {
       logger.error('Error fetching tenants', { error: tenantError })
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       // Get last successful sync for each source
       const { data: syncJobs, error: syncError } = await supabase
         .from('dnc_sync_jobs')
-        .select('tenant_id, source, completed_at')
+        .select('tenant_id, sync_type, completed_at')
         .eq('tenant_id', tenant.id)
         .eq('status', 'completed')
         .order('completed_at', { ascending: false })
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       const sources = ['federal', 'state_tn'] as const
 
       for (const source of sources) {
-        const lastSync = (syncJobs as SyncJob[])?.find((job) => job.source === source)
+        const lastSync = (syncJobs as SyncJob[])?.find((job) => job.sync_type === source)
 
         if (!lastSync) {
           // Never synced - critical alert

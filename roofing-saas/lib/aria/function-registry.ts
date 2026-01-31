@@ -335,7 +335,6 @@ ariaFunctionRegistry.register({
       subject: 'Contact Updated',
       content: `Contact information updated by ARIA. Fields changed: ${Object.keys(cleanUpdates).join(', ')}`,
       created_by: context.userId,
-      metadata: { updated_fields: Object.keys(cleanUpdates), via: 'aria' },
     })
 
     return {
@@ -413,15 +412,6 @@ ariaFunctionRegistry.register({
       subject: 'Contact Deleted',
       content: `Contact soft-deleted by ARIA. Reason: ${reason}`,
       created_by: context.userId,
-      metadata: {
-        deleted_contact: {
-          name: `${existingContact.first_name} ${existingContact.last_name}`,
-          email: existingContact.email,
-          phone: existingContact.phone,
-        },
-        reason,
-        via: 'aria',
-      },
     })
 
     return {
@@ -711,7 +701,7 @@ ariaFunctionRegistry.register({
     // Query activities
     let query = context.supabase
       .from('activities')
-      .select('id, type, subject, content, direction, created_at, metadata')
+      .select('id, type, subject, content, direction, created_at')
       .eq('tenant_id', context.tenantId)
       .order('created_at', { ascending: false })
       .limit(Math.min(limit, 50))
@@ -743,7 +733,6 @@ ariaFunctionRegistry.register({
       content: include_content ? activity.content : undefined,
       direction: activity.direction,
       when: activity.created_at,
-      metadata: include_content ? activity.metadata : undefined,
     }))
 
     // Generate summary
@@ -821,7 +810,7 @@ ariaFunctionRegistry.register({
 
     let dbQuery = context.supabase
       .from('activities')
-      .select('id, type, subject, content, direction, created_at, metadata, contact_id')
+      .select('id, type, subject, content, direction, created_at, contact_id')
       .eq('tenant_id', context.tenantId)
       .order('created_at', { ascending: false })
       .limit(Math.min(limit, 25))
@@ -1069,7 +1058,6 @@ ariaFunctionRegistry.register({
       subject: 'Stage Changed',
       content: `Pipeline stage changed to ${new_stage}`,
       created_by: context.userId,
-      metadata: { via: 'aria', previous_stage: context.project?.pipeline_stage },
     })
 
     return {
@@ -1235,7 +1223,6 @@ ariaFunctionRegistry.register({
       subject: 'Project Won',
       content: notes ? `Project WON! ${notes}` : 'Project marked as WON!',
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_won', final_value },
     })
 
     const value = data.final_value || data.estimated_value
@@ -1307,7 +1294,6 @@ ariaFunctionRegistry.register({
       subject: 'Project Lost',
       content: reason ? `Project LOST: ${reason}` : 'Project marked as LOST',
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_lost', loss_reason: reason },
     })
 
     return {
@@ -1470,7 +1456,6 @@ ariaFunctionRegistry.register({
         ? `Project REACTIVATED: ${reason}`
         : `Project reactivated - moved to ${new_stage}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_reactivated', new_stage },
     })
 
     return {
@@ -1785,7 +1770,7 @@ ariaFunctionRegistry.register({
     // Build query for activities
     let query = context.supabase
       .from('activities')
-      .select('id, type, content, created_at, metadata')
+      .select('id, type, content, created_at')
       .eq('tenant_id', context.tenantId)
       .eq('contact_id', finalContactId)
       .order('created_at', { ascending: false })
@@ -2042,7 +2027,6 @@ ariaFunctionRegistry.register({
       subject: 'Insurance Updated',
       content: `Insurance info updated: ${updates.join(', ')}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'insurance_update' },
     })
 
     return {
@@ -2308,18 +2292,9 @@ ariaFunctionRegistry.register({
         project_id: finalProjectId,
         type: 'meeting',
         subject: title,
+        content: notes || `${title} scheduled via ARIA`,
         scheduled_at: meetingDate.toISOString(),
         created_by: context.userId,
-        metadata: {
-          appointment_type: 'adjuster_meeting',
-          meeting_type,
-          adjuster_id: adjusterData?.id,
-          adjuster_name: adjusterData ? `${adjusterData.first_name} ${adjusterData.last_name}` : null,
-          property_address: contactData?.address_street,
-          notes,
-          status: 'scheduled',
-          via: 'aria',
-        },
       })
       .select()
       .single()
@@ -2466,7 +2441,6 @@ ariaFunctionRegistry.register({
         ? `Production STARTED: ${notes}`
         : `Production started${assigned_to ? ` - assigned to ${assigned_to}` : ''}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'production_started', crew_assigned: assigned_to },
     })
 
     const dateStr = productionStartDate.toLocaleDateString('en-US', {
@@ -2556,12 +2530,6 @@ ariaFunctionRegistry.register({
       subject: 'Progress Update',
       content: fullNote,
       created_by: context.userId,
-      metadata: {
-        via: 'aria',
-        event: 'progress_update',
-        completion_percentage,
-        has_issues: !!issues,
-      },
     })
 
     if (error) {
@@ -2689,7 +2657,6 @@ ariaFunctionRegistry.register({
         ? `🎉 Project COMPLETED: ${final_notes}`
         : '🎉 Project marked as COMPLETED',
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_completed', duration_days: durationStr },
     })
 
     const value = data.final_value || data.estimated_value
@@ -2767,7 +2734,6 @@ ariaFunctionRegistry.register({
       subject: 'Project Assigned',
       content: `Project assigned to ${assigned_to}`,
       created_by: context.userId,
-      metadata: { via: 'aria', event: 'project_assigned', crew_assigned: assigned_to },
     })
 
     let message = `✅ "${data.name}" assigned to ${assigned_to}`
@@ -3006,7 +2972,7 @@ ariaFunctionRegistry.register({
     let query = context.supabase
       .from('activities')
       .select(`
-        id, type, content, created_at, scheduled_at, metadata,
+        id, type, content, created_at, scheduled_at,
         contact:contact_id (first_name, last_name),
         project:project_id (name)
       `)
@@ -3080,7 +3046,7 @@ ariaFunctionRegistry.register({
     let query = context.supabase
       .from('activities')
       .select(`
-        id, type, content, scheduled_at, metadata,
+        id, type, content, scheduled_at,
         contact:contact_id (first_name, last_name),
         project:project_id (name)
       `)
@@ -3095,9 +3061,6 @@ ariaFunctionRegistry.register({
       // Only today's items
       query = query.gte('scheduled_at', today.toISOString()).lt('scheduled_at', tomorrow.toISOString())
     }
-
-    // Filter to pending tasks only
-    query = query.or('metadata->>status.is.null,metadata->>status.eq.pending')
 
     const { data, error } = await query.limit(20)
 
@@ -3261,15 +3224,9 @@ ariaFunctionRegistry.register({
         project_id: finalProjectId,
         type: 'meeting',
         subject: title,
+        content: notes || `${appointment_type} appointment scheduled via ARIA`,
         scheduled_at: appointmentDate.toISOString(),
         created_by: context.userId,
-        metadata: {
-          appointment_type,
-          duration_minutes,
-          notes,
-          status: 'scheduled',
-          via: 'aria',
-        },
       })
       .select()
       .single()

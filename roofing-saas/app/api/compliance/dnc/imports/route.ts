@@ -40,14 +40,12 @@ export async function GET(request: NextRequest) {
       .from('dnc_imports')
       .select(`
         id,
-        source,
-        numbers_count,
-        numbers_added,
-        numbers_updated,
-        numbers_failed,
+        file_name,
+        records_total,
+        records_imported,
+        records_failed,
         created_at,
-        imported_by,
-        metadata
+        imported_by
       `)
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
@@ -76,12 +74,10 @@ export async function GET(request: NextRequest) {
     // Transform for response
     const formattedImports = imports?.map(imp => ({
       id: imp.id,
-      source: imp.source,
-      filename: imp.metadata?.filename || `Import ${new Date(imp.created_at).toLocaleDateString()}`,
-      records_added: imp.numbers_added || 0,
-      records_updated: imp.numbers_updated || 0,
-      records_failed: imp.numbers_failed || 0,
-      total_records: imp.numbers_count || 0,
+      filename: imp.file_name || `Import ${new Date(imp.created_at).toLocaleDateString()}`,
+      records_added: imp.records_imported || 0,
+      records_failed: imp.records_failed || 0,
+      total_records: imp.records_total || 0,
       created_at: imp.created_at,
       created_by_email: userMap[imp.imported_by] || 'Unknown',
     })) || []

@@ -49,8 +49,6 @@ interface SignatureDocument {
   title: string
   status: string
   expires_at: string
-  reminder_sent_at: string | null
-  reminder_count: number
   contact: {
     id: string
     first_name: string
@@ -112,8 +110,6 @@ export async function GET(request: NextRequest) {
         title,
         status,
         expires_at,
-        reminder_sent_at,
-        reminder_count,
         tenant_id,
         contact:contacts(id, first_name, last_name, email),
         project:projects(id, name)
@@ -121,7 +117,6 @@ export async function GET(request: NextRequest) {
       .eq('status', 'sent')
       .lte('expires_at', sevenDaysFromNow.toISOString())
       .gt('expires_at', now.toISOString())
-      .lt('reminder_count', 3)
       .order('expires_at', { ascending: true })
 
     if (fetchError) {
@@ -157,11 +152,10 @@ export async function GET(request: NextRequest) {
 
       // Check if we should send a reminder
       const expiresAt = new Date(doc.expires_at)
-      const lastReminderAt = doc.reminder_sent_at ? new Date(doc.reminder_sent_at) : null
       const { shouldSend, daysRemaining, reminderType } = shouldSendReminder(
         expiresAt,
-        doc.reminder_count,
-        lastReminderAt
+        0,
+        null
       )
 
       if (!shouldSend) {
@@ -210,22 +204,6 @@ export async function GET(request: NextRequest) {
           ]
         })
 
-        // Update document reminder tracking
-        const { error: updateError } = await supabase
-          .from('signature_documents')
-          .update({
-            reminder_sent_at: new Date().toISOString(),
-            reminder_count: doc.reminder_count + 1
-          })
-          .eq('id', doc.id)
-
-        if (updateError) {
-          logger.error('Error updating reminder tracking', {
-            documentId: doc.id,
-            error: updateError
-          })
-        }
-
         stats.sent++
         results.push({
           documentId: doc.id,
@@ -236,8 +214,7 @@ export async function GET(request: NextRequest) {
           documentId: doc.id,
           recipientEmail: doc.contact.email,
           reminderType,
-          daysRemaining,
-          reminderCount: doc.reminder_count + 1
+          daysRemaining
         })
 
       } catch (emailError) {

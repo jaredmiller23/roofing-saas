@@ -88,7 +88,7 @@ export async function getCallAnalytics(
   // Get all call activities
   const { data: calls } = await supabase
     .from('activities')
-    .select('direction, metadata')
+    .select('direction, outcome, duration_seconds, recording_url')
     .eq('tenant_id', tenantId)
     .eq('type', 'call')
     .gte('created_at', from.toISOString())
@@ -116,29 +116,27 @@ export async function getCallAnalytics(
   let recordedCalls = 0
 
   for (const call of calls) {
-    const metadata = call.metadata as Record<string, unknown>
-
     if (call.direction === 'inbound') {
       inboundCalls++
     } else {
       outboundCalls++
     }
 
-    // Check if call was answered
-    const status = metadata.status
-    if (status === 'completed' || status === 'in-progress') {
+    // Check if call was answered based on outcome
+    const outcome = call.outcome?.toLowerCase()
+    if (outcome === 'completed' || outcome === 'answered' || outcome === 'in-progress') {
       answeredCalls++
-    } else if (status === 'no-answer' || status === 'busy' || status === 'failed') {
+    } else if (outcome === 'no-answer' || outcome === 'busy' || outcome === 'failed' || outcome === 'missed') {
       missedCalls++
     }
 
     // Add duration if available
-    if (metadata.duration) {
-      totalDuration += parseInt(metadata.duration as string)
+    if (call.duration_seconds) {
+      totalDuration += call.duration_seconds
     }
 
     // Check if call was recorded
-    if (metadata.recording_sid || metadata.recording_url) {
+    if (call.recording_url) {
       recordedCalls++
     }
   }
@@ -234,7 +232,7 @@ export async function getEmailAnalyticsSummary(
 
   const { data: emails } = await supabase
     .from('activities')
-    .select('direction, metadata')
+    .select('direction')
     .eq('tenant_id', tenantId)
     .eq('type', 'email')
     .gte('created_at', from.toISOString())
@@ -250,23 +248,18 @@ export async function getEmailAnalyticsSummary(
   }
 
   let outboundEmails = 0
-  let openedEmails = 0
-  let clickedEmails = 0
 
   for (const email of emails) {
     if (email.direction === 'outbound') {
       outboundEmails++
-      const metadata = email.metadata as Record<string, unknown>
-      if (metadata.opened) openedEmails++
-      if (metadata.clicked) clickedEmails++
     }
   }
 
   return {
     totalEmails: emails.length,
     outboundEmails,
-    openRate: outboundEmails > 0 ? Math.round((openedEmails / outboundEmails) * 100 * 100) / 100 : 0,
-    clickRate: outboundEmails > 0 ? Math.round((clickedEmails / outboundEmails) * 100 * 100) / 100 : 0,
+    openRate: 0,
+    clickRate: 0,
   }
 }
 

@@ -72,7 +72,7 @@ export async function validateMigration(
         .from('contacts')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', options.tenant_id)
-        .ilike('description', '%Migrated from Proline%')
+        .ilike('notes', '%Migrated from Proline%')
 
       if (error) {
         result.errors.push(`Failed to count contacts: ${error.message}`)
@@ -228,7 +228,7 @@ export async function validateMigration(
         .from('contacts')
         .select('id, email')
         .eq('tenant_id', options.tenant_id)
-        .ilike('description', '%Migrated from Proline%')
+        .ilike('notes', '%Migrated from Proline%')
         .not('email', 'is', null)
 
       if (emailError) {
@@ -254,7 +254,7 @@ export async function validateMigration(
         .from('contacts')
         .select('id, phone')
         .eq('tenant_id', options.tenant_id)
-        .ilike('description', '%Migrated from Proline%')
+        .ilike('notes', '%Migrated from Proline%')
         .not('phone', 'is', null)
 
       if (phoneError) {

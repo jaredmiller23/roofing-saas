@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
     // Find the activity by email ID
     const { data: activity } = await supabase
       .from('activities')
-      .select('id, tenant_id, contact_id, metadata')
+      .select('id, tenant_id, contact_id, external_id')
       .eq('type', 'email')
       .eq('direction', 'outbound')
-      .eq('metadata->>email_id', data.email_id)
+      .eq('external_id', data.email_id)
       .limit(1)
       .single()
 
@@ -60,9 +60,8 @@ export async function POST(request: NextRequest) {
       return new NextResponse('OK', { status: 200 })
     }
 
-    // Update activity metadata based on event type
+    // Update activity notes based on event type
     const updatedMetadata: Record<string, unknown> = {
-      ...(activity.metadata as Record<string, unknown>),
       last_event: type,
       last_event_timestamp: new Date().toISOString(),
     }

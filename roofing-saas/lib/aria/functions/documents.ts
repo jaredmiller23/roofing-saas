@@ -254,7 +254,6 @@ ariaFunctionRegistry.register({
       subject: 'Estimate Generated',
       content: `Estimate document generated via ARIA (${format} format)`,
       created_by: context.userId,
-      metadata: { via: 'aria', format, generated_at: new Date().toISOString() },
     })
 
     return {
@@ -354,7 +353,7 @@ ariaFunctionRegistry.register({
     // Fetch inspection notes
     const { data: notes } = await context.supabase
       .from('activities')
-      .select('content, subject, created_at, metadata')
+      .select('content, subject, created_at')
       .eq('tenant_id', context.tenantId)
       .eq('project_id', targetProjectId)
       .in('type', ['note', 'inspection'])
@@ -497,7 +496,6 @@ ariaFunctionRegistry.register({
       subject: 'Inspection Report Generated',
       content: `Inspection report generated via ARIA`,
       created_by: context.userId,
-      metadata: { via: 'aria', photo_count: photos.length },
     })
 
     return {
@@ -593,7 +591,7 @@ ariaFunctionRegistry.register({
     // Fetch claim-related activities
     const { data: activities } = await context.supabase
       .from('activities')
-      .select('type, subject, content, created_at, metadata')
+      .select('type, subject, content, created_at')
       .eq('tenant_id', context.tenantId)
       .eq('project_id', targetProjectId)
       .order('created_at', { ascending: true })

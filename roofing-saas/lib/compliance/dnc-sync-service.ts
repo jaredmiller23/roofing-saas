@@ -81,7 +81,7 @@ export async function getDNCSyncStatus(tenantId: string): Promise<DNCSyncStatus[
       .from('dnc_registry')
       .select('source')
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
     if (countError) {
       logger.error('Error fetching DNC registry counts', { error: countError, tenantId })
@@ -405,7 +405,7 @@ export async function getTenantsWithOverdueDNCSync(): Promise<
     const { data: tenants, error: tenantError } = await supabase
       .from('tenants')
       .select('id')
-      .eq('is_deleted', false)
+      .eq('is_active', true)
 
     if (tenantError) {
       logger.error('Error fetching tenants', { error: tenantError })

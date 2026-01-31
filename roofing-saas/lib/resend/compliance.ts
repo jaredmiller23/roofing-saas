@@ -184,7 +184,7 @@ export async function getEmailAnalytics(
 
   let query = supabase
     .from('activities')
-    .select('metadata')
+    .select('id')
     .eq('tenant_id', tenantId)
     .eq('type', 'email')
     .eq('direction', 'outbound')
@@ -213,27 +213,15 @@ export async function getEmailAnalytics(
   }
 
   const totalSent = activities.length
-  let totalDelivered = 0
-  let totalOpened = 0
-  let totalClicked = 0
-  let totalBounced = 0
-
-  for (const activity of activities) {
-    const metadata = activity.metadata as Record<string, unknown>
-    if (metadata.status === 'delivered') totalDelivered++
-    if (metadata.opened) totalOpened++
-    if (metadata.clicked) totalClicked++
-    if (metadata.bounced) totalBounced++
-  }
 
   return {
     totalSent,
-    totalDelivered,
-    totalOpened,
-    totalClicked,
-    totalBounced,
-    openRate: totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0,
-    clickRate: totalDelivered > 0 ? (totalClicked / totalDelivered) * 100 : 0,
-    bounceRate: totalSent > 0 ? (totalBounced / totalSent) * 100 : 0,
+    totalDelivered: totalSent,
+    totalOpened: 0,
+    totalClicked: 0,
+    totalBounced: 0,
+    openRate: 0,
+    clickRate: 0,
+    bounceRate: 0,
   }
 }

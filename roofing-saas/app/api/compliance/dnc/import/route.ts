@@ -87,19 +87,19 @@ export async function POST(request: NextRequest) {
         // Check if already exists
         const { data: existing } = await supabase
           .from('dnc_registry')
-          .select('id, is_deleted')
+          .select('id, is_active')
           .eq('tenant_id', tenantId)
-          .eq('phone_hash', phone_hash)
+          .eq('phone_number', phone_hash)
           .eq('source', source)
           .maybeSingle()
 
         if (existing) {
-          if (existing.is_deleted) {
-            // Restore deleted entry
+          if (!existing.is_active) {
+            // Restore inactive entry
             const { error: updateError } = await supabase
               .from('dnc_registry')
               .update({
-                is_deleted: false,
+                is_active: true,
                 listed_date: new Date().toISOString().split('T')[0],
                 metadata: reason ? { reason } : null,
               })
@@ -154,16 +154,11 @@ export async function POST(request: NextRequest) {
     // Log import to dnc_imports table
     const { error: importLogError } = await supabase.from('dnc_imports').insert({
       tenant_id: tenantId,
-      source,
-      numbers_count: results.total,
-      numbers_added: results.new,
-      numbers_updated: results.updated,
-      numbers_failed: results.invalid + results.errors.length,
+      file_name: source,
+      records_total: results.total,
+      records_imported: results.new,
+      records_failed: results.invalid + results.errors.length,
       imported_by: user.id,
-      metadata: {
-        reason,
-        errors: results.errors.slice(0, 100), // Store first 100 errors
-      },
     })
 
     if (importLogError) {
