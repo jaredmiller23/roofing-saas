@@ -25,6 +25,9 @@ const eslintConfig = [
       // 3rd party type definitions
       'types/intuit-oauth.d.ts',
       'types/next-pwa.d.ts',
+      // Serwist service worker build output (generated from app/sw.ts)
+      'public/sw.js',
+      'public/sw.js.map',
     ],
   },
   {

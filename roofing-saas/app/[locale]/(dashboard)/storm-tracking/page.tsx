@@ -32,7 +32,7 @@ export default function StormTrackingPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [stormEvents, setStormEvents] = useState<StormEvent[]>([])
   const [alerts, setAlerts] = useState<StormAlert[]>([])
-  const [affectedCustomers, setAffectedCustomers] = useState<AffectedCustomer[]>([])
+  const [affectedCustomers] = useState<AffectedCustomer[]>([])
   const [responseConfig, setResponseConfig] = useState<StormResponseConfig>({
     mode: 'normal',
     activatedAt: null,

@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { DocumentEditor } from '@/components/signatures/DocumentEditor'
-import { createClient } from '@/lib/supabase/client'
 import type { SignatureFieldPlacement } from '@/components/signatures/PlacedField'
 import type { FieldType } from '@/components/signatures/FieldPalette'
 import {

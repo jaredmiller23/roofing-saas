@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, InternalError } from '@/lib/api/errors'

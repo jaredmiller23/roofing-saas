@@ -29,7 +29,7 @@ import {
   fetchUserPoints,
   type DashboardScope,
 } from '@/lib/dashboard/queries'
-import { type MetricsTier, TIER_CONFIGS } from '@/lib/dashboard/metrics-types'
+import { type MetricsTier } from '@/lib/dashboard/metrics-types'
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
@@ -102,8 +102,6 @@ export async function GET(request: NextRequest) {
     ])
 
     const duration = Date.now() - startTime
-    const tierConfig = TIER_CONFIGS[mode]
-
     // Log performance
     if (duration > 2000) {
       console.warn(`[Dashboard Consolidated] Slow response: ${duration}ms`)

@@ -88,7 +88,7 @@ export async function GET(request: Request) {
 
     let leaderboard: LeaderboardEntry[] = []
     let userRank: number | null = null
-    let userCount = 0
+    let _userCount = 0
 
     if (type === 'knocks') {
       // Use RPC for efficient database-side aggregation
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
       // Get current user's rank efficiently
       const userEntry = knockData?.find((row: { user_id: string }) => row.user_id === user.id)
       if (userEntry) {
-        userCount = Number(userEntry.knock_count)
+        _userCount = Number(userEntry.knock_count)
         userRank = knockData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
       }
     } else if (type === 'sales') {
@@ -147,7 +147,7 @@ export async function GET(request: Request) {
       // Get current user's rank efficiently
       const userEntry = salesData?.find((row: { user_id: string }) => row.user_id === user.id)
       if (userEntry) {
-        userCount = Number(userEntry.sales_count)
+        _userCount = Number(userEntry.sales_count)
         userRank = salesData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
       }
     } else {

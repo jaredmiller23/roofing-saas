@@ -36,7 +36,7 @@ interface AdaptiveLayoutProps {
 }
 
 export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayoutProps) {
-  const { mode, config } = useUIModeContext()
+  const { mode } = useUIModeContext()
   const { preferences, mounted } = useUIPreferences()
   const pathname = usePathname()
   const router = useRouter()

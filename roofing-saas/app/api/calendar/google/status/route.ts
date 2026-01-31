@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError } from '@/lib/api/errors'
@@ -18,8 +17,6 @@ export async function GET() {
     if (!user) {
       throw AuthenticationError()
     }
-
-    const supabase = await createClient()
 
     // Google Calendar integration is not yet implemented (user_settings table pending)
     // Return disconnected state until the feature is built
