@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Find affected customers
     const affectedCustomers = findAffectedCustomers(
       stormEvent,
-      contacts as Contact[],
+      (contacts ?? []) as unknown as Contact[],
       { maxDistance, minProbability }
     )
 
@@ -159,17 +159,17 @@ export async function GET(_request: NextRequest) {
       const stormEventData: StormEventData = {
         id: event.id,
         event_date: event.event_date,
-        event_type: event.event_type,
+        event_type: event.event_type as StormEventData['event_type'],
         magnitude: event.magnitude,
         state: event.state,
-        county: event.county,
-        city: event.city,
-        latitude: event.latitude,
-        longitude: event.longitude,
-        path_length: event.path_length,
-        path_width: event.path_width,
-        property_damage: event.property_damage,
-        event_narrative: event.event_narrative,
+        county: event.county ?? undefined,
+        city: event.city ?? undefined,
+        latitude: event.latitude ?? undefined,
+        longitude: event.longitude ?? undefined,
+        path_length: event.path_length ?? undefined,
+        path_width: event.path_width ?? undefined,
+        property_damage: event.property_damage ?? undefined,
+        event_narrative: event.event_narrative ?? undefined,
       }
 
       // Determine status based on event date

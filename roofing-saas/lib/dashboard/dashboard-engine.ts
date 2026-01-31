@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
+import type { Json, Database } from '@/lib/types/database.types'
 import type {
   Dashboard,
   DashboardWidget,
@@ -70,7 +71,7 @@ export async function fetchDashboards(
   }
 
   return {
-    dashboards: (data || []) as Dashboard[],
+    dashboards: (data || []) as unknown as Dashboard[],
     total: count || 0,
     page,
     limit,
@@ -95,7 +96,7 @@ export async function fetchDashboard(id: string): Promise<Dashboard | null> {
     return null
   }
 
-  return data as Dashboard
+  return data as unknown as Dashboard
 }
 
 /**
@@ -127,9 +128,18 @@ export async function createDashboard(input: CreateDashboardInput): Promise<Dash
     },
   }
 
+  // Cast dashboard fields to Json for database insert
+  const insertData = {
+    ...dashboard,
+    layout: (dashboard.layout ?? null) as unknown as Json,
+    widgets: (dashboard.widgets ?? null) as unknown as Json,
+    settings: (dashboard.settings ?? null) as unknown as Json,
+    target_roles: (dashboard.target_roles ?? null) as unknown as Json,
+  }
+
   const { data, error } = await supabase
     .from('dashboards')
-    .insert(dashboard)
+    .insert(insertData as Database['public']['Tables']['dashboards']['Insert'])
     .select()
     .single()
 
@@ -137,7 +147,7 @@ export async function createDashboard(input: CreateDashboardInput): Promise<Dash
     throw new Error(`Failed to create dashboard: ${error.message}`)
   }
 
-  return data as Dashboard
+  return data as unknown as Dashboard
 }
 
 /**
@@ -153,13 +163,28 @@ export async function updateDashboard(input: UpdateDashboardInput): Promise<Dash
 
   const { id, ...updates } = input
 
+  // Cast complex fields to Json for database update
+  const updateData: Record<string, unknown> = {
+    ...updates,
+    last_modified_by: user.id,
+    updated_at: new Date().toISOString(),
+  }
+  if (updates.layout !== undefined) {
+    updateData.layout = updates.layout as unknown as Json
+  }
+  if (updates.widgets !== undefined) {
+    updateData.widgets = updates.widgets as unknown as Json
+  }
+  if (updates.settings !== undefined) {
+    updateData.settings = updates.settings as unknown as Json
+  }
+  if (updates.target_roles !== undefined) {
+    updateData.target_roles = updates.target_roles as unknown as Json
+  }
+
   const { data, error } = await supabase
     .from('dashboards')
-    .update({
-      ...updates,
-      last_modified_by: user.id,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData as Database['public']['Tables']['dashboards']['Update'])
     .eq('id', id)
     .select()
     .single()
@@ -168,7 +193,7 @@ export async function updateDashboard(input: UpdateDashboardInput): Promise<Dash
     throw new Error(`Failed to update dashboard: ${error.message}`)
   }
 
-  return data as Dashboard
+  return data as unknown as Dashboard
 }
 
 /**
@@ -355,23 +380,23 @@ async function fetchQueryData(
 ): Promise<WidgetDataResponse> {
   const supabase = createClient()
 
-  let query = supabase.from(config.entity).select(config.fields.join(','))
+  let query = supabase.from(config.entity as 'contacts').select(config.fields.join(','))
 
   // Apply filters
   if (config.filters?.length) {
     for (const filter of config.filters) {
       switch (filter.operator) {
         case 'equals':
-          query = query.eq(filter.field, filter.value)
+          query = query.eq(filter.field, filter.value as string)
           break
         case 'not_equals':
-          query = query.neq(filter.field, filter.value)
+          query = query.neq(filter.field, filter.value as string)
           break
         case 'greater_than':
-          query = query.gt(filter.field, filter.value)
+          query = query.gt(filter.field, filter.value as string)
           break
         case 'less_than':
-          query = query.lt(filter.field, filter.value)
+          query = query.lt(filter.field, filter.value as string)
           break
         case 'in':
           query = query.in(filter.field, filter.value as unknown[])
@@ -523,7 +548,7 @@ export async function getDefaultDashboard(roleId?: string): Promise<Dashboard | 
     return null
   }
 
-  return data as Dashboard
+  return data as unknown as Dashboard
 }
 
 /**

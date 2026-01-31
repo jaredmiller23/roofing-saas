@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     // Transform extracted addresses to contacts
     const contacts = addresses.map((addr) => ({
       tenant_id: tenantId,
-      full_name: addr.full_address || addr.street_address || 'Unknown Address', // Use address as name initially
+      first_name: addr.street_address || 'Unknown',
+      last_name: addr.city || 'Address',
       email: null,
       phone: null,
       address_street: addr.street_address,
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       address_zip: addr.zip_code,
       latitude: addr.latitude,
       longitude: addr.longitude,
-      status: 'lead', // Start as leads
+      type: 'lead' as const,
       source: 'storm_targeting',
       notes: `Address-only lead from storm targeting. Extracted: ${new Date().toLocaleDateString()}. Property type: ${addr.osm_property_type || 'residential'}. NEEDS ENRICHMENT: Add owner name, phone, email.`,
       created_by: user.id,

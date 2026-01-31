@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { ImpersonationCookie } from '@/lib/impersonation/types'
 import { IMPERSONATION_COOKIE_NAME } from '@/lib/impersonation/types'
+import type { Database } from '@/lib/types/database.types'
 
 /**
  * Server-side Supabase client for Server Components and Server Actions
@@ -32,7 +33,7 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
 
-  const client = createServerClient(supabaseUrl, supabaseKey, {
+  const client = createServerClient<Database>(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll()
@@ -111,7 +112,7 @@ export async function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || ''
 
-  return createServerClient(supabaseUrl, serviceRoleKey, {
+  return createServerClient<Database>(supabaseUrl, serviceRoleKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll()

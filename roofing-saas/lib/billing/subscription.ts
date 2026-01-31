@@ -9,6 +9,7 @@
  */
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import type { Json } from '@/lib/types/database.types';
 import { stripe } from './stripe';
 import { PLANS, TRIAL_CONFIG, calculateTrialEndDate, calculateTrialDaysRemaining } from './plans';
 import type {
@@ -406,7 +407,17 @@ export async function logSubscriptionEvent(
   await supabase.from('subscription_events').insert({
     tenant_id: tenantId,
     subscription_id: subscriptionId,
-    ...event,
+    event_type: event.event_type,
+    stripe_event_id: event.stripe_event_id,
+    stripe_event_type: event.stripe_event_type,
+    previous_status: event.previous_status,
+    new_status: event.new_status,
+    previous_plan: event.previous_plan,
+    new_plan: event.new_plan,
+    amount_cents: event.amount_cents,
+    metadata: (event.metadata ?? null) as Json | null,
+    initiated_by: event.initiated_by,
+    user_id: event.user_id,
   });
 }
 

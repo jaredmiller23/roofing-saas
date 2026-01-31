@@ -53,7 +53,8 @@ async function getUserInfoMap(
 
   const userMap = new Map<string, UserInfo>()
 
-  users?.forEach((u: { user_id: string; full_name: string; avatar_url: string | null }) => {
+  const usersArray = users as { user_id: string; full_name: string; avatar_url: string | null }[] | null
+  usersArray?.forEach((u) => {
     userMap.set(u.user_id, {
       name: u.full_name || 'Unknown',
       avatar_url: u.avatar_url
@@ -92,7 +93,7 @@ export async function GET(request: Request) {
 
     if (type === 'knocks') {
       // Use RPC for efficient database-side aggregation
-      const { data: knockData, error } = await supabase.rpc('get_knock_leaderboard', {
+      const { data: rawKnockData, error } = await supabase.rpc('get_knock_leaderboard', {
         p_tenant_id: tenantId,
         p_since: getDateByPeriod(period),
         p_limit: limit
@@ -103,8 +104,10 @@ export async function GET(request: Request) {
         throw InternalError('Failed to fetch knock leaderboard')
       }
 
+      const knockData = (rawKnockData ?? []) as { user_id: string; knock_count: number }[]
+
       // Build leaderboard with user info
-      leaderboard = (knockData || []).map((row: { user_id: string; knock_count: number }) => {
+      leaderboard = knockData.map((row) => {
         const userInfo = userInfoMap.get(row.user_id)
         return {
           user_id: row.user_id,
@@ -115,14 +118,14 @@ export async function GET(request: Request) {
       })
 
       // Get current user's rank efficiently
-      const userEntry = knockData?.find((row: { user_id: string }) => row.user_id === user.id)
+      const userEntry = knockData.find((row) => row.user_id === user.id)
       if (userEntry) {
         _userCount = Number(userEntry.knock_count)
-        userRank = knockData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
+        userRank = knockData.findIndex((row) => row.user_id === user.id) + 1
       }
     } else if (type === 'sales') {
       // Use RPC for efficient database-side aggregation
-      const { data: salesData, error } = await supabase.rpc('get_sales_leaderboard', {
+      const { data: rawSalesData, error } = await supabase.rpc('get_sales_leaderboard', {
         p_tenant_id: tenantId,
         p_since: getDateByPeriod(period),
         p_limit: limit
@@ -133,8 +136,10 @@ export async function GET(request: Request) {
         throw InternalError('Failed to fetch sales leaderboard')
       }
 
+      const salesData = (rawSalesData ?? []) as { user_id: string; sales_count: number }[]
+
       // Build leaderboard with user info
-      leaderboard = (salesData || []).map((row: { user_id: string; sales_count: number }) => {
+      leaderboard = salesData.map((row) => {
         const userInfo = userInfoMap.get(row.user_id)
         return {
           user_id: row.user_id,
@@ -145,10 +150,10 @@ export async function GET(request: Request) {
       })
 
       // Get current user's rank efficiently
-      const userEntry = salesData?.find((row: { user_id: string }) => row.user_id === user.id)
+      const userEntry = salesData.find((row) => row.user_id === user.id)
       if (userEntry) {
         _userCount = Number(userEntry.sales_count)
-        userRank = salesData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
+        userRank = salesData.findIndex((row) => row.user_id === user.id) + 1
       }
     } else {
       // Default: Get leaderboard from gamification_scores (points)
@@ -164,12 +169,12 @@ export async function GET(request: Request) {
         throw InternalError('Failed to fetch leaderboard')
       }
 
-      leaderboard = (pointsData || []).map((row: { user_id: string; total_points: number }) => {
+      leaderboard = (pointsData || []).map((row) => {
         const userInfo = userInfoMap.get(row.user_id)
         return {
           user_id: row.user_id,
           user_name: userInfo?.name || 'Unknown',
-          total_points: Number(row.total_points),
+          total_points: Number(row.total_points ?? 0),
           avatar_url: userInfo?.avatar_url || null,
         }
       })

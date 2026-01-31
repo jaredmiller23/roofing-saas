@@ -2,6 +2,7 @@
  * Challenge by ID API
  */
 
+import type { Database } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getUserTenantId } from '@/lib/auth/session'
 import { challengeConfigSchema } from '@/lib/gamification/types'
@@ -43,7 +44,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const { data, error } = await supabase
       .from('challenges')
-      .update({ ...validated, updated_at: new Date().toISOString() })
+      .update({ ...validated, updated_at: new Date().toISOString() } as Database['public']['Tables']['challenges']['Update'])
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .select()

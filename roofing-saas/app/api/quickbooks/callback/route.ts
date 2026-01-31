@@ -72,11 +72,13 @@ export async function GET(request: NextRequest) {
     const country = companyInfo?.CompanyInfo?.Country || 'US'
 
     // Encrypt tokens before storing
-    const { data: encryptedAccessToken, error: encryptAccessError } = await supabase
+    const { data: rawEncryptedAccessToken, error: encryptAccessError } = await supabase
       .rpc('encrypt_qb_token', { plaintext: tokens.access_token })
+    const encryptedAccessToken = rawEncryptedAccessToken as string | null
 
-    const { data: encryptedRefreshToken, error: encryptRefreshError } = await supabase
+    const { data: rawEncryptedRefreshToken, error: encryptRefreshError } = await supabase
       .rpc('encrypt_qb_token', { plaintext: tokens.refresh_token })
+    const encryptedRefreshToken = rawEncryptedRefreshToken as string | null
 
     if (encryptAccessError || encryptRefreshError || !encryptedAccessToken || !encryptedRefreshToken) {
       logger.error('Failed to encrypt QB tokens', {

@@ -44,8 +44,9 @@ export async function GET() {
       throw new Error('Failed to fetch weekly challenge data')
     }
 
-    const userKnockCount = Number(stats?.[0]?.user_knock_count || 0)
-    const participantCount = Number(stats?.[0]?.participant_count || 0)
+    const statsArray = stats as { user_knock_count: number; participant_count: number }[] | null
+    const userKnockCount = Number(statsArray?.[0]?.user_knock_count || 0)
+    const participantCount = Number(statsArray?.[0]?.participant_count || 0)
 
     // Target (configurable - default 50 per user)
     const target = 50

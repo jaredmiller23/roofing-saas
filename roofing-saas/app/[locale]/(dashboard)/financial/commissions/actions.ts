@@ -61,7 +61,7 @@ export async function createCommissionAction(formData: FormData): Promise<Commis
     }
 
     // Calculate commission using the database function
-    const { data: commissionAmount, error: calcError } = await supabase
+    const { data: rawCommissionAmount, error: calcError } = await supabase
       .rpc('calculate_commission', {
         p_plan_id: commissionPlanId,
         p_base_amount: baseAmount
@@ -72,12 +72,15 @@ export async function createCommissionAction(formData: FormData): Promise<Commis
       return { error: 'Failed to calculate commission' }
     }
 
+    const commissionAmount = Number(rawCommissionAmount) || 0
+
     // Create commission record
     const { error } = await supabase
       .from('commission_records')
       .insert({
         tenant_id: tenantId,
         user_id: targetUser.user_id,
+        amount: commissionAmount,
         commission_plan_id: commissionPlanId,
         project_id: projectId || null,
         commission_type: commissionType,

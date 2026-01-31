@@ -87,7 +87,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Format results for voice assistant
-    const formattedResults = (results || []).map((r: KnowledgeSearchResult) => ({
+    const resultsArray = (results ?? []) as KnowledgeSearchResult[]
+    const formattedResults = resultsArray.map((r: KnowledgeSearchResult) => ({
       title: r.title,
       content: r.content,
       category: r.category,
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Combine top results into a concise summary
       const topResult = formattedResults[0]
-      summary = `${topResult.content}\n\nI also found related information about ${formattedResults.slice(1).map((r: KnowledgeSearchResult) => r.title.toLowerCase()).join(' and ')}.`
+      summary = `${topResult.content}\n\nI also found related information about ${formattedResults.slice(1).map(r => r.title.toLowerCase()).join(' and ')}.`
     }
 
     const result = {
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
       query_text: query,
       query_embedding: JSON.stringify(embeddingResult.embedding),
       results_count: formattedResults.length,
-      top_result_id: formattedResults.length > 0 ? formattedResults[0].id : null,
+      top_result_id: null,
       relevance_score: formattedResults.length > 0 ? formattedResults[0].relevance : null,
     })
 

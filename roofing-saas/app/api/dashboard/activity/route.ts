@@ -140,7 +140,7 @@ export async function GET() {
             type: 'project_won',
             title: 'Deal Won! 🎉',
             description: `Closed deal with ${contactName}`,
-            timestamp: project.updated_at,
+            timestamp: project.updated_at ?? new Date().toISOString(),
             metadata: {
               user: userName,
               project_name: project.name,
@@ -154,7 +154,7 @@ export async function GET() {
             type: 'project_lost',
             title: 'Deal Lost',
             description: `${contactName} - ${project.name}`,
-            timestamp: project.updated_at,
+            timestamp: project.updated_at ?? new Date().toISOString(),
             metadata: {
               user: userName,
               project_name: project.name,
@@ -168,7 +168,7 @@ export async function GET() {
             type: 'project_created',
             title: 'New Project',
             description: `${project.name} added to pipeline`,
-            timestamp: project.created_at,
+            timestamp: project.created_at ?? new Date().toISOString(),
             metadata: {
               user: userName,
               project_name: project.name,
@@ -189,7 +189,7 @@ export async function GET() {
           type: 'contact_added',
           title: 'New Contact',
           description: `${contactName} added to ${contact.stage || 'pipeline'}`,
-          timestamp: contact.created_at,
+          timestamp: contact.created_at ?? new Date().toISOString(),
           metadata: {
             user: userName,
             contact_name: contactName

@@ -7,6 +7,7 @@
 // =============================================
 
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/types/database.types'
 import {
   type ProlineContact,
   type ProlineProject,
@@ -160,7 +161,7 @@ export async function migrateProlineData(
 
           // Insert contact (if not dry run)
           if (!options.dry_run) {
-            const { error } = await supabase.from('contacts').insert(transformedContact)
+            const { error } = await supabase.from('contacts').insert(transformedContact as Database['public']['Tables']['contacts']['Insert'])
 
             if (error) {
               throw new Error(error.message)
@@ -228,7 +229,7 @@ export async function migrateProlineData(
 
           // Insert project (if not dry run)
           if (!options.dry_run) {
-            const { error } = await supabase.from('projects').insert(transformedProject)
+            const { error } = await supabase.from('projects').insert(transformedProject as Database['public']['Tables']['projects']['Insert'])
 
             if (error) {
               throw new Error(error.message)
@@ -308,7 +309,7 @@ export async function migrateProlineData(
 
           // Insert activity (if not dry run)
           if (!options.dry_run) {
-            const { error } = await supabase.from('activities').insert(transformedActivity)
+            const { error } = await supabase.from('activities').insert(transformedActivity as Database['public']['Tables']['activities']['Insert'])
 
             if (error) {
               throw new Error(error.message)

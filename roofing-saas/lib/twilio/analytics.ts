@@ -317,7 +317,7 @@ export async function getCallVolumeByDay(
   const volumeByDay: Record<string, { inbound: number; outbound: number }> = {}
 
   for (const call of calls) {
-    const date = new Date(call.created_at).toISOString().split('T')[0]
+    const date = new Date(call.created_at ?? '').toISOString().split('T')[0]
     if (!volumeByDay[date]) {
       volumeByDay[date] = { inbound: 0, outbound: 0 }
     }

@@ -20,20 +20,21 @@ interface Task {
   id: string
   title: string
   description: string | null
-  priority: string
-  status: string
+  priority: string | null
+  status: string | null
   due_date: string | null
   start_date: string | null
   project_id: string | null
   contact_id: string | null
   assigned_to: string | null
   parent_task_id: string | null
-  progress: number
+  progress: number | null
   estimated_hours: number | null
   actual_hours: number | null
   tags: string[] | null
-  reminder_enabled: boolean
+  reminder_enabled: boolean | null
   reminder_date: string | null
+  [key: string]: unknown
 }
 
 interface TaskFormProps {

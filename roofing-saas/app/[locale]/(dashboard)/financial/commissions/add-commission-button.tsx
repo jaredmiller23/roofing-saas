@@ -7,7 +7,7 @@ import { AddCommissionDialog } from './add-commission-dialog'
 interface CommissionPlan {
   id: string
   name: string
-  plan_type: string
+  plan_type: string | null
 }
 
 interface AddCommissionButtonProps {

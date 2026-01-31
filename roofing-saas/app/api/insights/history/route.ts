@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     // Transform the data to match the expected format
     const transformedHistory = (history || []).map(item => ({
       id: item.id,
-      query: item.query,
-      interpretation: item.interpretation,
-      result: item.result,
+      query: item.query_text,
+      interpretation: null,
+      result: null,
       timestamp: item.created_at,
-      executionTime: item.execution_time,
+      executionTime: item.execution_time_ms,
       isFavorite: item.is_favorite,
       userId: item.user_id
     }))

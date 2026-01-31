@@ -3,12 +3,12 @@
 import { useMemo } from 'react'
 
 interface Project {
-  project_name?: string
-  status?: string
-  revenue?: number
-  total_actual_cost?: number
-  gross_profit?: number
-  profit_margin_percent?: number
+  project_name?: string | null
+  status?: string | null
+  revenue?: number | null
+  total_actual_cost?: number | null
+  gross_profit?: number | null
+  profit_margin_percent?: number | null
 }
 
 interface MarginAnalysisProps {

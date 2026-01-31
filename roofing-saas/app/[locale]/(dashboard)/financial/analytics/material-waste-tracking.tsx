@@ -9,12 +9,12 @@ interface Material {
   material_type?: string | null
   supplier: string
   quantity: number
-  quantity_used?: number
-  quantity_wasted?: number
-  quantity_returned?: number
-  waste_percent?: number
+  quantity_used?: number | null
+  quantity_wasted?: number | null
+  quantity_returned?: number | null
+  waste_percent?: number | null
   unit_cost: number
-  total_cost?: number
+  total_cost?: number | null
 }
 
 interface MaterialWasteTrackingProps {

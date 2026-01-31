@@ -1,3 +1,4 @@
+import type { Database } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { updateContactSchema } from '@/lib/validations/contact'
@@ -91,7 +92,7 @@ export async function PATCH(
 
         const { data, error } = await supabase
           .from('contacts')
-          .update(updateData)
+          .update(updateData as Database['public']['Tables']['contacts']['Update'])
           .eq('id', id)
           .eq('tenant_id', tenantId)
           .eq('is_deleted', false)

@@ -75,7 +75,7 @@ export async function GET() {
         first_name: firstName,
         last_name: lastName,
         full_name: fullName,
-        role: tu.role,
+        role: tu.role ?? 'viewer',
       }
     })
 

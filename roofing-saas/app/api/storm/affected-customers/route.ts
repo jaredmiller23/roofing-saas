@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Find affected customers
     let affectedCustomers = findAffectedCustomers(
       stormEvent,
-      contacts as Contact[],
+      contacts as unknown as Contact[],
       { maxDistance, minProbability }
     )
 

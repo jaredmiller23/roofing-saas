@@ -2,6 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ContactForm } from '@/components/contacts/contact-form'
+import type { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
 
 /**
@@ -61,7 +62,7 @@ export default async function EditContactPage({
         </div>
 
         <div className="bg-card rounded-lg shadow p-6">
-          <ContactForm contact={contact} mode="edit" />
+          <ContactForm contact={contact as unknown as Contact} mode="edit" />
         </div>
       </div>
     </div>

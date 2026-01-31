@@ -9,7 +9,7 @@ import {
 import { errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
-import { generateSignedPDF, uploadPDFToStorage } from '@/lib/pdf/signature-pdf-generator'
+import { generateSignedPDF, uploadPDFToStorage, type SignatureData } from '@/lib/pdf/signature-pdf-generator'
 
 /**
  * GET /api/signature-documents/[id]/download
@@ -43,13 +43,10 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // Get document with signatures
+    // Get document
     const { data: document, error } = await supabase
       .from('signature_documents')
-      .select(`
-        *,
-        signatures(*)
-      `)
+      .select('*')
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .single()
@@ -63,22 +60,52 @@ export async function GET(
       throw ValidationError('Document must be signed before downloading')
     }
 
+    // Fetch signatures separately (no FK relationship in generated types)
+    const { data: signatures } = await supabase
+      .from('signatures')
+      .select('*')
+      .eq('document_id', id)
+
+    // Fetch project name if available
+    let projectName: string | undefined
+    if (document.project_id) {
+      const { data: project } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', document.project_id)
+        .single()
+      projectName = project?.name ?? undefined
+    }
+
+    // Fetch contact first/last name for PDF generation
+    let contactInfo: { first_name: string; last_name: string } | undefined
+    if (document.contact_id) {
+      const { data: contactData } = await supabase
+        .from('contacts')
+        .select('first_name, last_name')
+        .eq('id', document.contact_id)
+        .single()
+      if (contactData) {
+        contactInfo = { first_name: contactData.first_name, last_name: contactData.last_name }
+      }
+    }
+
     try {
       // Generate PDF with signatures
       logger.info('Generating signed PDF', {
         documentId: id,
-        signaturesCount: document.signatures?.length || 0
+        signaturesCount: signatures?.length || 0
       })
 
       const pdfBytes = await generateSignedPDF(
         {
           title: document.title,
-          description: document.description,
+          description: document.description ?? undefined,
           document_type: document.document_type,
-          project: document.project,
-          contact: document.contact
+          project: projectName ? { name: projectName } : undefined,
+          contact: contactInfo
         },
-        document.signatures || [],
+        (signatures || []) as unknown as SignatureData[],
         document.file_url || undefined
       )
 

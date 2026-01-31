@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
@@ -81,7 +82,7 @@ export async function POST(
       created_by: user.id,
       inspection_completed_at: new Date().toISOString(),
       // Store inspection data and address in custom_fields JSONB
-      custom_fields: {
+      custom_fields: ({
         claim_type: 'roof',
         property_address: contactAddress.street,
         property_city: contactAddress.city,
@@ -93,7 +94,7 @@ export async function POST(
           damage_areas: inspectionState.damageAreas,
           completed_at: new Date().toISOString(),
         },
-      },
+      }) as unknown as Json,
     }
 
     // Insert claim

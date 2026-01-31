@@ -77,7 +77,7 @@ export async function GET(
       throw NotFoundError('No packet has been generated for this project. Generate a packet first.')
     }
 
-    const packet = packetRecord.packet_data as ClaimsPacket
+    const packet = packetRecord.packet_data as unknown as ClaimsPacket
 
     // Generate PDF
     const pdfDoc = await PDFDocument.create()

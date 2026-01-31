@@ -4,7 +4,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { generateRevenueForecast } from '@/lib/analytics/forecasting'
 import { createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
-import { PipelineStage } from '@/lib/types/api'
+import { PipelineStage, Project } from '@/lib/types/api'
 import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate revenue forecast
-    const forecast = generateRevenueForecast(projects, filters)
+    const forecast = generateRevenueForecast(projects as unknown as Project[], filters)
 
     return NextResponse.json(forecast)
 

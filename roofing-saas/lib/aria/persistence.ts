@@ -10,6 +10,7 @@
 
 import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 
 // =============================================================================
 // Conversation Management
@@ -100,8 +101,8 @@ export async function saveMessage(
         conversation_id: conversationId,
         role,
         content,
-        function_call: functionCall || null,
-        metadata: metadata || {},
+        function_call: (functionCall || null) as unknown as Json | null,
+        metadata: (metadata || {}) as unknown as Json,
       })
       .select('id')
       .single()

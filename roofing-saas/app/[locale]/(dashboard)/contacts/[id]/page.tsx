@@ -85,7 +85,7 @@ export default async function ContactDetailPage({
               </span>
               <ContactSubstatusManager
                 contactId={contact.id}
-                stage={contact.stage}
+                stage={contact.stage ?? 'new'}
                 currentSubstatus={contact.substatus}
               />
             </div>

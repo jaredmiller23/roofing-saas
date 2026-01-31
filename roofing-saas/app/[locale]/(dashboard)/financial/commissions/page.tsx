@@ -36,11 +36,7 @@ export default async function CommissionsPage() {
       status,
       notes,
       created_at,
-      project:projects (
-        id,
-        name,
-        project_number
-      )
+      project_id
     `)
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
@@ -162,9 +158,8 @@ export default async function CommissionsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            {userSummary.user_name || 'Unknown'}
+                            {userSummary.user_id ?? 'Unknown'}
                           </p>
-                          <p className="text-xs text-muted-foreground">{userSummary.user_email}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right font-semibold">

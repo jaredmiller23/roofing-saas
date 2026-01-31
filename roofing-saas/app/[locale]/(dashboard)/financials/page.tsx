@@ -220,8 +220,9 @@ export default async function FinancialsPage() {
           <div className="space-y-4">
             {(profitLoss || []).slice(0, 5).map((project) => {
               const variance = Number(project.cost_variance) || 0
-              const variancePercent = project.total_estimated_cost > 0
-                ? (variance / Number(project.total_estimated_cost) * 100).toFixed(1)
+              const totalEstimatedCost = project.total_estimated_cost ?? 0
+              const variancePercent = totalEstimatedCost > 0
+                ? (variance / Number(totalEstimatedCost) * 100).toFixed(1)
                 : '0.0'
 
               return (

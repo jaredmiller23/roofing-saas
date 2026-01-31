@@ -38,7 +38,7 @@ export async function GET(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
       .single()
 
     if (fetchError || !contact) {
@@ -49,7 +49,7 @@ export async function GET(
     }
 
     // Calculate lead score
-    const leadScore = calculateLeadScore(contact as Contact)
+    const leadScore = calculateLeadScore(contact as unknown as Contact)
 
     // Update the contact's lead_score in the database
     const { error: updateError } = await supabase
@@ -59,7 +59,7 @@ export async function GET(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -127,7 +127,7 @@ export async function POST(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
       .single()
 
     if (fetchError || !contact) {
@@ -138,7 +138,7 @@ export async function POST(
     }
 
     // Calculate new lead score
-    const leadScore = calculateLeadScore(contact as Contact)
+    const leadScore = calculateLeadScore(contact as unknown as Contact)
     const previousScore = contact.lead_score || 0
 
     // Update the contact's lead_score in the database
@@ -149,7 +149,7 @@ export async function POST(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -236,7 +236,7 @@ export async function PATCH(
       .from('contacts')
       .select('id, lead_score')
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
       .single()
 
     if (fetchError || !contact) {
@@ -256,7 +256,7 @@ export async function PATCH(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as { tenant_id?: string }).tenant_id)
+      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
 
     if (updateError) {
       console.error('Failed to update lead score in database:', updateError)
@@ -284,7 +284,7 @@ export async function PATCH(
         scoreChange: score - previousScore,
         manualOverride: true,
         reason: reason || 'Manual override',
-        updatedBy: (user as { id?: string }).id,
+        updatedBy: (user as unknown as { id?: string }).id,
         updatedAt: new Date().toISOString(),
       },
     })

@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { getRequestContext } from '@/lib/auth/request-context'
@@ -135,6 +136,7 @@ export async function GET(request: NextRequest) {
       if (projects) {
         const projectsByContact = new Map<string, typeof projects>()
         for (const project of projects) {
+          if (!project.contact_id) continue
           const list = projectsByContact.get(project.contact_id) || []
           list.push(project)
           projectsByContact.set(project.contact_id, list)
@@ -217,10 +219,13 @@ export async function POST(request: NextRequest) {
     const contact = await auditedCreate(
       'contact',
       async () => {
+        const { custom_fields, tags, ...contactFields } = validatedData.data
         const { data, error } = await supabase
           .from('contacts')
           .insert({
-            ...validatedData.data,
+            ...contactFields,
+            custom_fields: custom_fields as Json ?? null,
+            tags: tags ?? null,
             tenant_id: tenantId,
             created_by: userId,
           })
@@ -260,7 +265,7 @@ export async function POST(request: NextRequest) {
     if (tenantError) {
       logger.error('Failed to fetch tenant settings', { error: tenantError, tenantId })
     } else {
-      const setting: AutoCreateProjectSetting = tenant?.auto_create_project_for_homeowners || 'prompt'
+      const setting = (tenant?.auto_create_project_for_homeowners || 'prompt') as AutoCreateProjectSetting
 
       if (setting === 'always') {
         // Auto-create project without prompting

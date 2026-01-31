@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 
 interface Project {
   actual_completion: string | null
-  revenue: number
+  revenue: number | null
 }
 
 interface RevenueChartProps {

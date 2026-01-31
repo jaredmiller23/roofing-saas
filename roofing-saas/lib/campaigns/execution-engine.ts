@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 import { resendClient, isResendConfigured, getFromAddress } from '@/lib/resend/client'
 import { sendSMS, replaceTemplateVariables } from '@/lib/twilio/sms'
 import { isTwilioConfigured } from '@/lib/twilio/client'
@@ -146,7 +147,7 @@ export async function executeStep(
     const context: StepExecutionContext = {
       enrollment,
       step,
-      contact,
+      contact: contact as unknown as StepExecutionContext['contact'],
     }
 
     // Execute step based on type
@@ -219,7 +220,7 @@ export async function executeStep(
       .update({
         status: 'completed',
         completed_at: new Date().toISOString(),
-        result_data: result,
+        result_data: result as unknown as Json,
       })
       .eq('id', executionId)
 
@@ -421,13 +422,12 @@ async function executeCreateTask(
     .insert({
       tenant_id: context.enrollment.tenant_id,
       contact_id: context.contact.id,
-      activity_type: 'task',
-      activity_subtype: config.task_type,
+      type: 'task',
+      subtype: config.task_type,
       subject: config.title,
-      description: config.description,
-      priority: config.priority,
-      assigned_to: config.assigned_to,
-      due_date: dueDate.toISOString(),
+      content: config.description,
+      created_by: config.assigned_to,
+      scheduled_at: dueDate.toISOString(),
     })
     .select('id')
     .single()
@@ -671,15 +671,16 @@ async function scheduleNextStep(enrollmentId: string, campaignId: string) {
 
   // Calculate scheduled time based on delay
   const scheduledAt = new Date()
+  const delayValue = nextStep.delay_value ?? 0
   switch (nextStep.delay_unit) {
     case 'hours':
-      scheduledAt.setHours(scheduledAt.getHours() + nextStep.delay_value)
+      scheduledAt.setHours(scheduledAt.getHours() + delayValue)
       break
     case 'days':
-      scheduledAt.setDate(scheduledAt.getDate() + nextStep.delay_value)
+      scheduledAt.setDate(scheduledAt.getDate() + delayValue)
       break
     case 'weeks':
-      scheduledAt.setDate(scheduledAt.getDate() + nextStep.delay_value * 7)
+      scheduledAt.setDate(scheduledAt.getDate() + delayValue * 7)
       break
   }
 

@@ -188,12 +188,12 @@ async function fetchEntityState(
       throw new Error(`Unsupported entity type for audit: ${entity_type}`)
   }
 
-  const { data, error } = await supabase
-    .from(table)
+  const { data, error } = await (supabase
+    .from(table as 'contacts')
     .select('*')
     .eq('id', entity_id)
     .eq('tenant_id', tenant_id)
-    .single()
+    .single())
 
   if (error || !data) {
     // If entity doesn't exist, return empty object

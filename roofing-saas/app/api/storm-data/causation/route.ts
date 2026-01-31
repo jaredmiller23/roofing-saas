@@ -125,17 +125,17 @@ export async function GET(request: NextRequest) {
       const eventsWithDistance: StormEventData[] = (fallbackEvents || []).map(event => ({
         id: event.id,
         event_date: event.event_date,
-        event_type: event.event_type,
+        event_type: event.event_type as StormEventData['event_type'],
         magnitude: event.magnitude,
         state: event.state,
-        county: event.county,
-        city: event.city,
-        latitude: event.latitude,
-        longitude: event.longitude,
-        path_length: event.path_length,
-        path_width: event.path_width,
-        property_damage: event.property_damage,
-        event_narrative: event.event_narrative,
+        county: event.county ?? undefined,
+        city: event.city ?? undefined,
+        latitude: event.latitude ?? undefined,
+        longitude: event.longitude ?? undefined,
+        path_length: event.path_length ?? undefined,
+        path_width: event.path_width ?? undefined,
+        property_damage: event.property_damage ?? undefined,
+        event_narrative: event.event_narrative ?? undefined,
         distance_miles: event.latitude && event.longitude
           ? haversineDistance(latitude, longitude, event.latitude, event.longitude)
           : undefined,
@@ -150,7 +150,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Map RPC results to StormEventData
-    const stormEvents: StormEventData[] = (events || []).map((event: Record<string, unknown>) => ({
+    const eventsArray = (events ?? []) as Record<string, unknown>[]
+    const stormEvents: StormEventData[] = eventsArray.map((event: Record<string, unknown>) => ({
       id: event.id as string,
       event_date: event.event_date as string,
       event_type: event.event_type as StormEventData['event_type'],

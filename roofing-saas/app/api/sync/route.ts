@@ -412,8 +412,10 @@ export async function GET(request: NextRequest) {
       }
 
       try {
+        // Use 'contacts' as the typed table reference since all sync tables share id/updated_at columns
+        // The dynamic table name is validated above to only allow known tables
         let query = supabase
-          .from(table)
+          .from(table as 'contacts')
           .select('id, updated_at')
           .eq('tenant_id', user.id)
           .order('updated_at', { ascending: false })

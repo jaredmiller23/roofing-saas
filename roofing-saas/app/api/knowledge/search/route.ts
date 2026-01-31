@@ -67,14 +67,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Log search query for analytics
+    const searchResults = results as { id: string; similarity: number }[] | null
     await supabase.from('knowledge_search_queries').insert({
       tenant_id: tenantId,
       user_id: user.id,
       query_text: query,
       query_embedding: JSON.stringify(embeddingResult.embedding),
-      results_count: results?.length || 0,
-      top_result_id: results && results.length > 0 ? results[0].id : null,
-      relevance_score: results && results.length > 0 ? results[0].similarity : null,
+      results_count: searchResults?.length ?? 0,
+      top_result_id: searchResults && searchResults.length > 0 ? searchResults[0].id : null,
+      relevance_score: searchResults && searchResults.length > 0 ? searchResults[0].similarity : null,
     })
 
     return successResponse({

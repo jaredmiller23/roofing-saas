@@ -8,15 +8,11 @@ interface Commission {
   id: string
   user_id: string
   amount: number
-  percentage: number
-  status: string
+  percentage: number | null
+  status: string | null
   notes: string | null
-  created_at: string
-  project?: {
-    id: string
-    name: string
-    project_number: string
-  }[] | null
+  created_at: string | null
+  project_id: string | null
 }
 
 interface CommissionsListProps {
@@ -35,7 +31,8 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
     }).format(value)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -43,7 +40,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
     })
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
     switch (status) {
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />
@@ -58,7 +55,8 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return 'bg-muted text-foreground'
     const badges: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800',
       approved: 'bg-blue-100 text-blue-800',
@@ -133,24 +131,20 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {commissions.map((commission) => {
-              const project = commission.project?.[0]
               return (
                 <tr key={commission.id} className="hover:bg-background">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                     {formatDate(commission.created_at)}
                   </td>
                   <td className="px-6 py-4 text-sm text-foreground">
-                    {project ? (
-                      <div>
-                        <p className="font-medium truncate max-w-xs">{project.name}</p>
-                        <p className="text-xs text-muted-foreground">#{project.project_number}</p>
-                      </div>
+                    {commission.project_id ? (
+                      <span className="text-xs text-muted-foreground truncate max-w-xs">{commission.project_id}</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground text-right">
-                    {commission.percentage}%
+                    {commission.percentage ?? 0}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
                     {formatCurrency(commission.amount)}

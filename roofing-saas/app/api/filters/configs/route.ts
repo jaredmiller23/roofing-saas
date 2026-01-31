@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response: GetFilterConfigsResponse = {
-      configs: (data || []) as FilterConfig[],
+      configs: (data || []) as unknown as FilterConfig[],
       total: count || data?.length || 0,
     }
 
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
         field_label: body.field_label,
         field_type: body.field_type,
         filter_operator: body.filter_operator,
-        filter_options: body.filter_options || [],
+        filter_options: (body.filter_options || []) as unknown as Json,
         is_quick_filter: body.is_quick_filter ?? false,
         is_advanced_filter: body.is_advanced_filter ?? true,
         display_order: body.display_order ?? 99,
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response: CreateFilterConfigResponse = {
-      config: data as FilterConfig,
+      config: data as unknown as FilterConfig,
     }
 
     return createdResponse(response)

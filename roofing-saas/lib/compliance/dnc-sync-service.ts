@@ -93,7 +93,7 @@ export async function getDNCSyncStatus(tenantId: string): Promise<DNCSyncStatus[
     const statuses: DNCSyncStatus[] = []
 
     for (const source of sources) {
-      const lastJob = syncJobs?.find((job) => job.source === source)
+      const lastJob = syncJobs?.find((job) => job.sync_type === source)
       const lastSyncDate = lastJob?.completed_at ? new Date(lastJob.completed_at) : null
 
       let daysSinceLastSync: number | null = null
@@ -160,15 +160,18 @@ export async function createDNCSyncJob(
   try {
     const supabase = await createClient()
 
+    const nextSyncDue = new Date()
+    nextSyncDue.setDate(nextSyncDue.getDate() + 31)
     const { data, error } = await supabase
       .from('dnc_sync_jobs')
       .insert({
         tenant_id: tenantId,
-        source,
+        sync_type: source,
         status: 'pending',
         records_processed: 0,
         records_added: 0,
         records_removed: 0,
+        next_sync_due: nextSyncDue.toISOString(),
       })
       .select('id')
       .single()
@@ -370,14 +373,14 @@ export async function getDNCSyncHistory(
     return (data || []).map((row) => ({
       id: row.id,
       tenantId: row.tenant_id,
-      source: row.source as DNCRegistrySource,
-      status: row.status,
+      source: row.sync_type as DNCRegistrySource,
+      status: row.status as DNCSyncJob['status'],
       startedAt: row.started_at ? new Date(row.started_at) : undefined,
       completedAt: row.completed_at ? new Date(row.completed_at) : undefined,
-      recordsProcessed: row.records_processed,
-      recordsAdded: row.records_added,
-      recordsRemoved: row.records_removed,
-      errorMessage: row.error_message,
+      recordsProcessed: row.records_processed ?? 0,
+      recordsAdded: row.records_added ?? 0,
+      recordsRemoved: row.records_removed ?? 0,
+      errorMessage: row.error_message ?? undefined,
     }))
   } catch (error) {
     logger.error('Error in getDNCSyncHistory', { error })

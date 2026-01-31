@@ -12,7 +12,7 @@ interface Expense {
   amount: number
   vendor_name: string | null
   expense_date: string
-  is_approved: boolean
+  is_approved: boolean | null
 }
 
 interface ExpensesListProps {

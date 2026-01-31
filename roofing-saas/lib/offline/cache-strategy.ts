@@ -283,7 +283,7 @@ class CacheStrategy {
   private async fetchFromNetwork<T = Record<string, unknown>>(table: string, query?: Record<string, unknown>): Promise<T[]> {
     const supabase = createClient();
     
-    let queryBuilder = supabase.from(table).select('*');
+    let queryBuilder = supabase.from(table as 'contacts').select('*');
     
     // Apply query filters if provided
     if (query) {
@@ -296,7 +296,7 @@ class CacheStrategy {
           const [from, to] = value as [number, number];
           queryBuilder = queryBuilder.range(from, to);
         } else {
-          queryBuilder = queryBuilder.eq(key, value);
+          queryBuilder = queryBuilder.eq(key, value as string);
         }
       });
     }
@@ -307,7 +307,7 @@ class CacheStrategy {
       throw new Error(`Failed to fetch ${table}: ${error.message}`);
     }
     
-    return data || [];
+    return (data || []) as unknown as T[];
   }
 
   /**

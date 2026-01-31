@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert to CSV
-    const csv = generateCSV(entries as AuditEntry[])
+    const csv = generateCSV(entries as unknown as AuditEntry[])
 
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/admin/audit-log/export', 200, duration)
@@ -329,7 +329,7 @@ export async function POST(request: NextRequest) {
       filename = `audit-report-${new Date().toISOString().split('T')[0]}.json`
     } else {
       // Generate detailed CSV
-      content = generateCSV(entries as AuditEntry[])
+      content = generateCSV(entries as unknown as AuditEntry[])
       contentType = 'text/csv'
       filename = `audit-report-${new Date().toISOString().split('T')[0]}.csv`
     }

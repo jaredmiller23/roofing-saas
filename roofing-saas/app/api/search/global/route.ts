@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
                 id: project.id,
                 type: 'project',
                 title: project.name,
-                subtitle: project.project_number ? `#${project.project_number} • ${project.status}` : project.status,
+                subtitle: project.project_number ? `#${project.project_number} • ${project.status ?? ''}` : project.status ?? undefined,
                 href: `/projects/${project.id}`,
               })
             })
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
                 id: job.id,
                 type: 'estimate',
                 title: `Job ${job.job_number}`,
-                subtitle: job.job_type ? `${job.job_type} • ${job.status}` : job.status,
+                subtitle: job.job_type ? `${job.job_type} • ${job.status ?? ''}` : job.status ?? undefined,
                 href: `/jobs/${job.id}`,
               })
             })

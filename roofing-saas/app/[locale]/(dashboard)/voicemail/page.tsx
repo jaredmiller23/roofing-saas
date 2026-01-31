@@ -173,10 +173,10 @@ export default async function VoicemailPage() {
                           {getUrgencyBadge(vm.urgency)}
                         </td>
                         <td className="p-4 text-sm text-muted-foreground whitespace-nowrap">
-                          {new Date(vm.created_at).toLocaleDateString()}
+                          {vm.created_at ? new Date(vm.created_at).toLocaleDateString() : 'N/A'}
                           <br />
                           <span className="text-xs">
-                            {new Date(vm.created_at).toLocaleTimeString()}
+                            {vm.created_at ? new Date(vm.created_at).toLocaleTimeString() : ''}
                           </span>
                         </td>
                       </tr>

@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       if (emailMatches && emailMatches.length > 0) {
         emailMatches.forEach(contact => {
           potentialMatches.push({
-            contact,
+            contact: contact as unknown as Contact,
             match_reason: ['Email address'],
             confidence: 'high'
           })
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
               existingMatch.confidence = 'high' // Email + Phone = high confidence
             } else {
               potentialMatches.push({
-                contact,
+                contact: contact as unknown as Contact,
                 match_reason: [phoneMatch ? 'Phone number' : 'Mobile phone number'],
                 confidence: 'high'
               })
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
               }
             } else {
               potentialMatches.push({
-                contact,
+                contact: contact as unknown as Contact,
                 match_reason: ['Name and address'],
                 confidence: 'medium'
               })

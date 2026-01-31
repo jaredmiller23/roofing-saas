@@ -104,13 +104,13 @@ export async function GET(request: NextRequest) {
     const fileVersions: FileVersion[] = (versions || []).map(version => ({
       id: version.id,
       file_id: rootFileId,
-      version: version.version,
-      file_url: version.file_url,
-      file_size: version.file_size,
+      version: version.version ?? 1,
+      file_url: version.file_url ?? '',
+      file_size: version.file_size ?? 0,
       change_type: 'updated' as VersionChangeType, // Default to updated
-      change_description: version.description,
-      created_by: version.uploaded_by,
-      created_at: version.created_at,
+      change_description: version.description ?? null,
+      created_by: version.uploaded_by ?? '',
+      created_at: version.created_at ?? new Date().toISOString(),
       metadata: {}
     }))
 

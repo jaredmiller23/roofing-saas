@@ -3,11 +3,11 @@
 import Link from 'next/link'
 
 interface Project {
-  project_id: string
-  project_name: string
-  gross_profit?: number
-  profit_margin_percent?: number
-  revenue?: number
+  project_id: string | null
+  project_name: string | null
+  gross_profit?: number | null
+  profit_margin_percent?: number | null
+  revenue?: number | null
 }
 
 interface TopPerformersTableProps {
@@ -50,8 +50,8 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
           <div className="space-y-3">
             {projects.slice(0, 5).map((project, index) => (
               <Link
-                key={project.project_id}
-                href={`/projects/${project.project_id}`}
+                key={project.project_id ?? index}
+                href={`/projects/${project.project_id ?? ''}`}
                 className="block p-3 rounded-lg hover:bg-background transition-colors"
               >
                 <div className="flex items-center justify-between">

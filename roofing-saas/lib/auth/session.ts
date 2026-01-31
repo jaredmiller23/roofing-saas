@@ -240,7 +240,7 @@ export async function getUserContext(userId: string): Promise<UserContext | null
 
   return {
     tenantId: data[0].tenant_id,
-    role: data[0].role,
+    role: data[0].role ?? 'user',
     status: (data[0].status as UserStatus) || 'active',
   }
 }

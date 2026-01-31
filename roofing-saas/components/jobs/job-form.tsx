@@ -15,12 +15,12 @@ interface JobFormProps {
   job?: {
     id: string
     project_id: string | null
-    job_type: string
+    job_type: string | null
     scheduled_date: string | null
     scheduled_start_time: string | null
     scheduled_end_time: string | null
     estimated_duration_hours: number | null
-    status: string
+    status: string | null
     scope_of_work: string | null
     labor_cost: number | null
     material_cost: number | null
@@ -28,7 +28,7 @@ interface JobFormProps {
     other_costs: number | null
     notes: string | null
     internal_notes: string | null
-    completion_percentage: number
+    completion_percentage: number | null
   }
 }
 

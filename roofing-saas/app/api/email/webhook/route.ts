@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
     // Update activity with new metadata
     const { error: updateError } = await supabase
       .from('activities')
-      .update({ metadata: updatedMetadata })
+      .update({ outcome_details: updatedMetadata as Json })
       .eq('id', activity.id)
 
     if (updateError) {

@@ -81,17 +81,19 @@ export async function GET(request: NextRequest) {
     const queryMap = new Map<string, { count: number; avgResults: number; avgRelevance: number; lastUsed: string }>()
     for (const q of recentQueries || []) {
       const existing = queryMap.get(q.query_text)
+      const resultsCount = q.results_count ?? 0
+      const createdAt = q.created_at ?? ''
       if (existing) {
         existing.count++
-        existing.avgResults += q.results_count
+        existing.avgResults += resultsCount
         existing.avgRelevance += q.relevance_score || 0
-        if (q.created_at > existing.lastUsed) existing.lastUsed = q.created_at
+        if (createdAt > existing.lastUsed) existing.lastUsed = createdAt
       } else {
         queryMap.set(q.query_text, {
           count: 1,
-          avgResults: q.results_count,
+          avgResults: resultsCount,
           avgRelevance: q.relevance_score || 0,
-          lastUsed: q.created_at,
+          lastUsed: createdAt,
         })
       }
     }

@@ -34,7 +34,7 @@ export default async function FinancialReportsPage() {
   const avgMargin = totalRevenue > 0 ? (totalGrossProfit / totalRevenue) * 100 : 0
 
   // Active projects count
-  const activeProjects = plData?.filter(p => p.status === 'active' || p.status === 'proposal').length || 0
+  const activeProjects = plData?.filter(p => p.status === 'production' || p.status === 'quote_sent').length || 0
 
   // Calculate month-over-month data for trend
   const currentDate = new Date()

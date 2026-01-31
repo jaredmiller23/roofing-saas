@@ -38,11 +38,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Decrypt tokens from database (they are stored encrypted)
-    const { data: decryptedAccessToken, error: decryptAccessError } = await supabase
+    const { data: rawDecryptedAccessToken, error: decryptAccessError } = await supabase
       .rpc('decrypt_qb_token', { encrypted_data: connection.access_token })
 
-    const { data: decryptedRefreshToken, error: decryptRefreshError } = await supabase
+    const { data: rawDecryptedRefreshToken, error: decryptRefreshError } = await supabase
       .rpc('decrypt_qb_token', { encrypted_data: connection.refresh_token })
+
+    const decryptedAccessToken = rawDecryptedAccessToken as string | null
+    const decryptedRefreshToken = rawDecryptedRefreshToken as string | null
 
     if (decryptAccessError || decryptRefreshError || !decryptedAccessToken || !decryptedRefreshToken) {
       logger.error('Failed to decrypt QB tokens for refresh', {
@@ -78,11 +81,14 @@ export async function POST(request: NextRequest) {
     const tokenExpiresAt = new Date(Date.now() + newToken.expires_in * 1000)
 
     // Encrypt tokens before storing (security requirement)
-    const { data: encryptedAccessToken, error: encryptAccessError } = await supabase
+    const { data: rawEncryptedAccessToken, error: encryptAccessError } = await supabase
       .rpc('encrypt_qb_token', { plaintext: newToken.access_token })
 
-    const { data: encryptedRefreshToken, error: encryptRefreshError } = await supabase
+    const { data: rawEncryptedRefreshToken, error: encryptRefreshError } = await supabase
       .rpc('encrypt_qb_token', { plaintext: newToken.refresh_token })
+
+    const encryptedAccessToken = rawEncryptedAccessToken as string | null
+    const encryptedRefreshToken = rawEncryptedRefreshToken as string | null
 
     if (encryptAccessError || encryptRefreshError || !encryptedAccessToken || !encryptedRefreshToken) {
       logger.error('Failed to encrypt QB tokens during refresh', {

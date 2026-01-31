@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { Database, Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -104,14 +105,17 @@ export async function POST(request: NextRequest) {
     // Use organizer from validated data if provided, otherwise default to current user
     const organizer = validatedData.organizer || user.id
 
+    // external_attendees is not in the Zod schema but is a valid events column
+    const externalAttendees = body.external_attendees ?? null
     const { data, error } = await supabase
       .from('events')
       .insert({
         ...validatedData,
+        external_attendees: externalAttendees as Json | null,
         tenant_id: tenantId,
         created_by: user.id,
         organizer: organizer,
-      })
+      } as unknown as Database['public']['Tables']['events']['Insert'])
       .select()
       .single()
 

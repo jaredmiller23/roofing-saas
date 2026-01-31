@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      userAccess = data
+      userAccess = { role: data.role ?? 'viewer' }
     }
 
     // Build query context
     const context: QueryContext = {
       userId,
       tenantId,
-      userRole: userRole || userAccess.role,
+      userRole: userRole || userAccess!.role,
       availableTables: ['contacts', 'projects', 'project_profit_loss'],
       permissions: ['SELECT'] // Only allow read operations
     }
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         // Apply status filters
         const statusFilter = interpretation.filters.find(f => f.column === 'status')
         if (statusFilter) {
-          query = query.eq('status', statusFilter.value)
+          query = query.eq('status', String(statusFilter.value))
         }
 
         query = query.limit(1000)
@@ -190,11 +190,11 @@ export async function POST(request: NextRequest) {
         // Apply status filters
         const statusFilter = interpretation.filters.find(f => f.column === 'status')
         if (statusFilter) {
-          query = query.eq('status', statusFilter.value)
+          query = query.eq('status', String(statusFilter.value))
         } else if (intent.subject.includes('active') || nlQuery.query.includes('active')) {
           query = query.eq('status', 'active')
         } else if (intent.subject.includes('overdue')) {
-          query = query.lt('estimated_close_date', new Date().toISOString()).neq('pipeline_stage', 'completed')
+          query = query.lt('estimated_close_date', new Date().toISOString()).neq('pipeline_stage', 'complete')
         }
 
         query = query.limit(1000)
@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
           .eq('tenant_id', context.tenantId)
           .limit(100)
 
-        data = defaultData || []
+        data = (defaultData || []) as unknown as Record<string, unknown>[]
         queryError = error
       }
 
@@ -365,10 +365,10 @@ export async function POST(request: NextRequest) {
           .insert({
             user_id: userId,
             tenant_id: tenantId,
-            query: query.trim(),
-            interpretation: interpretation,
-            result: queryResult,
-            execution_time: queryResult.metadata.executionTime,
+            query_text: query.trim(),
+            query_type: interpretation.intent?.type ?? null,
+            result_count: queryResult.metadata.rowCount,
+            execution_time_ms: queryResult.metadata.executionTime,
             is_favorite: false
           })
       } catch (historyError) {

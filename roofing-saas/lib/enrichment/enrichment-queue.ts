@@ -7,6 +7,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import type { Json } from '@/lib/types/database.types';
 import { BatchDataClient } from './batchdata-client';
 import { TracerfyClient } from './tracerfy-client';
 import type {
@@ -399,7 +400,7 @@ export class EnrichmentQueueManager {
         roof_material: result.roof_material,
         roof_age: result.roof_age,
         roof_condition: result.roof_condition,
-        property_data: result.property_data,
+        property_data: (result.property_data ?? null) as Json | null,
         enriched_at: new Date().toISOString(),
         expires_at: expiresAt.toISOString(),
         hit_count: 0,
@@ -516,27 +517,31 @@ export class EnrichmentQueueManager {
       return null;
     }
 
+    // Parse results from JSON
+    const jobResults = job.results as Record<string, unknown> | null
+    const importSettings = job.import_settings as Record<string, unknown> | null
+
     return {
       job_id: job.id,
       status: job.status as EnrichmentJobStatus,
-      total_addresses: job.total_items,
-      processed_count: job.processed_items,
-      successful_count: job.successful_items,
-      failed_count: job.failed_items,
+      total_addresses: job.total_items ?? 0,
+      processed_count: job.processed_items ?? 0,
+      successful_count: job.successful_items ?? 0,
+      failed_count: job.failed_items ?? 0,
       cached_count: 0, // Would need to be stored separately
-      results: job.results?.results || [],
-      errors: job.results?.errors || [],
-      started_at: job.started_at,
-      completed_at: job.completed_at,
-      estimated_completion_at: job.estimated_completion_at,
-      duration_ms: job.completed_at
+      results: (jobResults?.results as PropertyEnrichmentResult[]) || [],
+      errors: (jobResults?.errors as EnrichmentError[]) || [],
+      started_at: job.started_at ?? '',
+      completed_at: job.completed_at ?? undefined,
+      estimated_completion_at: job.estimated_completion_at ?? undefined,
+      duration_ms: job.completed_at && job.started_at
         ? new Date(job.completed_at).getTime() - new Date(job.started_at).getTime()
         : undefined,
       cost_estimate: {
-        provider: job.import_settings?.provider || 'batchdata',
-        total_addresses: job.total_items,
+        provider: (importSettings?.provider as EnrichmentProvider) ?? 'batchdata',
+        total_addresses: job.total_items ?? 0,
         cached_addresses: 0,
-        new_lookups: job.total_items,
+        new_lookups: job.total_items ?? 0,
         property_lookup_cost: 0,
         skip_trace_cost: 0,
         total_cost: 0,
@@ -545,8 +550,8 @@ export class EnrichmentQueueManager {
         cache_savings: 0,
         estimated_total_without_cache: 0,
       },
-      average_quality_score: job.results?.average_quality_score,
-      average_completeness: job.results?.average_completeness,
+      average_quality_score: jobResults?.average_quality_score as number | undefined,
+      average_completeness: jobResults?.average_completeness as number | undefined,
     };
   }
 

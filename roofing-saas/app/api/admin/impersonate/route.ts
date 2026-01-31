@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
         admin_email: adminUserData?.email || user.email || '',
         impersonated_user_id: targetUserId,
         impersonated_email: impersonatedUserData?.email || '',
-        impersonated_role: targetUser.role,
+        impersonated_role: targetUser.role ?? 'viewer',
         started_at: startedAt.toISOString(),
         expires_at: expiresAt.toISOString(),
         reason: reason || undefined,

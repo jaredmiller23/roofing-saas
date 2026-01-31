@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
           tenant_id: tenantId,
           user_id: user.id,
           title,
-          metadata: { last_context: context },
+          metadata: { last_context: context } as Json,
         })
         .select()
         .single()
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           ...metadata,
           context,
-        },
+        } as Json,
       })
       .select()
       .single()
@@ -201,11 +202,11 @@ export async function POST(request: NextRequest) {
         conversation_id: conversationId,
         role: 'assistant',
         content: assistantContent,
-        function_call: functionCallData,
+        function_call: functionCallData as Json,
         metadata: {
           context,
           model: getOpenAIModel(),
-        },
+        } as Json,
       })
       .select()
       .single()

@@ -140,7 +140,7 @@ export async function POST(
         .from('contacts')
         .update({
           first_name: body.name.split(' ')[0],
-          last_name: body.name.split(' ').slice(1).join(' ') || null,
+          last_name: body.name.split(' ').slice(1).join(' ') || '',
           phone: body.phone || null,
           company: body.company || null,
           updated_at: new Date().toISOString(),
@@ -153,14 +153,14 @@ export async function POST(
         .insert({
           tenant_id: card.tenant_id,
           first_name: body.name.split(' ')[0],
-          last_name: body.name.split(' ').slice(1).join(' ') || null,
+          last_name: body.name.split(' ').slice(1).join(' ') || '',
           email: body.email,
           phone: body.phone || null,
           company: body.company || null,
-          contact_type: 'lead',
+          type: 'lead',
           stage: 'new',
           source: 'Digital Business Card',
-          assigned_to: card.user_id,
+          assigned_to: card.user_id ?? null,
         })
         .select('id')
         .single()
@@ -179,14 +179,13 @@ export async function POST(
         .insert({
           tenant_id: card.tenant_id,
           contact_id: contactId,
-          activity_type: 'note',
-          activity_subtype: 'inbound_message',
+          type: 'note',
+          subtype: 'inbound_message',
           subject: `Contact Form: ${body.name}`,
-          description: body.message,
-          completed: true,
+          content: body.message,
           completed_at: new Date().toISOString(),
           created_by: card.user_id,
-          metadata: {
+          outcome_details: {
             source: 'digital_business_card',
             card_id: id,
             prospect_company: body.company,

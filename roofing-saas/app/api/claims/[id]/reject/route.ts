@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -49,7 +50,7 @@ export async function POST(
 
     // Check if claim is in a reviewable state
     const reviewableStatuses = ['under_review', 'escalated', 'disputed']
-    if (!reviewableStatuses.includes(claim.status)) {
+    if (!reviewableStatuses.includes(claim.status ?? '')) {
       throw ValidationError('Claim is not in a reviewable state')
     }
 
@@ -76,17 +77,16 @@ export async function POST(
     // Log rejection activity with detailed reason
     const activityData = {
       tenant_id: tenantId,
-      entity_type: 'claim' as const,
-      entity_id: claimId,
-      activity_type: 'claim_rejected' as const,
-      user_id: user.id,
-      details: {
+      type: 'claim_rejected',
+      created_by: user.id,
+      content: `Claim rejected: ${reason.trim()}`,
+      outcome_details: {
         previous_status: claim.status,
         new_status: 'disputed',
         rejection_reason: reason.trim(),
         rejected_by: user.email,
         rejected_at: new Date().toISOString(),
-      },
+      } as Json,
     }
 
     const { error: activityError } = await supabase

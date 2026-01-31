@@ -56,23 +56,27 @@ export async function POST(request: NextRequest) {
     logger.info(`Found ${addresses.length} enriched addresses to import`);
 
     // Transform to contacts with full enrichment data
-    const contacts = addresses.map((addr) => ({
-      tenant_id: tenantId,
-      full_name: addr.owner_name || addr.full_address || 'Unknown',
-      email: addr.owner_email,
-      phone: addr.owner_phone,
-      address_street: addr.street_address,
-      address_city: addr.city,
-      address_state: addr.state,
-      address_zip: addr.zip_code,
-      latitude: addr.latitude,
-      longitude: addr.longitude,
-      status: 'lead',
-      source: 'storm_targeting',
-      notes: `Storm targeting lead. Extracted: ${new Date(addr.created_at).toLocaleDateString()}. Enriched: ${new Date(addr.enriched_at).toLocaleDateString()}. Source: ${addr.enrichment_source}`,
-      created_by: user.id,
-      tags: ['storm-lead', 'enriched'],
-    }));
+    const contacts = addresses.map((addr) => {
+      const ownerParts = (addr.owner_name || 'Unknown').split(' ')
+      return {
+        tenant_id: tenantId,
+        first_name: ownerParts[0] || 'Unknown',
+        last_name: ownerParts.slice(1).join(' ') || addr.city || 'Address',
+        email: addr.owner_email,
+        phone: addr.owner_phone,
+        address_street: addr.street_address,
+        address_city: addr.city,
+        address_state: addr.state,
+        address_zip: addr.zip_code,
+        latitude: addr.latitude,
+        longitude: addr.longitude,
+        type: 'lead' as const,
+        source: 'storm_targeting',
+        notes: `Storm targeting lead. Extracted: ${new Date(addr.created_at ?? '').toLocaleDateString()}. Enriched: ${new Date(addr.enriched_at ?? '').toLocaleDateString()}. Source: ${addr.enrichment_source}`,
+        created_by: user.id,
+        tags: ['storm-lead', 'enriched'],
+      }
+    });
 
     // Bulk insert
     const { data: inserted, error: insertError } = await supabase

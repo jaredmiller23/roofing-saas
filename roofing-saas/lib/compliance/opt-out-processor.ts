@@ -14,6 +14,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { addToInternalDNC } from './dnc-service'
+import type { Json } from '@/lib/types/database.types'
 
 export type OptOutType = 'call' | 'sms' | 'both'
 export type OptOutSource = 'sms_stop' | 'verbal' | 'web_form' | 'email' | 'manual' | 'ivr'
@@ -186,17 +187,17 @@ export async function processOptOut(
       tenant_id: tenantId,
       contact_id: contactId,
       phone_number: phoneNumber,
-      compliance_check_type: 'opt_out_check',
-      check_result: 'blocked',
-      check_details: {
+      check_type: 'opt_out_check',
+      result: 'blocked',
+      metadata: {
         action: 'opt_out_processed',
         opt_out_type: optOutType,
         source,
         deadline: deadline.toISOString(),
         follow_up_window_ends: followUpWindowEnds.toISOString(),
         queue_id: queueEntry?.id,
-      },
-      checked_by: userId,
+      } as Json,
+      user_id: userId,
     })
 
     logger.info('Opt-out processed successfully', {
@@ -291,14 +292,14 @@ export async function sendOptOutFollowUp(
       tenant_id: tenantId,
       contact_id: queueEntry.contact_id,
       phone_number: queueEntry.phone_number,
-      compliance_check_type: 'opt_out_check',
-      check_result: 'allowed',
-      check_details: {
+      check_type: 'opt_out_check',
+      result: 'allowed',
+      metadata: {
         action: 'opt_out_follow_up_sent',
         queue_id: queueId,
         follow_up_sent_at: now.toISOString(),
         message,
-      },
+      } as Json,
     })
 
     logger.info('Opt-out follow-up sent', { queueId })
@@ -406,7 +407,7 @@ export async function getPendingOptOuts(
         deadline,
         followUpSentAt: entry.follow_up_sent_at ? new Date(entry.follow_up_sent_at) : undefined,
         processedAt: entry.processed_at ? new Date(entry.processed_at) : undefined,
-        status: entry.status,
+        status: entry.status as OptOutQueueEntry['status'],
         deadlineStatus,
       }
     })

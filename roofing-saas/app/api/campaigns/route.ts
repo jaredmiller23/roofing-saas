@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
@@ -160,7 +161,7 @@ export async function POST(request: NextRequest) {
         allow_re_enrollment: body.allow_re_enrollment ?? false,
         re_enrollment_delay_days: body.re_enrollment_delay_days || null,
         respect_business_hours: body.respect_business_hours ?? true,
-        business_hours: body.business_hours || null,
+        business_hours: (body.business_hours || null) as Json | null,
         enrollment_type: body.enrollment_type || 'automatic',
         max_enrollments: body.max_enrollments || null,
         created_by: user.id,

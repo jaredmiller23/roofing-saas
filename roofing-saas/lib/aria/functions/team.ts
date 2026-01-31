@@ -169,7 +169,7 @@ ariaFunctionRegistry.register({
         const assignedJobs = (jobs || []).filter((job) => {
           return (
             job.crew_lead === member.user_id ||
-            (job.crew_members && job.crew_members.includes(member.user_id))
+            (job.crew_members && member.user_id && job.crew_members.includes(member.user_id))
           )
         })
 
@@ -275,7 +275,14 @@ ariaFunctionRegistry.register({
           return { success: false, error: 'Failed to get active reps' }
         }
 
-        if (!activeReps || activeReps.length === 0) {
+        const activeRepsArray = activeReps as Array<{
+          user_id: string
+          full_name: string
+          latitude: number
+          longitude: number
+          last_ping: string
+        }> | null
+        if (!activeRepsArray || activeRepsArray.length === 0) {
           return {
             success: true,
             found: false,
@@ -287,8 +294,8 @@ ariaFunctionRegistry.register({
         return {
           success: true,
           found: true,
-          count: activeReps.length,
-          active_reps: activeReps.map((rep: {
+          count: activeRepsArray.length,
+          active_reps: activeRepsArray.map((rep: {
             user_id: string
             full_name: string
             latitude: number
@@ -338,7 +345,13 @@ ariaFunctionRegistry.register({
         { p_user_id: member.user_id }
       )
 
-      if (locError || !location || location.length === 0) {
+      const locationArray = location as Array<{
+        latitude: number
+        longitude: number
+        recorded_at: string
+        minutes_ago: number
+      }> | null
+      if (locError || !locationArray || locationArray.length === 0) {
         return {
           success: true,
           found: true,
@@ -351,7 +364,7 @@ ariaFunctionRegistry.register({
         }
       }
 
-      const loc = location[0]
+      const loc = locationArray[0]
       return {
         success: true,
         found: true,
@@ -713,7 +726,7 @@ ariaFunctionRegistry.register({
 
           if (crewMembers && crewMembers.length > 0) {
             const member = crewMembers[0]
-            if (!currentCrewMembers.includes(member.user_id)) {
+            if (member.user_id && !currentCrewMembers.includes(member.user_id)) {
               currentCrewMembers.push(member.user_id)
               changes.push(`Added ${member.first_name} ${member.last_name} to crew`)
             }
@@ -731,7 +744,7 @@ ariaFunctionRegistry.register({
 
           if (crewMembers && crewMembers.length > 0) {
             const member = crewMembers[0]
-            const index = currentCrewMembers.indexOf(member.user_id)
+            const index = member.user_id ? currentCrewMembers.indexOf(member.user_id) : -1
             if (index > -1) {
               currentCrewMembers.splice(index, 1)
               changes.push(`Removed ${member.first_name} ${member.last_name} from crew`)
@@ -945,7 +958,7 @@ ariaFunctionRegistry.register({
         .from('jobs')
         .select('status, completion_percentage, quality_score, weather_delay_days')
         .eq('tenant_id', context.tenantId)
-        .eq('crew_lead', member.user_id)
+        .eq('crew_lead', member.user_id ?? '')
         .gte('scheduled_date', startStr)
         .lte('scheduled_date', endStr)
         .eq('is_deleted', false)

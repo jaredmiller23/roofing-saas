@@ -95,7 +95,7 @@ export async function PATCH(
     }
 
     const response: UpdateSavedFilterResponse = {
-      filter: data as SavedFilter,
+      filter: data as unknown as SavedFilter,
     }
 
     return successResponse(response)

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
         tenant_id: tenantId,
         user_id: user.id,
         title: title || null,
-        metadata,
+        metadata: metadata as Json,
         is_active: true,
       })
       .select()

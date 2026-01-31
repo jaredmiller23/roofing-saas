@@ -88,6 +88,7 @@ export async function POST(_request: NextRequest) {
       .from('tenants')
       .insert({
         name: companyName,
+        subdomain: companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 50),
         subscription_tier: 'starter',
       })
       .select()

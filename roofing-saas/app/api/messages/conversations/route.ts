@@ -45,11 +45,12 @@ export async function GET() {
 
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/messages/conversations', 200, duration)
-    logger.info('Conversations loaded', { conversationCount: conversations?.length || 0 })
+    const conversationList = (conversations ?? []) as Record<string, unknown>[]
+    logger.info('Conversations loaded', { conversationCount: conversationList.length })
 
     return successResponse({
-      conversations: conversations || [],
-      count: conversations?.length || 0,
+      conversations: conversationList,
+      count: conversationList.length,
     })
   } catch (error) {
     const duration = Date.now() - startTime

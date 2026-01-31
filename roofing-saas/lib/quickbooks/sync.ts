@@ -6,6 +6,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { QuickBooksClient, QBCustomer, QBInvoice } from './client'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 
 // Sync result type
 interface SyncResult {
@@ -61,16 +62,16 @@ export async function syncContactToCustomer(
 
       const updatePayload = {
         ...existingCustomer,
-        DisplayName: `${contact.first_name} ${contact.last_name}`.trim() || contact.email,
-        GivenName: contact.first_name,
-        FamilyName: contact.last_name,
+        DisplayName: (`${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim()) || (contact.email ?? ''),
+        GivenName: contact.first_name ?? undefined,
+        FamilyName: contact.last_name ?? undefined,
         PrimaryEmailAddr: contact.email ? { Address: contact.email } : undefined,
         PrimaryPhone: contact.phone ? { FreeFormNumber: contact.phone } : undefined,
-        BillAddr: contact.address ? {
-          Line1: contact.address,
-          City: contact.city,
-          CountrySubDivisionCode: contact.state,
-          PostalCode: contact.zip_code,
+        BillAddr: contact.address_street ? {
+          Line1: contact.address_street,
+          City: contact.address_city ?? undefined,
+          CountrySubDivisionCode: contact.address_state ?? undefined,
+          PostalCode: contact.address_zip ?? undefined,
         } : undefined,
       } as QBCustomer & { Id: string; SyncToken: string }
 
@@ -80,7 +81,7 @@ export async function syncContactToCustomer(
       action = 'create'
 
       // Check for duplicate by name/email in QuickBooks
-      const displayName = `${contact.first_name} ${contact.last_name}`.trim() || contact.email
+      const displayName = (`${contact.first_name} ${contact.last_name}`.trim()) || (contact.email ?? '')
       const existingCustomers = await client.getCustomers(displayName)
 
       if (existingCustomers.length > 0) {
@@ -109,15 +110,15 @@ export async function syncContactToCustomer(
       // Create new customer
       qbCustomer = await client.createCustomer({
         DisplayName: displayName,
-        GivenName: contact.first_name,
-        FamilyName: contact.last_name,
+        GivenName: contact.first_name ?? undefined,
+        FamilyName: contact.last_name ?? undefined,
         PrimaryEmailAddr: contact.email ? { Address: contact.email } : undefined,
         PrimaryPhone: contact.phone ? { FreeFormNumber: contact.phone } : undefined,
-        BillAddr: contact.address ? {
-          Line1: contact.address,
-          City: contact.city,
-          CountrySubDivisionCode: contact.state,
-          PostalCode: contact.zip_code,
+        BillAddr: contact.address_street ? {
+          Line1: contact.address_street,
+          City: contact.address_city ?? undefined,
+          CountrySubDivisionCode: contact.address_state ?? undefined,
+          PostalCode: contact.address_zip ?? undefined,
         } : undefined,
       })
 
@@ -212,11 +213,18 @@ export async function syncProjectToInvoice(
       .select('qb_entity_id')
       .eq('tenant_id', tenantId)
       .eq('crm_entity_type', 'contact')
-      .eq('crm_entity_id', project.contact_id)
+      .eq('crm_entity_id', project.contact_id ?? '')
       .single()
 
     if (!contactMapping) {
       // Sync contact first
+      if (!project.contact_id) {
+        return {
+          success: false,
+          error: 'Project has no associated contact',
+          errorCode: 'NO_CONTACT',
+        }
+      }
       const contactSync = await syncContactToCustomer(project.contact_id, tenantId, client)
       if (!contactSync.success) {
         return {
@@ -227,7 +235,7 @@ export async function syncProjectToInvoice(
       }
     }
 
-    const qbCustomerId = contactMapping?.qb_entity_id || (await syncContactToCustomer(project.contact_id, tenantId, client)).qbId!
+    const qbCustomerId = contactMapping?.qb_entity_id || (await syncContactToCustomer(project.contact_id ?? '', tenantId, client)).qbId!
 
     // Create invoice
     const invoice: QBInvoice = {
@@ -235,7 +243,7 @@ export async function syncProjectToInvoice(
         value: qbCustomerId,
       },
       Line: [{
-        Amount: project.value || 0,
+        Amount: project.estimated_value ?? 0,
         DetailType: 'SalesItemLineDetail',
         Description: project.name || 'Roofing Project',
         SalesItemLineDetail: {
@@ -244,7 +252,7 @@ export async function syncProjectToInvoice(
             name: 'Services',
           },
           Qty: 1,
-          UnitPrice: project.value || 0,
+          UnitPrice: project.estimated_value ?? 0,
         },
       }],
       TxnDate: new Date().toISOString().split('T')[0],
@@ -360,8 +368,8 @@ async function logSync(
   action: string,
   direction: 'to_qb' | 'from_qb',
   status: 'success' | 'error',
-  requestPayload?: unknown,
-  responsePayload?: unknown,
+  requestPayload?: Record<string, unknown>,
+  responsePayload?: Record<string, unknown>,
   errorMessage?: string,
   errorCode?: string
 ) {
@@ -375,8 +383,8 @@ async function logSync(
     action,
     direction,
     status,
-    request_payload: requestPayload,
-    response_payload: responsePayload,
+    request_payload: requestPayload as unknown as Json | undefined,
+    response_payload: responsePayload as unknown as Json | undefined,
     error_message: errorMessage,
     error_code: errorCode,
   })

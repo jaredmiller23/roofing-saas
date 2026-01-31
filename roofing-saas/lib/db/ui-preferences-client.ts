@@ -24,7 +24,7 @@ export async function getUserUIPreferences(userId: string, tenantId: string): Pr
     throw new Error(`Failed to fetch UI preferences: ${error.message}`)
   }
 
-  return data
+  return data as unknown as UIPreferencesRow | null
 }
 
 /**
@@ -53,7 +53,7 @@ export async function upsertUserUIPreferences(
     throw new Error(`Failed to save UI preferences: ${error.message}`)
   }
 
-  return data
+  return data as unknown as UIPreferencesRow
 }
 
 /**

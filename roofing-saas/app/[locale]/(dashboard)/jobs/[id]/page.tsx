@@ -120,7 +120,7 @@ export default async function JobDetailPage({
 
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">Status</label>
-              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(job.status)}`}>
+              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(job.status ?? 'scheduled')}`}>
                 {job.status?.replace('_', ' ')}
               </span>
             </div>

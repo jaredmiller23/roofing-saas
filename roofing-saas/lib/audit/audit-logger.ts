@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 import {
   CreateAuditEntryParams,
   AuditDiff,
@@ -169,18 +170,15 @@ export class AuditLogger {
 
     const auditEntries = entries.map(entry => ({
       user_id: entry.user_id,
-      user_name: entry.user_name,
-      user_email: entry.user_email,
       tenant_id: entry.tenant_id,
-      action_type: entry.action_type,
+      action: entry.action_type,
       entity_type: entry.entity_type,
       entity_id: entry.entity_id,
-      before_values: entry.before_values,
-      after_values: entry.after_values,
+      old_values: entry.before_values as unknown as Json | null,
+      new_values: entry.after_values as unknown as Json | null,
       ip_address: entry.ip_address,
       user_agent: entry.user_agent,
-      metadata: entry.metadata,
-      timestamp: new Date().toISOString()
+      created_at: new Date().toISOString(),
     }))
 
     const { error } = await supabase

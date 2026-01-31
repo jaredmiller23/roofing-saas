@@ -1,3 +1,4 @@
+import type { Database } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
@@ -122,7 +123,7 @@ export async function PATCH(
     // Update claim
     const { data, error } = await supabase
       .from('claims')
-      .update(updateData)
+      .update(updateData as Database['public']['Tables']['claims']['Update'])
       .eq('id', claimId)
       .eq('tenant_id', tenantId)
       .select()

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         email: authUser.email,
         first_name: authUser.first_name,
         last_name: authUser.last_name,
-        role: tu.role,
+        role: tu.role ?? 'viewer',
         last_active: authUser.last_sign_in_at,
         is_admin: tu.role === 'admin',
       }

@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
         logger.info('Using template for document', { template_id })
 
         // Use template signature fields if not provided
-        if (!signature_fields?.length && template.signature_fields?.length) {
+        if (!signature_fields?.length && Array.isArray(template.signature_fields) && template.signature_fields.length) {
           finalSignatureFields = template.signature_fields as z.infer<typeof signatureFieldsSchema>
         }
 

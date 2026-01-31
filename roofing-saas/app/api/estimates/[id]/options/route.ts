@@ -171,6 +171,7 @@ export async function POST(
     const { data: quoteOption, error: optionError } = await supabase
       .from('quote_options')
       .insert({
+        tenant_id: tenantId,
         project_id: projectId,
         name: data.name,
         description: data.description,

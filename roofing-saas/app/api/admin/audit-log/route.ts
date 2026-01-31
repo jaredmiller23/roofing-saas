@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     logger.apiResponse('GET', '/api/admin/audit-log', 200, duration)
 
     const response: AuditLogResponse = {
-      entries: (entries as AuditEntry[]) || [],
+      entries: (entries as unknown as AuditEntry[]) || [],
       total: count || 0,
       page,
       limit,

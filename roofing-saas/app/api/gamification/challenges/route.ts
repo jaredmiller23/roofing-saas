@@ -3,6 +3,7 @@
  * CRUD operations for time-limited competitions
  */
 
+import type { Database } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getUserTenantId } from '@/lib/auth/session'
 import { challengeConfigSchema } from '@/lib/gamification/types'
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('challenges')
-      .insert({ ...validated, tenant_id: tenantId, created_by: user.id })
+      .insert({ ...validated, tenant_id: tenantId, created_by: user.id } as unknown as Database['public']['Tables']['challenges']['Insert'])
       .select()
       .single()
 

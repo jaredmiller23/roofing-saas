@@ -66,20 +66,27 @@ export async function POST(
 
     const supabase = await createClient()
 
-    // Get document with contact info
+    // Get document
     const { data: document, error: fetchError } = await supabase
       .from('signature_documents')
-      .select(`
-        *,
-        contact:contacts(id, first_name, last_name, email),
-        project:projects(id, name)
-      `)
+      .select('*')
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !document) {
       throw NotFoundError('Signature document')
+    }
+
+    // Fetch project name if available
+    let projectData: { name: string } | null = null
+    if (document.project_id) {
+      const { data: project } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', document.project_id)
+        .single()
+      projectData = project
     }
 
     // Check if document is in valid state to send
@@ -144,7 +151,7 @@ export async function POST(
           <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
             <h3 style="margin: 0 0 12px 0; color: #374151;">Document Details</h3>
             <p style="margin: 4px 0;"><strong>Document:</strong> ${document.title || 'Signature Document'}</p>
-            ${document.project?.name ? `<p style="margin: 4px 0;"><strong>Project:</strong> ${document.project.name}</p>` : ''}
+            ${projectData?.name ? `<p style="margin: 4px 0;"><strong>Project:</strong> ${projectData.name}</p>` : ''}
             <p style="margin: 4px 0;"><strong>Deadline:</strong> ${formattedExpiration}</p>
           </div>
 

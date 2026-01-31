@@ -296,11 +296,14 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
   }
 
   // Decrypt tokens using PostgreSQL function
-  const { data: decryptedAccessToken, error: accessTokenError } = await supabase
+  const { data: decryptedAccessTokenData, error: accessTokenError } = await supabase
     .rpc('decrypt_qb_token', { encrypted_data: token.access_token })
 
-  const { data: decryptedRefreshToken, error: refreshTokenError } = await supabase
+  const { data: decryptedRefreshTokenData, error: refreshTokenError } = await supabase
     .rpc('decrypt_qb_token', { encrypted_data: token.refresh_token })
+
+  const decryptedAccessToken = decryptedAccessTokenData as unknown as string | null
+  const decryptedRefreshToken = decryptedRefreshTokenData as unknown as string | null
 
   if (accessTokenError || refreshTokenError || !decryptedAccessToken || !decryptedRefreshToken) {
     logger.error('Failed to decrypt QB tokens', {
@@ -326,11 +329,14 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
     }
 
     // Encrypt new tokens before storing
-    const { data: encryptedAccessToken } = await supabase
+    const { data: encryptedAccessTokenData } = await supabase
       .rpc('encrypt_qb_token', { plaintext: newToken.access_token })
 
-    const { data: encryptedRefreshToken } = await supabase
+    const { data: encryptedRefreshTokenData } = await supabase
       .rpc('encrypt_qb_token', { plaintext: newToken.refresh_token })
+
+    const encryptedAccessToken = encryptedAccessTokenData as unknown as string | null
+    const encryptedRefreshToken = encryptedRefreshTokenData as unknown as string | null
 
     if (!encryptedAccessToken || !encryptedRefreshToken) {
       logger.error('Failed to encrypt new QB tokens', { tenantId })

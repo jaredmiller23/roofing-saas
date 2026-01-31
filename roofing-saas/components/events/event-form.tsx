@@ -18,11 +18,11 @@ interface EventFormProps {
     id: string
     title: string
     description: string | null
-    event_type: string
+    event_type: string | null
     start_at: string
     end_at: string
-    all_day: boolean
-    status: string
+    all_day: boolean | null
+    status: string | null
     location: string | null
     address_street: string | null
     address_city: string | null

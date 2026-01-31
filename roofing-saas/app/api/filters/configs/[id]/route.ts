@@ -79,7 +79,7 @@ export async function PATCH(
     }
 
     const response: UpdateFilterConfigResponse = {
-      config: data as FilterConfig,
+      config: data as unknown as FilterConfig,
     }
 
     return successResponse(response)

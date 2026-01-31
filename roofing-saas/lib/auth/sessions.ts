@@ -196,7 +196,7 @@ export async function getUserSessions(userId: string): Promise<UserSession[]> {
     return []
   }
 
-  return data || []
+  return (data || []) as unknown as UserSession[]
 }
 
 /**

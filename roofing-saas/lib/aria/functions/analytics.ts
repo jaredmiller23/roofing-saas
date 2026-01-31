@@ -390,8 +390,8 @@ ariaFunctionRegistry.register({
 
       // Average sales cycle
       const salesCycles = wonProjects.map((p) => {
-        const created = new Date(p.created_at)
-        const closed = new Date(p.updated_at)
+        const created = new Date(p.created_at ?? '')
+        const closed = new Date(p.updated_at ?? '')
         return (closed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
       })
       const avgSalesCycle =
@@ -529,7 +529,7 @@ ariaFunctionRegistry.register({
       // Group by day for trend
       const byDay: Record<string, number> = {}
       for (const activity of activities) {
-        const day = new Date(activity.created_at).toLocaleDateString('en-US', {
+        const day = new Date(activity.created_at ?? '').toLocaleDateString('en-US', {
           weekday: 'short',
           month: 'short',
           day: 'numeric',
@@ -623,7 +623,7 @@ ariaFunctionRegistry.register({
       // Calculate days in current stage
       const now = new Date()
       const projectsWithDuration = projects.map((p) => {
-        const updated = new Date(p.updated_at)
+        const updated = new Date(p.updated_at ?? '')
         const daysInStage = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24))
         return { ...p, daysInStage }
       })
@@ -785,8 +785,8 @@ ariaFunctionRegistry.register({
           .gte('updated_at', thirtyDaysAgo.toISOString()),
       ])
 
-      const pipeline = pipelineResult.data || []
-      const conversionData = conversionResult.data?.[0] || { total_projects: 0, won_projects: 0 }
+      const pipeline = (pipelineResult.data || []) as Array<{ status: string; count: number; total_value: number }>
+      const conversionData = ((conversionResult.data as Array<{ total_projects: number; won_projects: number }>) ?? [])?.[0] || { total_projects: 0, won_projects: 0 }
       const activities = activitiesResult.data || []
       const wonDeals = wonResult.data || []
       const lostDeals = lostResult.data || []
@@ -799,7 +799,7 @@ ariaFunctionRegistry.register({
       const avgSalesCycle =
         wonDeals.length > 0
           ? wonDeals.reduce((sum, p) => {
-              const days = (new Date(p.updated_at).getTime() - new Date(p.created_at).getTime()) / (1000 * 60 * 60 * 24)
+              const days = (new Date(p.updated_at ?? '').getTime() - new Date(p.created_at ?? '').getTime()) / (1000 * 60 * 60 * 24)
               return sum + days
             }, 0) / wonDeals.length
           : 0
@@ -846,7 +846,7 @@ ariaFunctionRegistry.register({
             action: 'Identify stages with longest dwell time and streamline',
           })
         }
-        const quoteSentCount = pipeline.find((p: { status: string }) => p.status === 'quote_sent')?.count || 0
+        const quoteSentCount = (pipeline as Array<{ status: string; count: number }>).find((p) => p.status === 'quote_sent')?.count || 0
         if (quoteSentCount > 10) {
           recommendations.push({
             area: 'velocity',
@@ -879,8 +879,8 @@ ariaFunctionRegistry.register({
 
       // Revenue recommendations
       if (focus_area === 'all' || focus_area === 'revenue') {
-        const totalPipelineValue = pipeline.reduce(
-          (sum: number, p: { total_value: number }) => sum + Number(p.total_value),
+        const totalPipelineValue = (pipeline as Array<{ total_value: number }>).reduce(
+          (sum: number, p) => sum + Number(p.total_value),
           0
         )
         const wonRevenue = wonDeals.reduce(

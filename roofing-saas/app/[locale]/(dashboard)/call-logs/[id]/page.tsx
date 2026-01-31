@@ -158,7 +158,7 @@ export default async function CallLogDetailPage({
               keyPoints={call.key_points}
               confidence={call.transcription_confidence}
               provider={call.transcription_provider}
-              isProcessing={call.recording_url && !call.transcription}
+              isProcessing={!!call.recording_url && !call.transcription}
             />
           </div>
         )}

@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     // If creating contact (lead)
     if (create_contact && contact_data) {
       logger.debug('[API] Creating contact from pin...')
-      const { data: contact, error: contactError } = await supabase
+      const { data: rawContact, error: contactError } = await supabase
         .rpc('create_contact_from_pin', {
           p_knock_id: newPin.id,
           p_first_name: contact_data.first_name,
@@ -172,6 +172,8 @@ export async function POST(request: NextRequest) {
           p_email: contact_data.email,
           p_phone: contact_data.phone
         })
+
+      const contact = rawContact as string | null
 
       if (contactError) {
         logger.error('[API] Error creating contact:', { error: contactError })
@@ -183,7 +185,7 @@ export async function POST(request: NextRequest) {
         const { data: verifyContact } = await supabase
           .from('contacts')
           .select('id, first_name, last_name')
-          .eq('id', contact)
+          .eq('id', contact ?? '')
           .single()
 
         if (verifyContact) {
@@ -192,7 +194,7 @@ export async function POST(request: NextRequest) {
             .from('knocks')
             .update({
               contact_created: true,
-              contact_id: contact
+              contact_id: contact ?? undefined
             })
             .eq('id', newPin.id)
 

@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter based on include_shared param (RLS policy already filters by tenant + (created_by OR is_shared))
-    let filters = (data || []) as SavedFilter[]
+    let filters = (data || []) as unknown as SavedFilter[]
     if (!include_shared) {
       filters = filters.filter((f) => f.created_by === user.id)
     }
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
         entity_type: body.entity_type,
         name: body.name,
         description: body.description || null,
-        filter_criteria: body.filter_criteria,
+        filter_criteria: body.filter_criteria as unknown as Json,
         is_shared: body.is_shared ?? false,
         is_default: body.is_default ?? false,
         created_by: user.id,
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response: CreateSavedFilterResponse = {
-      filter: data as SavedFilter,
+      filter: data as unknown as SavedFilter,
     }
 
     return createdResponse(response)

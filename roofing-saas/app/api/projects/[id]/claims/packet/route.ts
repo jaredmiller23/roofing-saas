@@ -61,7 +61,7 @@ export async function POST(
         .single()
 
       if (contact) {
-        contactCarrier = contact.insurance_carrier
+        contactCarrier = contact.insurance_carrier ?? undefined
         contactAddress = {
           city: contact.address_city || undefined,
           state: contact.address_state || undefined,

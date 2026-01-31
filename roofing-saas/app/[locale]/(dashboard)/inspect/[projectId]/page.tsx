@@ -49,6 +49,7 @@ export default function InspectPage({ params }: PageProps) {
   // Fetch project data
   useEffect(() => {
     if (!projectId) return
+    const currentProjectId = projectId
 
     async function fetchProject() {
       try {
@@ -84,7 +85,7 @@ export default function InspectPage({ params }: PageProps) {
             )
           `
           )
-          .eq('id', projectId)
+          .eq('id', currentProjectId)
           .single()
 
         if (fetchError) {
@@ -101,7 +102,7 @@ export default function InspectPage({ params }: PageProps) {
         setProject({
           id: data.id,
           name: data.name,
-          contact_id: data.contact_id,
+          contact_id: data.contact_id ?? '',
           tenant_id: data.tenant_id,
           contact: contact || undefined,
         })

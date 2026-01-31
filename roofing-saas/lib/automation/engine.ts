@@ -5,6 +5,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 import {
   type TriggerType,
   type WorkflowStep,
@@ -48,7 +49,7 @@ export async function triggerWorkflow(
     // Create execution for each matching workflow
     for (const workflow of workflows) {
       // Check if trigger config matches (if specified)
-      if (!matchesTriggerConfig(workflow.trigger_config, triggerData)) {
+      if (!matchesTriggerConfig((workflow.trigger_config ?? {}) as Record<string, unknown>, triggerData)) {
         continue
       }
 
@@ -57,7 +58,7 @@ export async function triggerWorkflow(
         .insert({
           workflow_id: workflow.id,
           tenant_id: tenantId,
-          trigger_data: triggerData,
+          trigger_data: triggerData as unknown as Json,
           status: 'pending',
         })
         .select('id')
@@ -157,17 +158,17 @@ export async function executeWorkflow(executionId: string): Promise<void> {
 
     // Execute each step in order
     for (const step of steps) {
-      await executeWorkflowStep(executionId, step as WorkflowStep, execution.trigger_data)
+      await executeWorkflowStep(executionId, step as WorkflowStep, execution.trigger_data as Record<string, unknown>)
 
       // Handle delay if specified
-      if (step.delay_minutes > 0) {
+      if (step.delay_minutes && step.delay_minutes > 0) {
         logger.info('Delaying before next step', {
           executionId,
           stepId: step.id,
           delayMinutes: step.delay_minutes,
         })
         // In production, this should use a job queue instead of setTimeout
-        await new Promise((resolve) => setTimeout(resolve, step.delay_minutes * 60 * 1000))
+        await new Promise((resolve) => setTimeout(resolve, (step.delay_minutes ?? 0) * 60 * 1000))
       }
     }
 
@@ -256,7 +257,7 @@ async function executeWorkflowStep(
       .update({
         status: 'completed',
         completed_at: new Date().toISOString(),
-        result_data: result,
+        result_data: result as unknown as Json,
       })
       .eq('id', stepExecution.id)
 

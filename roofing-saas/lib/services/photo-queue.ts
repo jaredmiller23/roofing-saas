@@ -5,6 +5,7 @@
 
 import { db, QueuedPhoto } from '@/lib/db/offline-queue';
 import { createClient } from '@/lib/supabase/client';
+import type { Json } from '@/lib/types/database.types';
 
 const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_BASE = 1000; // 1 second
@@ -185,7 +186,7 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
     // Build insert for unified project_files table
     const fileCategory = damageType ? 'inspection' : undefined;
 
-    const insertData: Record<string, unknown> = {
+    const insertData = {
       tenant_id: photo.tenantId,
       contact_id: photo.contactId || null,
       project_id: photo.projectId || null,
@@ -210,7 +211,7 @@ async function uploadQueuedPhoto(photo: QueuedPhoto): Promise<void> {
         severity: severity,
         photo_order: photoOrder,
         claim_id: claimId,
-      },
+      } as Json,
     };
 
     // Insert into unified project_files table

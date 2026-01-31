@@ -6,6 +6,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 import type { EntityType, FilterCriterion } from './types'
 
 export interface LogFilterUsageParams {
@@ -59,7 +60,7 @@ export async function logFilterUsage(
         filter_field: params.filter_field,
         filter_config_id: params.filter_config_id || null,
         saved_filter_id: params.saved_filter_id || null,
-        filter_value: params.filter_value,
+        filter_value: params.filter_value as Json,
         results_count: params.results_count || null,
       })
       .select('id')

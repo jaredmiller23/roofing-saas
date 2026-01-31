@@ -147,7 +147,7 @@ export async function POST(
     // Check max enrollments
     if (
       campaign.max_enrollments &&
-      campaign.total_enrolled >= campaign.max_enrollments
+      (campaign.total_enrolled ?? 0) >= campaign.max_enrollments
     ) {
       throw ValidationError('Campaign has reached maximum enrollments')
     }

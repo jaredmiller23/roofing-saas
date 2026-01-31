@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -44,7 +45,7 @@ export async function POST(
 
     // Check if claim is in a reviewable state
     const reviewableStatuses = ['under_review', 'escalated', 'disputed']
-    if (!reviewableStatuses.includes(claim.status)) {
+    if (!reviewableStatuses.includes(claim.status ?? '')) {
       throw ValidationError('Claim is not in a reviewable state')
     }
 
@@ -54,9 +55,9 @@ export async function POST(
       updated_at: new Date().toISOString(),
     }
 
-    // If claim doesn't have approved_amount yet, use initial_estimate
-    if (!claim.approved_amount && claim.initial_estimate) {
-      updateData.approved_amount = claim.initial_estimate
+    // If claim doesn't have approved_amount yet, use estimated_damage
+    if (!claim.approved_amount && claim.estimated_damage) {
+      updateData.approved_amount = claim.estimated_damage
     }
 
     const { data: updatedClaim, error: updateError } = await supabase
@@ -75,18 +76,17 @@ export async function POST(
     // Log approval activity
     const activityData = {
       tenant_id: tenantId,
-      entity_type: 'claim' as const,
-      entity_id: claimId,
-      activity_type: 'claim_approved' as const,
-      user_id: user.id,
-      details: {
+      type: 'claim_approved',
+      created_by: user.id,
+      content: `Claim approved${notes ? `: ${notes}` : ''}`,
+      outcome_details: {
         previous_status: claim.status,
         new_status: 'approved',
         approved_amount: updateData.approved_amount || claim.approved_amount,
         notes: notes || null,
         approved_by: user.email,
         approved_at: new Date().toISOString(),
-      },
+      } as Json,
     }
 
     const { error: activityError } = await supabase

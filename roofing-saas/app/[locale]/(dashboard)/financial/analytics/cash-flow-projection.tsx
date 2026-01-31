@@ -4,9 +4,9 @@ import { useMemo } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 interface Project {
-  revenue?: number
-  actual_completion?: string
-  payments_received?: number
+  revenue?: number | null
+  actual_completion?: string | null
+  payments_received?: number | null
 }
 
 interface ARAgingData {

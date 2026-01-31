@@ -131,7 +131,7 @@ export default async function VoicemailDetailPage({
                   Voicemail from {contact ? `${contact.first_name} ${contact.last_name}`.trim() : voicemail.from_phone || 'Unknown'}
                 </h1>
                 <p className="text-muted-foreground">
-                  {new Date(voicemail.created_at).toLocaleString()}
+                  {voicemail.created_at ? new Date(voicemail.created_at).toLocaleString() : 'Unknown date'}
                 </p>
               </div>
             </div>
@@ -218,10 +218,10 @@ export default async function VoicemailDetailPage({
             transcription={voicemail.transcription}
             summary={voicemail.summary}
             sentiment={voicemail.sentiment as 'positive' | 'neutral' | 'negative' | null}
-            keyPoints={voicemail.key_points}
+            keyPoints={null}
             confidence={voicemail.transcription_confidence}
             provider={voicemail.transcription_provider}
-            isProcessing={voicemail.recording_url && !voicemail.transcription}
+            isProcessing={!!voicemail.recording_url && !voicemail.transcription}
           />
         </div>
 

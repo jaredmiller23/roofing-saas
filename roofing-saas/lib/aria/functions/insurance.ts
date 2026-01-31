@@ -191,7 +191,7 @@ ariaFunctionRegistry.register({
       }
 
       // Return details for the most recent claim (or first match)
-      const claim = filteredClaims[0] as Claim & {
+      const claim = filteredClaims[0] as unknown as Claim & {
         contacts: { first_name?: string; last_name?: string; phone?: string; email?: string } | null
         projects: { id: string; title?: string; address?: string } | null
       }
@@ -382,7 +382,7 @@ ariaFunctionRegistry.register({
       if (carrier_name && filteredAdjusters.length > 0) {
         const searchLower = carrier_name.toLowerCase()
         filteredAdjusters = filteredAdjusters.filter((adj) => {
-          const carrier = adj.insurance_carriers as { name: string } | null
+          const carrier = adj.insurance_carriers as unknown as { name: string } | null
           return carrier?.name?.toLowerCase().includes(searchLower)
         })
       }
@@ -414,7 +414,7 @@ ariaFunctionRegistry.register({
       }
 
       const results = filteredAdjusters.slice(0, 5).map((adj) => {
-        const carrier = adj.insurance_carriers as { name: string; claims_phone?: string } | null
+        const carrier = adj.insurance_carriers as unknown as { name: string; claims_phone?: string } | null
         const adjPatterns = patternsByAdjuster.get(adj.id) || []
 
         return {
@@ -585,7 +585,7 @@ ariaFunctionRegistry.register({
       // Get carrier patterns
       const carrierPatterns = (patterns || [])
         .filter((p) => {
-          const pCarrier = p.insurance_carriers as { name: string } | null
+          const pCarrier = p.insurance_carriers as unknown as { name: string } | null
           return pCarrier?.name?.toLowerCase().includes(carrier_name.toLowerCase())
         })
         .slice(0, 5)
@@ -778,7 +778,7 @@ ariaFunctionRegistry.register({
           !['omits_line_item', 'disputes_item'].includes(p.pattern_type)
       )
 
-      const carrier = adjuster.insurance_carriers as { name: string } | null
+      const carrier = adjuster.insurance_carriers as unknown as { name: string } | null
 
       return {
         success: true,

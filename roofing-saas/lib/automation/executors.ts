@@ -130,13 +130,14 @@ async function executeCreateTask(config: Record<string, unknown>): Promise<Recor
     const { data: task, error } = await supabase
       .from('tasks')
       .insert({
-        title,
-        description,
-        assigned_to,
+        title: title as string,
+        description: description as string | undefined,
+        assigned_to: assigned_to as string | undefined,
         due_date: dueDate,
-        priority: priority || 'medium',
-        project_id,
+        priority: (priority as string) || 'medium',
+        project_id: project_id as string | undefined,
         status: 'todo',
+        tenant_id: (config.tenant_id as string) ?? '',
       })
       .select('id')
       .single()
@@ -170,8 +171,8 @@ async function executeUpdateContact(config: Record<string, unknown>): Promise<Re
 
     const { error } = await supabase
       .from('contacts')
-      .update(updates)
-      .eq('id', contact_id)
+      .update(updates as Record<string, unknown>)
+      .eq('id', contact_id as string)
 
     if (error) {
       throw new Error(`Failed to update contact: ${error.message}`)
@@ -203,8 +204,8 @@ async function executeUpdateProject(config: Record<string, unknown>): Promise<Re
 
     const { error } = await supabase
       .from('projects')
-      .update(updates)
-      .eq('id', project_id)
+      .update(updates as Record<string, unknown>)
+      .eq('id', project_id as string)
 
     if (error) {
       throw new Error(`Failed to update project: ${error.message}`)

@@ -155,7 +155,7 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
     .from('user_roles')
     .select('permissions')
     .eq('tenant_id', tenantId)
-    .eq('name', role)
+    .eq('name', role ?? '')
     .single()
 
   if (!roleNameError && roleByName) {

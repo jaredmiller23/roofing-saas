@@ -80,8 +80,9 @@ export async function POST(request: NextRequest) {
         p_tenant_id: tenantId,
       })
 
-    if (duplicateCheck && duplicateCheck.length > 0 && duplicateCheck[0].exists) {
-      const duplicate = duplicateCheck[0]
+    const dupResults = duplicateCheck as { exists: boolean; distance_meters: number }[] | null
+    if (dupResults && dupResults.length > 0 && dupResults[0].exists) {
+      const duplicate = dupResults[0]
       throw ConflictError(`Duplicate pin detected at ${duplicate.distance_meters}m`)
     }
 

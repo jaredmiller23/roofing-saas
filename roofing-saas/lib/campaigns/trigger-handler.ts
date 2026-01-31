@@ -89,7 +89,7 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
           project_id: event.projectId,
           triggered_at: event.changedAt,
         },
-        firstStepId: campaign.campaign_steps?.[0]?.id,
+        firstStepId: (campaign.campaign_steps as unknown as Array<{ id: string; step_order: number }> | null)?.[0]?.id,
       })
     }
   } catch (error) {

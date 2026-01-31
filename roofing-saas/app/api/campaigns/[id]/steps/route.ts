@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
@@ -158,10 +159,10 @@ export async function POST(
         parent_step_id: body.parent_step_id || null,
         step_order: body.step_order,
         step_type: body.step_type,
-        step_config: body.step_config,
+        step_config: body.step_config as Json,
         delay_value: body.delay_value ?? 0,
         delay_unit: body.delay_unit || 'days',
-        conditions: body.conditions || null,
+        conditions: (body.conditions || null) as Json | null,
         true_path_step_id: body.true_path_step_id || null,
         false_path_step_id: body.false_path_step_id || null,
       })

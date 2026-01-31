@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      query = query.eq('status', status)
+      type PipelineStage = 'prospect' | 'qualified' | 'quote_sent' | 'negotiation' | 'won' | 'production' | 'complete' | 'lost'
+      query = query.eq('status', status as PipelineStage)
     }
 
     if (startDate) {
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate summary metrics
-    const summary = profitLoss.reduce(
+    const baseSummary = profitLoss.reduce(
       (acc, item) => {
         acc.total_revenue += Number(item.revenue) || 0
         acc.total_cost += Number(item.total_actual_cost) || 0
@@ -75,9 +76,12 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    summary.profit_margin = summary.total_revenue > 0
-      ? ((summary.total_profit / summary.total_revenue) * 100).toFixed(2)
-      : '0.00'
+    const summary = {
+      ...baseSummary,
+      profit_margin: baseSummary.total_revenue > 0
+        ? ((baseSummary.total_profit / baseSummary.total_revenue) * 100).toFixed(2)
+        : '0.00',
+    }
 
     return successResponse({ profitLoss, summary })
   } catch (error) {

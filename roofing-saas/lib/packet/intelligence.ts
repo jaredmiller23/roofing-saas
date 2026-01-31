@@ -70,23 +70,23 @@ export async function getPacketIntelligence(params: {
       const carrierInfo = adjusterData.insurance_carriers as unknown as { name: string } | null
       adjuster = {
         id: adjusterData.id,
-        tenant_id: adjusterData.tenant_id,
-        carrier_id: adjusterData.carrier_id || undefined,
+        tenant_id: adjusterData.tenant_id ?? '',
+        carrier_id: adjusterData.carrier_id ?? undefined,
         carrier_name: carrierInfo?.name,
-        first_name: adjusterData.first_name,
-        last_name: adjusterData.last_name,
-        role: adjusterData.role || undefined,
-        email: adjusterData.email || undefined,
-        phone: adjusterData.phone || undefined,
-        total_claims_handled: adjusterData.total_claims_handled || 0,
-        avg_response_days: adjusterData.avg_response_days || undefined,
-        avg_claim_approval_rate: adjusterData.avg_claim_approval_rate || undefined,
-        common_omissions: (adjusterData.common_omissions as string[]) || undefined,
-        communication_style: adjusterData.communication_style || undefined,
-        notes: adjusterData.notes || undefined,
-        created_at: adjusterData.created_at,
-        updated_at: adjusterData.updated_at,
-        last_interaction_at: adjusterData.last_interaction_at || undefined,
+        first_name: adjusterData.first_name ?? '',
+        last_name: adjusterData.last_name ?? '',
+        role: adjusterData.role ?? undefined,
+        email: adjusterData.email ?? undefined,
+        phone: adjusterData.phone ?? undefined,
+        total_claims_handled: adjusterData.total_claims_handled ?? 0,
+        avg_response_days: adjusterData.avg_response_days ?? undefined,
+        avg_claim_approval_rate: adjusterData.avg_claim_approval_rate ?? undefined,
+        common_omissions: (adjusterData.common_omissions as string[]) ?? undefined,
+        communication_style: adjusterData.communication_style ?? undefined,
+        notes: adjusterData.notes ?? undefined,
+        created_at: adjusterData.created_at ?? '',
+        updated_at: adjusterData.updated_at ?? '',
+        last_interaction_at: adjusterData.last_interaction_at ?? undefined,
       }
 
       // Fetch adjuster patterns
@@ -98,10 +98,15 @@ export async function getPacketIntelligence(params: {
         .order('occurrence_count', { ascending: false })
 
       if (patterns) {
-        adjusterPatterns = patterns as AdjusterPattern[]
+        adjusterPatterns = patterns.map(p => ({
+          ...p,
+          pattern_detail: p.pattern_detail ?? undefined,
+          successful_counter: p.successful_counter ?? undefined,
+          notes: p.notes ?? undefined,
+        })) as AdjusterPattern[]
 
         // Generate warnings from adjuster patterns
-        for (const pattern of patterns) {
+        for (const pattern of adjusterPatterns) {
           const warning = generateAdjusterWarning(pattern, adjuster)
           if (warning) {
             warnings.push(warning)
@@ -114,7 +119,7 @@ export async function getPacketIntelligence(params: {
       }
 
       // Add warnings from common_omissions
-      if (adjuster.common_omissions && adjuster.common_omissions.length > 0) {
+      if (adjuster && adjuster.common_omissions && adjuster.common_omissions.length > 0) {
         warnings.push({
           type: 'adjuster',
           severity: 'high',
@@ -173,10 +178,17 @@ export async function getPacketIntelligence(params: {
     const { data: patterns } = await query
 
     if (patterns) {
-      carrierPatterns = patterns as CarrierPattern[]
+      carrierPatterns = patterns.map(p => ({
+        ...p,
+        carrier_id: p.carrier_id ?? undefined,
+        carrier_name: p.carrier_name ?? undefined,
+        pattern_detail: p.pattern_detail ?? undefined,
+        successful_counter: p.successful_counter ?? undefined,
+        notes: p.notes ?? undefined,
+      })) as CarrierPattern[]
 
       // Generate warnings from carrier patterns
-      for (const pattern of patterns) {
+      for (const pattern of carrierPatterns) {
         const warning = generateCarrierWarning(pattern, carrier?.name || carrier_name)
         if (warning) {
           warnings.push(warning)

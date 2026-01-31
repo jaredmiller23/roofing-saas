@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { StormResponseConfig } from '@/lib/storm/storm-types'
+import type { StormResponseConfig, ResponseMode } from '@/lib/storm/storm-types'
 
 export async function GET(_request: NextRequest) {
   try {
@@ -67,12 +67,12 @@ export async function GET(_request: NextRequest) {
 
     // Transform database record to StormResponseConfig type
     const responseConfig: StormResponseConfig = {
-      mode: config.mode,
+      mode: config.mode as ResponseMode,
       activatedAt: config.activated_at,
       activatedBy: config.activated_by,
       stormEventId: config.storm_event_id,
-      settings: config.settings,
-      metrics: config.metrics,
+      settings: config.settings as StormResponseConfig['settings'],
+      metrics: config.metrics as StormResponseConfig['metrics'],
     }
 
     return NextResponse.json({
@@ -174,12 +174,12 @@ export async function POST(request: NextRequest) {
 
     // Transform to response type
     const responseConfig: StormResponseConfig = {
-      mode: result.data.mode,
+      mode: result.data.mode as ResponseMode,
       activatedAt: result.data.activated_at,
       activatedBy: result.data.activated_by,
       stormEventId: result.data.storm_event_id,
-      settings: result.data.settings,
-      metrics: result.data.metrics,
+      settings: result.data.settings as StormResponseConfig['settings'],
+      metrics: result.data.metrics as StormResponseConfig['metrics'],
     }
 
     return NextResponse.json({

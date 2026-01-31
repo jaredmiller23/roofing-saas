@@ -17,6 +17,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import type { Json } from '@/lib/types/database.types'
 import { checkDNC } from './dnc-service'
 import { isWithinCallingHours } from './time-restrictions'
 import type {
@@ -24,6 +25,7 @@ import type {
   ComplianceCheckResult,
   ComplianceCheck,
   ComplianceLogEntry,
+  DNCSource,
 } from './types'
 
 /**
@@ -179,7 +181,7 @@ export async function canMakeCall(
         checkType: 'dnc_check',
         result: 'fail',
         reason: dncCheck.reason,
-        dncSource: contact.dnc_status,
+        dncSource: (contact.dnc_status ?? undefined) as DNCSource | undefined,
       })
 
       logger.warn('Call blocked: Contact DNC status', {
@@ -347,16 +349,16 @@ async function logComplianceCheck(
 
     const { error } = await supabase.from('call_compliance_log').insert({
       tenant_id: entry.tenantId,
-      contact_id: entry.contactId || null,
-      user_id: entry.userId || null,
+      contact_id: entry.contactId ?? null,
+      user_id: entry.userId ?? null,
       phone_number: entry.phoneNumber,
       check_type: entry.checkType,
       result: entry.result,
-      reason: entry.reason || null,
-      dnc_source: entry.dncSource || null,
-      contact_timezone: entry.contactTimezone || null,
-      contact_local_time: entry.contactLocalTime || null,
-      metadata: entry.metadata || null,
+      reason: entry.reason ?? null,
+      dnc_source: entry.dncSource ?? null,
+      contact_timezone: entry.contactTimezone ?? null,
+      contact_local_time: entry.contactLocalTime ?? null,
+      metadata: (entry.metadata ?? null) as Json | null,
     })
 
     if (error) {
@@ -397,17 +399,17 @@ export async function getRecentComplianceFailures(
 
     return (data || []).map((row) => ({
       tenantId: row.tenant_id,
-      contactId: row.contact_id,
-      callLogId: row.call_log_id,
-      userId: row.user_id,
+      contactId: row.contact_id ?? undefined,
+      callLogId: row.call_log_id ?? undefined,
+      userId: row.user_id ?? undefined,
       phoneNumber: row.phone_number,
-      checkType: row.check_type,
-      result: row.result,
-      reason: row.reason,
-      dncSource: row.dnc_source,
-      contactTimezone: row.contact_timezone,
-      contactLocalTime: row.contact_local_time,
-      metadata: row.metadata,
+      checkType: row.check_type as ComplianceLogEntry['checkType'],
+      result: row.result as ComplianceLogEntry['result'],
+      reason: row.reason ?? undefined,
+      dncSource: (row.dnc_source ?? undefined) as DNCSource | undefined,
+      contactTimezone: row.contact_timezone ?? undefined,
+      contactLocalTime: row.contact_local_time ?? undefined,
+      metadata: (row.metadata ?? undefined) as Record<string, unknown> | undefined,
     }))
   } catch (error) {
     logger.error('Error in getRecentComplianceFailures', { error })

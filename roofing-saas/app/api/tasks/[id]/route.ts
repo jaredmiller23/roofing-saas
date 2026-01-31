@@ -1,3 +1,4 @@
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { NextRequest } from 'next/server'
@@ -104,10 +105,11 @@ export async function PATCH(
     // Log activity
     const changes: Record<string, { from: unknown; to: unknown }> = {}
     if (currentTask) {
+      const taskRecord = currentTask as Record<string, unknown>
       Object.keys(body).forEach(key => {
-        if (currentTask[key] !== body[key]) {
+        if (taskRecord[key] !== body[key]) {
           changes[key] = {
-            from: currentTask[key],
+            from: taskRecord[key],
             to: body[key]
           }
         }
@@ -121,7 +123,7 @@ export async function PATCH(
           task_id: id,
           user_id: user.id,
           action: 'updated',
-          changes
+          changes: changes as Json
         })
     }
 

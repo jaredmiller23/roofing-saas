@@ -212,7 +212,7 @@ export async function PATCH(request: Request) {
         reviewed_at: new Date().toISOString(),
         final_response: responseToSend,
         metadata: {
-          ...item.metadata,
+          ...(typeof item.metadata === 'object' && item.metadata !== null && !Array.isArray(item.metadata) ? item.metadata : {}),
           rejection_reason: action === 'reject' ? rejectionReason : undefined,
         },
       })

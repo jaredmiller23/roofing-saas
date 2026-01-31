@@ -17,7 +17,7 @@ import {
   getCompanyTurnSubject,
   type CompanyTurnNotificationData
 } from '@/lib/email/signature-reminder-templates'
-import { generateSignedPDF, uploadPDFToStorage } from '@/lib/pdf/signature-pdf-generator'
+import { generateSignedPDF, uploadPDFToStorage, type SignatureData } from '@/lib/pdf/signature-pdf-generator'
 
 /**
  * POST /api/signature-documents/[id]/sign
@@ -94,8 +94,7 @@ export async function POST(
         .from('signature_documents')
         .update({
           status: 'declined',
-          decline_reason: decline_reason.trim(),
-          declined_at: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', id)
         .select()
@@ -115,6 +114,7 @@ export async function POST(
       // Send decline notification email to document owner
       try {
         // Get the document owner's email from users table
+        if (!document.created_by) throw new Error('Document has no creator')
         const { data: owner } = await supabase
           .from('users')
           .select('email, raw_user_meta_data')
@@ -124,12 +124,23 @@ export async function POST(
         const ownerEmail = owner?.email
         const ownerName = (owner?.raw_user_meta_data as { full_name?: string })?.full_name || 'there'
 
+        // Get project name if linked
+        let declineProjectName: string | undefined
+        if (document.project_id) {
+          const { data: proj } = await supabase
+            .from('projects')
+            .select('name')
+            .eq('id', document.project_id)
+            .single()
+          declineProjectName = proj?.name
+        }
+
         if (ownerEmail) {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
           const emailData = {
             ownerName,
             documentTitle: document.title,
-            projectName: document.project?.name,
+            projectName: declineProjectName,
             declinedBy: signer_name || 'Anonymous',
             declinedByEmail: signer_email,
             declineReason: decline_reason.trim(),
@@ -330,16 +341,28 @@ export async function POST(
             .select('*')
             .eq('document_id', id)
 
+          // Fetch project and contact info for PDF
+          let pdfProjectInfo: { name: string } | undefined
+          let pdfContactInfo: { first_name: string; last_name: string; email: string | null } | undefined
+          if (document.project_id) {
+            const { data: proj } = await supabase.from('projects').select('name').eq('id', document.project_id).single()
+            if (proj) pdfProjectInfo = proj
+          }
+          if (document.contact_id) {
+            const { data: cont } = await supabase.from('contacts').select('first_name, last_name, email').eq('id', document.contact_id).single()
+            if (cont) pdfContactInfo = cont
+          }
+
           // Generate signed PDF
           const pdfBytes = await generateSignedPDF(
             {
               title: document.title,
-              description: document.description,
+              description: document.description ?? undefined,
               document_type: document.document_type,
-              project: document.project,
-              contact: document.contact
+              project: pdfProjectInfo,
+              contact: pdfContactInfo
             },
-            docSignatures || [],
+            (docSignatures || []) as unknown as SignatureData[],
             document.file_url || undefined
           )
 
@@ -404,6 +427,7 @@ export async function POST(
 
       // Send signed notification email to document owner
       try {
+        if (!document.created_by) throw new Error('Document has no creator')
         const { data: owner } = await supabase
           .from('users')
           .select('email, raw_user_meta_data')
@@ -422,11 +446,23 @@ export async function POST(
             .select('signer_name, signer_email, signer_type, signed_at')
             .eq('document_id', id)
 
+          // Get project name if linked
+          let signedProjectName: string | undefined
+          if (document.project_id) {
+            const { data: proj } = await supabase.from('projects').select('name').eq('id', document.project_id).single()
+            signedProjectName = proj?.name
+          }
+
           const emailData = {
             ownerName,
             documentTitle: document.title,
-            projectName: document.project?.name,
-            signers: allSignatures || [],
+            projectName: signedProjectName,
+            signers: (allSignatures || []).map(s => ({
+              signer_name: s.signer_name,
+              signer_email: s.signer_email ?? '',
+              signer_type: s.signer_type,
+              signed_at: s.signed_at ?? '',
+            })),
             documentUrl: `${baseUrl}/signatures/${id}`,
             downloadUrl: `${baseUrl}/api/signature-documents/${id}/download`,
             signedAt: new Date().toLocaleString()
@@ -449,7 +485,7 @@ export async function POST(
           // Notify other signers if notify_signers_on_complete is enabled
           if (document.notify_signers_on_complete !== false && allSignatures) {
             const otherSignerEmails = allSignatures
-              .filter(s => s.signer_email && s.signer_email !== ownerEmail)
+              .filter((s): s is typeof s & { signer_email: string } => s.signer_email !== null && s.signer_email !== ownerEmail)
               .map(s => s.signer_email)
 
             for (const signerEmail of otherSignerEmails) {
@@ -492,6 +528,7 @@ export async function POST(
       // Send "company turn" notification if customer just signed and company signature required
       if (signer_type === 'customer' && document.requires_company_signature) {
         try {
+          if (!document.created_by) throw new Error('Document has no creator')
           const { data: owner } = await supabase
             .from('users')
             .select('email, raw_user_meta_data')
@@ -504,10 +541,17 @@ export async function POST(
           if (ownerEmail) {
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
+            // Get project name if linked
+            let companyTurnProjectName: string | undefined
+            if (document.project_id) {
+              const { data: proj } = await supabase.from('projects').select('name').eq('id', document.project_id).single()
+              companyTurnProjectName = proj?.name
+            }
+
             const companyTurnData: CompanyTurnNotificationData = {
               ownerName,
               documentTitle: document.title,
-              projectName: document.project?.name,
+              projectName: companyTurnProjectName,
               customerName: signer_name,
               customerEmail: signer_email,
               signedAt: new Date().toLocaleString(),

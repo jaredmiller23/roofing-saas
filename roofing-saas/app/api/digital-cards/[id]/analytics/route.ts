@@ -75,18 +75,24 @@ export async function GET(
     startDate.setDate(startDate.getDate() - days)
 
     // 1. Analytics Summary (from card table)
+    const totalViews = card.total_views ?? 0
+    const totalVcardDownloads = card.total_vcard_downloads ?? 0
+    const totalPhoneClicks = card.total_phone_clicks ?? 0
+    const totalEmailClicks = card.total_email_clicks ?? 0
+    const totalContactFormSubmissions = card.total_contact_form_submissions ?? 0
+
     const summary: CardAnalyticsSummary = {
-      total_views: card.total_views,
-      total_vcard_downloads: card.total_vcard_downloads,
-      total_phone_clicks: card.total_phone_clicks,
-      total_email_clicks: card.total_email_clicks,
-      total_contact_form_submissions: card.total_contact_form_submissions,
+      total_views: totalViews,
+      total_vcard_downloads: totalVcardDownloads,
+      total_phone_clicks: totalPhoneClicks,
+      total_email_clicks: totalEmailClicks,
+      total_contact_form_submissions: totalContactFormSubmissions,
       total_interactions:
-        card.total_views +
-        card.total_vcard_downloads +
-        card.total_phone_clicks +
-        card.total_email_clicks +
-        card.total_contact_form_submissions,
+        totalViews +
+        totalVcardDownloads +
+        totalPhoneClicks +
+        totalEmailClicks +
+        totalContactFormSubmissions,
       unique_visitors: 0, // Will calculate from interactions
       last_viewed_at: card.last_viewed_at || null,
     }

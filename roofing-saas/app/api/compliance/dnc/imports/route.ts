@@ -57,29 +57,33 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user emails for imports
-    const userIds = [...new Set(imports?.map(i => i.imported_by).filter(Boolean))]
+    const userIds = [...new Set(imports?.map(i => i.imported_by).filter((id): id is string => id !== null))]
     let userMap: Record<string, string> = {}
 
     if (userIds.length > 0) {
       const { data: users } = await supabase
-        .from('profiles')
+        .from('users')
         .select('id, email')
         .in('id', userIds)
 
       if (users) {
-        userMap = Object.fromEntries(users.map(u => [u.id, u.email]))
+        userMap = Object.fromEntries(
+          users
+            .filter((u): u is typeof u & { id: string; email: string } => u.id !== null && u.email !== null)
+            .map(u => [u.id, u.email])
+        )
       }
     }
 
     // Transform for response
     const formattedImports = imports?.map(imp => ({
       id: imp.id,
-      filename: imp.file_name || `Import ${new Date(imp.created_at).toLocaleDateString()}`,
+      filename: imp.file_name || `Import ${new Date(imp.created_at ?? '').toLocaleDateString()}`,
       records_added: imp.records_imported || 0,
       records_failed: imp.records_failed || 0,
       total_records: imp.records_total || 0,
       created_at: imp.created_at,
-      created_by_email: userMap[imp.imported_by] || 'Unknown',
+      created_by_email: (imp.imported_by && userMap[imp.imported_by]) || 'Unknown',
     })) || []
 
     const duration = Date.now() - startTime

@@ -53,7 +53,7 @@ export default async function FinancialAnalyticsPage() {
 
   // Calculate pipeline data for forecasting
   const pipelineProjects = projects?.filter(p =>
-    p.status === 'lead' || p.status === 'proposal' || p.status === 'negotiation'
+    p.status === 'prospect' || p.status === 'quote_sent' || p.status === 'negotiation'
   ) || []
 
   const completedProjects = projects?.filter(p =>

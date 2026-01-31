@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/lib/types/database.types'
 
 /**
  * Client-side Supabase client for Client Components
@@ -50,5 +51,5 @@ export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || ''
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || ''
 
-  return createBrowserClient(supabaseUrl, supabaseKey)
+  return createBrowserClient<Database>(supabaseUrl, supabaseKey)
 }

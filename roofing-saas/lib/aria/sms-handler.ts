@@ -294,7 +294,7 @@ export async function handleInboundSMS(params: InboundSMSParams): Promise<SMSHan
       if (upcomingTasks && upcomingTasks.length > 0) {
         additionalContext += '\n\nUpcoming appointments/tasks for this contact:\n'
         upcomingTasks.forEach(task => {
-          const dueDate = new Date(task.due_date).toLocaleDateString()
+          const dueDate = new Date(task.due_date ?? '').toLocaleDateString()
           additionalContext += `- ${task.title} (${dueDate})\n`
         })
       }
@@ -606,7 +606,7 @@ export async function getConversationThread(params: {
     return activities.map((a) => ({
       direction: (a.direction as 'inbound' | 'outbound') || 'outbound',
       body: a.content || '',
-      timestamp: a.created_at,
+      timestamp: a.created_at ?? '',
     })).reverse() // Oldest first for reading order
   } catch (error) {
     logger.warn('Failed to get conversation thread', { error })

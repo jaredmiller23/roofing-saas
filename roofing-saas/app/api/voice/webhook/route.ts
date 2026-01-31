@@ -89,26 +89,29 @@ export async function POST(request: NextRequest) {
         .limit(1)
         .single()
 
-      const { error: activityError } = await supabase.from('activities').insert({
-        tenant_id: contact?.tenant_id || null,
-        contact_id: contact?.id || null,
-        type: 'call',
-        direction: 'inbound',
-        content: 'Inbound call',
-        external_id: callSid,
-        from_address: from,
-        to_address: to,
-        outcome: callStatus,
-        duration_seconds: duration ? parseInt(duration) : null,
-      })
-
-      if (activityError) {
-        logger.error('Failed to log inbound call activity', { error: activityError })
-      } else {
-        logger.info('Inbound call logged', {
-          from,
-          contactId: contact?.id || 'Unknown',
+      // Only log activity if we found the contact (need tenant_id)
+      if (contact?.tenant_id) {
+        const { error: activityError } = await supabase.from('activities').insert({
+          tenant_id: contact.tenant_id,
+          contact_id: contact.id,
+          type: 'call',
+          direction: 'inbound',
+          content: 'Inbound call',
+          external_id: callSid,
+          from_address: from,
+          to_address: to,
+          outcome: callStatus,
+          duration_seconds: duration ? parseInt(duration) : null,
         })
+
+        if (activityError) {
+          logger.error('Failed to log inbound call activity', { error: activityError })
+        } else {
+          logger.info('Inbound call logged', {
+            from,
+            contactId: contact.id,
+          })
+        }
       }
     } else {
       logger.warn('Call activity not found for status update', {

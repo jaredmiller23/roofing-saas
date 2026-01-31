@@ -3,10 +3,10 @@
 import { useMemo } from 'react'
 
 interface Project {
-  revenue?: number
-  status?: string
-  estimated_value?: number
-  actual_completion?: string
+  revenue?: number | null
+  status?: string | null
+  estimated_value?: number | null
+  actual_completion?: string | null
 }
 
 interface RevenueForecastProps {

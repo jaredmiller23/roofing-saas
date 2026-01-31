@@ -7,7 +7,7 @@ import { createCommissionAction } from './actions'
 interface CommissionPlan {
   id: string
   name: string
-  plan_type: string
+  plan_type: string | null
 }
 
 interface AddCommissionDialogProps {

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
@@ -125,14 +126,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform projects to include pipeline/stage from custom_fields
-    const transformedProjects = projects?.map(project => ({
-      ...project,
-      pipeline: project.custom_fields?.proline_pipeline || null,
-      stage: project.custom_fields?.proline_stage || null,
-      assigned_to_name: project.custom_fields?.assigned_to || null,
-      tags: project.custom_fields?.tags || [],
-      lead_source: project.custom_fields?.lead_source || null,
-    })) || []
+    const transformedProjects = projects?.map(project => {
+      const cf = project.custom_fields as Record<string, unknown> | null
+      return {
+        ...project,
+        pipeline: (cf?.proline_pipeline as string) || null,
+        stage: (cf?.proline_stage as string) || null,
+        assigned_to_name: (cf?.assigned_to as string) || null,
+        tags: (cf?.tags as string[]) || [],
+        lead_source: (cf?.lead_source as string) || null,
+      }
+    }) || []
 
     return successResponse({
       projects: transformedProjects,
@@ -181,10 +185,35 @@ export async function POST(request: NextRequest) {
       async () => {
         const supabase = await createClient()
 
+        // Extract only fields that exist on the projects table
+        const {
+          name, contact_id, description, status, pipeline_stage, type,
+          lead_source, priority, lead_score, estimated_close_date,
+          adjuster_contact_id, claim_id, storm_event_id,
+          estimated_value, approved_value, final_value,
+          custom_fields,
+        } = validatedData
+
         const { data, error } = await supabase
           .from('projects')
           .insert({
-            ...validatedData,
+            name,
+            contact_id,
+            description,
+            status,
+            pipeline_stage,
+            type,
+            lead_source,
+            priority,
+            lead_score,
+            estimated_close_date,
+            adjuster_contact_id,
+            claim_id,
+            storm_event_id,
+            estimated_value,
+            approved_value,
+            final_value,
+            custom_fields: (custom_fields ?? null) as Json | null,
             tenant_id: tenantId,
             created_by: user.id,
           })

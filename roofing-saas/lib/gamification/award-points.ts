@@ -137,10 +137,11 @@ export async function awardPoints(
     }
 
     // Check for new achievements
-    const { data: achievements, error: achievementError } = await supabase.rpc(
+    const { data: achievementsRaw, error: achievementError } = await supabase.rpc(
       'check_achievements',
       { p_user_id: userId }
     )
+    const achievements = (achievementsRaw ?? []) as Array<{ id: string; name: string; description: string }>
 
     if (achievementError) {
       logger.warn('Failed to check achievements', {
@@ -153,13 +154,13 @@ export async function awardPoints(
       userId,
       points,
       reason,
-      newAchievements: achievements?.length || 0,
+      newAchievements: achievements.length,
     })
 
     return {
       success: true,
       pointsAwarded: points,
-      newAchievements: achievements || [],
+      newAchievements: achievements,
     }
   } catch (error) {
     logger.error('Award points error', { error, userId, points, reason })

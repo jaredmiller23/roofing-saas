@@ -17,7 +17,8 @@ interface ProjectFileFormProps {
     file_url: string
     description: string | null
     project_id: string | null
-    version?: number
+    version?: number | null
+    [key: string]: unknown
   }
 }
 

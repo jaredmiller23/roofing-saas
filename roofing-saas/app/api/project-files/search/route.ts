@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
           .eq('is_deleted', false)
           .not('parent_file_id', 'is', null)
 
-        const parentIds = filesWithVersions?.map(f => f.parent_file_id).filter(Boolean) || []
+        const parentIds = filesWithVersions?.map(f => f.parent_file_id).filter((id): id is string => id !== null) || []
         const versionIds = filesWithVersions?.map(f => f.id) || []
         const allVersionedIds = [...new Set([...parentIds, ...versionIds])]
 
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
           .eq('is_deleted', false)
           .not('parent_file_id', 'is', null)
 
-        const parentIds = filesWithVersions?.map(f => f.parent_file_id).filter(Boolean) || []
+        const parentIds = filesWithVersions?.map(f => f.parent_file_id).filter((id): id is string => id !== null) || []
         const versionIds = filesWithVersions?.map(f => f.id) || []
         const allVersionedIds = [...new Set([...parentIds, ...versionIds])]
 

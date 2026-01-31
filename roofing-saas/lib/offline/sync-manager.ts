@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/lib/types/database.types';
 import {
   getUnsyncedRecords,
   markRecordSynced,
@@ -295,29 +296,33 @@ class SyncManager {
     try {
       let result;
       
+      const tableRef = record.table as 'contacts';
+      const recordData = record.data as Record<string, unknown>;
+      type ContactsInsert = Database['public']['Tables']['contacts']['Insert'];
+      type ContactsUpdate = Database['public']['Tables']['contacts']['Update'];
       switch (record.operation) {
         case 'CREATE':
           result = await supabase
-            .from(record.table)
-            .insert(record.data)
+            .from(tableRef)
+            .insert(recordData as unknown as ContactsInsert)
             .select()
             .single();
           break;
-          
+
         case 'UPDATE':
           result = await supabase
-            .from(record.table)
-            .update(record.data)
-            .eq('id', record.data.id)
+            .from(tableRef)
+            .update(recordData as unknown as ContactsUpdate)
+            .eq('id', recordData.id as string)
             .select()
             .single();
           break;
-          
+
         case 'DELETE':
           result = await supabase
-            .from(record.table)
+            .from(tableRef)
             .delete()
-            .eq('id', record.data.id);
+            .eq('id', recordData.id as string);
           break;
       }
 
@@ -458,7 +463,7 @@ class SyncManager {
         
         // Fetch data updated since last sync
         const { data, error } = await supabase
-          .from(table)
+          .from(table as 'contacts')
           .select('*')
           .gte('updated_at', new Date(lastSync).toISOString())
           .order('updated_at', { ascending: false });

@@ -300,13 +300,22 @@ ariaFunctionRegistry.register({
         }
       }
 
+      // Derive severity from magnitude for filtering
+      const deriveSeverity = (s: { magnitude: number | null; event_type: string }): string => {
+        const mag = s.magnitude ?? 0
+        if (s.event_type === 'tornado') return mag >= 3 ? 'extreme' : mag >= 2 ? 'severe' : 'moderate'
+        if (s.event_type === 'hail') return mag >= 2 ? 'severe' : mag >= 1 ? 'moderate' : 'minor'
+        return mag >= 75 ? 'severe' : mag >= 50 ? 'moderate' : 'minor'
+      }
+
       // Filter by severity if specified
       const severityOrder = { minor: 1, moderate: 2, severe: 3, extreme: 4 }
       let filteredStorms = storms
       if (minSeverity) {
         const minLevel = severityOrder[minSeverity as keyof typeof severityOrder] || 1
         filteredStorms = storms.filter((s) => {
-          const stormLevel = severityOrder[s.severity as keyof typeof severityOrder] || 1
+          const stormSeverity = deriveSeverity(s)
+          const stormLevel = severityOrder[stormSeverity as keyof typeof severityOrder] || 1
           return stormLevel >= minLevel
         })
       }
@@ -330,7 +339,8 @@ ariaFunctionRegistry.register({
       }
 
       for (const storm of filteredStorms.slice(0, 10)) {
-        const emoji = severityEmoji[storm.severity as keyof typeof severityEmoji] || '🟡'
+        const stormSeverity = deriveSeverity(storm)
+        const emoji = severityEmoji[stormSeverity as keyof typeof severityEmoji] || '🟡'
         const type = typeLabel[storm.event_type as keyof typeof typeLabel] || storm.event_type
         const location = storm.city ? `${storm.city}, ${storm.state}` : storm.state
         const date = new Date(storm.event_date).toLocaleDateString('en-US', {
@@ -348,8 +358,8 @@ ariaFunctionRegistry.register({
           }
         }
 
-        if (storm.affected_customers) {
-          lines.push(`   ${storm.affected_customers} customers potentially affected`)
+        if (storm.property_damage) {
+          lines.push(`   Property damage reported: $${storm.property_damage.toLocaleString()}`)
         }
         lines.push('')
       }
@@ -438,7 +448,21 @@ ariaFunctionRegistry.register({
           .single()
 
         if (storm) {
-          stormData = storm
+          stormData = {
+            id: storm.id,
+            event_type: storm.event_type as StormEventData['event_type'],
+            state: storm.state,
+            county: storm.county ?? undefined,
+            city: storm.city ?? undefined,
+            latitude: storm.latitude ?? undefined,
+            longitude: storm.longitude ?? undefined,
+            magnitude: storm.magnitude,
+            event_date: storm.event_date,
+            event_narrative: storm.event_narrative ?? undefined,
+            property_damage: storm.property_damage ?? undefined,
+            path_width: storm.path_width ?? undefined,
+            path_length: storm.path_length ?? undefined,
+          }
           lat = storm.latitude ?? lat
           lng = storm.longitude ?? lng
         }
@@ -489,7 +513,7 @@ ariaFunctionRegistry.register({
 
       const affectedCustomers = findAffectedCustomers(
         enhancedStorm,
-        contacts as Contact[],
+        contacts as unknown as Contact[],
         { maxDistance: radiusMiles, minProbability }
       )
 

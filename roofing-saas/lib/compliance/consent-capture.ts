@@ -17,6 +17,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { headers } from 'next/headers'
+import type { Json } from '@/lib/types/database.types'
 
 export type ConsentMethod = 'web_form' | 'verbal' | 'written' | 'sms' | 'electronic_signature'
 export type ConsentType = 'call' | 'sms' | 'recording'
@@ -181,9 +182,9 @@ export async function captureCallConsent(
       tenant_id: tenantId,
       contact_id: contactId,
       phone_number: 'consent_capture', // Placeholder - actual phone from contact
-      compliance_check_type: 'consent_verification',
-      check_result: 'allowed',
-      check_details: {
+      check_type: 'consent_verification',
+      result: 'allowed',
+      metadata: {
         action: 'consent_captured',
         consent_type: consentType,
         method,
@@ -191,8 +192,8 @@ export async function captureCallConsent(
         user_agent: userAgent,
         form_version: version,
         captured_by: userId,
-      },
-      checked_by: userId,
+      } as Json,
+      user_id: userId,
     })
 
     const proof: ConsentProof = {
@@ -275,14 +276,14 @@ export async function revokeConsent(
       tenant_id: tenantId,
       contact_id: contactId,
       phone_number: 'consent_revocation',
-      compliance_check_type: 'opt_out_check',
-      check_result: 'blocked',
-      check_details: {
+      check_type: 'opt_out_check',
+      result: 'blocked',
+      metadata: {
         action: 'consent_revoked',
         consent_type: consentType,
         reason,
         revoked_at: timestamp,
-      },
+      } as Json,
     })
 
     logger.info('Consent revoked', { contactId, consentType, reason })
@@ -350,25 +351,25 @@ export async function getConsentProof(
       call: data.call_consent ? {
         consentType: 'call',
         method: data.call_consent_method as ConsentMethod,
-        timestamp: data.call_consent_date,
-        ipAddress: data.call_consent_ip,
-        userAgent: data.call_consent_user_agent,
-        formVersion: data.call_consent_form_version,
-        legalText: data.call_consent_legal_text,
+        timestamp: data.call_consent_date ?? undefined,
+        ipAddress: data.call_consent_ip ?? undefined,
+        userAgent: data.call_consent_user_agent ?? undefined,
+        formVersion: data.call_consent_form_version ?? undefined,
+        legalText: data.call_consent_legal_text ?? undefined,
       } : undefined,
       sms: data.sms_opt_in ? {
         consentType: 'sms',
         method: data.sms_consent_method as ConsentMethod,
-        timestamp: data.sms_opt_in_date,
-        ipAddress: data.sms_consent_ip,
-        userAgent: data.sms_consent_user_agent,
-        formVersion: data.sms_consent_form_version,
-        legalText: data.sms_consent_legal_text,
+        timestamp: data.sms_opt_in_date ?? undefined,
+        ipAddress: data.sms_consent_ip ?? undefined,
+        userAgent: data.sms_consent_user_agent ?? undefined,
+        formVersion: data.sms_consent_form_version ?? undefined,
+        legalText: data.sms_consent_legal_text ?? undefined,
       } : undefined,
       recording: {
         consent: data.recording_consent || false,
-        date: data.recording_consent_date,
-        method: data.recording_consent_method,
+        date: data.recording_consent_date ?? undefined,
+        method: data.recording_consent_method ?? undefined,
       },
     }
   } catch (error) {
