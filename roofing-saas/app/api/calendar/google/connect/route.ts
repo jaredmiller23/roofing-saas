@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, InternalError, ApiError, ErrorCode } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -28,10 +28,11 @@ export async function POST() {
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/google/callback`
 
     if (!clientId) {
-      return successResponse({
-        error: 'Google Calendar integration not configured',
-        message: 'Please contact your administrator to set up Google Calendar integration. Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables.'
-      }, 503)
+      throw new ApiError(
+        ErrorCode.EXTERNAL_SERVICE_ERROR,
+        'Google Calendar integration is not configured. Please contact your administrator to set up the Google Calendar API credentials.',
+        503
+      )
     }
 
     // Build Google OAuth URL

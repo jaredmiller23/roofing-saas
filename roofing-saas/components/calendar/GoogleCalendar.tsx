@@ -45,16 +45,20 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     setError(null)
 
     try {
-      // Initiate OAuth flow with Supabase
       const response = await fetch('/api/calendar/google/connect', {
         method: 'POST'
       })
 
       const data = await response.json()
 
-      if (data.authUrl) {
+      if (!response.ok) {
+        setError(data.error?.message || 'Failed to initiate Google Calendar connection')
+        return
+      }
+
+      if (data.data?.authUrl) {
         // Redirect to Google OAuth
-        window.location.href = data.authUrl
+        window.location.href = data.data.authUrl
       } else {
         setError('Failed to initiate Google Calendar connection')
       }
