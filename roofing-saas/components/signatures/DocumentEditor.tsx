@@ -38,11 +38,13 @@ export function DocumentEditor({
   const [fields, setFields] = useState<SignatureFieldPlacement[]>(initialFields)
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null)
   const [pdfUrl, setPdfUrl] = useState<string | undefined>(initialPdfUrl)
+  const [uploadedPdfUrl, setUploadedPdfUrl] = useState<string | undefined>(initialPdfUrl)
   const [numPages, setNumPages] = useState<number>(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [scale, setScale] = useState(1)
   const [draggingType, setDraggingType] = useState<FieldType | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -66,11 +68,34 @@ export function DocumentEditor({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // For now, create an object URL. In production, upload to storage
-    const url = URL.createObjectURL(file)
-    setPdfUrl(url)
+    // Use blob URL for local preview
+    const previewUrl = URL.createObjectURL(file)
+    setPdfUrl(previewUrl)
     setIsLoading(true)
     setCurrentPage(1)
+    setUploadError(null)
+
+    // Upload to Supabase Storage for permanent URL
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/signature-pdfs/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to upload PDF')
+      }
+
+      setUploadedPdfUrl(result.data.url)
+    } catch (err) {
+      console.error('PDF upload error:', err)
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload PDF')
+    }
   }
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -125,7 +150,7 @@ export function DocumentEditor({
   const pageFields = fields.filter(f => f.page === currentPage)
 
   const handleSave = () => {
-    onSave(fields, pdfUrl)
+    onSave(fields, uploadedPdfUrl || pdfUrl)
   }
 
   return (
@@ -156,6 +181,11 @@ export function DocumentEditor({
                 className="hidden"
               />
             </Label>
+            {uploadError && (
+              <p className="text-xs text-red-500 text-center">
+                {uploadError}
+              </p>
+            )}
             {!pdfUrl && (
               <p className="text-xs text-muted-foreground text-center">
                 Or use blank canvas below

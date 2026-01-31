@@ -368,7 +368,7 @@ export async function POST(
           }
           const fileCategory = categoryMap[document.document_type] || 'contracts'
 
-          // Create project file record
+          // Create project file record (columns must match actual project_files table)
           await supabase
             .from('project_files')
             .insert({
@@ -377,21 +377,12 @@ export async function POST(
               file_category: fileCategory,
               file_url: signedPdfUrl,
               file_size: pdfBytes.length,
-              file_extension: 'pdf',
               mime_type: 'application/pdf',
               project_id: document.project_id,
-              folder_path: 'Signed Documents',
-              description: `Auto-generated signed document from signature request`,
+              description: `Signed document (signature request ${id})`,
               tenant_id: document.tenant_id,
               uploaded_by: document.created_by,
-              status: 'active',
-              version: 1,
               is_deleted: false,
-              metadata: {
-                signature_document_id: id,
-                auto_stored: true,
-                signed_at: new Date().toISOString()
-              }
             })
 
           logger.info('Signed document auto-stored to project files', {
