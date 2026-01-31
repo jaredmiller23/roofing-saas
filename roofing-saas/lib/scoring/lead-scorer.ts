@@ -3,7 +3,7 @@
  */
 
 import type { Contact } from '@/lib/types/contact'
-import type { LeadScore, ScoreComponent } from './score-types'
+import type { LeadScore, ScoreComponent, ScoringRules } from './score-types'
 import {
   DEFAULT_SCORING_RULES,
   getPropertyValueScore,
@@ -14,13 +14,14 @@ import {
 
 /**
  * Calculate comprehensive lead score for a contact
+ * Accepts optional custom rules — falls back to DEFAULT_SCORING_RULES
  */
-export function calculateLeadScore(contact: Contact): LeadScore {
+export function calculateLeadScore(contact: Contact, customRules?: ScoringRules): LeadScore {
   const components: ScoreComponent[] = []
-  const rules = DEFAULT_SCORING_RULES
+  const rules = customRules || DEFAULT_SCORING_RULES
 
   // 1. Property Value Score
-  const propertyScore = getPropertyValueScore(contact.property_value)
+  const propertyScore = getPropertyValueScore(contact.property_value, rules.propertyValueRanges)
   if (propertyScore > 0) {
     components.push({
       id: 'property_value',
@@ -34,7 +35,7 @@ export function calculateLeadScore(contact: Contact): LeadScore {
   }
 
   // 2. Roof Age Multiplier (applies to property score)
-  const roofAgeMultiplier = getRoofAgeMultiplier(contact.roof_age)
+  const roofAgeMultiplier = getRoofAgeMultiplier(contact.roof_age, rules.roofAgeMultipliers)
   if (contact.roof_age && roofAgeMultiplier > 1) {
     const roofAgeBonus = propertyScore * (roofAgeMultiplier - 1) * rules.categoryWeights.timing
     components.push({
@@ -49,7 +50,7 @@ export function calculateLeadScore(contact: Contact): LeadScore {
   }
 
   // 3. Source Quality
-  const sourceWeight = getSourceWeight(contact.source)
+  const sourceWeight = getSourceWeight(contact.source, rules.sourceWeights)
   if (sourceWeight > 1) {
     const sourceBonus = 20 * (sourceWeight - 1) * rules.categoryWeights.referral
     components.push({

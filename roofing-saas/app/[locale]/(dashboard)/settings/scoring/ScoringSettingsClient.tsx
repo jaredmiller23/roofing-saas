@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Save, RotateCcw, Settings, TrendingUp, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api/client'
 import { DEFAULT_SCORING_RULES, SCORE_THRESHOLDS } from '@/lib/scoring/scoring-rules'
 import type { 
   ScoringRules, 
@@ -50,16 +51,26 @@ export function ScoringSettingsClient({ user: _user }: ScoringSettingsClientProp
   const loadConfiguration = async () => {
     setLoading(true)
     try {
-      // In a real implementation, this would fetch from API
-      // For now, we'll use defaults
+      const result = await apiFetch<{
+        enabled: boolean
+        autoUpdate: boolean
+        rules: ScoringRules
+      }>('/api/settings/scoring')
+
+      setConfig({
+        enabled: result.enabled,
+        autoUpdate: result.autoUpdate,
+        rules: result.rules,
+      })
+    } catch (error) {
+      console.error('Failed to load scoring configuration:', error)
+      toast.error('Failed to load scoring configuration')
+      // Fall back to defaults on error
       setConfig({
         enabled: true,
         autoUpdate: true,
         rules: DEFAULT_SCORING_RULES,
       })
-    } catch (error) {
-      console.error('Failed to load scoring configuration:', error)
-      toast.error('Failed to load scoring configuration')
     } finally {
       setLoading(false)
     }
@@ -68,10 +79,25 @@ export function ScoringSettingsClient({ user: _user }: ScoringSettingsClientProp
   const saveConfiguration = async () => {
     setSaving(true)
     try {
-      // In a real implementation, this would save to API
-      // For now, we'll just simulate a save
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const result = await apiFetch<{
+        enabled: boolean
+        autoUpdate: boolean
+        rules: ScoringRules
+      }>('/api/settings/scoring', {
+        method: 'PATCH',
+        body: {
+          enabled: config.enabled,
+          autoUpdate: config.autoUpdate,
+          rules: config.rules,
+        },
+      })
+
+      setConfig({
+        enabled: result.enabled,
+        autoUpdate: result.autoUpdate,
+        rules: result.rules,
+      })
+
       toast.success('Scoring configuration saved successfully')
     } catch (error) {
       console.error('Failed to save scoring configuration:', error)

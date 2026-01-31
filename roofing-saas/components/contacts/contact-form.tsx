@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useForm, Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Contact, getContactCategoryOptions } from '@/lib/types/contact'
 import { createContactSchema, type CreateContactInput } from '@/lib/validations/contact'
 import { DuplicateWarningDialog } from './DuplicateWarningDialog'
@@ -31,8 +31,8 @@ function cleanFormData(data: Record<string, unknown>): Record<string, unknown> {
     if (typeof value === 'number' && isNaN(value)) {
       cleaned[key] = undefined
     }
-    // Convert empty string to undefined for enum fields (customer_type)
-    if (key === 'customer_type' && value === '') {
+    // Convert empty string to undefined for enum/uuid fields
+    if ((key === 'customer_type' || key === 'assigned_to') && value === '') {
       cleaned[key] = undefined
     }
   }
@@ -56,8 +56,16 @@ interface DuplicateMatch {
   confidence: 'high' | 'medium' | 'low'
 }
 
+interface TeamMemberOption {
+  id: string
+  full_name: string
+}
+
 export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const router = useRouter()
+
+  // Team members for assignment dropdown
+  const [teamMembers, setTeamMembers] = useState<TeamMemberOption[]>([])
 
   // Duplicate checking state
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([])
@@ -69,6 +77,15 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   const [showProjectPrompt, setShowProjectPrompt] = useState(false)
   const [createdContactInfo, setCreatedContactInfo] = useState<{ id: string; name: string } | null>(null)
   const [isCreatingProject, setIsCreatingProject] = useState(false)
+
+  // Fetch team members for assignment dropdown
+  useEffect(() => {
+    apiFetch<{ members: TeamMemberOption[] }>('/api/team-members')
+      .then((result) => setTeamMembers(result.members))
+      .catch(() => {
+        // Fail silently — dropdown will just be empty
+      })
+  }, [])
 
   const {
     register,
@@ -104,6 +121,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
       insurance_carrier: contact?.insurance_carrier || '',
       policy_number: contact?.policy_number || '',
       priority: contact?.priority || 'normal',
+      assigned_to: contact?.assigned_to || undefined,
       recording_consent: contact?.recording_consent || false,
     },
   })
@@ -196,6 +214,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
         mobile_phone: data.mobile_phone || undefined,
         company: data.company || undefined,
         website: data.website || undefined,
+        assigned_to: data.assigned_to || undefined,
       }
 
       const url = mode === 'edit' && contact ? `/api/contacts/${contact.id}` : '/api/contacts'
@@ -442,6 +461,24 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
               <option value="normal">Normal</option>
               <option value="high">High</option>
               <option value="urgent">Urgent</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="assigned_to" className="block text-sm font-medium text-muted-foreground mb-1">
+              Assigned To
+            </label>
+            <select
+              id="assigned_to"
+              {...register('assigned_to')}
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Unassigned</option>
+              {teamMembers.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.full_name}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -2,7 +2,7 @@
  * Default scoring rules and configuration
  */
 
-import type { ScoringRules, ScoreThresholds } from './score-types'
+import type { ScoringRules, ScoreThresholds, PropertyValueRange, RoofAgeMultiplier, SourceWeight } from './score-types'
 
 export const DEFAULT_SCORING_RULES: ScoringRules = {
   propertyValueRanges: [
@@ -66,11 +66,12 @@ export const SCORE_THRESHOLDS: ScoreThresholds = DEFAULT_SCORING_RULES.scoreThre
 /**
  * Get scoring rule by property value
  */
-export function getPropertyValueScore(propertyValue: number | null): number {
+export function getPropertyValueScore(propertyValue: number | null, customRanges?: PropertyValueRange[]): number {
   if (!propertyValue || propertyValue <= 0) return 0
 
-  const range = DEFAULT_SCORING_RULES.propertyValueRanges.find(
-    (range) => propertyValue >= range.min && (range.max === null || propertyValue <= range.max)
+  const ranges = customRanges || DEFAULT_SCORING_RULES.propertyValueRanges
+  const range = ranges.find(
+    (r) => propertyValue >= r.min && (r.max === null || propertyValue <= r.max)
   )
 
   return range?.score || 0
@@ -79,10 +80,11 @@ export function getPropertyValueScore(propertyValue: number | null): number {
 /**
  * Get roof age multiplier
  */
-export function getRoofAgeMultiplier(roofAge: number | null): number {
+export function getRoofAgeMultiplier(roofAge: number | null, customMultipliers?: RoofAgeMultiplier[]): number {
   if (!roofAge || roofAge < 0) return 1.0
 
-  const multiplier = DEFAULT_SCORING_RULES.roofAgeMultipliers.find(
+  const multipliers = customMultipliers || DEFAULT_SCORING_RULES.roofAgeMultipliers
+  const multiplier = multipliers.find(
     (mult) => roofAge >= mult.minAge && (mult.maxAge === null || roofAge <= mult.maxAge)
   )
 
@@ -92,11 +94,12 @@ export function getRoofAgeMultiplier(roofAge: number | null): number {
 /**
  * Get source weight
  */
-export function getSourceWeight(source: string | null): number {
+export function getSourceWeight(source: string | null, customWeights?: SourceWeight[]): number {
   if (!source) return 1.0
 
+  const weights = customWeights || DEFAULT_SCORING_RULES.sourceWeights
   const sourceKey = source.toLowerCase().replace(/\s+/g, '_')
-  const sourceWeight = DEFAULT_SCORING_RULES.sourceWeights.find(
+  const sourceWeight = weights.find(
     (weight) => weight.source === sourceKey
   )
 

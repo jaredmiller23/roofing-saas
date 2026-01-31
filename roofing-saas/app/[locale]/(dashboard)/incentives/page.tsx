@@ -2,9 +2,10 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { Leaderboard } from '@/components/gamification/Leaderboard'
 import { PointsDisplay } from '@/components/gamification/PointsDisplay'
+import { Achievements } from '@/components/gamification/Achievements'
 import { WeeklyChallengeWidget } from '@/components/dashboard/WeeklyChallengeWidget'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Target, Zap, Award, TrendingUp } from 'lucide-react'
+import { Trophy, Target, TrendingUp, Award } from 'lucide-react'
 
 /**
  * Incentives page - gamification hub for door knocking
@@ -33,48 +34,13 @@ export default async function IncentivesPage() {
         </div>
 
         {/* Points and Challenge Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PointsDisplay />
           <WeeklyChallengeWidget />
-
-          {/* Achievements Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-yellow-600" />
-                Achievements
-              </CardTitle>
-              <CardDescription>
-                Your recent accomplishments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-yellow-500/10 rounded-lg">
-                  <Trophy className="h-5 w-5 text-yellow-600" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Top Performer</p>
-                    <p className="text-xs text-muted-foreground">Ranked #1 this week</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-2 bg-green-500/10 rounded-lg">
-                  <Target className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Goal Crusher</p>
-                    <p className="text-xs text-muted-foreground">Hit weekly target</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-2 bg-primary/10 rounded-lg">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Streak Master</p>
-                    <p className="text-xs text-muted-foreground">5 days in a row</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Achievements - fetched from API */}
+        <Achievements />
 
         {/* Rewards Section */}
         <Card>

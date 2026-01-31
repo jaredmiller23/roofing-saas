@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
+import { ContactActivityTimeline } from '@/components/contacts/ContactActivityTimeline'
 import { CreateProjectDialog } from '@/components/contacts/CreateProjectDialog'
 import { Lightbulb, ArrowRight } from 'lucide-react'
 
@@ -160,6 +161,9 @@ export default async function ContactDetailPage({
             </div>
           </div>
         )}
+
+        {/* Activity Timeline */}
+        <ContactActivityTimeline contactId={contact.id} />
 
         {/* Contact Information */}
         <div className="bg-card rounded-lg shadow p-6 mb-6">

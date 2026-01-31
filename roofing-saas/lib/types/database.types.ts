@@ -5087,6 +5087,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_scoring_configs: {
+        Row: {
+          id: string
+          tenant_id: string
+          enabled: boolean
+          auto_update: boolean
+          rules: Json
+          created_at: string
+          updated_at: string
+          created_by: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          enabled?: boolean
+          auto_update?: boolean
+          rules?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          enabled?: boolean
+          auto_update?: boolean
+          rules?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       leaderboard: {
         Row: {
           active_days: number | null
