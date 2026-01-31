@@ -46,6 +46,7 @@ interface Contact {
   id: string
   first_name: string
   last_name: string
+  email?: string
 }
 
 interface Project {
@@ -455,6 +456,34 @@ export default function NewSignatureDocumentPage() {
 
       if (!res.ok) {
         throw new Error(data.error?.message || 'Failed to create document')
+      }
+
+      // Send the document if a contact with email is selected
+      const documentId = data.data?.document?.id
+      const selectedContact = contacts.find(c => c.id === formData.contactId)
+      const contactEmail = selectedContact?.email
+
+      if (documentId && contactEmail) {
+        try {
+          const sendRes = await fetch(`/api/signature-documents/${documentId}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipient_email: contactEmail,
+              recipient_name: `${selectedContact.first_name} ${selectedContact.last_name}`.trim(),
+              message: formData.description || 'Please review and sign this document.',
+              expiration_days: formData.expirationDays,
+            }),
+          })
+
+          if (!sendRes.ok) {
+            const sendData = await sendRes.json()
+            console.warn('Document created but email send failed:', sendData.error?.message)
+          }
+        } catch (sendErr) {
+          // Document was created successfully, just log the send failure
+          console.warn('Document created but failed to send email:', sendErr)
+        }
       }
 
       setSuccess(true)
