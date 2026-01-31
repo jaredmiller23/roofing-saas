@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Briefcase, Calendar, DollarSign } from 'lucide-react'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+
+interface Project {
+  id: string
+  name: string
+}
 
 interface JobFormProps {
+  initialProjectId?: string
   job?: {
     id: string
     project_id: string | null
@@ -25,13 +32,15 @@ interface JobFormProps {
   }
 }
 
-export function JobForm({ job }: JobFormProps) {
+export function JobForm({ job, initialProjectId }: JobFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loadingProjects, setLoadingProjects] = useState(true)
 
   const [formData, setFormData] = useState({
-    project_id: job?.project_id || '',
+    project_id: job?.project_id || initialProjectId || '',
     job_type: job?.job_type || 'roof_replacement',
     scheduled_date: job?.scheduled_date || '',
     scheduled_start_time: job?.scheduled_start_time || '',
@@ -47,6 +56,29 @@ export function JobForm({ job }: JobFormProps) {
     internal_notes: job?.internal_notes || '',
     completion_percentage: job?.completion_percentage?.toString() || '0',
   })
+
+  // Fetch projects for the dropdown
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoadingProjects(true)
+        const res = await fetch('/api/projects?limit=1000')
+        const result = await res.json()
+
+        if (res.ok && result.success) {
+          const projectsData = result.data?.projects || result.projects || []
+          setProjects(projectsData)
+        } else {
+          console.error('Failed to load projects:', result.error)
+        }
+      } catch (err) {
+        console.error('Failed to fetch projects:', err)
+      } finally {
+        setLoadingProjects(false)
+      }
+    }
+    fetchProjects()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,7 +112,9 @@ export function JobForm({ job }: JobFormProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save job')
+        const result = await response.json()
+        const message = result.error?.message || result.error || 'Failed to save job'
+        throw new Error(message)
       }
 
       // Add timestamp to force jobs table to refetch (params change triggers useEffect)
@@ -96,7 +130,7 @@ export function JobForm({ job }: JobFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -111,14 +145,19 @@ export function JobForm({ job }: JobFormProps) {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Project ID
+              Project
             </label>
-            <input
-              type="text"
+            <SearchableSelect
+              options={projects.map((p) => ({
+                value: p.id,
+                label: p.name,
+              }))}
               value={formData.project_id}
-              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Enter project ID (optional)"
+              onValueChange={(value) => setFormData({ ...formData, project_id: value })}
+              placeholder={loadingProjects ? 'Loading projects...' : 'Select a project (optional)'}
+              searchPlaceholder="Search projects..."
+              emptyMessage="No projects found."
+              disabled={loadingProjects}
             />
             <p className="mt-1 text-xs text-muted-foreground">
               Leave blank if not associated with a specific project
