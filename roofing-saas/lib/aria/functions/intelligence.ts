@@ -749,7 +749,7 @@ ariaFunctionRegistry.register({
     // Get reference contact
     const { data: refContact, error: refError } = await context.supabase
       .from('contacts')
-      .select('id, first_name, last_name, city, state, zip, custom_fields')
+      .select('id, first_name, last_name, address_city, address_state, address_zip, custom_fields')
       .eq('id', targetContactId)
       .single()
 
@@ -761,8 +761,8 @@ ariaFunctionRegistry.register({
       id: string
       first_name: string
       last_name: string
-      city?: string
-      state?: string
+      address_city?: string
+      address_state?: string
       matchReason: string
     }> = []
 
@@ -775,7 +775,7 @@ ariaFunctionRegistry.register({
 
         const { data: contacts } = await context.supabase
           .from('contacts')
-          .select('id, first_name, last_name, city, state, custom_fields')
+          .select('id, first_name, last_name, address_city, address_state, custom_fields')
           .eq('tenant_id', context.tenantId)
           .eq('is_deleted', false)
           .neq('id', targetContactId)
@@ -788,16 +788,16 @@ ariaFunctionRegistry.register({
             id: c.id,
             first_name: c.first_name,
             last_name: c.last_name,
-            city: c.city,
-            state: c.state,
+            address_city: c.address_city,
+            address_state: c.address_state,
             matchReason: `Same insurance carrier: ${carrier}`,
           }))
         break
       }
 
       case 'location': {
-        const zip = refContact.zip
-        const city = refContact.city
+        const zip = refContact.address_zip
+        const city = refContact.address_city
 
         if (!zip && !city) {
           return { success: false, error: 'Reference contact has no location on file' }
@@ -805,16 +805,16 @@ ariaFunctionRegistry.register({
 
         let query = context.supabase
           .from('contacts')
-          .select('id, first_name, last_name, city, state, zip')
+          .select('id, first_name, last_name, address_city, address_state, address_zip')
           .eq('tenant_id', context.tenantId)
           .eq('is_deleted', false)
           .neq('id', targetContactId)
           .limit(limit)
 
         if (zip) {
-          query = query.eq('zip', zip)
+          query = query.eq('address_zip', zip)
         } else if (city) {
-          query = query.eq('city', city)
+          query = query.eq('address_city', city)
         }
 
         const { data: contacts } = await query
@@ -823,8 +823,8 @@ ariaFunctionRegistry.register({
           id: c.id,
           first_name: c.first_name,
           last_name: c.last_name,
-          city: c.city,
-          state: c.state,
+          address_city: c.address_city,
+          address_state: c.address_state,
           matchReason: zip ? `Same ZIP code: ${zip}` : `Same city: ${city}`,
         }))
         break
@@ -838,7 +838,7 @@ ariaFunctionRegistry.register({
 
         const { data: contacts } = await context.supabase
           .from('contacts')
-          .select('id, first_name, last_name, city, state, custom_fields')
+          .select('id, first_name, last_name, address_city, address_state, custom_fields')
           .eq('tenant_id', context.tenantId)
           .eq('is_deleted', false)
           .neq('id', targetContactId)
@@ -854,8 +854,8 @@ ariaFunctionRegistry.register({
             id: c.id,
             first_name: c.first_name,
             last_name: c.last_name,
-            city: c.city,
-            state: c.state,
+            address_city: c.address_city,
+            address_state: c.address_state,
             matchReason: `Same roof type: ${roofType}`,
           }))
         break
@@ -927,7 +927,7 @@ ariaFunctionRegistry.register({
 
     let message = `Found ${similarContacts.length} similar customer(s) by ${criteria}:\n\n`
     for (const c of similarContacts) {
-      const loc = c.city && c.state ? ` (${c.city}, ${c.state})` : ''
+      const loc = c.address_city && c.address_state ? ` (${c.address_city}, ${c.address_state})` : ''
       message += `• ${c.first_name} ${c.last_name}${loc}\n  ${c.matchReason}\n`
     }
 

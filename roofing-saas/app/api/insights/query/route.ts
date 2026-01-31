@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 
       } else if (primaryTable === 'projects') {
         // Build projects query
-        let selectColumns = 'id, name, status, start_date, end_date, actual_completion, created_at'
+        let selectColumns = 'id, name, pipeline_stage, estimated_start, estimated_close_date, actual_completion, created_at'
         let countMode = false
 
         if (intent.type === 'count') {
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         } else if (intent.subject.includes('active') || nlQuery.query.includes('active')) {
           query = query.eq('status', 'active')
         } else if (intent.subject.includes('overdue')) {
-          query = query.lt('end_date', new Date().toISOString()).neq('status', 'completed')
+          query = query.lt('estimated_close_date', new Date().toISOString()).neq('pipeline_stage', 'completed')
         }
 
         query = query.limit(1000)
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
         // Default to contacts for unknown tables
         const { data: defaultData, error } = await supabase
           .from('contacts')
-          .select('id, name, status, created_at')
+          .select('id, first_name, last_name, created_at')
           .eq('tenant_id', context.tenantId)
           .limit(100)
 

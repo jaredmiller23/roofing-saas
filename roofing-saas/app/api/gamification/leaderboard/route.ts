@@ -151,10 +151,11 @@ export async function GET(request: Request) {
         userRank = salesData.findIndex((row: { user_id: string }) => row.user_id === user.id) + 1
       }
     } else {
-      // Default: Get leaderboard from view (points)
+      // Default: Get leaderboard from gamification_scores (points)
       const { data: pointsData, error } = await supabase
-        .from('leaderboard')
-        .select('*')
+        .from('gamification_scores')
+        .select('user_id, total_points')
+        .eq('tenant_id', tenantId)
         .order('total_points', { ascending: false })
         .limit(limit)
 
@@ -163,20 +164,30 @@ export async function GET(request: Request) {
         throw InternalError('Failed to fetch leaderboard')
       }
 
-      leaderboard = pointsData || []
+      leaderboard = (pointsData || []).map((row: { user_id: string; total_points: number }) => {
+        const userInfo = userInfoMap.get(row.user_id)
+        return {
+          user_id: row.user_id,
+          user_name: userInfo?.name || 'Unknown',
+          total_points: Number(row.total_points),
+          avatar_url: userInfo?.avatar_url || null,
+        }
+      })
 
       // Get user's rank if authenticated
       if (user) {
         const { data: userStats } = await supabase
-          .from('leaderboard')
-          .select('*')
+          .from('gamification_scores')
+          .select('total_points')
+          .eq('tenant_id', tenantId)
           .eq('user_id', user.id)
           .single()
 
         if (userStats) {
           const { count } = await supabase
-            .from('leaderboard')
+            .from('gamification_scores')
             .select('*', { count: 'exact', head: true })
+            .eq('tenant_id', tenantId)
             .gt('total_points', userStats.total_points)
 
           userRank = (count || 0) + 1

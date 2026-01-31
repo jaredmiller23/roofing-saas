@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-01-31T01:46:13.572Z",
+  "snapshot_at": "2026-01-31T02:09:16.442Z",
   "tables": {
     "_encryption_keys": {
       "columns": {
@@ -3848,6 +3848,41 @@
         }
       ]
     },
+    "commission_summary_by_user": {
+      "columns": {
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "user_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_commissions": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_earned": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "pending_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "paid_amount": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
+    },
     "commissions": {
       "columns": {
         "id": {
@@ -4692,6 +4727,112 @@
           "type": "text",
           "nullable": true,
           "default_value": null
+        }
+      },
+      "foreign_keys": [
+        {
+          "column": "tenant_id",
+          "references_table": "tenants",
+          "references_column": "id"
+        }
+      ]
+    },
+    "dashboards": {
+      "columns": {
+        "id": {
+          "type": "uuid",
+          "nullable": false,
+          "default_value": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": false,
+          "default_value": null
+        },
+        "owner_id": {
+          "type": "uuid",
+          "nullable": false,
+          "default_value": null
+        },
+        "name": {
+          "type": "text",
+          "nullable": false,
+          "default_value": null
+        },
+        "description": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "status": {
+          "type": "text",
+          "nullable": false,
+          "default_value": "'draft'::text"
+        },
+        "visibility": {
+          "type": "text",
+          "nullable": false,
+          "default_value": "'private'::text"
+        },
+        "is_template": {
+          "type": "boolean",
+          "nullable": false,
+          "default_value": "false"
+        },
+        "is_default": {
+          "type": "boolean",
+          "nullable": false,
+          "default_value": "false"
+        },
+        "template_category": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "target_roles": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'[]'::jsonb"
+        },
+        "role_based": {
+          "type": "boolean",
+          "nullable": true,
+          "default_value": "false"
+        },
+        "layout": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'{}'::jsonb"
+        },
+        "widgets": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'[]'::jsonb"
+        },
+        "settings": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'{}'::jsonb"
+        },
+        "created_by": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "last_modified_by": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": "now()"
+        },
+        "updated_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": "now()"
         }
       },
       "foreign_keys": [
@@ -6334,6 +6475,186 @@
         }
       ]
     },
+    "high_priority_pins": {
+      "columns": {
+        "id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "user_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "latitude": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "longitude": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "address": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "address_street": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "address_city": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "address_state": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "address_zip": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "disposition": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "notes": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "photos": {
+          "type": "ARRAY",
+          "nullable": true,
+          "default_value": null
+        },
+        "voice_memo_url": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "appointment_date": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "callback_date": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "follow_up_notes": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_created": {
+          "type": "boolean",
+          "nullable": true,
+          "default_value": null
+        },
+        "territory_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "device_location_accuracy": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "knocked_from": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "is_deleted": {
+          "type": "boolean",
+          "nullable": true,
+          "default_value": null
+        },
+        "pin_type": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "sync_status": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "damage_score": {
+          "type": "integer",
+          "nullable": true,
+          "default_value": null
+        },
+        "enrichment_source": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "last_sync_attempt": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "sync_error": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "owner_name": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "property_data": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_name": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_phone": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "contact_email": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
+    },
     "impersonation_logs": {
       "columns": {
         "id": {
@@ -7825,6 +8146,41 @@
         }
       ]
     },
+    "leaderboard": {
+      "columns": {
+        "user_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_points": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        },
+        "active_days": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_sales": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        },
+        "last_activity": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
+    },
     "login_activity": {
       "columns": {
         "id": {
@@ -8433,6 +8789,116 @@
         }
       ]
     },
+    "pins_pending_sync": {
+      "columns": {
+        "id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "pin_type": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "latitude": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "longitude": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "address": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "disposition": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "owner_name": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "notes": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "photos": {
+          "type": "ARRAY",
+          "nullable": true,
+          "default_value": null
+        },
+        "sync_status": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "sync_error": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "last_sync_attempt": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "user_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
+    },
+    "pipeline_metrics": {
+      "columns": {
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "date": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "stage": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "count": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        },
+        "with_projects": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
+    },
     "pipeline_stages": {
       "columns": {
         "id": {
@@ -8705,7 +9171,7 @@
         },
         "project_id": {
           "type": "uuid",
-          "nullable": false,
+          "nullable": true,
           "default_value": null
         },
         "file_name": {
@@ -8787,9 +9253,39 @@
           "type": "boolean",
           "nullable": true,
           "default_value": "false"
+        },
+        "contact_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "file_path": {
+          "type": "text",
+          "nullable": true,
+          "default_value": null
+        },
+        "source": {
+          "type": "text",
+          "nullable": true,
+          "default_value": "'project_files'::text"
+        },
+        "updated_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": "now()"
+        },
+        "metadata": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": "'{}'::jsonb"
         }
       },
       "foreign_keys": [
+        {
+          "column": "contact_id",
+          "references_table": "contacts",
+          "references_column": "id"
+        },
         {
           "column": "project_id",
           "references_table": "projects",
@@ -8801,6 +9297,106 @@
           "references_column": "id"
         }
       ]
+    },
+    "project_profit_loss": {
+      "columns": {
+        "id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "project_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "project_name": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "project_number": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "status": {
+          "type": "USER-DEFINED",
+          "nullable": true,
+          "default_value": null
+        },
+        "revenue": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_estimated_cost": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "total_actual_cost": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "gross_profit": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "profit_margin_percent": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "cost_variance": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_labor": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_materials": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_equipment": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_other": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_start": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "actual_completion": {
+          "type": "date",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
     },
     "projects": {
       "columns": {
@@ -10061,6 +10657,41 @@
           "references_column": "id"
         }
       ]
+    },
+    "revenue_forecast": {
+      "columns": {
+        "tenant_id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "month": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        },
+        "status": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "pipeline_value": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "approved_value": {
+          "type": "numeric",
+          "nullable": true,
+          "default_value": null
+        },
+        "project_count": {
+          "type": "bigint",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
     },
     "reward_claims": {
       "columns": {
@@ -13404,6 +14035,31 @@
           "references_column": "id"
         }
       ]
+    },
+    "users": {
+      "columns": {
+        "id": {
+          "type": "uuid",
+          "nullable": true,
+          "default_value": null
+        },
+        "email": {
+          "type": "character varying",
+          "nullable": true,
+          "default_value": null
+        },
+        "raw_user_meta_data": {
+          "type": "jsonb",
+          "nullable": true,
+          "default_value": null
+        },
+        "created_at": {
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "default_value": null
+        }
+      },
+      "foreign_keys": []
     },
     "voice_function_calls": {
       "columns": {

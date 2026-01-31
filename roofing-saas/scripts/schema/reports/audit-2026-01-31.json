@@ -1,235 +1,15 @@
 {
-  "validated_at": "2026-01-31T01:51:12.338Z",
+  "validated_at": "2026-01-31T02:09:16.812Z",
   "summary": {
-    "tables_checked": 110,
-    "tables_missing": 10,
-    "columns_checked": 788,
-    "columns_phantom": 76,
+    "tables_checked": 106,
+    "tables_missing": 0,
+    "columns_checked": 796,
+    "columns_phantom": 62,
     "fk_issues": 2,
     "rpc_missing": 5,
-    "total_issues": 93
+    "total_issues": 69
   },
   "issues": [
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "project_profit_loss",
-      "detail": "Table 'project_profit_loss' does not exist in the database (6 references)",
-      "references": [
-        {
-          "file": "app/[locale]/(dashboard)/financial/analytics/page.tsx",
-          "line": 27
-        },
-        {
-          "file": "app/[locale]/(dashboard)/financial/reports/page.tsx",
-          "line": 25
-        },
-        {
-          "file": "app/[locale]/(dashboard)/financials/page.tsx",
-          "line": 24
-        },
-        {
-          "file": "app/api/financials/pl/route.ts",
-          "line": 34
-        },
-        {
-          "file": "app/api/insights/query/route.ts",
-          "line": 230
-        },
-        {
-          "file": "app/api/insights/suggestions/route.ts",
-          "line": 24
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "commission_summary_by_user",
-      "detail": "Table 'commission_summary_by_user' does not exist in the database (1 reference)",
-      "references": [
-        {
-          "file": "app/[locale]/(dashboard)/financial/commissions/page.tsx",
-          "line": 24
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "user_settings",
-      "detail": "Table 'user_settings' does not exist in the database (2 references)",
-      "references": [
-        {
-          "file": "app/api/calendar/google/disconnect/route.ts",
-          "line": 22
-        },
-        {
-          "file": "app/api/calendar/google/status/route.ts",
-          "line": 27
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "profiles",
-      "detail": "Table 'profiles' does not exist in the database (1 reference)",
-      "references": [
-        {
-          "file": "app/api/compliance/dnc/imports/route.ts",
-          "line": 67
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "leaderboard",
-      "detail": "Table 'leaderboard' does not exist in the database (6 references)",
-      "references": [
-        {
-          "file": "app/api/gamification/leaderboard/route.ts",
-          "line": 156
-        },
-        {
-          "file": "app/api/gamification/leaderboard/route.ts",
-          "line": 171
-        },
-        {
-          "file": "app/api/gamification/leaderboard/route.ts",
-          "line": 178
-        },
-        {
-          "file": "lib/dashboard/queries.ts",
-          "line": 489
-        },
-        {
-          "file": "lib/dashboard/queries.ts",
-          "line": 515
-        },
-        {
-          "file": "lib/dashboard/queries.ts",
-          "line": 522
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "files",
-      "detail": "Table 'files' does not exist in the database (5 references)",
-      "references": [
-        {
-          "file": "app/api/project-files/upload/route.ts",
-          "line": 65
-        },
-        {
-          "file": "app/api/project-files/upload/route.ts",
-          "line": 78
-        },
-        {
-          "file": "app/api/project-files/upload/route.ts",
-          "line": 114
-        },
-        {
-          "file": "components/project-files/project-file-form.tsx",
-          "line": 108
-        },
-        {
-          "file": "components/project-files/project-file-form.tsx",
-          "line": 120
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "users",
-      "detail": "Table 'users' does not exist in the database (6 references)",
-      "references": [
-        {
-          "file": "app/api/signature-documents/[id]/sign/route.ts",
-          "line": 119
-        },
-        {
-          "file": "app/api/signature-documents/[id]/sign/route.ts",
-          "line": 408
-        },
-        {
-          "file": "app/api/signature-documents/[id]/sign/route.ts",
-          "line": 496
-        },
-        {
-          "file": "lib/aria/commitment-actions.ts",
-          "line": 168
-        },
-        {
-          "file": "lib/aria/notify.ts",
-          "line": 118
-        },
-        {
-          "file": "lib/supabase/server.ts",
-          "line": 104
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "sms_messages",
-      "detail": "Table 'sms_messages' does not exist in the database (1 reference)",
-      "references": [
-        {
-          "file": "lib/aria/context-builder.ts",
-          "line": 422
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "tenant_members",
-      "detail": "Table 'tenant_members' does not exist in the database (1 reference)",
-      "references": [
-        {
-          "file": "lib/billing/grace-period.ts",
-          "line": 65
-        }
-      ]
-    },
-    {
-      "severity": "P0",
-      "category": "non_existent_table",
-      "table": "dashboards",
-      "detail": "Table 'dashboards' does not exist in the database (6 references)",
-      "references": [
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 34
-        },
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 88
-        },
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 131
-        },
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 157
-        },
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 181
-        },
-        {
-          "file": "lib/dashboard/dashboard-engine.ts",
-          "line": 511
-        }
-      ]
-    },
     {
       "severity": "P1",
       "category": "phantom_column",
@@ -603,10 +383,6 @@
           "line": 301
         },
         {
-          "file": "lib/aria/context-builder.ts",
-          "line": 439
-        },
-        {
           "file": "lib/aria/function-registry.ts",
           "line": 714
         },
@@ -810,49 +586,6 @@
     {
       "severity": "P1",
       "category": "phantom_column",
-      "table": "projects",
-      "column": "end_date",
-      "detail": "Column 'end_date' does not exist on table 'projects'",
-      "references": [
-        {
-          "file": "app/api/insights/query/route.ts",
-          "line": 197
-        },
-        {
-          "file": "lib/aria/function-registry.ts",
-          "line": 2667
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "name",
-      "detail": "Column 'name' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "app/api/insights/query/route.ts",
-          "line": 273
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "status",
-      "detail": "Column 'status' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "app/api/insights/query/route.ts",
-          "line": 273
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
       "table": "project_files",
       "column": "folder_path",
       "detail": "Column 'folder_path' does not exist on table 'project_files'",
@@ -922,19 +655,6 @@
         {
           "file": "app/api/project-files/versions/route.ts",
           "line": 335
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "project_files",
-      "column": "updated_at",
-      "detail": "Column 'updated_at' does not exist on table 'project_files'",
-      "references": [
-        {
-          "file": "app/api/project-files/versions/route.ts",
-          "line": 83
         }
       ]
     },
@@ -1023,228 +743,10 @@
     {
       "severity": "P1",
       "category": "phantom_column",
-      "table": "contacts",
-      "column": "pipeline_stage",
-      "detail": "Column 'pipeline_stage' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "app/api/territories/[id]/stats/route.ts",
-          "line": 89
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "activities",
-      "column": "activity_type",
-      "detail": "Column 'activity_type' does not exist on table 'activities'",
-      "references": [
-        {
-          "file": "app/api/territories/[id]/stats/route.ts",
-          "line": 115
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "activities",
-      "column": "notes",
-      "detail": "Column 'notes' does not exist on table 'activities'",
-      "references": [
-        {
-          "file": "app/api/territories/[id]/stats/route.ts",
-          "line": 115
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "projects",
-      "column": "insurance_carrier",
-      "detail": "Column 'insurance_carrier' does not exist on table 'projects'",
-      "references": [
-        {
-          "file": "lib/aria/context-builder.ts",
-          "line": 93
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "contact_type",
-      "detail": "Column 'contact_type' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "lib/aria/function-registry.ts",
-          "line": 1978
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "projects",
-      "column": "property_address",
-      "detail": "Column 'property_address' does not exist on table 'projects'",
-      "references": [
-        {
-          "file": "lib/aria/function-registry.ts",
-          "line": 2246
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "projects",
-      "column": "start_date",
-      "detail": "Column 'start_date' does not exist on table 'projects'",
-      "references": [
-        {
-          "file": "lib/aria/function-registry.ts",
-          "line": 2667
-        },
-        {
-          "file": "lib/claims/sync-service.ts",
-          "line": 36
-        },
-        {
-          "file": "lib/claims/sync-service.ts",
-          "line": 378
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "address",
-      "detail": "Column 'address' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "lib/aria/functions/calendar.ts",
-          "line": 572
-        },
-        {
-          "file": "lib/aria/functions/vision.ts",
-          "line": 433
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "city",
-      "detail": "Column 'city' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "lib/aria/functions/calendar.ts",
-          "line": 572
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 752
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 778
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 808
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 817
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 841
-        },
-        {
-          "file": "lib/aria/functions/vision.ts",
-          "line": 433
-        },
-        {
-          "file": "lib/aria/functions/weather.ts",
-          "line": 125
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
-      "table": "contacts",
-      "column": "state",
-      "detail": "Column 'state' does not exist on table 'contacts'",
-      "references": [
-        {
-          "file": "lib/aria/functions/calendar.ts",
-          "line": 572
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 752
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 778
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 808
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 841
-        },
-        {
-          "file": "lib/aria/functions/vision.ts",
-          "line": 433
-        },
-        {
-          "file": "lib/aria/functions/weather.ts",
-          "line": 125
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
       "table": "projects",
       "column": "stage",
       "detail": "Column 'stage' does not exist on table 'projects'",
       "references": [
-        {
-          "file": "lib/aria/functions/documents.ts",
-          "line": 95
-        },
-        {
-          "file": "lib/aria/functions/documents.ts",
-          "line": 339
-        },
-        {
-          "file": "lib/aria/functions/documents.ts",
-          "line": 577
-        },
-        {
-          "file": "lib/aria/functions/documents.ts",
-          "line": 810
-        },
-        {
-          "file": "lib/aria/functions/financial.ts",
-          "line": 651
-        },
-        {
-          "file": "lib/aria/functions/financial.ts",
-          "line": 657
-        },
         {
           "file": "lib/aria/functions/intelligence.ts",
           "line": 113
@@ -1263,24 +765,25 @@
       "severity": "P1",
       "category": "phantom_column",
       "table": "contacts",
-      "column": "zip",
-      "detail": "Column 'zip' does not exist on table 'contacts'",
+      "column": "city",
+      "detail": "Column 'city' does not exist on table 'contacts'",
       "references": [
         {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 752
-        },
+          "file": "lib/aria/functions/weather.ts",
+          "line": 125
+        }
+      ]
+    },
+    {
+      "severity": "P1",
+      "category": "phantom_column",
+      "table": "contacts",
+      "column": "state",
+      "detail": "Column 'state' does not exist on table 'contacts'",
+      "references": [
         {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 808
-        },
-        {
-          "file": "lib/aria/functions/intelligence.ts",
-          "line": 815
-        },
-        {
-          "file": "lib/aria/functions/vision.ts",
-          "line": 433
+          "file": "lib/aria/functions/weather.ts",
+          "line": 125
         }
       ]
     },
@@ -1551,34 +1054,21 @@
     {
       "severity": "P1",
       "category": "phantom_column",
-      "table": "projects",
-      "column": "notes",
-      "detail": "Column 'notes' does not exist on table 'projects'",
-      "references": [
-        {
-          "file": "lib/migrations/migrate-proline.ts",
-          "line": 300
-        },
-        {
-          "file": "lib/migrations/validate-migration.ts",
-          "line": 97
-        },
-        {
-          "file": "lib/migrations/validate-migration.ts",
-          "line": 184
-        }
-      ]
-    },
-    {
-      "severity": "P1",
-      "category": "phantom_column",
       "table": "contacts",
-      "column": "street_address",
-      "detail": "Column 'street_address' does not exist on table 'contacts'",
+      "column": "description",
+      "detail": "Column 'description' does not exist on table 'contacts'",
       "references": [
         {
-          "file": "lib/migrations/migrate-proline.ts",
-          "line": 420
+          "file": "lib/migrations/validate-migration.ts",
+          "line": 75
+        },
+        {
+          "file": "lib/migrations/validate-migration.ts",
+          "line": 231
+        },
+        {
+          "file": "lib/migrations/validate-migration.ts",
+          "line": 257
         }
       ]
     },

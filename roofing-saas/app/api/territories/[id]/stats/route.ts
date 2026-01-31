@@ -83,36 +83,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
-    // Get pipeline stage breakdown
+    // Get project pipeline stage breakdown
     const { data: stageBreakdown } = await supabase
-      .from('contacts')
+      .from('projects')
       .select('pipeline_stage')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
-    const stageStats = stageBreakdown?.reduce((acc: Record<string, number>, contact: Record<string, unknown>) => {
-      const stage = (contact.pipeline_stage as string) || 'unassigned'
+    const stageStats = stageBreakdown?.reduce((acc: Record<string, number>, project: Record<string, unknown>) => {
+      const stage = (project.pipeline_stage as string) || 'unassigned'
       acc[stage] = (acc[stage] || 0) + 1
       return acc
     }, {}) || {}
 
-    // Get project status breakdown
-    const { data: projectStatusData } = await supabase
-      .from('projects')
-      .select('status')
-      .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-
-    const projectStatusStats = projectStatusData?.reduce((acc: Record<string, number>, project: Record<string, unknown>) => {
-      const status = (project.status as string) || 'unknown'
-      acc[status] = (acc[status] || 0) + 1
-      return acc
-    }, {}) || {}
+    // Get project pipeline stage breakdown (same as above for backwards compat)
+    const projectStatusStats = stageStats
 
     // Get recent activities (last 10)
     const { data: recentActivities } = await supabase
       .from('activities')
-      .select('id, activity_type, notes, created_at')
+      .select('id, type, content, created_at')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })

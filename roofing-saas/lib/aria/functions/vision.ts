@@ -430,14 +430,14 @@ ariaFunctionRegistry.register({
       if (!address && contactId) {
         const { data: contact } = await supabase
           .from('contacts')
-          .select('address, city, state, zip')
+          .select('address_street, address_city, address_state, address_zip')
           .eq('id', contactId)
           .eq('tenant_id', tenantId)
           .eq('is_deleted', false)
           .single()
 
         if (contact) {
-          const parts = [contact.address, contact.city, contact.state, contact.zip].filter(Boolean)
+          const parts = [contact.address_street, contact.address_city, contact.address_state, contact.address_zip].filter(Boolean)
           if (parts.length > 0) {
             address = parts.join(', ')
           }

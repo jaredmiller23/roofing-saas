@@ -649,12 +649,12 @@ ariaFunctionRegistry.register({
     const { data: staleProjects } = await context.supabase
       .from('projects')
       .select(`
-        id, name, stage, created_at, updated_at,
+        id, name, pipeline_stage, created_at, updated_at,
         contacts:contact_id(first_name, last_name)
       `)
       .eq('tenant_id', context.tenantId)
       .eq('is_deleted', false)
-      .in('stage', ['New Lead', 'Estimate Sent', 'Follow Up', 'Negotiation'])
+      .in('pipeline_stage', ['New Lead', 'Estimate Sent', 'Follow Up', 'Negotiation'])
       .lt('updated_at', fourteenDaysAgo.toISOString())
       .order('updated_at', { ascending: true })
       .limit(10)
@@ -665,7 +665,7 @@ ariaFunctionRegistry.register({
       return {
         name: contact ? `${contact.first_name} ${contact.last_name}` : p.name,
         daysOld,
-        type: p.stage || 'Unknown',
+        type: p.pipeline_stage || 'Unknown',
       }
     })
 

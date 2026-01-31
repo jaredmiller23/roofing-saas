@@ -93,8 +93,8 @@ ariaFunctionRegistry.register({
     const { data: project, error: projectError } = await context.supabase
       .from('projects')
       .select(`
-        id, name, stage, status, created_at, custom_fields,
-        contacts:contact_id(id, first_name, last_name, email, phone, address, city, state, zip)
+        id, name, pipeline_stage, created_at, custom_fields,
+        contacts:contact_id(id, first_name, last_name, email, phone, address_street, address_city, address_state, address_zip)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -136,7 +136,7 @@ ariaFunctionRegistry.register({
     // Build the estimate document
     const customerName = contact ? `${contact.first_name} ${contact.last_name}` : 'Customer'
     const customerAddress = contact
-      ? [contact.address, contact.city, contact.state, contact.zip].filter(Boolean).join(', ')
+      ? [contact.address_street, contact.address_city, contact.address_state, contact.address_zip].filter(Boolean).join(', ')
       : 'Address on file'
 
     let document = ''
@@ -242,7 +242,7 @@ ariaFunctionRegistry.register({
         document += `🏥 Insurance Claim: ${estimateData.insuranceCarrier || 'Yes'}\n`
       }
 
-      document += `\nStatus: ${project.stage || project.status || 'In Progress'}`
+      document += `\nStatus: ${project.pipeline_stage || 'In Progress'}`
     }
 
     // Log the generation as an activity
@@ -337,8 +337,8 @@ ariaFunctionRegistry.register({
     const { data: project, error: projectError } = await context.supabase
       .from('projects')
       .select(`
-        id, name, stage, created_at, custom_fields,
-        contacts:contact_id(id, first_name, last_name, address, city, state, zip)
+        id, name, pipeline_stage, created_at, custom_fields,
+        contacts:contact_id(id, first_name, last_name, address_street, address_city, address_state, address_zip)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -379,7 +379,7 @@ ariaFunctionRegistry.register({
     // Build inspection report
     const customerName = contact ? `${contact.first_name} ${contact.last_name}` : 'Property Owner'
     const propertyAddress = contact
-      ? [contact.address, contact.city, contact.state, contact.zip].filter(Boolean).join(', ')
+      ? [contact.address_street, contact.address_city, contact.address_state, contact.address_zip].filter(Boolean).join(', ')
       : 'Address on file'
 
     let report = `═══════════════════════════════════════\n`
@@ -575,8 +575,8 @@ ariaFunctionRegistry.register({
     const { data: project, error: projectError } = await context.supabase
       .from('projects')
       .select(`
-        id, name, stage, status, created_at, updated_at, custom_fields,
-        contacts:contact_id(first_name, last_name, address, city, state, zip, phone, email)
+        id, name, pipeline_stage, created_at, updated_at, custom_fields,
+        contacts:contact_id(first_name, last_name, address_street, address_city, address_state, address_zip, phone, email)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -610,7 +610,7 @@ ariaFunctionRegistry.register({
     // Build claim summary
     const customerName = contact ? `${contact.first_name} ${contact.last_name}` : 'Homeowner'
     const propertyAddress = contact
-      ? [contact.address, contact.city, contact.state, contact.zip].filter(Boolean).join(', ')
+      ? [contact.address_street, contact.address_city, contact.address_state, contact.address_zip].filter(Boolean).join(', ')
       : 'Property address'
 
     // Extract claim data
@@ -628,7 +628,7 @@ ariaFunctionRegistry.register({
 
     // Determine claim status
     let claimStatus = 'In Progress'
-    const stage = (project.stage || '').toLowerCase()
+    const stage = (project.pipeline_stage || '').toLowerCase()
     if (stage.includes('won') || stage.includes('approved')) {
       claimStatus = 'Approved'
     } else if (stage.includes('denied') || stage.includes('lost')) {
@@ -808,8 +808,8 @@ ariaFunctionRegistry.register({
     const { data: project } = await context.supabase
       .from('projects')
       .select(`
-        id, name, stage, status, created_at, updated_at, custom_fields,
-        contacts:contact_id(first_name, last_name, email, phone, address, city, state)
+        id, name, pipeline_stage, created_at, updated_at, custom_fields,
+        contacts:contact_id(first_name, last_name, email, phone, address_street, address_city, address_state)
       `)
       .eq('id', targetProjectId)
       .eq('tenant_id', context.tenantId)
@@ -869,7 +869,7 @@ ariaFunctionRegistry.register({
     summary += `═══════════════════════════════════════\n\n`
 
     summary += `PROJECT: ${project.name}\n`
-    summary += `Status: ${project.stage || project.status || 'Active'}\n`
+    summary += `Status: ${project.pipeline_stage || 'Active'}\n`
     summary += `Days Open: ${daysOpen}\n\n`
 
     summary += `CUSTOMER\n`
@@ -877,7 +877,7 @@ ariaFunctionRegistry.register({
     summary += `Name: ${customerName}\n`
     if (contact?.phone) summary += `Phone: ${contact.phone}\n`
     if (contact?.email) summary += `Email: ${contact.email}\n`
-    if (contact?.address) summary += `Address: ${contact.address}, ${contact.city}, ${contact.state}\n`
+    if (contact?.address_street) summary += `Address: ${contact.address_street}, ${contact.address_city}, ${contact.address_state}\n`
     summary += `\n`
 
     summary += `ACTIVITY SUMMARY\n`
@@ -923,7 +923,7 @@ ariaFunctionRegistry.register({
         projectId: targetProjectId,
         projectName: project.name,
         customerName,
-        stage: project.stage || project.status,
+        stage: project.pipeline_stage,
         daysOpen,
         activityStats,
         photoCount: photoCount || 0,

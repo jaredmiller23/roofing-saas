@@ -40,7 +40,7 @@ export async function gatherProjectSyncData(
       name,
       description,
       estimated_value,
-      start_date,
+      estimated_start,
       contacts:contact_id (
         id,
         first_name,
@@ -75,7 +75,7 @@ export async function gatherProjectSyncData(
 
   // Auto-link storm event if not already linked and we have location + date
   let stormEventId = project.storm_event_id
-  if (!stormEventId && project.start_date && contact.latitude && contact.longitude) {
+  if (!stormEventId && project.estimated_start && contact.latitude && contact.longitude) {
     logger.info('Auto-linking storm event for project', { projectId })
 
     // Search for the best matching storm event
@@ -83,7 +83,7 @@ export async function gatherProjectSyncData(
       supabase,
       contact.latitude,
       contact.longitude,
-      project.start_date,
+      project.estimated_start,
       contact.address_state || 'TN'
     )
 
@@ -127,7 +127,7 @@ export async function gatherProjectSyncData(
 
     // Financial from project
     estimated_value: project.estimated_value || undefined,
-    date_of_loss: project.start_date || undefined,
+    date_of_loss: project.estimated_start || undefined,
 
     // Contact info
     contact_first_name: contact.first_name,
@@ -382,7 +382,7 @@ export async function generateClaimExportPackage(
         estimated_value,
         pipeline_stage,
         storm_event_id,
-        start_date,
+        estimated_start,
         created_at,
         contacts:contact_id (
           id,
@@ -434,7 +434,7 @@ export async function generateClaimExportPackage(
 
     // Fetch storm causation - either from linked event or by searching nearby events
     let stormCausation = undefined
-    const dateOfLoss = project.start_date
+    const dateOfLoss = project.estimated_start
     const contactLat = contact.latitude
     const contactLng = contact.longitude
 

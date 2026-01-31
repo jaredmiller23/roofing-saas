@@ -1975,7 +1975,7 @@ ariaFunctionRegistry.register({
           .select('id, first_name, last_name')
           .eq('tenant_id', context.tenantId)
           .ilike('first_name', `%${adjuster_name.split(' ')[0]}%`)
-          .eq('contact_type', 'adjuster')
+          .eq('type', 'adjuster')
           .limit(1)
           .single()
 
@@ -2244,7 +2244,7 @@ ariaFunctionRegistry.register({
     const { data: project, error: projectError } = await context.supabase
       .from('projects')
       .select(`
-        id, name, property_address,
+        id, name, description,
         contact:contact_id (id, first_name, last_name, phone, address_street, address_city),
         adjuster:adjuster_contact_id (id, first_name, last_name, email, phone)
       `)
@@ -2315,7 +2315,7 @@ ariaFunctionRegistry.register({
           meeting_type,
           adjuster_id: adjusterData?.id,
           adjuster_name: adjusterData ? `${adjusterData.first_name} ${adjusterData.last_name}` : null,
-          property_address: project.property_address || contactData?.address_street,
+          property_address: contactData?.address_street,
           notes,
           status: 'scheduled',
           via: 'aria',
@@ -2664,7 +2664,7 @@ ariaFunctionRegistry.register({
       .update(updateData)
       .eq('id', finalProjectId)
       .eq('tenant_id', context.tenantId)
-      .select('id, name, status, start_date, end_date, final_value, estimated_value')
+      .select('id, name, pipeline_stage, estimated_start, estimated_close_date, final_value, estimated_value')
       .single()
 
     if (error) {
@@ -2673,8 +2673,8 @@ ariaFunctionRegistry.register({
 
     // Calculate job duration if we have start date
     let durationStr = ''
-    if (data.start_date) {
-      const startDate = new Date(data.start_date)
+    if (data.estimated_start) {
+      const startDate = new Date(data.estimated_start)
       const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
       durationStr = `${days} day${days !== 1 ? 's' : ''}`
     }

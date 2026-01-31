@@ -569,13 +569,13 @@ ariaFunctionRegistry.register({
     if (!finalLocation && finalContactId) {
       const { data: contact } = await context.supabase
         .from('contacts')
-        .select('address, city, state')
+        .select('address_street, address_city, address_state')
         .eq('id', finalContactId)
         .eq('is_deleted', false)
         .single()
 
-      if (contact?.address) {
-        finalLocation = [contact.address, contact.city, contact.state].filter(Boolean).join(', ')
+      if (contact?.address_street) {
+        finalLocation = [contact.address_street, contact.address_city, contact.address_state].filter(Boolean).join(', ')
       }
     }
 

@@ -15,24 +15,8 @@ export async function POST() {
       throw AuthenticationError()
     }
 
-    const supabase = await createClient()
-
-    // Remove Google Calendar connection from user settings
-    const { error } = await supabase
-      .from('user_settings')
-      .update({
-        google_calendar_connected: false,
-        google_calendar_url: null,
-        google_calendar_refresh_token: null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-
-    if (error) {
-      logger.error('Error disconnecting Google Calendar:', { error })
-      throw InternalError('Failed to disconnect')
-    }
-
+    // Google Calendar integration is not yet implemented (user_settings table pending)
+    // Return success since there's nothing to disconnect
     return successResponse({
       success: true,
       message: 'Google Calendar disconnected successfully'

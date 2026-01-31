@@ -297,7 +297,7 @@ export async function migrateProlineData(
               .from('projects')
               .select('id')
               .eq('tenant_id', options.tenant_id)
-              .ilike('notes', `%Proline ID: ${activity.project_id}%`)
+              .ilike('description', `%Proline ID: ${activity.project_id}%`)
               .single()
 
             projectId = project?.id || null
@@ -417,7 +417,7 @@ async function checkContactDuplicate(
       .eq('tenant_id', tenantId)
       .eq('first_name', contact.first_name)
       .eq('last_name', contact.last_name)
-      .eq('street_address', contact.address)
+      .eq('address_street', contact.address)
       .single()
 
     if (data) return true

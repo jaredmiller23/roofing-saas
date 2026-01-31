@@ -60,32 +60,38 @@ export async function getTenantAdminEmail(tenantId: string): Promise<{
     return null
   }
 
-  // Get owner or first admin
+  // Get owner or first admin from tenant_users
   const { data: adminMember } = await supabase
-    .from('tenant_members')
-    .select(`
-      role,
-      users!inner (
-        id,
-        email,
-        full_name
-      )
-    `)
+    .from('tenant_users')
+    .select('user_id, role')
     .eq('tenant_id', tenantId)
     .in('role', ['owner', 'admin'])
     .order('role', { ascending: true }) // owner first
     .limit(1)
     .single()
 
-  if (!adminMember?.users) {
+  if (!adminMember?.user_id) {
     logger.warn('No admin found for tenant', { tenantId })
     return null
   }
 
-  const user = adminMember.users as unknown as {
-    id: string
-    email: string
-    full_name: string | null
+  // Fetch user details from auth.users via admin client
+  const { data: authUser } = await supabase
+    .from('users')
+    .select('id, email, raw_user_meta_data')
+    .eq('id', adminMember.user_id)
+    .single()
+
+  if (!authUser) {
+    logger.warn('Admin user not found in auth', { userId: adminMember.user_id })
+    return null
+  }
+
+  const meta = (authUser.raw_user_meta_data || {}) as Record<string, string>
+  const user = {
+    id: authUser.id as string,
+    email: authUser.email as string,
+    full_name: meta.full_name || null,
   }
 
   return {

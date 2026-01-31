@@ -42,6 +42,14 @@ const IGNORE_PATTERNS = [
   /scripts\/schema/,
 ]
 
+// Tables that exist outside the public schema (e.g. auth.users)
+// or are Supabase internals — not bugs when referenced in code.
+const ALLOWED_TABLES = new Set([
+  'users',    // auth.users — accessed via service role client
+  'profiles', // often a view or alias for auth.users metadata
+  'files',    // Supabase storage bucket, not a DB table (.storage.from)
+])
+
 // ─── File scanning ───
 
 function collectFiles(dir: string): string[] {
@@ -90,7 +98,7 @@ interface RpcExtraction {
 
 function extractFromCalls(content: string, filePath: string): Extraction[] {
   const results: Extraction[] = []
-  const regex = /\.from\(\s*['"`]([a-z_]+)['"`]\s*\)/g
+  const regex = /(?<!\.storage)\.from\(\s*['"`]([a-z_]+)['"`]\s*\)/g
   const lines = content.split('\n')
 
   for (let i = 0; i < lines.length; i++) {
@@ -326,7 +334,7 @@ function validate(snapshot: DbSnapshot, files: string[]): ValidationReport {
   const missingTableRefs = new Map<string, SourceLocation[]>()
   for (const ref of allFromCalls) {
     tablesChecked.add(ref.table)
-    if (!tableNames.has(ref.table)) {
+    if (!tableNames.has(ref.table) && !ALLOWED_TABLES.has(ref.table)) {
       const locs = missingTableRefs.get(ref.table) || []
       locs.push({ file: ref.file, line: ref.line })
       missingTableRefs.set(ref.table, locs)

@@ -90,7 +90,7 @@ async function enrichEntityData(context: ARIAContext): Promise<void> {
         // Also fetch their projects
         const { data: projects } = await context.supabase
           .from('projects')
-          .select('id, name, status, pipeline_stage, estimated_value, insurance_carrier')
+          .select('id, name, pipeline_stage, estimated_value, insurance_approved')
           .eq('contact_id', context.entityId)
           .eq('tenant_id', context.tenantId)
           .eq('is_deleted', false)

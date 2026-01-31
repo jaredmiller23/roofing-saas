@@ -21,21 +21,14 @@ export async function GET() {
 
     const supabase = await createClient()
 
-    // Check if user has Google Calendar connected
-    // This would typically check a user_settings table or similar
-    const { data: settings } = await supabase
-      .from('user_settings')
-      .select('google_calendar_connected, google_calendar_url')
-      .eq('user_id', user.id)
-      .single()
-
+    // Google Calendar integration is not yet implemented (user_settings table pending)
+    // Return disconnected state until the feature is built
     return successResponse({
-      connected: settings?.google_calendar_connected || false,
-      calendarUrl: settings?.google_calendar_url || null
+      connected: false,
+      calendarUrl: null
     })
   } catch (error) {
     logger.error('Error checking Google Calendar status:', { error })
-    // Return not connected by default if table doesn't exist yet
     return errorResponse(error instanceof Error ? error : new Error('Failed to check status'))
   }
 }

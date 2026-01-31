@@ -48,7 +48,7 @@ async function main() {
   console.log('  Fetching tables...')
   const tablesRaw = await querySql(
     `SELECT table_name FROM information_schema.tables
-     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+     WHERE table_schema = 'public' AND table_type IN ('BASE TABLE', 'VIEW')
      ORDER BY table_name`
   ) as Array<{ table_name: string }>
 
