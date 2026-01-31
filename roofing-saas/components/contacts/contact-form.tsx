@@ -887,7 +887,7 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
 
                   if (response.ok) {
                     const result = await response.json()
-                    router.push(`/projects/${result.data.id}`)
+                    router.push(`/projects/${result.data.project.id}`)
                     router.refresh()
                   } else {
                     // If project creation fails, navigate to contact page
