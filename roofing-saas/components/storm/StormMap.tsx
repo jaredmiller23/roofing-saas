@@ -14,7 +14,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, CloudLightning, Home } from 'lucide-react'
 
-const GOOGLE_MAPS_LIBRARIES: ('drawing' | 'geometry' | 'places')[] = ['geometry']
+const GOOGLE_MAPS_LIBRARIES: ('drawing' | 'geometry' | 'places')[] = ['drawing', 'geometry']
 
 const MAP_CONTAINER_STYLE = {
   width: '100%',
