@@ -337,7 +337,8 @@ export default function ProjectDetailPage() {
               {project.pipeline_stage === 'won' && (
                 <Button
                   size="sm"
-                  className="gap-2 bg-green-600 hover:bg-green-700"
+                  variant="success"
+                  className="gap-2"
                   onClick={handleStartProduction}
                   disabled={startingProduction}
                 >
