@@ -30,20 +30,19 @@ export default async function DashboardLayout({
     redirect(`/${locale}/login`)
   }
 
-  // Single query for tenant context (replaces separate getUserRole call)
-  const ctx = await getUserContext(user.id)
+  // Run getUserContext and MFA check in parallel for better performance
+  // Both operations are cached, so subsequent calls within this request are instant
+  const [ctx, mfaRedirect] = await Promise.all([
+    getUserContext(user.id),
+    getMFARedirectPath().catch(() => null) // MFA check failure should not block
+  ])
+
   const userRole = ctx?.role || 'user'
   const userEmail = user.email || ''
 
   // MFA enforcement for privileged users (admin/owner)
-  // Moved from proxy.ts — this runs server-side and cannot be bypassed
-  try {
-    const mfaRedirect = await getMFARedirectPath()
-    if (mfaRedirect) {
-      redirect(`/${locale}${mfaRedirect}`)
-    }
-  } catch {
-    // MFA check failure should not block the request
+  if (mfaRedirect) {
+    redirect(`/${locale}${mfaRedirect}`)
   }
 
   return (

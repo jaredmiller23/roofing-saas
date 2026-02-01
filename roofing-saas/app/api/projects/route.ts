@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
       throw AuthorizationError('User not associated with any tenant')
     }
 
-    // Get audit context for logging
-    const auditContext = await getAuditContext(request)
+    // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
+    const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
       throw AuthenticationError('Failed to get audit context')
     }

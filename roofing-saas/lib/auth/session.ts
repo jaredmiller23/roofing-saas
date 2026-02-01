@@ -2,22 +2,45 @@ import { createClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 import type { NextRequest } from 'next/server'
 import { withAuthSpan } from '@/lib/instrumentation'
+import {
+  getCachedUser,
+  setCachedUser,
+  hasCachedUser,
+  getCachedTenantId,
+  setCachedTenantId,
+  hasCachedTenantId,
+  getCachedUserContext,
+  setCachedUserContext,
+  hasCachedUserContext,
+} from './request-context'
+
+// Re-export for convenience
+export { withRequestCache, isRequestCacheActive } from './request-context'
 
 /**
  * Get the current authenticated user
  * Returns null if no user is authenticated
+ *
+ * Uses request-scoped caching when available - multiple calls in the same
+ * request will return the cached result instead of hitting Supabase again.
  */
 export async function getCurrentUser(): Promise<User | null> {
+  // Check cache first
+  if (hasCachedUser()) {
+    return getCachedUser() ?? null
+  }
+
   return withAuthSpan('get_user', async () => {
     const supabase = await createClient()
 
     const { data: { user }, error } = await supabase.auth.getUser()
 
-    if (error || !user) {
-      return null
-    }
+    const result = error || !user ? null : user
 
-    return user
+    // Cache the result for subsequent calls in this request
+    setCachedUser(result)
+
+    return result
   })
 }
 
@@ -101,8 +124,23 @@ export async function requireAuth(): Promise<User> {
  * NOTE: If user is in multiple tenants, returns the most recently joined one.
  * This ensures users see their latest/primary tenant by default.
  * For users needing to switch tenants, a tenant switcher UI would be required.
+ *
+ * Uses request-scoped caching when available.
  */
 export async function getUserTenantId(userId: string): Promise<string | null> {
+  // Check cache first
+  if (hasCachedTenantId(userId)) {
+    return getCachedTenantId(userId) ?? null
+  }
+
+  // Also check if we have UserContext cached (which includes tenantId)
+  if (hasCachedUserContext(userId)) {
+    const ctx = getCachedUserContext(userId)
+    const tenantId = ctx?.tenantId ?? null
+    setCachedTenantId(userId, tenantId)
+    return tenantId
+  }
+
   return withAuthSpan('get_tenant', async () => {
     const supabase = await createClient()
 
@@ -114,11 +152,12 @@ export async function getUserTenantId(userId: string): Promise<string | null> {
       .order('joined_at', { ascending: false })
       .limit(1)
 
-    if (error || !data || data.length === 0) {
-      return null
-    }
+    const result = error || !data || data.length === 0 ? null : data[0].tenant_id
 
-    return data[0].tenant_id
+    // Cache the result
+    setCachedTenantId(userId, result)
+
+    return result
   })
 }
 
@@ -198,8 +237,17 @@ export async function isAdmin(userId: string): Promise<boolean> {
  * Get user's role in their tenant
  * Returns null if user is not associated with a tenant
  * NOTE: Returns role from most recently joined active tenant if user is in multiple tenants
+ *
+ * Uses request-scoped caching when available - if getUserContext was called
+ * earlier in the request, this returns the cached role without a new query.
  */
 export async function getUserRole(userId: string): Promise<string | null> {
+  // Check if we have UserContext cached (which includes role)
+  if (hasCachedUserContext(userId)) {
+    const ctx = getCachedUserContext(userId)
+    return ctx?.role ?? null
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -217,20 +265,25 @@ export async function getUserRole(userId: string): Promise<string | null> {
   return data[0].role
 }
 
-export type UserStatus = 'active' | 'deactivated' | 'suspended' | 'pending'
+// Re-export types from shared file
+export type { UserStatus, UserContext } from './types'
 
-export interface UserContext {
-  tenantId: string
-  role: string
-  status: UserStatus
-}
+// Import for local use
+import type { UserStatus, UserContext } from './types'
 
 /**
  * Get user's full tenant context in a single query
  * Returns tenantId, role, and status from the most recently joined active tenant.
  * Use this instead of calling getUserTenantId + getUserRole + getUserStatus separately.
+ *
+ * Uses request-scoped caching when available.
  */
 export async function getUserContext(userId: string): Promise<UserContext | null> {
+  // Check cache first
+  if (hasCachedUserContext(userId)) {
+    return getCachedUserContext(userId) ?? null
+  }
+
   return withAuthSpan('get_tenant', async () => {
     const supabase = await createClient()
 
@@ -243,14 +296,21 @@ export async function getUserContext(userId: string): Promise<UserContext | null
       .limit(1)
 
     if (error || !data || data.length === 0) {
+      setCachedUserContext(userId, null)
       return null
     }
 
-    return {
+    const result: UserContext = {
       tenantId: data[0].tenant_id,
       role: data[0].role ?? 'user',
       status: (data[0].status as UserStatus) || 'active',
     }
+
+    // Cache the result and also cache tenantId separately
+    setCachedUserContext(userId, result)
+    setCachedTenantId(userId, result.tenantId)
+
+    return result
   })
 }
 

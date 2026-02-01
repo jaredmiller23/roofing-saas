@@ -63,10 +63,36 @@ export async function GET(request: NextRequest) {
     const filters = validatedFilters.data
     const supabase = await createClient()
 
-    // Build query
+    // Build query with specific columns for list view performance
+    // Excludes heavy fields: custom_fields (JSONB), search_vector (tsvector)
+    const listColumns = `
+      id,
+      tenant_id,
+      created_at,
+      updated_at,
+      first_name,
+      last_name,
+      email,
+      phone,
+      mobile_phone,
+      company,
+      is_organization,
+      contact_category,
+      type,
+      stage,
+      substatus,
+      assigned_to,
+      lead_score,
+      priority,
+      tags,
+      dnc_status,
+      address_city,
+      address_state
+    `
+
     let query = supabase
       .from('contacts')
-      .select('*', { count: 'exact' })
+      .select(listColumns, { count: 'estimated' })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
 
@@ -174,8 +200,8 @@ export async function POST(request: NextRequest) {
       throw AuthorizationError('User is not associated with a tenant')
     }
 
-    // Get audit context for logging
-    const auditContext = await getAuditContext(request)
+    // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
+    const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
       throw AuthenticationError('Failed to get audit context')
     }

@@ -18,21 +18,46 @@ export interface AuditContext {
 }
 
 /**
- * Get audit context from current request
+ * Options for getAuditContext to avoid redundant auth calls
+ *
+ * If your API route already called getCurrentUser() and getUserTenantId(),
+ * pass the values to avoid duplicate auth overhead.
  */
-export async function getAuditContext(request?: NextRequest): Promise<AuditContext | null> {
+export interface AuditContextOptions {
+  /** Pre-fetched user from getCurrentUser() */
+  user?: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null
+  /** Pre-fetched tenant ID from getUserTenantId() */
+  tenantId?: string | null
+}
+
+/**
+ * Get audit context from current request
+ *
+ * For performance, pass pre-fetched user and tenantId if available:
+ * ```typescript
+ * const user = await getCurrentUser()
+ * const tenantId = await getUserTenantId(user.id)
+ * const auditContext = await getAuditContext(request, { user, tenantId })
+ * ```
+ */
+export async function getAuditContext(
+  request?: NextRequest,
+  options?: AuditContextOptions
+): Promise<AuditContext | null> {
   try {
-    const user = await getCurrentUser()
+    // Use provided user or fetch
+    const user = options?.user ?? await getCurrentUser()
     if (!user) return null
 
-    const tenant_id = await getUserTenantId(user.id)
+    // Use provided tenantId or fetch
+    const tenant_id = options?.tenantId ?? await getUserTenantId(user.id)
     if (!tenant_id) return null
 
     const { ip_address, user_agent } = AuditLogger.extractRequestMetadata(request)
 
     return {
       user_id: user.id,
-      user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Unknown',
+      user_name: user.user_metadata?.full_name as string || user.email?.split('@')[0] || 'Unknown',
       user_email: user.email || 'unknown@example.com',
       tenant_id,
       ip_address,
