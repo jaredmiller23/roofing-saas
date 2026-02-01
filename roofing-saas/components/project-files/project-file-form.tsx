@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileText, Upload, Camera, FolderOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { RoofingFileCategory, FileType, suggestFileTypeForCategory } from '@/lib/types/file'
 import { FileCategories, CategoryGrid } from './FileCategories'
 import { MobileFileUpload } from './MobileFileUpload'
@@ -190,9 +191,9 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Quick Upload Options */}

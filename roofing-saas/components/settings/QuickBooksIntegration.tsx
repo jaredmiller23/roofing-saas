@@ -284,9 +284,9 @@ export function QuickBooksIntegration() {
 
             {/* Success Alert */}
             {syncSuccess && (
-              <Alert className="mb-4 bg-green-50 border-green-200">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">{syncSuccess}</AlertDescription>
+              <Alert variant="success" className="mb-4">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>{syncSuccess}</AlertDescription>
               </Alert>
             )}
 

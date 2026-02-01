@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { validateHeicFile } from '@/lib/utils'
 
 // Note: HEIC conversion now happens server-side for reliability
@@ -546,16 +547,16 @@ export function PhotoUpload({
 
           {/* Success message */}
           {uploadState.status === 'success' && (
-            <div className="bg-green-50 border border-green-200 text-green-800 rounded-md p-4">
-              {uploadState.message}
-            </div>
+            <Alert variant="success">
+              <AlertDescription>{uploadState.message}</AlertDescription>
+            </Alert>
           )}
 
           {/* Error message */}
           {uploadState.status === 'error' && (
-            <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
-              {uploadState.message}
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{uploadState.message}</AlertDescription>
+            </Alert>
           )}
 
           {/* Mode indicator */}

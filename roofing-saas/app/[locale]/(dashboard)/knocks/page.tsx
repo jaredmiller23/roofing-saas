@@ -11,6 +11,7 @@ import { FieldActivityKPIs } from '@/components/territories/FieldActivityKPIs'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Select,
   SelectContent,
@@ -190,9 +191,9 @@ export default function KnocksPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : knocksError ? (
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
-            {knocksError}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{knocksError}</AlertDescription>
+          </Alert>
         ) : knocks.length === 0 ? (
           <div className="text-center py-8">
             <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-2" />

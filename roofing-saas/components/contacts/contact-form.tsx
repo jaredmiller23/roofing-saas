@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 // Helper to clean form data before Zod validation
 // Converts NaN from empty number inputs to undefined, and empty string enums to undefined
@@ -250,9 +251,9 @@ export function ContactForm({ contact, mode = 'create' }: ContactFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       {errors.root && (
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4">
-          {errors.root.message}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{errors.root.message}</AlertDescription>
+        </Alert>
       )}
 
       {/* Basic Information */}
