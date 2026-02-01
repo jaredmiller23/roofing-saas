@@ -32,11 +32,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get return URL from referer or default to events page
+    const referer = request.headers.get('referer')
+    const returnTo = referer?.includes('/events') ? '/events' : '/events'
+
     // Generate state token for CSRF protection (matches QuickBooks pattern)
     const state = Buffer.from(JSON.stringify({
       tenant_id: tenantId,
       user_id: user.id,
       timestamp: Date.now(),
+      return_to: returnTo,
     })).toString('base64')
 
     // Get redirect URI

@@ -17,25 +17,32 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state')
     const error = searchParams.get('error')
 
+    // Parse state first to get return URL (state is passed even on error)
+    let returnTo = '/events'
+    let stateData: { tenant_id: string; user_id: string; timestamp: number; return_to?: string } | null = null
+
+    if (state) {
+      try {
+        stateData = JSON.parse(Buffer.from(state, 'base64').toString())
+        if (stateData?.return_to) {
+          returnTo = stateData.return_to
+        }
+      } catch (_e) {
+        // State parsing failed, use default return URL
+      }
+    }
+
     // Handle OAuth errors
     if (error) {
       logger.error('Google OAuth error', { error })
       return NextResponse.redirect(
-        `${request.nextUrl.origin}/settings?google_error=${encodeURIComponent(error)}`
+        `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent(error)}`
       )
     }
 
     // Validate required parameters
-    if (!code || !state) {
+    if (!code || !state || !stateData) {
       throw ValidationError('Missing required OAuth parameters')
-    }
-
-    // Decode and validate state
-    let stateData: { tenant_id: string; user_id: string; timestamp: number }
-    try {
-      stateData = JSON.parse(Buffer.from(state, 'base64').toString())
-    } catch (_e) {
-      throw ValidationError('Invalid state parameter')
     }
 
     // Check state is not too old (5 minutes)
@@ -115,9 +122,9 @@ export async function GET(request: NextRequest) {
       googleEmail,
     })
 
-    // Redirect to settings with success message
+    // Redirect back to original page with success message
     return NextResponse.redirect(
-      `${request.nextUrl.origin}/settings?google_connected=true`
+      `${request.nextUrl.origin}${returnTo}?google_connected=true`
     )
   } catch (error) {
     logger.error('Google Calendar callback error', { error })
@@ -126,7 +133,7 @@ export async function GET(request: NextRequest) {
       return errorResponse(error)
     }
     return NextResponse.redirect(
-      `${request.nextUrl.origin}/settings?google_error=Failed+to+connect`
+      `${request.nextUrl.origin}/events?google_error=Failed+to+connect`
     )
   }
 }
