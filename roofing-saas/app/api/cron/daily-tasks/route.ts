@@ -8,6 +8,7 @@
  * 1. Signature reminders - 9 AM style (documents expiring soon)
  * 2. Campaign processing - 8 AM style (pending step executions)
  * 3. Billing checks - 10 AM style (trials, grace periods, downgrades)
+ * 4. Storm monitoring - polls NWS for severe weather alerts
  *
  * Configure in vercel.json:
  * {
@@ -27,6 +28,7 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 import { GET as signatureRemindersHandler } from '@/app/api/cron/signature-reminders/route'
 import { GET as processCampaignsHandler } from '@/app/api/cron/process-campaigns/route'
 import { GET as billingCheckHandler } from '@/app/api/cron/billing-check/route'
+import { GET as stormMonitorHandler } from '@/app/api/cron/storm-monitor/route'
 
 // Verify cron secret for security
 function verifyCronSecret(request: NextRequest): boolean {
@@ -132,6 +134,30 @@ export async function GET(request: NextRequest) {
       error: errorMessage,
     })
     logger.error('[Daily Tasks] Billing check failed', { error: errorMessage })
+  }
+
+  // Task 4: Storm Monitoring
+  const stormStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running storm monitor...')
+    const response = await stormMonitorHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'storm_monitor',
+      success: response.ok,
+      duration: Date.now() - stormStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] Storm monitor completed', { duration: Date.now() - stormStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'storm_monitor',
+      success: false,
+      duration: Date.now() - stormStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] Storm monitor failed', { error: errorMessage })
   }
 
   const totalDuration = Date.now() - startTime
