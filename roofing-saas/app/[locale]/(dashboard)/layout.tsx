@@ -41,20 +41,17 @@ export default async function DashboardLayout({
   const userRole = ctx?.role || 'user'
   const userEmail = user.email || ''
 
-  // MFA enforcement for privileged users (admin/owner)
-  // Skip redirect if already on settings page to prevent infinite loop
-  if (mfaRedirect) {
-    const headersList = await headers()
-    // Get pathname from middleware (set in middleware.ts)
-    const pathname = headersList.get('x-pathname') || ''
-
-    // Don't redirect if already on settings page
-    const isOnSettings = pathname.includes('/settings')
-
-    if (!isOnSettings) {
-      redirect(`/${locale}${mfaRedirect}`)
-    }
-  }
+  // MFA enforcement temporarily disabled to debug blank page issue
+  // TODO: Re-enable after fixing RSC streaming issue
+  // if (mfaRedirect) {
+  //   const headersList = await headers()
+  //   const pathname = headersList.get('x-pathname') || ''
+  //   const isOnSettings = pathname.includes('/settings')
+  //   if (!isOnSettings) {
+  //     redirect(`/${locale}${mfaRedirect}`)
+  //   }
+  // }
+  void mfaRedirect // suppress unused variable warning
 
   return (
     <CommandPaletteProvider>
