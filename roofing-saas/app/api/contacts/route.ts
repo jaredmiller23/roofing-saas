@@ -331,6 +331,42 @@ export async function POST(request: NextRequest) {
       logger.error('Failed to trigger contact_created workflows', { error, contactId: contact.id })
     })
 
+    // Capture TCPA consent proof if auto_call_consent checkbox was checked
+    if (validatedData.data.auto_call_consent && contact.id) {
+      try {
+        const { captureCallConsent, TCPA_CALL_CONSENT_TEXT, formatConsentText } =
+          await import('@/lib/compliance/consent-capture')
+
+        // Fetch tenant details for consent legal text
+        const { data: tenantDetails } = await supabase
+          .from('tenants')
+          .select('name')
+          .eq('id', tenantId)
+          .single()
+
+        const legalText = formatConsentText(
+          TCPA_CALL_CONSENT_TEXT,
+          tenantDetails?.name || 'Company',
+          '' // Phone not stored on tenants table
+        )
+
+        await captureCallConsent({
+          contactId: contact.id,
+          tenantId,
+          consentType: 'call',
+          method: 'web_form',
+          legalText,
+          formVersion: '1.0',
+          userId,
+        })
+
+        logger.info('TCPA call consent captured for contact', { contactId: contact.id })
+      } catch (consentError) {
+        // Non-blocking - log but don't fail the contact creation
+        logger.error('Failed to capture call consent', { error: consentError, contactId: contact.id })
+      }
+    }
+
     const duration = Date.now() - startTime
     logger.apiResponse('POST', '/api/contacts', 201, duration)
     logger.info('Contact created', { contactId: contact.id, tenantId })

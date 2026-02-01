@@ -119,6 +119,44 @@ export async function PATCH(
       }
     )
 
+    // Capture TCPA consent proof if auto_call_consent was set to true
+    if (updateData.auto_call_consent === true && contact.id) {
+      try {
+        const { captureCallConsent, TCPA_CALL_CONSENT_TEXT, formatConsentText } =
+          await import('@/lib/compliance/consent-capture')
+
+        const supabase = await createClient()
+
+        // Fetch tenant details for consent legal text
+        const { data: tenantDetails } = await supabase
+          .from('tenants')
+          .select('name')
+          .eq('id', tenantId)
+          .single()
+
+        const legalText = formatConsentText(
+          TCPA_CALL_CONSENT_TEXT,
+          tenantDetails?.name || 'Company',
+          '' // Phone not stored on tenants table
+        )
+
+        await captureCallConsent({
+          contactId: contact.id,
+          tenantId,
+          consentType: 'call',
+          method: 'web_form',
+          legalText,
+          formVersion: '1.0',
+          userId: user.id,
+        })
+
+        logger.info('TCPA call consent captured for contact update', { contactId: contact.id })
+      } catch (consentError) {
+        // Non-blocking - log but don't fail the contact update
+        logger.error('Failed to capture call consent on update', { error: consentError, contactId: contact.id })
+      }
+    }
+
     return successResponse(contact)
   } catch (error) {
     logger.error('Error in PATCH /api/contacts/:id', { error })

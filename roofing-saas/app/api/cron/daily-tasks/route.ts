@@ -9,6 +9,8 @@
  * 2. Campaign processing - 8 AM style (pending step executions)
  * 3. Billing checks - 10 AM style (trials, grace periods, downgrades)
  * 4. Storm monitoring - polls NWS for severe weather alerts
+ * 5. DNC sync monitoring - FTC 31-day registry sync compliance
+ * 6. Opt-out monitoring - TCPA 10-business-day deadline tracking
  *
  * Configure in vercel.json:
  * {
@@ -29,6 +31,8 @@ import { GET as signatureRemindersHandler } from '@/app/api/cron/signature-remin
 import { GET as processCampaignsHandler } from '@/app/api/cron/process-campaigns/route'
 import { GET as billingCheckHandler } from '@/app/api/cron/billing-check/route'
 import { GET as stormMonitorHandler } from '@/app/api/cron/storm-monitor/route'
+import { GET as dncSyncHandler } from '@/app/api/cron/dnc-sync/route'
+import { GET as optOutMonitorHandler } from '@/app/api/cron/opt-out-monitor/route'
 
 // Verify cron secret for security
 function verifyCronSecret(request: NextRequest): boolean {
@@ -158,6 +162,54 @@ export async function GET(request: NextRequest) {
       error: errorMessage,
     })
     logger.error('[Daily Tasks] Storm monitor failed', { error: errorMessage })
+  }
+
+  // Task 5: DNC Sync Monitor
+  const dncStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running DNC sync monitor...')
+    const response = await dncSyncHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'dnc_sync',
+      success: response.ok,
+      duration: Date.now() - dncStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] DNC sync monitor completed', { duration: Date.now() - dncStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'dnc_sync',
+      success: false,
+      duration: Date.now() - dncStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] DNC sync monitor failed', { error: errorMessage })
+  }
+
+  // Task 6: Opt-Out Monitor
+  const optOutStart = Date.now()
+  try {
+    logger.info('[Daily Tasks] Running opt-out monitor...')
+    const response = await optOutMonitorHandler(request)
+    const data = await response.json()
+    results.push({
+      task: 'opt_out_monitor',
+      success: response.ok,
+      duration: Date.now() - optOutStart,
+      result: data,
+    })
+    logger.info('[Daily Tasks] Opt-out monitor completed', { duration: Date.now() - optOutStart })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    results.push({
+      task: 'opt_out_monitor',
+      success: false,
+      duration: Date.now() - optOutStart,
+      error: errorMessage,
+    })
+    logger.error('[Daily Tasks] Opt-out monitor failed', { error: errorMessage })
   }
 
   const totalDuration = Date.now() - startTime
