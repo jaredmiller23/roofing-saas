@@ -79,8 +79,8 @@ export default function SignatureDocuments({
 
   if (error) {
     return (
-      <Alert className="bg-red-50 border-red-200">
-        <AlertDescription className="text-red-900">{error}</AlertDescription>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
     )
   }
