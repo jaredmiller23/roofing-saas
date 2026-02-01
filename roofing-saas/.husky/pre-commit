@@ -1,5 +1,18 @@
 cd roofing-saas
 
+# Secret scanning (FIRST - most critical)
+echo "🔒 Scanning for secrets..."
+if command -v gitleaks &> /dev/null; then
+  gitleaks protect --staged --no-banner
+  if [ $? -ne 0 ]; then
+    echo "❌ Secrets detected! Remove them before committing."
+    echo "   If this is a false positive, add pattern to .gitleaks.toml"
+    exit 1
+  fi
+else
+  echo "⚠️  gitleaks not installed - skipping secret scan (install with: brew install gitleaks)"
+fi
+
 # Run lint-staged (ESLint on staged files)
 npx lint-staged
 

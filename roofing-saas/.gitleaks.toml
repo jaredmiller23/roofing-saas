@@ -1,0 +1,36 @@
+# Gitleaks configuration for Roofing SaaS
+# https://github.com/gitleaks/gitleaks
+
+title = "Roofing SaaS Secret Scanning"
+
+[extend]
+# Use default gitleaks rules as base
+useDefault = true
+
+[allowlist]
+description = "Allowlisted files and patterns"
+
+# Files that intentionally contain placeholder secrets
+paths = [
+  '''.env\.example$''',
+  '''.env\.test\.example$''',
+  '''\.env\.local\.example$''',
+  # Test fixtures with fake data
+  '''tests/fixtures/.*''',
+  '''e2e/fixtures/.*''',
+  # Lock files
+  '''package-lock\.json$''',
+  '''pnpm-lock\.yaml$''',
+]
+
+# Placeholder patterns that are not real secrets
+regexes = [
+  # Placeholder patterns
+  '''<your-.*>''',
+  '''YOUR_.*_HERE''',
+  '''xxx+''',
+  # Example/placeholder values in documentation
+  '''sk-[xX]+''',
+  '''pk_test_[xX]+''',
+  '''sk_test_[xX]+''',
+]
