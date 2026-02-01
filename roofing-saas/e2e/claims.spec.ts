@@ -25,7 +25,7 @@ test.describe('Claims Management', () => {
   test.describe('Claims Dashboard', () => {
     test('should load claims dashboard', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Should be on claims page
       expect(page.url()).toContain('/claims')
@@ -40,7 +40,7 @@ test.describe('Claims Management', () => {
 
     test('should display claims stats cards', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Wait for page header
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -56,7 +56,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Search and Filtering', () => {
     test('should have search input for claims', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Wait for page header
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -72,7 +72,7 @@ test.describe('Claims Management', () => {
 
     test('should have status filter dropdown', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Wait for page header
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -93,7 +93,7 @@ test.describe('Claims Management', () => {
 
     test('should have date range filters', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Wait for page header
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -108,7 +108,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Export', () => {
     test('should have export buttons', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('networkidle')
+      // Skip networkidle - wait for DOM instead
 
       // Wait for page to load - look for Claims Management heading
       await page.waitForSelector('h1:has-text("Claims Management")', {
@@ -127,32 +127,33 @@ test.describe('Claims Management', () => {
 
   test.describe('Claim Details', () => {
     test.skip('should view claim details', async ({ page }) => {
-      // SKIP: Requires claims data in test tenant
-      // TODO: Create test fixture with claim data
+      // DATA AVAILABLE: E2E claims seeded via npm run seed:test
+      // BLOCKED: Claim detail page navigation needs investigation
+      // TODO: Fix redirect handling in claim detail tests
       await page.goto('/claims')
     })
   })
 
   test.describe('Claim Status Updates', () => {
     test.skip('should update claim status', async ({ page }) => {
-      // SKIP: Requires claims data in test tenant
-      // TODO: Create test fixture with claim data
+      // DATA AVAILABLE: E2E claims seeded via npm run seed:test
+      // BLOCKED: Status update UI tests need more work
       await page.goto('/claims')
     })
   })
 
   test.describe('Claim Documents', () => {
     test.skip('should upload claim document', async ({ page }) => {
-      // SKIP: Requires claims data in test tenant
-      // TODO: Create test fixture with claim data
+      // DATA AVAILABLE: E2E claims seeded via npm run seed:test
+      // BLOCKED: Document upload test needs file upload handling
       await page.goto('/claims')
     })
   })
 
   test.describe('Claim Inspection Flow', () => {
     test.skip('should navigate to inspection page', async ({ page }) => {
-      // SKIP: Requires claims data in test tenant
-      // TODO: Create test fixture with claim data
+      // DATA AVAILABLE: E2E claims seeded via npm run seed:test (CLM-E2E-005)
+      // BLOCKED: Inspection page navigation needs investigation
       await page.goto('/claims')
     })
   })
