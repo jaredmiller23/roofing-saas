@@ -791,8 +791,8 @@ body.ig-nav-active aside[id="sidebar-navigation"] {
 }
 
 /* Hide the AI Assistant Bar - Instagram mode has voice in bottom nav */
-body.ig-nav-active main .fixed.bottom-0.z-40,
-body.ig-nav-active main .fixed.bottom-4.z-40 {
+/* AIAssistantBar is rendered outside of main, so target via data attribute */
+body.ig-nav-active [data-ai-assistant-bar] {
   display: none !important;
 }
 

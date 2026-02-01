@@ -41,7 +41,7 @@ export function AIAssistantBar() {
   // Don't render if minimized to icon only
   if (isMinimized) {
     return (
-      <div className="fixed bottom-4 right-4 z-40">
+      <div className="fixed bottom-4 right-4 z-40" data-ai-assistant-bar>
         <button
           onClick={minimize}
           className="flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
@@ -56,7 +56,7 @@ export function AIAssistantBar() {
   // Collapsed state (bottom bar only)
   if (!isExpanded) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-64">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-64" data-ai-assistant-bar>
         <div className="bg-card border-t-2 border-border shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
             {/* Icon */}
@@ -118,7 +118,7 @@ export function AIAssistantBar() {
       />
 
       {/* Expanded chat window */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-64">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-64" data-ai-assistant-bar>
         <div className="bg-card border-t-2 border-border shadow-2xl animate-slide-up">
           <div className="max-w-4xl mx-auto flex flex-col" style={{ height: 'min(600px, 80vh)' }}>
             {/* Header */}
