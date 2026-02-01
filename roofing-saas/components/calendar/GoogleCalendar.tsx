@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
@@ -37,14 +36,19 @@ interface CalendarEvent {
   event_type?: string
 }
 
-interface GoogleCalendarProps {
-  onDisconnect?: () => void
+interface OAuthState {
+  googleConnected: boolean
+  googleError: string | null
+  email: string | null
+  processed: boolean
 }
 
-export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+interface GoogleCalendarProps {
+  onDisconnect?: () => void
+  initialOAuthState?: OAuthState
+}
 
+export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalendarProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingEvents, setIsLoadingEvents] = useState(false)
@@ -155,40 +159,29 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     }
   }, [fetchEvents])
 
-  // Handle URL parameters from OAuth callback
+  // Handle OAuth state passed from parent (via Suspense boundary)
   useEffect(() => {
-    const googleConnected = searchParams.get('google_connected')
-    const googleError = searchParams.get('google_error')
-    const connectedEmail = searchParams.get('email')
-
-    if (googleError) {
-      // OAuth flow returned an error
-      setError(`Google Calendar: ${decodeURIComponent(googleError)}`)
-      setIsLoading(false)
-      // Clean up URL
-      router.replace('/events', { scroll: false })
-      return
-    }
-
-    if (googleConnected === 'true') {
-      // OAuth flow just completed successfully
-      // Trust the callback and set connected state immediately
-      setIsConnected(true)
-      setNeedsReauth(false)
-      if (connectedEmail) {
-        setGoogleEmail(decodeURIComponent(connectedEmail))
+    if (initialOAuthState?.processed) {
+      if (initialOAuthState.googleError) {
+        setError(`Google Calendar: ${initialOAuthState.googleError}`)
+        setIsLoading(false)
+        return
       }
-      setIsLoading(false)
-      // Fetch events immediately
-      fetchEvents()
-      // Clean up URL
-      router.replace('/events', { scroll: false })
-      return
+
+      if (initialOAuthState.googleConnected) {
+        setIsConnected(true)
+        setNeedsReauth(false)
+        if (initialOAuthState.email) {
+          setGoogleEmail(initialOAuthState.email)
+        }
+        setIsLoading(false)
+        fetchEvents()
+        return
+      }
     }
 
-    // No OAuth params, do normal connection check
     checkGoogleConnection()
-  }, [searchParams, router, fetchEvents, checkGoogleConnection])
+  }, [initialOAuthState, fetchEvents, checkGoogleConnection])
 
   const handleConnect = () => {
     setIsLoading(true)

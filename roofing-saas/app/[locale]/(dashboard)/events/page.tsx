@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
@@ -31,6 +32,49 @@ const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalenda
   loading: () => <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center"><span className="text-muted-foreground">Loading calendar...</span></div>,
   ssr: false
 })
+
+/**
+ * Wrapper component that handles OAuth URL params with proper Suspense boundary.
+ * This is required because useSearchParams() must be used within a Suspense boundary in Next.js 13+.
+ */
+function GoogleCalendarWithParams({ onDisconnect }: { onDisconnect: () => void }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const [oauthParams, setOauthParams] = useState<{
+    googleConnected: boolean
+    googleError: string | null
+    email: string | null
+    processed: boolean
+  }>({ googleConnected: false, googleError: null, email: null, processed: false })
+
+  useEffect(() => {
+    if (oauthParams.processed) return
+
+    const googleConnected = searchParams.get('google_connected') === 'true'
+    const googleError = searchParams.get('google_error')
+    const email = searchParams.get('email')
+
+    if (googleConnected || googleError) {
+      setOauthParams({
+        googleConnected,
+        googleError: googleError ? decodeURIComponent(googleError) : null,
+        email: email ? decodeURIComponent(email) : null,
+        processed: true
+      })
+      router.replace('/events', { scroll: false })
+    } else {
+      setOauthParams(prev => ({ ...prev, processed: true }))
+    }
+  }, [searchParams, router, oauthParams.processed])
+
+  return (
+    <GoogleCalendar
+      onDisconnect={onDisconnect}
+      initialOAuthState={oauthParams.processed ? oauthParams : undefined}
+    />
+  )
+}
 
 /**
  * Events page with calendar view
@@ -180,7 +224,13 @@ export default function EventsPage() {
         {view === 'calendar' ? (
           <div className="mt-6">
             {calendarType === 'google' ? (
-              <GoogleCalendar onDisconnect={() => handleCalendarTypeChange('standard')} />
+              <Suspense fallback={
+                <div className="h-[600px] bg-muted rounded-lg flex items-center justify-center">
+                  <span className="text-muted-foreground">Loading calendar...</span>
+                </div>
+              }>
+                <GoogleCalendarWithParams onDisconnect={() => handleCalendarTypeChange('standard')} />
+              </Suspense>
             ) : (
               isLoading ? (
                 <div className="flex items-center justify-center h-96">
