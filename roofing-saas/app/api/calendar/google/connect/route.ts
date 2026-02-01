@@ -1,60 +1,64 @@
-import { getCurrentUser } from '@/lib/auth/session'
-import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError, ApiError, ErrorCode } from '@/lib/api/errors'
-import { successResponse, errorResponse } from '@/lib/api/response'
-
 /**
- * Initiate Google Calendar OAuth connection
- * POST /api/calendar/google/connect
- *
- * Note: This requires Google Cloud Platform setup:
- * 1. Create project at console.cloud.google.com
- * 2. Enable Google Calendar API
- * 3. Create OAuth 2.0 credentials
- * 4. Add redirect URI: {APP_URL}/api/calendar/google/callback
- * 5. Add credentials to .env.local:
- *    - GOOGLE_CLIENT_ID
- *    - GOOGLE_CLIENT_SECRET
+ * Google Calendar OAuth Authorization Endpoint
+ * Redirects user to Google to authorize the app
  */
-export async function POST() {
+
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthorizationUrl } from '@/lib/google/calendar-client'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError, InternalError, ApiError, ErrorCode } from '@/lib/api/errors'
+import { errorResponse } from '@/lib/api/response'
+
+export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     if (!user) {
       throw AuthenticationError()
     }
 
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
+
     // Check if Google OAuth is configured
     const clientId = process.env.GOOGLE_CLIENT_ID
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/google/callback`
-
     if (!clientId) {
       throw new ApiError(
         ErrorCode.EXTERNAL_SERVICE_ERROR,
-        'Google Calendar integration is not configured. Please contact your administrator to set up the Google Calendar API credentials.',
+        'Google Calendar integration is not configured. Please contact your administrator.',
         503
       )
     }
 
-    // Build Google OAuth URL
-    const scopes = [
-      'https://www.googleapis.com/auth/calendar',
-      'https://www.googleapis.com/auth/calendar.events'
-    ]
+    // Generate state token for CSRF protection (matches QuickBooks pattern)
+    const state = Buffer.from(JSON.stringify({
+      tenant_id: tenantId,
+      user_id: user.id,
+      timestamp: Date.now(),
+    })).toString('base64')
 
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
-    authUrl.searchParams.append('client_id', clientId)
-    authUrl.searchParams.append('redirect_uri', redirectUri)
-    authUrl.searchParams.append('response_type', 'code')
-    authUrl.searchParams.append('scope', scopes.join(' '))
-    authUrl.searchParams.append('access_type', 'offline')
-    authUrl.searchParams.append('prompt', 'consent')
-    authUrl.searchParams.append('state', user.id) // Pass user ID for callback
+    // Get redirect URI
+    const redirectUri = `${request.nextUrl.origin}/api/calendar/google/callback`
 
-    return successResponse({
-      authUrl: authUrl.toString()
+    // Get authorization URL
+    const authUrl = getAuthorizationUrl(redirectUri, state)
+
+    logger.info('Redirecting to Google OAuth', {
+      userId: user.id,
+      tenantId,
     })
+
+    // Redirect to Google authorization page
+    return NextResponse.redirect(authUrl)
   } catch (error) {
-    logger.error('Error initiating Google Calendar connection:', { error })
-    return errorResponse(error instanceof Error ? error : InternalError())
+    logger.error('Google Calendar auth error', { error })
+    return errorResponse(error instanceof Error ? error : InternalError('Failed to initiate Google authorization'))
   }
+}
+
+// Also support POST for compatibility with existing UI
+export async function POST(request: NextRequest) {
+  return GET(request)
 }

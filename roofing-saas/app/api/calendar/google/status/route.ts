@@ -1,16 +1,20 @@
-import { getCurrentUser } from '@/lib/auth/session'
-import { logger } from '@/lib/logger'
-import { AuthenticationError } from '@/lib/api/errors'
-import { successResponse, errorResponse } from '@/lib/api/response'
-
 /**
- * Check Google Calendar connection status
+ * Google Calendar Connection Status Endpoint
  * GET /api/calendar/google/status
  *
  * Returns:
  * - connected: boolean
- * - calendarUrl: string | null (public calendar embed URL if available)
+ * - googleEmail: string | null (email of connected Google account)
+ * - googleName: string | null (display name)
+ * - expiresAt: string | null (when the token expires)
  */
+
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
+import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { successResponse, errorResponse } from '@/lib/api/response'
+
 export async function GET() {
   try {
     const user = await getCurrentUser()
@@ -18,11 +22,42 @@ export async function GET() {
       throw AuthenticationError()
     }
 
-    // Google Calendar integration is not yet implemented (user_settings table pending)
-    // Return disconnected state until the feature is built
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('No tenant found')
+    }
+
+    const supabase = await createClient()
+
+    // Check for existing token
+    const { data: token, error } = await supabase
+      .from('google_calendar_tokens')
+      .select('google_email, google_name, expires_at, created_at')
+      .eq('user_id', user.id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (error || !token) {
+      return successResponse({
+        connected: false,
+        googleEmail: null,
+        googleName: null,
+        expiresAt: null,
+      })
+    }
+
+    // Check if token is still valid (not expired)
+    const expiresAt = new Date(token.expires_at)
+    const isExpired = expiresAt <= new Date()
+
     return successResponse({
-      connected: false,
-      calendarUrl: null
+      connected: !isExpired,
+      googleEmail: token.google_email,
+      googleName: token.google_name,
+      expiresAt: token.expires_at,
+      connectedAt: token.created_at,
+      // If expired, the client should attempt to use the API which will refresh
+      needsRefresh: isExpired,
     })
   } catch (error) {
     logger.error('Error checking Google Calendar status:', { error })
