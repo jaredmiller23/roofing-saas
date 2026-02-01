@@ -89,19 +89,17 @@ test.describe('Authentication Flows', () => {
         )
       ).first()
 
-      if (await logoutButton.isVisible({ timeout: 5000 })) {
-        await logoutButton.click()
+      // Logout button MUST be visible - this is a core UI requirement
+      await expect(logoutButton).toBeVisible({ timeout: 5000 })
 
-        // Should redirect to login page
-        await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+      await logoutButton.click()
 
-        // Should see login form
-        const emailInput = page.locator('input[type="email"]')
-        await expect(emailInput).toBeVisible()
-      } else {
-        // If no logout button found, skip test
-        test.skip()
-      }
+      // Should redirect to login page
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+
+      // Should see login form
+      const emailInput = page.locator('input[type="email"]')
+      await expect(emailInput).toBeVisible()
     })
 
     test('should clear session after logout', async ({ page }) => {
@@ -111,22 +109,23 @@ test.describe('Authentication Flows', () => {
 
       // Logout
       const logoutButton = page.locator('button:has-text("Logout")').or(
-        page.locator('button:has-text("Log out")')
+        page.locator('button:has-text("Log out")').or(
+          page.locator('button:has-text("Sign out")')
+        )
       ).first()
 
-      if (await logoutButton.isVisible({ timeout: 5000 })) {
-        await logoutButton.click()
-        await page.waitForLoadState('load')
+      // Logout button MUST be visible
+      await expect(logoutButton).toBeVisible({ timeout: 5000 })
 
-        // Try to access protected route
-        await page.goto('/dashboard')
-        await page.waitForLoadState('load')
+      await logoutButton.click()
+      await page.waitForLoadState('load')
 
-        // Should redirect back to login (not allow access)
-        await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
-      } else {
-        test.skip()
-      }
+      // Try to access protected route
+      await page.goto('/dashboard')
+      await page.waitForLoadState('load')
+
+      // Should redirect back to login (not allow access)
+      await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
     })
   })
 

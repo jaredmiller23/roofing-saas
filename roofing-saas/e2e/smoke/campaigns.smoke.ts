@@ -195,17 +195,14 @@ test.describe('Campaigns & Automation Module - Smoke Tests', () => {
       // Wait for form to load
       await expect(page.getByText(/Create.*Campaign/)).toBeVisible()
 
-      // Look for template selection
-      const hasTemplateSection = await page.getByText(/Template|Choose.*Template|Select.*Template/i).isVisible()
-      const hasTemplateButton = await page.getByRole('button', { name: /Template|Browse.*Templates/ }).isVisible()
+      // Look for template selection (optional feature, may not be present)
+      const templateSection = page.getByText(/Template|Choose.*Template|Select.*Template/i)
+      const templateButton = page.getByRole('button', { name: /Template|Browse.*Templates/ })
 
-      // Template selection might be available
-      if (hasTemplateSection || hasTemplateButton) {
-        expect(true).toBeTruthy()
-      } else {
-        // Template selection may not be visible initially, which is acceptable
-        expect(true).toBeTruthy()
-      }
+      // Template selection is optional - just verify page loaded without error
+      // The form should have either template options or the create campaign form without templates
+      const hasForm = await page.getByLabel(/Campaign.*Name|Name/i).isVisible()
+      expect(hasForm).toBeTruthy()
     })
 
     test('should have functional create campaign button', async ({ page }) => {

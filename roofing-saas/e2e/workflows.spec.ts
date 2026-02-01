@@ -142,31 +142,32 @@ test.describe('Workflow CRUD Operations', () => {
     const switches = page.locator('[role="switch"]')
     const switchCount = await switches.count()
 
-    if (switchCount > 0) {
-      const firstSwitch = switches.first()
-      const initialState = await firstSwitch.getAttribute('data-state')
-
-      // Toggle the switch
-      await firstSwitch.click()
-
-      // Wait for API response
-      await page.waitForResponse(resp =>
-        resp.url().includes('/api/workflows/') && resp.request().method() === 'PATCH'
-      )
-
-      // Switch state should change
-      const newState = await firstSwitch.getAttribute('data-state')
-      expect(newState).not.toBe(initialState)
-
-      // Toggle back to original state
-      await firstSwitch.click()
-      await page.waitForResponse(resp =>
-        resp.url().includes('/api/workflows/') && resp.request().method() === 'PATCH'
-      )
-    } else {
-      // No workflows exist, skip this test
-      test.skip()
+    if (switchCount === 0) {
+      // No workflows exist - this is a valid state, skip with reason
+      test.skip(true, 'No workflows configured - create a workflow first to test toggle')
+      return
     }
+
+    const firstSwitch = switches.first()
+    const initialState = await firstSwitch.getAttribute('data-state')
+
+    // Toggle the switch
+    await firstSwitch.click()
+
+    // Wait for API response
+    await page.waitForResponse(resp =>
+      resp.url().includes('/api/workflows/') && resp.request().method() === 'PATCH'
+    )
+
+    // Switch state should change
+    const newState = await firstSwitch.getAttribute('data-state')
+    expect(newState).not.toBe(initialState)
+
+    // Toggle back to original state
+    await firstSwitch.click()
+    await page.waitForResponse(resp =>
+      resp.url().includes('/api/workflows/') && resp.request().method() === 'PATCH'
+    )
   })
 
   test('should show active/paused status indicators', async ({ page }) => {

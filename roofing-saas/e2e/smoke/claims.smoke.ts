@@ -101,9 +101,7 @@ test.describe('Claims Management Module - Smoke Tests', () => {
       ).first()
 
       // Status filtering should be available
-      if (await statusFilter.isVisible()) {
-        expect(true).toBeTruthy()
-      }
+      await expect(statusFilter).toBeVisible()
     })
 
     test('should display claims export functionality', async ({ page }) => {
@@ -118,9 +116,7 @@ test.describe('Claims Management Module - Smoke Tests', () => {
       ).first()
 
       // Export functionality should be present
-      if (await exportButton.isVisible()) {
-        expect(true).toBeTruthy()
-      }
+      await expect(exportButton).toBeVisible()
     })
 
     test('should open claim detail page when clicking claim item', async ({ page }) => {
@@ -229,9 +225,7 @@ test.describe('Claims Management Module - Smoke Tests', () => {
           )
 
           // Claim creation should be accessible from project
-          if (await addClaimButton.isVisible()) {
-            expect(true).toBeTruthy()
-          }
+          await expect(addClaimButton.first()).toBeVisible()
         }
       }
     })
