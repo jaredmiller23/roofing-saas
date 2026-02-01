@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     const error = searchParams.get('error')
 
     // Parse state first to get return URL (state is passed even on error)
-    let returnTo = '/events'
+    // Default includes locale prefix to avoid i18n redirect stripping params
+    let returnTo = '/en/events'
     let stateData: { tenant_id: string; user_id: string; timestamp: number; return_to?: string } | null = null
 
     if (state) {
@@ -136,7 +137,7 @@ export async function GET(request: NextRequest) {
       return errorResponse(error)
     }
     return NextResponse.redirect(
-      `${request.nextUrl.origin}/events?google_error=Failed+to+connect`
+      `${request.nextUrl.origin}/en/events?google_error=Failed+to+connect`
     )
   }
 }

@@ -1,194 +1,69 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { Calendar, Loader2, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { apiFetch } from '@/lib/api/client'
-import { StandardCalendar } from './StandardCalendar'
-
-interface GoogleCalendarEvent {
-  id?: string
-  summary: string
-  description?: string
-  location?: string
-  start: {
-    dateTime?: string
-    date?: string
-    timeZone?: string
-  }
-  end: {
-    dateTime?: string
-    date?: string
-    timeZone?: string
-  }
-}
-
-interface CalendarEvent {
-  id: string
-  title: string
-  start: Date
-  end: Date
-  allDay?: boolean
-  description?: string
-  location?: string
-  event_type?: string
-}
-
-interface OAuthState {
-  googleConnected: boolean
-  googleError: string | null
-  email: string | null
-  processed: boolean
-}
 
 interface GoogleCalendarProps {
   onDisconnect?: () => void
-  initialOAuthState?: OAuthState
 }
 
-export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalendarProps) {
+export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [googleEmail, setGoogleEmail] = useState<string | null>(null)
-  const [needsReauth, setNeedsReauth] = useState(false)
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null)
 
-  const fetchEvents = useCallback(async (range?: Date[] | { start: Date; end: Date }) => {
-    setIsLoadingEvents(true)
-    setError(null)
-    try {
-      let timeMin: string
-      let timeMax: string
-
-      if (range) {
-        if (Array.isArray(range)) {
-          // Array of dates (week/day view)
-          timeMin = range[0].toISOString()
-          timeMax = range[range.length - 1].toISOString()
-        } else {
-          // { start, end } object (month view)
-          timeMin = range.start.toISOString()
-          timeMax = range.end.toISOString()
-        }
-      } else {
-        // Default: current month
-        const now = new Date()
-        timeMin = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-        timeMax = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
-      }
-
-      const data = await apiFetch<{
-        connected: boolean
-        events: GoogleCalendarEvent[]
-        error?: string
-      }>(`/api/calendar/google/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`)
-
-      if (!data.connected) {
-        setIsConnected(false)
-        setError(data.error || 'Connection lost. Please reconnect.')
-        setEvents([])
-        return
-      }
-
-      // Transform Google events to calendar format
-      const calendarEvents: CalendarEvent[] = data.events.map((event) => {
-        const isAllDay = !event.start.dateTime
-        const startDate = event.start.dateTime
-          ? new Date(event.start.dateTime)
-          : new Date(event.start.date + 'T00:00:00')
-        const endDate = event.end.dateTime
-          ? new Date(event.end.dateTime)
-          : new Date(event.end.date + 'T23:59:59')
-
-        return {
-          id: event.id || `google-${Date.now()}-${Math.random()}`,
-          title: event.summary || '(No title)',
-          start: startDate,
-          end: endDate,
-          allDay: isAllDay,
-          description: event.description,
-          location: event.location,
-          event_type: 'google', // Mark as Google event for styling
-        }
-      })
-
-      setEvents(calendarEvents)
-    } catch (err) {
-      console.error('Error fetching Google Calendar events:', err)
-      setError('Failed to load events. Please try refreshing.')
-    } finally {
-      setIsLoadingEvents(false)
-    }
+  useEffect(() => {
+    checkGoogleConnection()
   }, [])
 
-  const checkGoogleConnection = useCallback(async () => {
+  const checkGoogleConnection = async () => {
     setIsLoading(true)
-    setError(null)
     try {
-      const data = await apiFetch<{
-        connected: boolean
-        googleEmail?: string
-        needsRefresh?: boolean
-      }>('/api/calendar/google/status')
+      const response = await fetch('/api/calendar/google/status')
+      const data = await response.json()
 
       if (data.connected) {
         setIsConnected(true)
-        setNeedsReauth(false)
-        setGoogleEmail(data.googleEmail || null)
-        // Fetch events once connected
-        await fetchEvents()
-      } else if (data.needsRefresh && data.googleEmail) {
-        // Token expired but account was previously connected
-        setIsConnected(false)
-        setNeedsReauth(true)
-        setGoogleEmail(data.googleEmail)
-      } else {
-        // Never connected
-        setIsConnected(false)
-        setNeedsReauth(false)
+        // If user has a public calendar URL, we can embed it
+        if (data.calendarUrl) {
+          setCalendarUrl(data.calendarUrl)
+        }
       }
     } catch (err) {
       console.error('Error checking Google Calendar connection:', err)
-      setError('Failed to check connection status. Please try again.')
     } finally {
       setIsLoading(false)
     }
-  }, [fetchEvents])
+  }
 
-  // Handle OAuth state passed from parent (via Suspense boundary)
-  useEffect(() => {
-    if (initialOAuthState?.processed) {
-      if (initialOAuthState.googleError) {
-        setError(`Google Calendar: ${initialOAuthState.googleError}`)
-        setIsLoading(false)
-        return
-      }
-
-      if (initialOAuthState.googleConnected) {
-        setIsConnected(true)
-        setNeedsReauth(false)
-        if (initialOAuthState.email) {
-          setGoogleEmail(initialOAuthState.email)
-        }
-        setIsLoading(false)
-        fetchEvents()
-        return
-      }
-    }
-
-    checkGoogleConnection()
-  }, [initialOAuthState, fetchEvents, checkGoogleConnection])
-
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setIsLoading(true)
     setError(null)
-    // Navigate directly to the OAuth endpoint - it will redirect to Google
-    // Don't use fetch() because OAuth requires browser navigation, not AJAX
-    window.location.href = '/api/calendar/google/connect'
+
+    try {
+      // Initiate OAuth flow with Supabase
+      const response = await fetch('/api/calendar/google/connect', {
+        method: 'POST'
+      })
+
+      const data = await response.json()
+
+      if (data.authUrl) {
+        // Redirect to Google OAuth
+        window.location.href = data.authUrl
+      } else {
+        setError('Failed to initiate Google Calendar connection')
+      }
+    } catch (err) {
+      console.error('Error connecting Google Calendar:', err)
+      setError('An error occurred while connecting to Google Calendar')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDisconnect = async () => {
@@ -197,18 +72,17 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     }
 
     setIsLoading(true)
-    setError(null)
     try {
-      await apiFetch('/api/calendar/google/disconnect', {
+      const response = await fetch('/api/calendar/google/disconnect', {
         method: 'POST'
       })
 
-      setIsConnected(false)
-      setNeedsReauth(false)
-      setEvents([])
-      setGoogleEmail(null)
-      if (onDisconnect) {
-        onDisconnect()
+      if (response.ok) {
+        setIsConnected(false)
+        setCalendarUrl(null)
+        if (onDisconnect) {
+          onDisconnect()
+        }
       }
     } catch (err) {
       console.error('Error disconnecting Google Calendar:', err)
@@ -218,11 +92,6 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     }
   }
 
-  const handleRefresh = async () => {
-    await fetchEvents()
-  }
-
-  // Loading state
   if (isLoading && !isConnected) {
     return (
       <Card>
@@ -233,51 +102,6 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     )
   }
 
-  // Re-authorization needed (token expired but was previously connected)
-  if (!isConnected && needsReauth) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Google Calendar Session Expired
-          </CardTitle>
-          <CardDescription>
-            Your connection to {googleEmail || 'Google Calendar'} has expired. Please re-authorize to continue syncing.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Button
-            onClick={handleConnect}
-            disabled={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Connecting...
-              </>
-            ) : (
-              <>
-                <Calendar className="h-4 w-4 mr-2" />
-                Re-authorize Google Calendar
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  // Not connected state
   if (!isConnected) {
     return (
       <Card>
@@ -337,7 +161,6 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     )
   }
 
-  // Connected state
   return (
     <div className="space-y-4">
       {/* Connected Status */}
@@ -348,53 +171,45 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
           </div>
           <div>
             <p className="font-medium text-foreground">Google Calendar Connected</p>
-            <p className="text-sm text-muted-foreground">
-              {googleEmail ? `Connected as ${googleEmail}` : 'Your events are syncing'}
-            </p>
+            <p className="text-sm text-muted-foreground">Your events are syncing automatically</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoadingEvents}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingEvents ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDisconnect}
-            disabled={isLoading}
-          >
-            Disconnect
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDisconnect}
+          disabled={isLoading}
+        >
+          Disconnect
+        </Button>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Calendar with Google Events */}
-      {isLoadingEvents && events.length === 0 ? (
+      {/* Embedded Calendar or Message */}
+      {calendarUrl ? (
+        <div className="bg-card rounded-lg shadow-sm overflow-hidden">
+          <iframe
+            src={calendarUrl}
+            style={{ border: 0 }}
+            width="100%"
+            height="700"
+            frameBorder="0"
+            scrolling="no"
+            title="Google Calendar"
+            className="w-full"
+          />
+        </div>
+      ) : (
         <Card>
-          <CardContent className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
-            <span className="text-muted-foreground">Loading events...</span>
+          <CardContent className="py-12 text-center">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">
+              Google Calendar is connected
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Events will sync automatically. View your calendar in the standard view below or in Google Calendar.
+            </p>
           </CardContent>
         </Card>
-      ) : (
-        <StandardCalendar
-          events={events}
-          onRangeChange={fetchEvents}
-        />
       )}
     </div>
   )

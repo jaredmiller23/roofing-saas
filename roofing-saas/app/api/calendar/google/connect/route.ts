@@ -32,9 +32,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get return URL from referer or default to events page
+    // Get return URL from referer, preserving locale prefix
+    // The app uses locale prefixes like /en/events, /es/events, etc.
     const referer = request.headers.get('referer')
-    const returnTo = referer?.includes('/events') ? '/events' : '/events'
+    let returnTo = '/en/events' // Default with locale
+
+    if (referer) {
+      try {
+        const refererUrl = new URL(referer)
+        // Extract locale from path (e.g., /en/events → en)
+        const localeMatch = refererUrl.pathname.match(/^\/([a-z]{2})\//)
+        const locale = localeMatch?.[1] || 'en'
+        returnTo = `/${locale}/events`
+      } catch {
+        // Invalid referer URL, use default
+      }
+    }
 
     // Generate state token for CSRF protection (matches QuickBooks pattern)
     const state = Buffer.from(JSON.stringify({
