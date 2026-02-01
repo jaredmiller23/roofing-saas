@@ -4,9 +4,12 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getAppBaseUrl } from '@/lib/utils'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function RegisterPage() {
+  const params = useParams()
+  const locale = params.locale as string || 'en'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -42,7 +45,7 @@ export default function RegisterPage() {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${getAppBaseUrl()}/auth/callback`,
+          emailRedirectTo: `${getAppBaseUrl()}/${locale}/auth/callback`,
         },
       })
 
@@ -75,7 +78,7 @@ export default function RegisterPage() {
                 <div className="mt-2 text-sm text-green-700">
                   <p>
                     Please check your email to verify your account. Once verified, you can{' '}
-                    <Link href="/login" className="font-medium underline">
+                    <Link href={`/${locale}/login`} className="font-medium underline">
                       sign in
                     </Link>
                     .
@@ -98,7 +101,7 @@ export default function RegisterPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:text-primary/80">
+            <Link href={`/${locale}/login`} className="font-medium text-primary hover:text-primary/80">
               Sign in
             </Link>
           </p>

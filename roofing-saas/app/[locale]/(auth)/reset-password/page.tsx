@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
                     Please check your email for a link to reset your password. The link will expire in 1 hour.
                   </p>
                   <p className="mt-2">
-                    <Link href="/login" className="font-medium underline">
+                    <Link href={`/${locale}/login`} className="font-medium underline">
                       Return to sign in
                     </Link>
                   </p>
@@ -115,7 +115,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/login" className="text-sm font-medium text-primary hover:text-primary/80">
+            <Link href={`/${locale}/login`} className="text-sm font-medium text-primary hover:text-primary/80">
               Back to sign in
             </Link>
           </div>
