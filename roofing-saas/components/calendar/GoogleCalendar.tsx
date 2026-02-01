@@ -39,27 +39,12 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     }
   }
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     setIsLoading(true)
     setError(null)
-
-    try {
-      const data = await apiFetch<{ authUrl?: string }>('/api/calendar/google/connect', {
-        method: 'POST'
-      })
-
-      if (data.authUrl) {
-        // Redirect to Google OAuth
-        window.location.href = data.authUrl
-      } else {
-        setError('Failed to initiate Google Calendar connection')
-      }
-    } catch (err) {
-      console.error('Error connecting Google Calendar:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred while connecting to Google Calendar')
-    } finally {
-      setIsLoading(false)
-    }
+    // Navigate directly to the OAuth endpoint - it will redirect to Google
+    // Don't use fetch() because OAuth requires browser navigation, not AJAX
+    window.location.href = '/api/calendar/google/connect'
   }
 
   const handleDisconnect = async () => {
