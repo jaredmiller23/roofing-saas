@@ -276,18 +276,14 @@ export async function getGoogleCalendarClient(userId: string, tenantId: string):
     .rpc('decrypt_google_token', { encrypted_data: token.refresh_token })
 
   if (accessTokenError || refreshTokenError || !decryptedAccessToken || !decryptedRefreshToken) {
-    logger.error('Failed to decrypt Google tokens - encryption key may be missing', {
+    logger.error('Failed to decrypt Google tokens', {
       userId,
       tenantId,
-      accessTokenError,
-      refreshTokenError
+      hasAccessToken: !!decryptedAccessToken,
+      hasRefreshToken: !!decryptedRefreshToken,
+      accessTokenError: accessTokenError?.message || accessTokenError,
+      refreshTokenError: refreshTokenError?.message || refreshTokenError
     })
-    // Delete corrupted token so user can re-authorize
-    await supabase
-      .from('google_calendar_tokens')
-      .delete()
-      .eq('user_id', userId)
-      .eq('tenant_id', tenantId)
     return null
   }
 
@@ -301,13 +297,7 @@ export async function getGoogleCalendarClient(userId: string, tenantId: string):
     const newToken = await refreshAccessToken(decryptedRefreshToken as string)
 
     if (!newToken) {
-      logger.error('Failed to refresh Google token - deleting stale token', { userId, tenantId })
-      // Refresh failed (likely revoked) - delete stale token so user can re-authorize
-      await supabase
-        .from('google_calendar_tokens')
-        .delete()
-        .eq('user_id', userId)
-        .eq('tenant_id', tenantId)
+      logger.error('Failed to refresh Google token', { userId, tenantId })
       return null
     }
 

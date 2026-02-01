@@ -225,10 +225,12 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Connect Google Calendar
+            {error ? 'Google Calendar Connection Issue' : 'Connect Google Calendar'}
           </CardTitle>
           <CardDescription>
-            Sync your events with Google Calendar for seamless scheduling across all your devices
+            {error
+              ? 'Your Google Calendar connection needs to be refreshed'
+              : 'Sync your events with Google Calendar for seamless scheduling across all your devices'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -239,17 +241,19 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
             </Alert>
           )}
 
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Benefits of connecting Google Calendar:
-            </p>
-            <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
-              <li>Automatic two-way sync of events</li>
-              <li>Access your schedule on any device</li>
-              <li>Get notifications on your phone</li>
-              <li>Share calendars with your team</li>
-            </ul>
-          </div>
+          {!error && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Benefits of connecting Google Calendar:
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
+                <li>Automatic two-way sync of events</li>
+                <li>Access your schedule on any device</li>
+                <li>Get notifications on your phone</li>
+                <li>Share calendars with your team</li>
+              </ul>
+            </div>
+          )}
 
           <Button
             onClick={handleConnect}
@@ -265,13 +269,15 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
             ) : (
               <>
                 <Calendar className="h-4 w-4 mr-2" />
-                Connect Google Calendar
+                {error ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}
               </>
             )}
           </Button>
 
           <p className="text-xs text-muted-foreground text-center">
-            Note: Google Calendar integration requires additional setup. Contact your administrator if you encounter issues.
+            {error
+              ? 'This will re-authorize your Google Calendar connection'
+              : 'Note: Google Calendar integration requires additional setup. Contact your administrator if you encounter issues.'}
           </p>
         </CardContent>
       </Card>
