@@ -184,115 +184,101 @@ test.describe('Storm Leads UI Interactions', () => {
     // First check if we have any targeting areas
     const areaButtons = await page.locator('button:has-text("addresses")').all()
 
-    if (areaButtons.length > 0) {
-      // Click first area to load addresses
-      await areaButtons[0].click()
-      await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(1000)
-
-      // Check for filter buttons
-      const allButton = page.locator('button:has-text("All")')
-      const enrichedButton = page.locator('button:has-text("Enriched")')
-      const needDataButton = page.locator('button:has-text("Need Data")')
-
-      const hasFilters =
-        (await allButton.isVisible().catch(() => false)) ||
-        (await enrichedButton.isVisible().catch(() => false)) ||
-        (await needDataButton.isVisible().catch(() => false))
-
-      console.log(`Filter buttons visible: ${hasFilters}`)
-
-      // Check for stats display
-      const hasStats = (await page.locator('text=/Total|Enriched|Need Data|Selected/i').count()) > 0
-      console.log(`Stats display visible: ${hasStats}`)
-    } else {
-      console.log('No targeting areas available for UI test')
+    if (areaButtons.length === 0) {
+      test.skip(true, 'No targeting areas available for UI test')
+      return
     }
+
+    // Click first area to load addresses
+    await areaButtons[0].click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(1000)
+
+    // Check for filter buttons - at least one should be visible
+    const allButton = page.locator('button:has-text("All")')
+    const enrichedButton = page.locator('button:has-text("Enriched")')
+    const needDataButton = page.locator('button:has-text("Need Data")')
+
+    const hasFilters =
+      (await allButton.isVisible().catch(() => false)) ||
+      (await enrichedButton.isVisible().catch(() => false)) ||
+      (await needDataButton.isVisible().catch(() => false))
+
+    expect(hasFilters).toBeTruthy()
+
+    // Check for stats display
+    const statsLocator = page.locator('text=/Total|Enriched|Need Data|Selected/i')
+    await expect(statsLocator.first()).toBeVisible()
   })
 
   test('download template button triggers download', async ({ page }) => {
     // First select an area to show the actions panel
     const areaButtons = await page.locator('button:has-text("addresses")').all()
 
-    if (areaButtons.length > 0) {
-      await areaButtons[0].click()
-      await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(500)
-
-      // Look for download template button
-      const downloadBtn = page.locator('button:has-text("Download CSV Template")')
-      const downloadVisible = await downloadBtn.isVisible().catch(() => false)
-
-      console.log(`Download template button visible: ${downloadVisible}`)
-
-      if (downloadVisible) {
-        // Set up download listener
-        const [download] = await Promise.all([
-          page.waitForEvent('download').catch(() => null),
-          downloadBtn.click(),
-        ])
-
-        if (download) {
-          const filename = download.suggestedFilename()
-          console.log(`Downloaded file: ${filename}`)
-          expect(filename).toContain('template')
-          expect(filename).toContain('.csv')
-        }
-      }
-    } else {
-      console.log('No targeting areas available for download test')
+    if (areaButtons.length === 0) {
+      test.skip(true, 'No targeting areas available for download test')
+      return
     }
+
+    await areaButtons[0].click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(500)
+
+    // Look for download template button
+    const downloadBtn = page.locator('button:has-text("Download CSV Template")')
+    await expect(downloadBtn).toBeVisible()
+
+    // Set up download listener and click
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      downloadBtn.click(),
+    ])
+
+    const filename = download.suggestedFilename()
+    expect(filename).toContain('template')
+    expect(filename).toContain('.csv')
   })
 
   test('upload button is present and triggers file input', async ({ page }) => {
     const areaButtons = await page.locator('button:has-text("addresses")').all()
 
-    if (areaButtons.length > 0) {
-      await areaButtons[0].click()
-      await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(500)
-
-      // Look for upload button
-      const uploadLabel = page.locator('text=/Upload.*CSV/i')
-      const uploadVisible = await uploadLabel.isVisible().catch(() => false)
-
-      console.log(`Upload CSV button visible: ${uploadVisible}`)
-
-      // Check for hidden file input
-      const fileInput = page.locator('input[type="file"][accept=".csv"]')
-      const inputExists = (await fileInput.count()) > 0
-
-      console.log(`File input exists: ${inputExists}`)
-    } else {
-      console.log('No targeting areas available for upload test')
+    if (areaButtons.length === 0) {
+      test.skip(true, 'No targeting areas available for upload test')
+      return
     }
+
+    await areaButtons[0].click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(500)
+
+    // Look for upload button
+    const uploadLabel = page.locator('text=/Upload.*CSV/i')
+    await expect(uploadLabel).toBeVisible()
+
+    // Check for hidden file input
+    const fileInput = page.locator('input[type="file"][accept=".csv"]')
+    expect(await fileInput.count()).toBeGreaterThan(0)
   })
 
   test('import button shows correct count', async ({ page }) => {
     const areaButtons = await page.locator('button:has-text("addresses")').all()
 
-    if (areaButtons.length > 0) {
-      await areaButtons[0].click()
-      await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(500)
-
-      // Look for import button with count
-      const importBtn = page.locator('button:has-text("Import")')
-      const importVisible = await importBtn.isVisible().catch(() => false)
-
-      console.log(`Import button visible: ${importVisible}`)
-
-      if (importVisible) {
-        const buttonText = await importBtn.textContent()
-        console.log(`Import button text: ${buttonText}`)
-
-        // Should contain a number (count of enriched contacts)
-        const hasCount = /\d+/.test(buttonText || '')
-        console.log(`Import button shows count: ${hasCount}`)
-      }
-    } else {
-      console.log('No targeting areas available for import test')
+    if (areaButtons.length === 0) {
+      test.skip(true, 'No targeting areas available for import test')
+      return
     }
+
+    await areaButtons[0].click()
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(500)
+
+    // Look for import button with count
+    const importBtn = page.locator('button:has-text("Import")')
+    await expect(importBtn).toBeVisible()
+
+    const buttonText = await importBtn.textContent()
+    // Should contain a number (count of enriched contacts)
+    expect(/\d+/.test(buttonText || '')).toBeTruthy()
   })
 })
 

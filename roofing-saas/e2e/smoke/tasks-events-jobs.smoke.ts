@@ -275,13 +275,9 @@ test.describe('Tasks, Events & Jobs Module - Smoke Tests', () => {
       const hasViewSwitcher = await page.getByRole('button', { name: /Month|Week|Day|List/ }).isVisible()
       const hasDatePicker = await page.locator('input[type="date"], input[type="month"]').isVisible()
 
-      // Calendar features might be present
-      if (hasCalendarNav || hasViewSwitcher || hasDatePicker) {
-        expect(true).toBeTruthy()
-      } else {
-        // If no calendar, should still have events functionality
-        expect(true).toBeTruthy()
-      }
+      // Calendar features should be present - at least one navigation option
+      // This is a smoke test, so we verify calendar UI loads, not specific behavior
+      expect(hasCalendarNav || hasViewSwitcher || hasDatePicker).toBeTruthy()
     })
 
     test('should handle event interaction if events exist', async ({ page }) => {
@@ -345,11 +341,8 @@ test.describe('Tasks, Events & Jobs Module - Smoke Tests', () => {
         page.getByRole('link', { name: /Create.*Job|New.*Job|Add.*Job/ })
       )
 
-      // Create button might be visible
-      const hasCreateButton = await createButton.first().isVisible()
-
-      // Even if no create button, jobs page should function
-      expect(hasCreateButton || !hasCreateButton).toBeTruthy()
+      // Should have create job functionality visible
+      await expect(createButton.first()).toBeVisible()
     })
 
     test('should display job status filters or categories', async ({ page }) => {
@@ -363,8 +356,8 @@ test.describe('Tasks, Events & Jobs Module - Smoke Tests', () => {
       const hasStatusFilter = await page.getByRole('combobox').filter({ hasText: /Status|Filter/ }).isVisible()
       const hasFilterButtons = await page.getByRole('button', { name: /All|Active|Pending|Complete/ }).isVisible()
 
-      // Should have some form of filtering or just display jobs
-      expect(hasStatusTabs || hasStatusFilter || hasFilterButtons || true).toBeTruthy()
+      // Should have some form of status filtering
+      expect(hasStatusTabs || hasStatusFilter || hasFilterButtons).toBeTruthy()
     })
 
     test('should load job detail page when clicking job', async ({ page }) => {
@@ -512,7 +505,7 @@ test.describe('Tasks, Events & Jobs Module - Smoke Tests', () => {
             const hasFileActions = await page.getByRole('button', { name: /Download|Delete|View/ }).isVisible()
             const hasFileLink = await page.getByRole('link', { name: /Download|View/ }).isVisible()
 
-            expect(hasFileActions || hasFileLink || true).toBeTruthy()
+            expect(hasFileActions || hasFileLink).toBeTruthy()
           }
         }
       }
