@@ -1,11 +1,40 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Loader2, AlertCircle } from 'lucide-react'
+import { Calendar, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiFetch } from '@/lib/api/client'
+import { StandardCalendar } from './StandardCalendar'
+
+interface GoogleCalendarEvent {
+  id?: string
+  summary: string
+  description?: string
+  location?: string
+  start: {
+    dateTime?: string
+    date?: string
+    timeZone?: string
+  }
+  end: {
+    dateTime?: string
+    date?: string
+    timeZone?: string
+  }
+}
+
+interface CalendarEvent {
+  id: string
+  title: string
+  start: Date
+  end: Date
+  allDay?: boolean
+  description?: string
+  location?: string
+  event_type?: string
+}
 
 interface GoogleCalendarProps {
   onDisconnect?: () => void
@@ -14,30 +43,104 @@ interface GoogleCalendarProps {
 export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [calendarUrl, setCalendarUrl] = useState<string | null>(null)
+  const [events, setEvents] = useState<CalendarEvent[]>([])
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null)
 
-  useEffect(() => {
-    checkGoogleConnection()
+  const fetchEvents = useCallback(async (range?: Date[] | { start: Date; end: Date }) => {
+    setIsLoadingEvents(true)
+    try {
+      let timeMin: string
+      let timeMax: string
+
+      if (range) {
+        if (Array.isArray(range)) {
+          // Array of dates (week/day view)
+          timeMin = range[0].toISOString()
+          timeMax = range[range.length - 1].toISOString()
+        } else {
+          // { start, end } object (month view)
+          timeMin = range.start.toISOString()
+          timeMax = range.end.toISOString()
+        }
+      } else {
+        // Default: current month
+        const now = new Date()
+        timeMin = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+        timeMax = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+      }
+
+      const data = await apiFetch<{
+        connected: boolean
+        events: GoogleCalendarEvent[]
+        error?: string
+      }>(`/api/calendar/google/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`)
+
+      if (!data.connected) {
+        setIsConnected(false)
+        setError(data.error || 'Not connected')
+        setEvents([])
+        return
+      }
+
+      // Transform Google events to calendar format
+      const calendarEvents: CalendarEvent[] = data.events.map((event) => {
+        const isAllDay = !event.start.dateTime
+        const startDate = event.start.dateTime
+          ? new Date(event.start.dateTime)
+          : new Date(event.start.date + 'T00:00:00')
+        const endDate = event.end.dateTime
+          ? new Date(event.end.dateTime)
+          : new Date(event.end.date + 'T23:59:59')
+
+        return {
+          id: event.id || `google-${Date.now()}-${Math.random()}`,
+          title: event.summary || '(No title)',
+          start: startDate,
+          end: endDate,
+          allDay: isAllDay,
+          description: event.description,
+          location: event.location,
+          event_type: 'google', // Mark as Google event for styling
+        }
+      })
+
+      setEvents(calendarEvents)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching Google Calendar events:', err)
+      setError('Failed to load events')
+    } finally {
+      setIsLoadingEvents(false)
+    }
   }, [])
 
-  const checkGoogleConnection = async () => {
+  const checkGoogleConnection = useCallback(async () => {
     setIsLoading(true)
     try {
-      const data = await apiFetch<{ connected: boolean; calendarUrl?: string }>('/api/calendar/google/status')
+      const data = await apiFetch<{
+        connected: boolean
+        googleEmail?: string
+        needsRefresh?: boolean
+      }>('/api/calendar/google/status')
 
       if (data.connected) {
         setIsConnected(true)
-        if (data.calendarUrl) {
-          setCalendarUrl(data.calendarUrl)
-        }
+        setGoogleEmail(data.googleEmail || null)
+        // Fetch events once connected
+        await fetchEvents()
       }
     } catch (err) {
       console.error('Error checking Google Calendar connection:', err)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [fetchEvents])
+
+  useEffect(() => {
+    checkGoogleConnection()
+  }, [checkGoogleConnection])
 
   const handleConnect = () => {
     setIsLoading(true)
@@ -59,7 +162,8 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
       })
 
       setIsConnected(false)
-      setCalendarUrl(null)
+      setEvents([])
+      setGoogleEmail(null)
       if (onDisconnect) {
         onDisconnect()
       }
@@ -140,6 +244,10 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     )
   }
 
+  const handleRefresh = async () => {
+    await fetchEvents()
+  }
+
   return (
     <div className="space-y-4">
       {/* Connected Status */}
@@ -150,45 +258,53 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
           </div>
           <div>
             <p className="font-medium text-foreground">Google Calendar Connected</p>
-            <p className="text-sm text-muted-foreground">Your events are syncing automatically</p>
+            <p className="text-sm text-muted-foreground">
+              {googleEmail ? `Connected as ${googleEmail}` : 'Your events are syncing'}
+            </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDisconnect}
-          disabled={isLoading}
-        >
-          Disconnect
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isLoadingEvents}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingEvents ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDisconnect}
+            disabled={isLoading}
+          >
+            Disconnect
+          </Button>
+        </div>
       </div>
 
-      {/* Embedded Calendar or Message */}
-      {calendarUrl ? (
-        <div className="bg-card rounded-lg shadow-sm overflow-hidden">
-          <iframe
-            src={calendarUrl}
-            style={{ border: 0 }}
-            width="100%"
-            height="700"
-            frameBorder="0"
-            scrolling="no"
-            title="Google Calendar"
-            className="w-full"
-          />
-        </div>
-      ) : (
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Calendar with Google Events */}
+      {isLoadingEvents && events.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-2">
-              Google Calendar is connected
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Events will sync automatically. View your calendar in the standard view below or in Google Calendar.
-            </p>
+          <CardContent className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
+            <span className="text-muted-foreground">Loading events...</span>
           </CardContent>
         </Card>
+      ) : (
+        <StandardCalendar
+          events={events}
+          onRangeChange={fetchEvents}
+        />
       )}
     </div>
   )
