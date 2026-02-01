@@ -7,8 +7,7 @@
 
 import { test, expect } from '@playwright/test'
 
-// Test against local dev or production
-const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000'
+// Uses baseURL from playwright.config.ts - no hardcoded localhost
 
 test.describe('ARIA Multi-Language Support', () => {
   // We need an auth token for API calls
@@ -17,7 +16,7 @@ test.describe('ARIA Multi-Language Support', () => {
   test.beforeAll(async ({ request }) => {
     // Try to get auth token via login
     try {
-      const loginResponse = await request.post(`${BASE_URL}/api/auth/login`, {
+      const loginResponse = await request.post(`/api/auth/login`, {
         data: {
           email: process.env.TEST_USER_EMAIL || 'claude-test@roofingsaas.com',
           password: process.env.TEST_USER_PASSWORD || 'ClaudeTest2025!Secure',
@@ -36,7 +35,7 @@ test.describe('ARIA Multi-Language Support', () => {
   test('ARIA execute API accepts language parameter', async ({ request }) => {
     test.skip(!authToken, 'No auth token available')
 
-    const response = await request.post(`${BASE_URL}/api/aria/execute`, {
+    const response = await request.post(`/api/aria/execute`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',
@@ -65,7 +64,7 @@ test.describe('ARIA Multi-Language Support', () => {
   test('ARIA functions list includes set_contact_language', async ({ request }) => {
     test.skip(!authToken, 'No auth token available')
 
-    const response = await request.get(`${BASE_URL}/api/aria/execute`, {
+    const response = await request.get(`/api/aria/execute`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -82,7 +81,7 @@ test.describe('ARIA Multi-Language Support', () => {
     test.skip(!authToken, 'No auth token available')
 
     // This is a basic smoke test — ARIA chat should work as before
-    const response = await request.post(`${BASE_URL}/api/aria/execute`, {
+    const response = await request.post(`/api/aria/execute`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',
@@ -113,7 +112,7 @@ test.describe('ARIA Multi-Language Support', () => {
   test('set_contact_language rejects invalid language codes', async ({ request }) => {
     test.skip(!authToken, 'No auth token available')
 
-    const response = await request.post(`${BASE_URL}/api/aria/execute`, {
+    const response = await request.post(`/api/aria/execute`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',

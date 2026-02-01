@@ -8,12 +8,11 @@ import { test, expect } from '@playwright/test'
 
 test.use({ storageState: 'playwright/.auth/user.json' })
 
-const BASE = 'http://localhost:3000'
 
 test.describe('Signatures Runtime Audit', () => {
 
   test('1. Signatures list page loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/signatures`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     expect(page.url()).toContain('/signatures')
@@ -35,7 +34,7 @@ test.describe('Signatures Runtime Audit', () => {
   })
 
   test('2. Create document wizard — Step 1 (templates)', async ({ page }) => {
-    await page.goto(`${BASE}/en/signatures/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     console.log(`[AUDIT] Wizard URL: ${page.url()}`)
@@ -54,7 +53,7 @@ test.describe('Signatures Runtime Audit', () => {
   })
 
   test('3. Create document wizard — Step 2 (details)', async ({ page }) => {
-    await page.goto(`${BASE}/en/signatures/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Try to advance to step 2 by clicking "Start from Scratch" or equivalent
@@ -81,7 +80,7 @@ test.describe('Signatures Runtime Audit', () => {
   })
 
   test('4. Templates list page loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     expect(page.url()).toContain('/templates')
@@ -102,7 +101,7 @@ test.describe('Signatures Runtime Audit', () => {
   })
 
   test('5. Create template page loads with editor', async ({ page }) => {
-    await page.goto(`${BASE}/en/signatures/templates/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures/templates/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Form fields
@@ -127,7 +126,7 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('6. Template PATCH verification — confirms [B] finding', async ({ page }) => {
     // Navigate to templates list to find any existing template
-    await page.goto(`${BASE}/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Look for any template edit link
@@ -168,7 +167,7 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('7. Document detail page structure', async ({ page }) => {
     // Navigate to signatures list and click first document
-    await page.goto(`${BASE}/en/signatures`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const docLink = page.locator('a[href*="/signatures/"]').first()
@@ -207,7 +206,7 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('8. Send page structure', async ({ page }) => {
     // Try to reach send page (need a draft document)
-    await page.goto(`${BASE}/en/signatures`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Look for Send button (only appears on draft documents)

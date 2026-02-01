@@ -9,12 +9,10 @@ import { test, expect } from '@playwright/test'
 // Use stored auth state
 test.use({ storageState: 'playwright/.auth/user.json' })
 
-const BASE = 'http://localhost:3000'
-
 test.describe('Contacts Runtime Audit', () => {
 
   test('1. Contacts list page loads and renders table', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Verify page loaded (not redirected to login)
@@ -35,7 +33,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('2. Quick filter chips render and are clickable', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const chipLabels = ['Urgent', 'High Priority', 'New Leads', 'Active Deals', 'Customers', 'Leads Only']
@@ -56,7 +54,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('3. Search functionality works', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const searchInput = page.locator('#search').first()
@@ -75,7 +73,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('4. Create contact form loads with all sections', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const fields = [
@@ -106,7 +104,7 @@ test.describe('Contacts Runtime Audit', () => {
   test('5. Create and verify a test contact end-to-end', async ({ page }) => {
     const ts = Date.now()
 
-    await page.goto(`${BASE}/en/contacts/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(2000)
 
     await page.fill('#first_name', 'RuntimeAudit')
@@ -143,7 +141,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('6. Contact detail page — verify present and missing elements', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Click first contact link
@@ -181,7 +179,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('7. Edit contact form loads pre-populated', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const editLink = page.locator('table a[href*="/edit"]').first()
@@ -205,7 +203,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('8. Bulk actions and pagination', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     // Check pagination
@@ -232,7 +230,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('9. Column sorting', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const nameHeader = page.locator('th:has-text("Name")').first()
@@ -246,7 +244,7 @@ test.describe('Contacts Runtime Audit', () => {
   })
 
   test('10. Delete uses browser confirm()', async ({ page }) => {
-    await page.goto(`${BASE}/en/contacts`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/contacts`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     let dialogMessage = ''

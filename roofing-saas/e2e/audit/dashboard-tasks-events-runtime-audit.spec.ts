@@ -5,12 +5,11 @@ import { test, expect } from '@playwright/test'
 
 test.use({ storageState: 'playwright/.auth/user.json' })
 
-const BASE = 'http://localhost:3000'
 
 test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('1. Dashboard loads with widgets', async ({ page }) => {
-    await page.goto(`${BASE}/en/dashboard`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/dashboard`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     expect(page.url()).toContain('/dashboard')
@@ -35,7 +34,7 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
   })
 
   test('2. Tasks list page loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/tasks`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/tasks`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     expect(page.url()).toContain('/tasks')
@@ -49,7 +48,7 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
   })
 
   test('3. Tasks board (Kanban) loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/tasks/board`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/tasks/board`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const pageText = await page.textContent('body')
@@ -64,7 +63,7 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
   })
 
   test('4. New task form loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/tasks/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/tasks/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const titleInput = page.locator('input[name="title"], #title')
@@ -77,7 +76,7 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
   })
 
   test('5. Events page loads with calendar', async ({ page }) => {
-    await page.goto(`${BASE}/en/events`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/events`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     expect(page.url()).toContain('/events')
@@ -92,7 +91,7 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
   })
 
   test('6. New event form loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/events/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/events/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     const titleInput = page.locator('input[name="title"], #title')

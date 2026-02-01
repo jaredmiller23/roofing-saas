@@ -8,12 +8,11 @@ import { test, expect } from '@playwright/test'
 
 test.use({ storageState: 'playwright/.auth/user.json' })
 
-const BASE = 'http://localhost:3000'
 
 test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('1. Pipeline page loads with Kanban view', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     expect(page.url()).toContain('/projects')
@@ -36,7 +35,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('2. Pipeline Kanban filters and search', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     // Quick filter chips
@@ -61,7 +60,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('3. Pipeline Table view loads', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     // Try switching to table view
@@ -92,7 +91,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('4. Project detail page loads with tabs', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     // Find first project link on the page
@@ -134,7 +133,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('5. Project detail — Quote Options tab (STUBS check)', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
@@ -174,7 +173,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('6. Project detail — Jobs tab', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
@@ -197,7 +196,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('7. Project edit page loads pre-populated', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     // Navigate to first project
@@ -237,7 +236,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('8. Job Costing page loads with KPIs', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
@@ -278,7 +277,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('9. New Project guidance page', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects/new`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/new`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(3000)
 
     console.log(`[AUDIT] /projects/new URL: ${page.url()}`)
@@ -296,7 +295,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
   })
 
   test('10. Project card stage navigation', async ({ page }) => {
-    await page.goto(`${BASE}/en/projects`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(4000)
 
     // Look for stage navigation arrows on project cards

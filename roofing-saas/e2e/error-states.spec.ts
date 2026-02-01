@@ -251,10 +251,10 @@ test.describe('Edge Cases', () => {
 })
 
 test.describe('Geolocation Error Handling', () => {
-  test('should show error message when geolocation permission is denied on knocks page', async ({ page }) => {
+  test('should show error message when geolocation permission is denied on knocks page', async ({ page, baseURL }) => {
     // Deny geolocation permission
     const context = page.context()
-    await context.grantPermissions([], { origin: 'http://localhost:3000' })
+    await context.grantPermissions([], { origin: baseURL || 'http://localhost:3000' })
 
     // Override geolocation to simulate permission denied
     await page.addInitScript(() => {
