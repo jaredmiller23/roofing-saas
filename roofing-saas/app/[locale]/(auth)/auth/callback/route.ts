@@ -15,6 +15,10 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
   const next = requestUrl.searchParams.get('next') ?? '/dashboard'
 
+  // Extract locale from the URL path (e.g., '/en/auth/callback' -> 'en')
+  const pathParts = requestUrl.pathname.split('/')
+  const locale = pathParts[1] || 'en'
+
   if (code) {
     const supabase = await createClient()
 
@@ -45,12 +49,14 @@ export async function GET(request: Request) {
       }
 
       // Successful verification - redirect to dashboard or specified page
-      return NextResponse.redirect(new URL(next, requestUrl.origin))
+      // Ensure next path has locale prefix to prevent redirect loops
+      const nextPath = next.startsWith('/') ? next : `/${next}`
+      return NextResponse.redirect(new URL(`/${locale}${nextPath}`, requestUrl.origin))
     }
   }
 
   // Error occurred - redirect to login with error message
   return NextResponse.redirect(
-    new URL('/login?error=Could not verify email', requestUrl.origin)
+    new URL(`/${locale}/login?error=Could not verify email`, requestUrl.origin)
   )
 }

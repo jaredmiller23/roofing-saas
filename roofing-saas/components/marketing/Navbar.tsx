@@ -5,6 +5,9 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Default locale for auth routes from landing page
+const DEFAULT_LOCALE = 'en';
+
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -53,10 +56,10 @@ export function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <Link href="/login">Sign In</Link>
+              <Link href={`/${DEFAULT_LOCALE}/login`}>Sign In</Link>
             </Button>
             <Button className="glow-purple" asChild>
-              <Link href="/register">Start Free Trial</Link>
+              <Link href={`/${DEFAULT_LOCALE}/register`}>Start Free Trial</Link>
             </Button>
           </div>
 
@@ -86,10 +89,10 @@ export function Navbar() {
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Button variant="ghost" className="w-full" asChild>
-                  <Link href="/login">Sign In</Link>
+                  <Link href={`/${DEFAULT_LOCALE}/login`}>Sign In</Link>
                 </Button>
                 <Button className="w-full glow-purple" asChild>
-                  <Link href="/register">Start Free Trial</Link>
+                  <Link href={`/${DEFAULT_LOCALE}/register`}>Start Free Trial</Link>
                 </Button>
               </div>
             </div>
