@@ -158,10 +158,10 @@ export interface ClaimExportPackage {
     last_name: string
     email?: string
     phone?: string
-    address?: string
-    city?: string
-    state?: string
-    zip?: string
+    address_street?: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
     insurance_carrier?: string
     policy_number?: string
   }

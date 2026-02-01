@@ -68,10 +68,10 @@ export async function POST(
         contact:contact_id (
           first_name,
           last_name,
-          address,
-          city,
-          state,
-          zip
+          address_street,
+          address_city,
+          address_state,
+          address_zip
         )
       `)
       .eq('id', projectId)
@@ -106,14 +106,14 @@ export async function POST(
     const contact = project.contact as {
       first_name?: string
       last_name?: string
-      address?: string
-      city?: string
-      state?: string
-      zip?: string
+      address_street?: string
+      address_city?: string
+      address_state?: string
+      address_zip?: string
     } | null
 
     const jobAddress = contact
-      ? `${contact.address || ''}, ${contact.city || ''} ${contact.state || ''} ${contact.zip || ''}`.trim().replace(/^,\s*/, '')
+      ? `${contact.address_street || ''}, ${contact.address_city || ''} ${contact.address_state || ''} ${contact.address_zip || ''}`.trim().replace(/^,\s*/, '')
       : ''
 
     // Create production job

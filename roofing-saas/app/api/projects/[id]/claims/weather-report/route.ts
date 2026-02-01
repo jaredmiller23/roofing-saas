@@ -157,8 +157,8 @@ export async function GET(
     })
     yPosition -= lineHeight
 
-    if (contact.address) {
-      page.drawText(`Address: ${contact.address}`, {
+    if (contact.address_street) {
+      page.drawText(`Address: ${contact.address_street}`, {
         x: margin,
         y: yPosition,
         size: fontSize,
@@ -168,8 +168,8 @@ export async function GET(
       yPosition -= lineHeight
     }
 
-    if (contact.city || contact.state || contact.zip) {
-      page.drawText(`Location: ${[contact.city, contact.state, contact.zip].filter(Boolean).join(', ')}`, {
+    if (contact.address_city || contact.address_state || contact.address_zip) {
+      page.drawText(`Location: ${[contact.address_city, contact.address_state, contact.address_zip].filter(Boolean).join(', ')}`, {
         x: margin,
         y: yPosition,
         size: fontSize,
