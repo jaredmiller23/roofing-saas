@@ -120,7 +120,7 @@ export default function VoiceCallPage() {
   // State
   const [phoneNumber, setPhoneNumber] = useState(initialPhone)
   const [contact, setContact] = useState<ContactInfo | null>(null)
-  const [contactLoading, setContactLoading] = useState(false)
+  const [_contactLoading, setContactLoading] = useState(false)
   const [recordingEnabled, setRecordingEnabled] = useState(true)
   const [callState, setCallState] = useState<CallState>('idle')
   const [callSid, setCallSid] = useState<string | null>(null)
