@@ -73,22 +73,11 @@ export default function CampaignsPage() {
 
   const handleDuplicateCampaign = async (campaign: Campaign) => {
     try {
-      const newCampaign = await apiFetch<Campaign>('/api/campaigns', {
-        method: 'POST',
-        body: {
-          name: `${campaign.name} (Copy)`,
-          description: campaign.description,
-          campaign_type: campaign.campaign_type,
-          goal_type: campaign.goal_type,
-          goal_target: campaign.goal_target,
-          allow_re_enrollment: campaign.allow_re_enrollment,
-          re_enrollment_delay_days: campaign.re_enrollment_delay_days,
-          respect_business_hours: campaign.respect_business_hours,
-          business_hours: campaign.business_hours,
-          enrollment_type: campaign.enrollment_type,
-          max_enrollments: campaign.max_enrollments,
-        },
-      })
+      // Use the dedicated duplicate endpoint that copies steps and triggers
+      const newCampaign = await apiFetch<Campaign & { triggers_copied: number; steps_copied: number }>(
+        `/api/campaigns/${campaign.id}/duplicate`,
+        { method: 'POST' }
+      )
 
       router.push(`/campaigns/${newCampaign.id}/builder`)
     } catch (error) {
