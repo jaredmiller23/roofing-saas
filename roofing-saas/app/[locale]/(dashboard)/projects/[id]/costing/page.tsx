@@ -2,7 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Users, Clock, Package } from 'lucide-react'
 import { AddExpenseButton } from './add-expense-button'
 import { ExpensesList } from './expenses-list'
 import { SetRevenueButton } from './set-revenue-button'
@@ -165,6 +165,38 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
             </div>
             <AddExpenseButton projectId={id} />
           </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 mb-6 border-b pb-4">
+          <Link
+            href={`/projects/${id}/costing`}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+          >
+            <DollarSign className="h-4 w-4" />
+            Overview
+          </Link>
+          <Link
+            href={`/projects/${id}/costing/crew`}
+            className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-md text-sm font-medium"
+          >
+            <Users className="h-4 w-4" />
+            Crew
+          </Link>
+          <Link
+            href={`/projects/${id}/costing/timesheets`}
+            className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-md text-sm font-medium"
+          >
+            <Clock className="h-4 w-4" />
+            Timesheets
+          </Link>
+          <Link
+            href={`/projects/${id}/costing/materials`}
+            className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-md text-sm font-medium"
+          >
+            <Package className="h-4 w-4" />
+            Materials
+          </Link>
         </div>
 
         {/* P&L Summary Cards */}
