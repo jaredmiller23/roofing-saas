@@ -14,6 +14,7 @@ import {
   Folder
 } from 'lucide-react'
 import { RoofingFileCategory, MobileUploadOptions, FileUploadResult } from '@/lib/types/file'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FileCategories } from './FileCategories'
 
 interface MobileFileUploadProps {
@@ -433,12 +434,10 @@ export function MobileFileUpload({
 
         {/* Error Display */}
         {error && (
-          <div className="p-4 bg-red-50 border-t border-red-200">
-            <div className="flex items-center text-red-700">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {error}
-            </div>
-          </div>
+          <Alert variant="destructive" className="m-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
       </div>
     )
@@ -597,12 +596,10 @@ export function MobileFileUpload({
         </button>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            <div className="flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {error}
-            </div>
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
       </div>
     </div>

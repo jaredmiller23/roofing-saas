@@ -146,8 +146,8 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 

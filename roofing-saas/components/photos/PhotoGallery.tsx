@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { getPhotoTypeLabel, getDamageCauseLabel } from '@/lib/types/photo-labels'
 import type { PhotoType, DamageCause } from '@/lib/types/photo-labels'
 
@@ -150,9 +151,9 @@ export function PhotoGallery({
       <CardContent>
         {/* Error message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-4">
-            {error}
-          </div>
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {/* Loading state */}

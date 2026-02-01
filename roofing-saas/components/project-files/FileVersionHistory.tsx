@@ -16,6 +16,7 @@ import {
   Edit3
 } from 'lucide-react'
 import { FileVersion, VersionChangeType, ProjectFile } from '@/lib/types/file'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface FileVersionHistoryProps {
   fileId: string
@@ -138,12 +139,10 @@ export function FileVersionHistory({
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded ${className}`}>
-        <div className="flex items-center">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          {error}
-        </div>
-      </div>
+      <Alert variant="destructive" className={className}>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 
