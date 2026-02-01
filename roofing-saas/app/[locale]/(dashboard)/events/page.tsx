@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
@@ -40,6 +40,7 @@ const GoogleCalendar = dynamic(() => import('@/components/calendar/GoogleCalenda
 function GoogleCalendarWithParams({ onDisconnect }: { onDisconnect: () => void }) {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname() // Preserves locale prefix like /en/events
 
   const [oauthParams, setOauthParams] = useState<{
     googleConnected: boolean
@@ -62,11 +63,12 @@ function GoogleCalendarWithParams({ onDisconnect }: { onDisconnect: () => void }
         email: email ? decodeURIComponent(email) : null,
         processed: true
       })
-      router.replace('/events', { scroll: false })
+      // Use current pathname to preserve locale prefix
+      router.replace(pathname, { scroll: false })
     } else {
       setOauthParams(prev => ({ ...prev, processed: true }))
     }
-  }, [searchParams, router, oauthParams.processed])
+  }, [searchParams, router, pathname, oauthParams.processed])
 
   return (
     <GoogleCalendar
