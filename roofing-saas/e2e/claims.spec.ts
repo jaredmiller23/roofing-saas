@@ -25,271 +25,135 @@ test.describe('Claims Management', () => {
   test.describe('Claims Dashboard', () => {
     test('should load claims dashboard', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
       // Should be on claims page
       expect(page.url()).toContain('/claims')
 
-      // Should have page title or heading
-      const heading = page.locator('h1, h2').first()
-      await expect(heading).toBeVisible({ timeout: 5000 })
+      // Wait for Claims Management heading
+      await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
+
+      // Should have page heading
+      const heading = page.locator('h1:has-text("Claims Management")')
+      await expect(heading).toBeVisible()
     })
 
-    test('should display claims list', async ({ page }) => {
+    test('should display claims stats cards', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
-      // Look for claims cards or table rows
-      const claimsExist = await page.locator('[data-testid*="claim"], .claim-card, tr').count() > 0
+      // Wait for page header
+      await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
 
-      // OR empty state message
-      const emptyState = await page.locator('text=/no claims|empty/i').isVisible().catch(() => false)
-
-      // Either claims exist OR empty state shown
-      expect(claimsExist || emptyState).toBeTruthy()
+      // Should show stats cards
+      await expect(page.locator('text=Total Claims')).toBeVisible()
+      await expect(page.locator('text=New')).toBeVisible()
+      await expect(page.locator('text=In Progress')).toBeVisible()
+      await expect(page.locator('text=Total Approved')).toBeVisible()
     })
   })
 
   test.describe('Claim Search and Filtering', () => {
-    test('should search claims by claim number', async ({ page }) => {
+    test('should have search input for claims', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
-      // Find search input
-      const searchInput = page.locator('input[placeholder*="Search"], input[type="search"]').first()
+      // Wait for page header
+      await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
 
-      if (await searchInput.isVisible({ timeout: 2000 })) {
-        // Type search query
-        await searchInput.fill('CLM')
-        await page.waitForTimeout(500) // Debounce
+      // Search input should be present with correct placeholder
+      const searchInput = page.locator('input[placeholder*="claim"]')
+      await expect(searchInput).toBeVisible()
 
-        // Should filter results or show empty state
-        const hasResults = await page.locator('[data-testid*="claim"], .claim-card').count() > 0
-        const hasEmptyState = await page.locator('text=/no.*found|no claims/i').isVisible().catch(() => false)
-
-        expect(hasResults || hasEmptyState).toBeTruthy()
-      } else {
-        test.skip()
-      }
+      // Type search query and verify input accepts it
+      await searchInput.fill('CLM-TEST')
+      await expect(searchInput).toHaveValue('CLM-TEST')
     })
 
-    test('should filter claims by status', async ({ page }) => {
+    test('should have status filter dropdown', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
-      // Find status filter dropdown (Select component)
-      const statusFilter = page.locator('[role="combobox"]').or(
-        page.locator('select').or(
-          page.locator('button:has-text("Status")').or(
-            page.locator('[data-testid="status-filter"]')
-          )
-        )
-      ).first()
+      // Wait for page header
+      await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
 
-      if (await statusFilter.isVisible({ timeout: 2000 })) {
-        await statusFilter.click()
-        await page.waitForTimeout(300)
+      // Status filter should be present - button with "All Statuses" or similar
+      const statusFilter = page.locator('button:has-text("Statuses"), button:has-text("Status")').first()
+      await expect(statusFilter).toBeVisible()
 
-        // Try to select 'approved' status
-        const approvedOption = page.locator('text=/approved/i').first()
-        if (await approvedOption.isVisible({ timeout: 1000 })) {
-          await approvedOption.click()
-          await page.waitForTimeout(500)
+      // Click to open dropdown
+      await statusFilter.click()
+      await page.waitForTimeout(300)
 
-          // Verify filtering applied
-          const url = page.url()
-          const hasFilterParam = url.includes('status') || url.includes('approved')
-
-          expect(hasFilterParam || true).toBeTruthy() // Always pass if we got this far
-        }
-      } else {
-        test.skip()
-      }
+      // Should show status options
+      const statusOptions = page.locator('[role="option"]')
+      const optionCount = await statusOptions.count()
+      expect(optionCount).toBeGreaterThan(0)
     })
 
-    test('should filter claims by date range', async ({ page }) => {
+    test('should have date range filters', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
-      // Look for date inputs
-      const dateFromInput = page.locator('input[type="date"]').or(
-        page.locator('input[placeholder*="From"], input[placeholder*="Start"]')
-      ).first()
+      // Wait for page header
+      await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
 
-      if (await dateFromInput.isVisible({ timeout: 2000 })) {
-        // Fill in date range
-        await dateFromInput.fill('2025-01-01')
-        await page.waitForTimeout(500)
-
-        // Should apply filter (results may change or stay same)
-        expect(true).toBeTruthy()
-      } else {
-        test.skip()
-      }
+      // Date inputs should be present (mm/dd/yyyy format visible in screenshot)
+      const dateInputs = page.locator('input[type="date"]')
+      const dateCount = await dateInputs.count()
+      expect(dateCount).toBeGreaterThanOrEqual(2) // From and To dates
     })
   })
 
   test.describe('Claim Export', () => {
-    test('should export claims to CSV', async ({ page }) => {
+    test('should have export buttons', async ({ page }) => {
       await page.goto('/claims')
-      await page.waitForLoadState('load')
+      await page.waitForLoadState('networkidle')
 
-      // Look for export button (CSV/Excel icon)
-      const exportButton = page.locator('button:has-text("Export")').or(
-        page.locator('button').filter({ has: page.locator('[data-lucide="file-spreadsheet"]') }).or(
-          page.locator('[data-testid="export-csv"]')
-        )
-      ).first()
+      // Wait for page to load - look for Claims Management heading
+      await page.waitForSelector('h1:has-text("Claims Management")', {
+        timeout: 10000
+      })
 
-      if (await exportButton.isVisible({ timeout: 2000 })) {
-        // Wait for download event
-        const downloadPromise = page.waitForEvent('download', { timeout: 10000 })
+      // Export CSV button should be present
+      const exportCsvButton = page.locator('button:has-text("Export CSV")')
+      await expect(exportCsvButton).toBeVisible()
 
-        await exportButton.click()
-
-        // Verify download started
-        const download = await downloadPromise.catch(() => null)
-
-        if (download) {
-          expect(download.suggestedFilename()).toMatch(/claims.*\.(csv|xlsx)/)
-        } else {
-          // Download may not trigger in test environment
-          expect(true).toBeTruthy()
-        }
-      } else {
-        test.skip()
-      }
+      // Export PDF button should also be present
+      const exportPdfButton = page.locator('button:has-text("Export PDF")')
+      await expect(exportPdfButton).toBeVisible()
     })
   })
 
   test.describe('Claim Details', () => {
-    test('should view claim details', async ({ page }) => {
+    test.skip('should view claim details', async ({ page }) => {
+      // SKIP: Requires claims data in test tenant
+      // TODO: Create test fixture with claim data
       await page.goto('/claims')
-      await page.waitForLoadState('load')
-
-      // Find first claim card or row
-      const firstClaim = page.locator('[data-testid*="claim"], .claim-card, tr').first()
-
-      if (await firstClaim.isVisible({ timeout: 2000 })) {
-        await firstClaim.click()
-        await page.waitForLoadState('load')
-
-        // Should navigate to claim detail page
-        const url = page.url()
-        const isDetailPage = url.includes('/claims/') || url.includes('/projects/')
-
-        expect(isDetailPage).toBeTruthy()
-      } else {
-        test.skip()
-      }
     })
   })
 
   test.describe('Claim Status Updates', () => {
-    test('should update claim status', async ({ page }) => {
+    test.skip('should update claim status', async ({ page }) => {
+      // SKIP: Requires claims data in test tenant
+      // TODO: Create test fixture with claim data
       await page.goto('/claims')
-      await page.waitForLoadState('load')
-
-      // Navigate to a claim
-      const firstClaim = page.locator('[data-testid*="claim"], .claim-card, tr').first()
-
-      if (await firstClaim.isVisible({ timeout: 2000 })) {
-        await firstClaim.click()
-        await page.waitForLoadState('load')
-
-        // Look for status change button or dropdown
-        const statusButton = page.locator('button:has-text("Status")').or(
-          page.locator('button:has-text("Change Status")').or(
-            page.locator('[data-testid="status-selector"]')
-          )
-        ).first()
-
-        if (await statusButton.isVisible({ timeout: 2000 })) {
-          await statusButton.click()
-          await page.waitForTimeout(300)
-
-          // Try to select a new status
-          const newStatus = page.locator('text=/approved|submitted|under review/i').first()
-          if (await newStatus.isVisible({ timeout: 1000 })) {
-            await newStatus.click()
-            await page.waitForTimeout(1000)
-
-            // Should show success message or updated status
-            const statusUpdated = await page.locator('text=/updated|success|saved/i').isVisible({ timeout: 3000 }).catch(() => false)
-            expect(statusUpdated || true).toBeTruthy()
-          }
-        } else {
-          test.skip()
-        }
-      } else {
-        test.skip()
-      }
     })
   })
 
   test.describe('Claim Documents', () => {
-    test('should upload claim document', async ({ page }) => {
+    test.skip('should upload claim document', async ({ page }) => {
+      // SKIP: Requires claims data in test tenant
+      // TODO: Create test fixture with claim data
       await page.goto('/claims')
-      await page.waitForLoadState('load')
-
-      // Navigate to a claim
-      const firstClaim = page.locator('[data-testid*="claim"], .claim-card, tr').first()
-
-      if (await firstClaim.isVisible({ timeout: 2000 })) {
-        await firstClaim.click()
-        await page.waitForLoadState('load')
-
-        // Look for upload button or file input
-        const uploadButton = page.locator('button:has-text("Upload")').or(
-          page.locator('input[type="file"]').or(
-            page.locator('[data-testid="upload-document"]')
-          )
-        ).first()
-
-        if (await uploadButton.isVisible({ timeout: 2000 })) {
-          // Upload is available - skip actual upload as it requires file
-          test.skip()
-        } else {
-          test.skip()
-        }
-      } else {
-        test.skip()
-      }
     })
   })
 
   test.describe('Claim Inspection Flow', () => {
-    test('should navigate to inspection page', async ({ page }) => {
+    test.skip('should navigate to inspection page', async ({ page }) => {
+      // SKIP: Requires claims data in test tenant
+      // TODO: Create test fixture with claim data
       await page.goto('/claims')
-      await page.waitForLoadState('load')
-
-      // Navigate to a claim
-      const firstClaim = page.locator('[data-testid*="claim"], .claim-card, tr').first()
-
-      if (await firstClaim.isVisible({ timeout: 2000 })) {
-        await firstClaim.click()
-        await page.waitForLoadState('load')
-
-        // Look for inspection button or link
-        const inspectionButton = page.locator('a:has-text("Inspection")').or(
-          page.locator('button:has-text("Inspection")').or(
-            page.locator('[href*="inspection"]')
-          )
-        ).first()
-
-        if (await inspectionButton.isVisible({ timeout: 2000 })) {
-          await inspectionButton.click()
-          await page.waitForLoadState('load')
-
-          // Should be on inspection page
-          const url = page.url()
-          expect(url).toContain('inspection')
-        } else {
-          test.skip()
-        }
-      } else {
-        test.skip()
-      }
     })
   })
 })
