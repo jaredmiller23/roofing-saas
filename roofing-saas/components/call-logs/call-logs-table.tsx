@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink, Mic } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface CallLog {
   id: string
@@ -90,9 +91,9 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 

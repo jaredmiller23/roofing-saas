@@ -14,6 +14,7 @@ import {
   Eye
 } from 'lucide-react'
 import { ProjectFile, RoofingFileCategory, FileType, FileSearchFilters } from '@/lib/types/file'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FileCategories, CategoryFilterChips } from './FileCategories'
 import { FileThumbnail } from './FileThumbnail'
 import { BulkFileActions, FileSelectionCheckbox } from './BulkFileActions'
@@ -188,9 +189,9 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 
