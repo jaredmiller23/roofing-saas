@@ -332,8 +332,8 @@ export async function exchangeAuthCode(
   code: string,
   redirectUri: string
 ): Promise<TokenResponse> {
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured')
@@ -368,8 +368,8 @@ export async function exchangeAuthCode(
  * Refresh access token
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured')
@@ -438,7 +438,7 @@ export async function revokeToken(token: string): Promise<void> {
  * Get authorization URL for OAuth flow
  */
 export function getAuthorizationUrl(redirectUri: string, state: string): string {
-  const clientId = process.env.GOOGLE_CLIENT_ID
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
 
   if (!clientId) {
     throw new Error('Google Client ID not configured')

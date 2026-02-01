@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if Google OAuth is configured
-    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
     if (!clientId) {
       throw new ApiError(
         ErrorCode.EXTERNAL_SERVICE_ERROR,
