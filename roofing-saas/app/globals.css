@@ -295,6 +295,23 @@
   .mr-safe-right { margin-right: env(safe-area-inset-right); }
 }
 
+/* Touch Target Utilities
+   Minimum 44px for WCAG/iOS guidelines, 56px for field workers
+   See: UI Research/01-foundations/lens.md */
+.min-touch-target {
+  min-height: 2.75rem; /* 44px */
+  min-width: 2.75rem;
+}
+
+.min-touch-target-field {
+  min-height: 3.5rem; /* 56px - for field workers with gloves */
+  min-width: 3.5rem;
+}
+
+.touch-target-row {
+  min-height: 2.75rem; /* 44px row height for lists/tables */
+}
+
 /* ========================================
    ADAPTIVE LAYOUT MODE CLASSES
    CSS-based sidebar hiding for field/manager modes
