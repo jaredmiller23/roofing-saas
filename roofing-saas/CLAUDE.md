@@ -8,7 +8,11 @@
 
 ## NAS Supabase Access (PRODUCTION DATABASE)
 
-**Claude has direct SQL access to NAS.** Use this for schema changes, data fixes, and queries.
+**Claude has direct SQL access to NAS.** Use for **data queries and fixes ONLY**.
+
+> ⚠️ **NEVER use exec_sql for schema changes (CREATE TABLE, ALTER TABLE, etc.)**
+> All schema changes MUST go through migration files in `supabase/migrations/`.
+> See `docs/SCHEMA_MANAGEMENT.md` for the correct workflow.
 
 ### Connection Details
 
