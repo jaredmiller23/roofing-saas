@@ -45,11 +45,11 @@ test.describe('Claims Management', () => {
       // Wait for page header
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
 
-      // Should show stats cards
-      await expect(page.locator('text=Total Claims')).toBeVisible()
-      await expect(page.locator('text=New')).toBeVisible()
-      await expect(page.locator('text=In Progress')).toBeVisible()
-      await expect(page.locator('text=Total Approved')).toBeVisible()
+      // Should show stats cards (use data-slot to target card descriptions)
+      await expect(page.locator('[data-slot="card-description"]:has-text("Total Claims")')).toBeVisible()
+      await expect(page.locator('[data-slot="card-description"]:has-text("New")')).toBeVisible()
+      await expect(page.locator('[data-slot="card-description"]:has-text("In Progress")')).toBeVisible()
+      await expect(page.locator('[data-slot="card-description"]:has-text("Total Approved")')).toBeVisible()
     })
   })
 

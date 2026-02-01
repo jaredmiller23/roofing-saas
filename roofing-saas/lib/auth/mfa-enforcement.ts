@@ -66,8 +66,17 @@ export async function requireMFAForPrivilegedUsers(): Promise<void> {
 /**
  * Check if user should be redirected to MFA setup
  * Returns redirect path if needed, null otherwise
+ *
+ * Note: MFA enforcement is skipped in E2E test environments
+ * (when E2E_SKIP_MFA=true) to allow automated testing
  */
 export async function getMFARedirectPath(): Promise<string | null> {
+  // Skip MFA enforcement in E2E test environments
+  // This allows automated testing without complex MFA enrollment
+  if (process.env.E2E_SKIP_MFA === 'true') {
+    return null
+  }
+
   const enforcement = await checkMFARequirement()
 
   if (enforcement.shouldEnforce) {

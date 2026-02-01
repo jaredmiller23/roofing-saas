@@ -92,8 +92,15 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Add x-pathname header for server components to access current path
+  // This is needed for MFA redirect loop prevention in dashboard layout
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   // Trim env vars to handle potential trailing newlines (common copy-paste issue)
@@ -110,7 +117,9 @@ export async function proxy(request: NextRequest) {
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders,
+            },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)

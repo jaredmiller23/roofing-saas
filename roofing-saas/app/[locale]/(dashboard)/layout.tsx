@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getCurrentUser, getUserContext } from '@/lib/auth/session'
 import { getMFARedirectPath } from '@/lib/auth/mfa-enforcement'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -41,8 +42,18 @@ export default async function DashboardLayout({
   const userEmail = user.email || ''
 
   // MFA enforcement for privileged users (admin/owner)
+  // Skip redirect if already on settings page to prevent infinite loop
   if (mfaRedirect) {
-    redirect(`/${locale}${mfaRedirect}`)
+    const headersList = await headers()
+    // Get pathname from middleware (set in middleware.ts)
+    const pathname = headersList.get('x-pathname') || ''
+
+    // Don't redirect if already on settings page
+    const isOnSettings = pathname.includes('/settings')
+
+    if (!isOnSettings) {
+      redirect(`/${locale}${mfaRedirect}`)
+    }
   }
 
   return (
