@@ -115,5 +115,6 @@ export {
   openaiSpan,
   quickbooksSpan,
   googleSpan,
+  stripeSpan,
 } from './external'
 export { withAuthSpan } from './auth'

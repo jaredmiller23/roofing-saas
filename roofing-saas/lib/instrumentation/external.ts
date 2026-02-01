@@ -109,7 +109,7 @@ export async function withExternalSpan<T>(
  * )
  */
 export function twilioSpan<T>(
-  operation: 'send_sms' | 'make_call' | 'get_recording' | 'lookup' | 'verify',
+  operation: 'send_sms' | 'make_call' | 'get_recording' | 'download_recording' | 'lookup' | 'verify',
   fn: () => Promise<T>,
   attributes?: Record<string, string | number | boolean>
 ): Promise<T> {

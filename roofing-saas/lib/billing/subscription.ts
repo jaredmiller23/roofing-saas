@@ -19,6 +19,7 @@ import type {
   PlanTier,
 } from './types';
 import { logger } from '@/lib/logger';
+import { stripeSpan } from '@/lib/instrumentation';
 
 // =============================================================================
 // Get Subscription
@@ -300,10 +301,15 @@ export async function cancelSubscription(
     throw new Error('No active Stripe subscription to cancel');
   }
 
+  const stripeSubId = subscription.stripe_subscription_id;
+
   // Cancel in Stripe (at period end)
-  await stripe.subscriptions.update(subscription.stripe_subscription_id, {
-    cancel_at_period_end: true,
-  });
+  await stripeSpan(
+    'cancel_subscription',
+    () => stripe.subscriptions.update(stripeSubId, {
+      cancel_at_period_end: true,
+    })
+  );
 
   // Update local record
   const supabase = await createAdminClient();
@@ -349,10 +355,15 @@ export async function reactivateSubscription(
     throw new Error('No Stripe subscription to reactivate');
   }
 
+  const stripeSubId = subscription.stripe_subscription_id;
+
   // Reactivate in Stripe
-  await stripe.subscriptions.update(subscription.stripe_subscription_id, {
-    cancel_at_period_end: false,
-  });
+  await stripeSpan(
+    'reactivate_subscription',
+    () => stripe.subscriptions.update(stripeSubId, {
+      cancel_at_period_end: false,
+    })
+  );
 
   // Update local record
   const supabase = await createAdminClient();

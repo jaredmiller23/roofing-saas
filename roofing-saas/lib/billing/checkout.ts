@@ -18,6 +18,7 @@ import type {
 } from './types';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { stripeSpan } from '@/lib/instrumentation';
 
 // =============================================================================
 // Checkout Session Creation
@@ -102,7 +103,11 @@ export async function createCheckoutSession(
   }
 
   // Create the checkout session
-  const session = await stripe.checkout.sessions.create(sessionParams);
+  const session = await stripeSpan(
+    'create_checkout_session',
+    () => stripe.checkout.sessions.create(sessionParams),
+    { 'stripe.plan_tier': planTier, 'stripe.billing_interval': billingInterval }
+  );
 
   logger.info('Created Stripe checkout session', {
     sessionId: session.id,
@@ -155,14 +160,17 @@ export async function getOrCreateStripeCustomer(
   }
 
   // Create new Stripe customer
-  const customer = await stripe.customers.create({
-    email: user.user.email,
-    name: tenant?.name || undefined,
-    metadata: {
-      tenant_id: tenantId,
-      user_id: userId,
-    },
-  });
+  const customer = await stripeSpan(
+    'create_customer',
+    () => stripe.customers.create({
+      email: user.user.email,
+      name: tenant?.name || undefined,
+      metadata: {
+        tenant_id: tenantId,
+        user_id: userId,
+      },
+    })
+  );
 
   // Store customer ID on tenant
   await supabase
@@ -203,9 +211,12 @@ export async function getStripeCustomerId(
  * Retrieve a checkout session by ID
  */
 export async function getCheckoutSession(sessionId: string) {
-  return stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ['subscription', 'customer'],
-  });
+  return stripeSpan(
+    'retrieve_checkout_session',
+    () => stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'customer'],
+    })
+  );
 }
 
 /**

@@ -12,6 +12,7 @@ import { stripe } from './stripe';
 import { getStripeCustomerId } from './checkout';
 import type { CreatePortalParams, PortalSession } from './types';
 import { logger } from '@/lib/logger';
+import { stripeSpan } from '@/lib/instrumentation';
 
 // =============================================================================
 // Portal Session Creation
@@ -33,10 +34,13 @@ export async function createPortalSession(
   }
 
   // Create portal session
-  const session = await stripe.billingPortal.sessions.create({
-    customer: customerId,
-    return_url: returnUrl,
-  });
+  const session = await stripeSpan(
+    'create_portal_session',
+    () => stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    })
+  );
 
   logger.info('Created Stripe portal session', {
     tenantId,
@@ -60,40 +64,46 @@ export async function createPortalSession(
  */
 export async function ensurePortalConfiguration(): Promise<string> {
   // Check for existing configurations
-  const { data: configs } = await stripe.billingPortal.configurations.list({
-    limit: 1,
-    is_default: true,
-  });
+  const { data: configs } = await stripeSpan(
+    'list_portal_configurations',
+    () => stripe.billingPortal.configurations.list({
+      limit: 1,
+      is_default: true,
+    })
+  );
 
   if (configs.length > 0) {
     return configs[0].id;
   }
 
   // Create a default configuration if none exists
-  const config = await stripe.billingPortal.configurations.create({
-    business_profile: {
-      headline: 'Job Clarity CRM - Manage Your Subscription',
-    },
-    features: {
-      subscription_cancel: {
-        enabled: true,
-        mode: 'at_period_end',
-        proration_behavior: 'none',
+  const config = await stripeSpan(
+    'create_portal_configuration',
+    () => stripe.billingPortal.configurations.create({
+      business_profile: {
+        headline: 'Job Clarity CRM - Manage Your Subscription',
       },
-      subscription_update: {
-        enabled: true,
-        default_allowed_updates: ['price', 'quantity'],
-        proration_behavior: 'create_prorations',
-        products: [], // Will be filled from Stripe products
+      features: {
+        subscription_cancel: {
+          enabled: true,
+          mode: 'at_period_end',
+          proration_behavior: 'none',
+        },
+        subscription_update: {
+          enabled: true,
+          default_allowed_updates: ['price', 'quantity'],
+          proration_behavior: 'create_prorations',
+          products: [], // Will be filled from Stripe products
+        },
+        payment_method_update: {
+          enabled: true,
+        },
+        invoice_history: {
+          enabled: true,
+        },
       },
-      payment_method_update: {
-        enabled: true,
-      },
-      invoice_history: {
-        enabled: true,
-      },
-    },
-  });
+    })
+  );
 
   logger.info('Created Stripe portal configuration', {
     configId: config.id,

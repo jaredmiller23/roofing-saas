@@ -5,6 +5,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import { googleSpan } from '@/lib/instrumentation'
 
 // Google OAuth endpoints
 const GOOGLE_OAUTH_URL = 'https://oauth2.googleapis.com'
@@ -94,38 +95,44 @@ export class GoogleCalendarClient {
     endpoint: string,
     data?: unknown
   ): Promise<T> {
-    const url = `${baseUrl}${endpoint}`
+    // Determine operation name for instrumentation
+    const apiType = baseUrl.includes('tasks') ? 'tasks' : 'calendar'
+    const operationName = `${apiType}_${method.toLowerCase()}`
 
-    const options: RequestInit = {
-      method,
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }
+    return googleSpan(operationName, async () => {
+      const url = `${baseUrl}${endpoint}`
 
-    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      options.body = JSON.stringify(data)
-    }
+      const options: RequestInit = {
+        method,
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }
 
-    logger.debug('Google API Request', { method, endpoint })
+      if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        options.body = JSON.stringify(data)
+      }
 
-    const response = await fetch(url, options)
+      logger.debug('Google API Request', { method, endpoint })
 
-    if (!response.ok) {
-      const error = await response.text()
-      logger.error('Google API Error', { status: response.status, error })
-      throw new Error(`Google API error: ${response.status} - ${error}`)
-    }
+      const response = await fetch(url, options)
 
-    // Handle empty responses (like DELETE)
-    const text = await response.text()
-    if (!text) {
-      return {} as T
-    }
+      if (!response.ok) {
+        const error = await response.text()
+        logger.error('Google API Error', { status: response.status, error })
+        throw new Error(`Google API error: ${response.status} - ${error}`)
+      }
 
-    return JSON.parse(text)
+      // Handle empty responses (like DELETE)
+      const text = await response.text()
+      if (!text) {
+        return {} as T
+      }
+
+      return JSON.parse(text)
+    }, { 'google.api': apiType, 'google.method': method, 'google.endpoint': endpoint })
   }
 
   // ============================================================================
@@ -334,139 +341,147 @@ export async function exchangeAuthCode(
   code: string,
   redirectUri: string
 ): Promise<TokenResponse> {
-  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
+  return googleSpan('oauth_exchange_code', async () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
 
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials not configured')
-  }
+    if (!clientId || !clientSecret) {
+      throw new Error('Google OAuth credentials not configured')
+    }
 
-  const params = new URLSearchParams({
-    code,
-    client_id: clientId,
-    client_secret: clientSecret,
-    redirect_uri: redirectUri,
-    grant_type: 'authorization_code',
-  })
-
-  // Add timeout to prevent indefinite hangs
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
-
-  try {
-    const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params,
-      signal: controller.signal,
+    const params = new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
     })
 
-    clearTimeout(timeoutId)
+    // Add timeout to prevent indefinite hangs
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
 
-    if (!response.ok) {
-      const error = await response.text()
-      logger.error('Failed to exchange Google auth code', { error })
-      throw new Error(`Token exchange failed: ${error}`)
-    }
+    try {
+      const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+        signal: controller.signal,
+      })
 
-    return await response.json()
-  } catch (error) {
-    clearTimeout(timeoutId)
-    if (error instanceof Error && error.name === 'AbortError') {
-      logger.error('Google token exchange timed out')
-      throw new Error('Token exchange timed out - please try again')
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const error = await response.text()
+        logger.error('Failed to exchange Google auth code', { error })
+        throw new Error(`Token exchange failed: ${error}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('Google token exchange timed out')
+        throw new Error('Token exchange timed out - please try again')
+      }
+      throw error
     }
-    throw error
-  }
+  })
 }
 
 /**
  * Refresh access token
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
-  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
+  return googleSpan('oauth_refresh_token', async () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
 
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials not configured')
-  }
+    if (!clientId || !clientSecret) {
+      throw new Error('Google OAuth credentials not configured')
+    }
 
-  const params = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: refreshToken,
-    grant_type: 'refresh_token',
-  })
-
-  // Add timeout to prevent indefinite hangs
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
-
-  try {
-    const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params,
-      signal: controller.signal,
+    const params = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
     })
 
-    clearTimeout(timeoutId)
+    // Add timeout to prevent indefinite hangs
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
 
-    if (!response.ok) {
-      const error = await response.text()
+    try {
+      const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const error = await response.text()
+        logger.error('Failed to refresh Google token', { error })
+        return null
+      }
+
+      return await response.json()
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('Google token refresh timed out')
+        return null
+      }
       logger.error('Failed to refresh Google token', { error })
       return null
     }
-
-    return await response.json()
-  } catch (error) {
-    clearTimeout(timeoutId)
-    if (error instanceof Error && error.name === 'AbortError') {
-      logger.error('Google token refresh timed out')
-      return null
-    }
-    logger.error('Failed to refresh Google token', { error })
-    return null
-  }
+  })
 }
 
 /**
  * Get user info from access token
  */
 export async function getGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo> {
-  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+  return googleSpan('oauth_get_user_info', async () => {
+    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Failed to get user info: ${error}`)
+    }
+
+    return await response.json()
   })
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Failed to get user info: ${error}`)
-  }
-
-  return await response.json()
 }
 
 /**
  * Revoke Google OAuth token
  */
 export async function revokeToken(token: string): Promise<void> {
-  const response = await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  })
+  return googleSpan('oauth_revoke_token', async () => {
+    const response = await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
 
-  if (!response.ok) {
-    const error = await response.text()
-    logger.warn('Failed to revoke Google token (may already be revoked)', { error })
-  }
+    if (!response.ok) {
+      const error = await response.text()
+      logger.warn('Failed to revoke Google token (may already be revoked)', { error })
+    }
+  })
 }
 
 /**

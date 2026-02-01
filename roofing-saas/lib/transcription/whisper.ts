@@ -14,6 +14,7 @@
 import OpenAI from 'openai'
 import { logger } from '@/lib/logger'
 import { openai, createChatCompletion } from '@/lib/ai/openai-client'
+import { openaiSpan, twilioSpan } from '@/lib/instrumentation'
 
 // Retry configuration
 const MAX_RETRIES = 3
@@ -63,31 +64,33 @@ function sleep(ms: number): Promise<void> {
  * Returns audio as a File object for Whisper API
  */
 async function downloadTwilioRecording(recordingUrl: string): Promise<File> {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken = process.env.TWILIO_AUTH_TOKEN
+  return twilioSpan('download_recording', async () => {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID
+    const authToken = process.env.TWILIO_AUTH_TOKEN
 
-  if (!accountSid || !authToken) {
-    throw new Error('Missing Twilio credentials for recording download')
-  }
+    if (!accountSid || !authToken) {
+      throw new Error('Missing Twilio credentials for recording download')
+    }
 
-  // Twilio recordings need .mp3 extension and auth params
-  const url = `${recordingUrl}.mp3`
-  const authHeader = 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64')
+    // Twilio recordings need .mp3 extension and auth params
+    const url = `${recordingUrl}.mp3`
+    const authHeader = 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64')
 
-  logger.info('Downloading Twilio recording', { url: recordingUrl })
+    logger.info('Downloading Twilio recording', { url: recordingUrl })
 
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': authHeader,
-    },
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': authHeader,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to download recording: ${response.status} ${response.statusText}`)
+    }
+
+    const blob = await response.blob()
+    return new File([blob], 'recording.mp3', { type: 'audio/mpeg' })
   })
-
-  if (!response.ok) {
-    throw new Error(`Failed to download recording: ${response.status} ${response.statusText}`)
-  }
-
-  const blob = await response.blob()
-  return new File([blob], 'recording.mp3', { type: 'audio/mpeg' })
 }
 
 /**
@@ -105,19 +108,18 @@ export async function transcribeAudio(recordingUrl: string): Promise<Transcripti
   // Transcribe with retry logic
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const startTime = Date.now()
-
-      const transcription = await openai.audio.transcriptions.create({
-        file: audioFile,
-        model: 'whisper-1',
-        response_format: 'verbose_json',
-      })
-
-      const duration = (Date.now() - startTime) / 1000
+      const transcription = await openaiSpan(
+        'transcription',
+        async () => openai.audio.transcriptions.create({
+          file: audioFile,
+          model: 'whisper-1',
+          response_format: 'verbose_json',
+        }),
+        { 'openai.model': 'whisper-1' }
+      )
 
       logger.info('Whisper transcription complete', {
         textLength: transcription.text.length,
-        processingTime: duration,
       })
 
       return {
