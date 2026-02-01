@@ -122,10 +122,13 @@ export async function GET(request: NextRequest) {
       googleEmail,
     })
 
-    // Redirect back to original page with success message
-    return NextResponse.redirect(
-      `${request.nextUrl.origin}${returnTo}?google_connected=true`
-    )
+    // Redirect back to original page with success message and email
+    const redirectUrl = new URL(`${request.nextUrl.origin}${returnTo}`)
+    redirectUrl.searchParams.set('google_connected', 'true')
+    if (googleEmail) {
+      redirectUrl.searchParams.set('email', googleEmail)
+    }
+    return NextResponse.redirect(redirectUrl.toString())
   } catch (error) {
     logger.error('Google Calendar callback error', { error })
     // For OAuth flow, redirect with error rather than returning JSON

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
@@ -41,15 +42,20 @@ interface GoogleCalendarProps {
 }
 
 export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingEvents, setIsLoadingEvents] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [googleEmail, setGoogleEmail] = useState<string | null>(null)
+  const [needsReauth, setNeedsReauth] = useState(false)
 
   const fetchEvents = useCallback(async (range?: Date[] | { start: Date; end: Date }) => {
     setIsLoadingEvents(true)
+    setError(null)
     try {
       let timeMin: string
       let timeMax: string
@@ -79,7 +85,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
 
       if (!data.connected) {
         setIsConnected(false)
-        setError(data.error || 'Not connected')
+        setError(data.error || 'Connection lost. Please reconnect.')
         setEvents([])
         return
       }
@@ -107,10 +113,9 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
       })
 
       setEvents(calendarEvents)
-      setError(null)
     } catch (err) {
       console.error('Error fetching Google Calendar events:', err)
-      setError('Failed to load events')
+      setError('Failed to load events. Please try refreshing.')
     } finally {
       setIsLoadingEvents(false)
     }
@@ -118,6 +123,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
 
   const checkGoogleConnection = useCallback(async () => {
     setIsLoading(true)
+    setError(null)
     try {
       const data = await apiFetch<{
         connected: boolean
@@ -127,20 +133,62 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
 
       if (data.connected) {
         setIsConnected(true)
+        setNeedsReauth(false)
         setGoogleEmail(data.googleEmail || null)
         // Fetch events once connected
         await fetchEvents()
+      } else if (data.needsRefresh && data.googleEmail) {
+        // Token expired but account was previously connected
+        setIsConnected(false)
+        setNeedsReauth(true)
+        setGoogleEmail(data.googleEmail)
+      } else {
+        // Never connected
+        setIsConnected(false)
+        setNeedsReauth(false)
       }
     } catch (err) {
       console.error('Error checking Google Calendar connection:', err)
+      setError('Failed to check connection status. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }, [fetchEvents])
 
+  // Handle URL parameters from OAuth callback
   useEffect(() => {
+    const googleConnected = searchParams.get('google_connected')
+    const googleError = searchParams.get('google_error')
+    const connectedEmail = searchParams.get('email')
+
+    if (googleError) {
+      // OAuth flow returned an error
+      setError(`Google Calendar: ${decodeURIComponent(googleError)}`)
+      setIsLoading(false)
+      // Clean up URL
+      router.replace('/events', { scroll: false })
+      return
+    }
+
+    if (googleConnected === 'true') {
+      // OAuth flow just completed successfully
+      // Trust the callback and set connected state immediately
+      setIsConnected(true)
+      setNeedsReauth(false)
+      if (connectedEmail) {
+        setGoogleEmail(decodeURIComponent(connectedEmail))
+      }
+      setIsLoading(false)
+      // Fetch events immediately
+      fetchEvents()
+      // Clean up URL
+      router.replace('/events', { scroll: false })
+      return
+    }
+
+    // No OAuth params, do normal connection check
     checkGoogleConnection()
-  }, [checkGoogleConnection])
+  }, [searchParams, router, fetchEvents, checkGoogleConnection])
 
   const handleConnect = () => {
     setIsLoading(true)
@@ -156,12 +204,14 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     }
 
     setIsLoading(true)
+    setError(null)
     try {
       await apiFetch('/api/calendar/google/disconnect', {
         method: 'POST'
       })
 
       setIsConnected(false)
+      setNeedsReauth(false)
       setEvents([])
       setGoogleEmail(null)
       if (onDisconnect) {
@@ -175,6 +225,11 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     }
   }
 
+  const handleRefresh = async () => {
+    await fetchEvents()
+  }
+
+  // Loading state
   if (isLoading && !isConnected) {
     return (
       <Card>
@@ -185,6 +240,51 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     )
   }
 
+  // Re-authorization needed (token expired but was previously connected)
+  if (!isConnected && needsReauth) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Google Calendar Session Expired
+          </CardTitle>
+          <CardDescription>
+            Your connection to {googleEmail || 'Google Calendar'} has expired. Please re-authorize to continue syncing.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            onClick={handleConnect}
+            disabled={isLoading}
+            className="w-full"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              <>
+                <Calendar className="h-4 w-4 mr-2" />
+                Re-authorize Google Calendar
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Not connected state
   if (!isConnected) {
     return (
       <Card>
@@ -244,10 +344,7 @@ export function GoogleCalendar({ onDisconnect }: GoogleCalendarProps) {
     )
   }
 
-  const handleRefresh = async () => {
-    await fetchEvents()
-  }
-
+  // Connected state
   return (
     <div className="space-y-4">
       {/* Connected Status */}
