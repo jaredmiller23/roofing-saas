@@ -147,8 +147,15 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
 
   // Handle OAuth state from parent or check connection
   useEffect(() => {
+    // Wait for OAuth param processing to complete before doing anything
+    // This prevents a race condition where checkGoogleConnection() is called
+    // before we know if OAuth params exist in the URL
+    if (!initialOAuthState?.processed) {
+      return
+    }
+
     // If OAuth just completed successfully, trust it and fetch events
-    if (initialOAuthState?.processed && initialOAuthState.googleConnected) {
+    if (initialOAuthState.googleConnected) {
       setIsConnected(true)
       if (initialOAuthState.email) {
         setGoogleEmail(initialOAuthState.email)
@@ -159,13 +166,13 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     }
 
     // If OAuth returned an error, show it
-    if (initialOAuthState?.processed && initialOAuthState.googleError) {
+    if (initialOAuthState.googleError) {
       setError(`Google Calendar: ${initialOAuthState.googleError}`)
       setIsLoading(false)
       return
     }
 
-    // Normal flow: check connection status
+    // No OAuth params - check connection status normally
     checkGoogleConnection()
   }, [initialOAuthState, checkGoogleConnection, fetchEvents])
 

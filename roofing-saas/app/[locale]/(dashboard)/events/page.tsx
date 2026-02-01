@@ -73,7 +73,7 @@ function GoogleCalendarWithParams({ onDisconnect }: { onDisconnect: () => void }
   return (
     <GoogleCalendar
       onDisconnect={onDisconnect}
-      initialOAuthState={oauthParams.processed ? oauthParams : undefined}
+      initialOAuthState={oauthParams}
     />
   )
 }
