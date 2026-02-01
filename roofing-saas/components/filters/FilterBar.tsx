@@ -11,6 +11,7 @@ import type {
   EntityType,
 } from '@/lib/filters/types'
 import { FilterPill } from './FilterPill'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FilterBuilder } from './FilterBuilder'
 import { SavedFilterPicker } from './SavedFilterPicker'
 import { SaveFilterDialog } from './SaveFilterDialog'
@@ -182,20 +183,18 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
 
   if (error) {
     return (
-      <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
-        <div className="flex items-center gap-2">
-          <div className="text-red-600 text-sm">{error}</div>
-        </div>
+      <Alert variant="destructive" className="flex items-center justify-between">
+        <AlertDescription>{error}</AlertDescription>
         <Button
           onClick={fetchConfigs}
           variant="outline"
           size="sm"
-          className="gap-2 text-red-600 border-red-200 hover:bg-red-50"
+          className="gap-2"
         >
           <RefreshCw className="h-4 w-4" />
           Retry
         </Button>
-      </div>
+      </Alert>
     )
   }
 

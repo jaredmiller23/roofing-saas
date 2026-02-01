@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { arEngine } from '@/lib/ar/ar-engine'
 import { measurementTools } from '@/lib/ar/measurement-tools'
 import { ARState, ARMeasurement, DamageMarker } from '@/lib/ar/ar-types'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ARViewportProps {
   projectId: string
@@ -137,30 +138,28 @@ export function ARViewport({
 
   if (error) {
     return (
-      <div className={'flex items-center justify-center h-64 bg-red-50 border border-red-200 rounded-lg ' + className}>
-        <div className="text-center p-4">
-          <p className="text-red-800 mb-4">{error}</p>
-          <button
-            onClick={initializeAR}
-            className="px-4 py-2 bg-red-600 text-primary-foreground rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <Alert variant="destructive" className={'h-64 flex flex-col items-center justify-center ' + className}>
+        <AlertDescription className="text-center mb-4">{error}</AlertDescription>
+        <button
+          onClick={initializeAR}
+          className="px-4 py-2 bg-red-600 text-primary-foreground rounded hover:bg-red-700"
+        >
+          Retry
+        </button>
+      </Alert>
     )
   }
 
   if (!arState?.device.supports_ar) {
     return (
-      <div className={'flex items-center justify-center h-64 bg-yellow-50 border border-yellow-200 rounded-lg ' + className}>
-        <div className="text-center p-4">
-          <p className="text-yellow-800 mb-2">AR not supported on this device</p>
-          <p className="text-sm text-yellow-600">
+      <Alert variant="warning" className={'h-64 flex flex-col items-center justify-center ' + className}>
+        <AlertDescription className="text-center">
+          <p className="mb-2">AR not supported on this device</p>
+          <p className="text-sm opacity-80">
             Please use a device with AR capabilities (ARCore/ARKit)
           </p>
-        </div>
-      </div>
+        </AlertDescription>
+      </Alert>
     )
   }
 
