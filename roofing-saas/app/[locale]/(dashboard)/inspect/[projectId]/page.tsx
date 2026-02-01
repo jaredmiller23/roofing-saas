@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { InspectionWizard } from '@/components/claims/InspectionWizard'
+import { WizardSkeleton } from '@/components/ui/skeletons'
 import type { InspectionState } from '@/lib/claims/inspection-state'
 
 interface PageProps {
@@ -132,14 +133,7 @@ export default function InspectPage({ params }: PageProps) {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-muted flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading inspection...</p>
-        </div>
-      </div>
-    )
+    return <WizardSkeleton />
   }
 
   // Error state

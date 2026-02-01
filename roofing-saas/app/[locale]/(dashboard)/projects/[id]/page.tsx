@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { PageSkeleton, CardSkeleton } from '@/components/ui/skeletons'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 import type { QuoteOption } from '@/lib/types/quote-option'
@@ -282,11 +283,7 @@ export default function ProjectDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (!project) {
@@ -650,8 +647,9 @@ export default function ProjectDetailPage() {
               </div>
 
               {loadingQuoteOptions ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="space-y-4">
+                  <CardSkeleton lines={4} />
+                  <CardSkeleton lines={3} />
                 </div>
               ) : quoteOptions.length > 0 ? (
                 <QuoteComparison
