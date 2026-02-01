@@ -15,9 +15,30 @@ Sentry.init({
   // Environment (development, staging, production)
   environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
 
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-  // We recommend adjusting this value in production to reduce costs.
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  // Dynamic sampling based on route importance and environment
+  // Development: 100% for full visibility during debugging
+  // Production: Variable rates based on route importance
+  tracesSampler: (samplingContext) => {
+    // Always sample in development
+    if (process.env.NODE_ENV !== 'production') {
+      return 1.0
+    }
+
+    const name = samplingContext.name || ''
+
+    // High-value routes: AI and voice operations (expensive, want visibility)
+    if (name.includes('/api/ai/') || name.includes('/api/voice/')) {
+      return 0.5 // 50% sampling
+    }
+
+    // Low-value routes: health checks and cron jobs
+    if (name.includes('/health') || name.includes('/api/cron')) {
+      return 0.01 // 1% sampling
+    }
+
+    // Standard routes: default production sampling
+    return 0.1 // 10% sampling
+  },
 
   // Integrations for server-side
   integrations: [

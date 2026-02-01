@@ -7,6 +7,7 @@ import { twilioClient, getTwilioPhoneNumber, isTwilioConfigured } from './client
 import { withRetry, RetryOptions } from '@/lib/api/retry'
 import { logger } from '@/lib/logger'
 import { TwilioError } from './errors'
+import { twilioSpan } from '@/lib/instrumentation'
 
 export interface SendSMSParams {
   to: string
@@ -55,13 +56,22 @@ export async function sendSMS(params: SendSMSParams): Promise<SMSResponse> {
   }
 
   try {
-    const message = await withRetry(async () => {
-      return await twilioClient!.messages.create({
-        to: params.to,
-        from: fromNumber,
-        body: params.body,
-      })
-    }, retryOptions)
+    const message = await twilioSpan(
+      'send_sms',
+      async () => {
+        return await withRetry(async () => {
+          return await twilioClient!.messages.create({
+            to: params.to,
+            from: fromNumber,
+            body: params.body,
+          })
+        }, retryOptions)
+      },
+      {
+        'twilio.to_masked': params.to.slice(-4),
+        'twilio.body_length': params.body.length,
+      }
+    )
 
     logger.info('SMS sent successfully', {
       sid: message.sid,

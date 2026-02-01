@@ -5,6 +5,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
+import { quickbooksSpan } from '@/lib/instrumentation'
 
 // QuickBooks API base URLs
 const QB_OAUTH_URL = 'https://appcenter.intuit.com/connect/oauth2'
@@ -157,33 +158,42 @@ export class QuickBooksClient {
     endpoint: string,
     data?: unknown
   ): Promise<T> {
-    const url = `${QB_API_BASE_URL}/${this.realmId}${endpoint}`
+    return quickbooksSpan(
+      `${method} ${endpoint.split('?')[0]}`,
+      async () => {
+        const url = `${QB_API_BASE_URL}/${this.realmId}${endpoint}`
 
-    const options: RequestInit = {
-      method,
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        const options: RequestInit = {
+          method,
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        }
+
+        if (data && (method === 'POST' || method === 'PUT')) {
+          options.body = JSON.stringify(data)
+        }
+
+        logger.debug('QB API Request', { method, endpoint })
+
+        const response = await fetch(url, options)
+
+        if (!response.ok) {
+          const error = await response.text()
+          logger.error('QB API Error', { status: response.status, error })
+          throw new Error(`QuickBooks API error: ${response.status} - ${error}`)
+        }
+
+        const result = await response.json()
+        return result
       },
-    }
-
-    if (data && (method === 'POST' || method === 'PUT')) {
-      options.body = JSON.stringify(data)
-    }
-
-    logger.debug('QB API Request', { method, endpoint })
-
-    const response = await fetch(url, options)
-
-    if (!response.ok) {
-      const error = await response.text()
-      logger.error('QB API Error', { status: response.status, error })
-      throw new Error(`QuickBooks API error: ${response.status} - ${error}`)
-    }
-
-    const result = await response.json()
-    return result
+      {
+        'quickbooks.method': method,
+        'quickbooks.endpoint': endpoint.split('?')[0],
+      }
+    )
   }
 
   /**

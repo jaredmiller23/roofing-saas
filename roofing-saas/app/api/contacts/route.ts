@@ -17,6 +17,7 @@ import type { AutoCreateProjectSetting } from '@/lib/types/api'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
+import { withDbSpan } from '@/lib/instrumentation'
 
 /**
  * GET /api/contacts
@@ -104,7 +105,11 @@ export async function GET(request: NextRequest) {
       ascending: filters.sort_order === 'asc',
     })
 
-    const { data: contacts, error, count } = await query
+    const { data: contacts, error, count } = await withDbSpan(
+      'contacts',
+      'SELECT',
+      async () => query
+    )
 
     if (error) {
       throw mapSupabaseError(error)
@@ -115,11 +120,15 @@ export async function GET(request: NextRequest) {
     let responseContacts: Record<string, unknown>[] = contacts || []
     if (includeProjects && contacts && contacts.length > 0) {
       const contactIds = contacts.map(c => c.id)
-      const { data: projects } = await supabase
-        .from('projects')
-        .select('id, name, status, estimated_value, approved_value, final_value, contact_id')
-        .in('contact_id', contactIds)
-        .eq('is_deleted', false)
+      const { data: projects } = await withDbSpan(
+        'projects',
+        'SELECT',
+        async () => supabase
+          .from('projects')
+          .select('id, name, status, estimated_value, approved_value, final_value, contact_id')
+          .in('contact_id', contactIds)
+          .eq('is_deleted', false)
+      )
 
       if (projects) {
         const projectsByContact = new Map<string, typeof projects>()
@@ -224,11 +233,15 @@ export async function POST(request: NextRequest) {
     let promptForProject = false
 
     // Fetch tenant setting for auto-creating projects
-    const { data: tenant, error: tenantError } = await supabase
-      .from('tenants')
-      .select('auto_create_project_for_homeowners')
-      .eq('id', tenantId)
-      .single()
+    const { data: tenant, error: tenantError } = await withDbSpan(
+      'tenants',
+      'SELECT',
+      async () => supabase
+        .from('tenants')
+        .select('auto_create_project_for_homeowners')
+        .eq('id', tenantId)
+        .single()
+    )
 
     if (tenantError) {
       logger.error('Failed to fetch tenant settings', { error: tenantError, tenantId })

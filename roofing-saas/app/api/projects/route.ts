@@ -7,6 +7,7 @@ import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/res
 import { logger } from '@/lib/logger'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
 import { createProjectSchema } from '@/lib/validations/project'
+import { withDbSpan } from '@/lib/instrumentation'
 
 /**
  * Projects API
@@ -118,7 +119,11 @@ export async function GET(request: NextRequest) {
     // Order by created_at desc
     query = query.order('created_at', { ascending: false })
 
-    const { data: projects, error, count } = await query
+    const { data: projects, error, count } = await withDbSpan(
+      'projects',
+      'SELECT',
+      async () => query
+    )
 
     if (error) {
       logger.error('Projects fetch error', { error })

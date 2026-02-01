@@ -1,21 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import type { User } from '@supabase/supabase-js'
 import type { NextRequest } from 'next/server'
+import { withAuthSpan } from '@/lib/instrumentation'
 
 /**
  * Get the current authenticated user
  * Returns null if no user is authenticated
  */
 export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createClient()
+  return withAuthSpan('get_user', async () => {
+    const supabase = await createClient()
 
-  const { data: { user }, error } = await supabase.auth.getUser()
+    const { data: { user }, error } = await supabase.auth.getUser()
 
-  if (error || !user) {
-    return null
-  }
+    if (error || !user) {
+      return null
+    }
 
-  return user
+    return user
+  })
 }
 
 /**
@@ -64,15 +67,17 @@ export async function getCurrentUserFromRequest(request: NextRequest): Promise<U
  * Returns null if no active session
  */
 export async function getSession() {
-  const supabase = await createClient()
+  return withAuthSpan('get_session', async () => {
+    const supabase = await createClient()
 
-  const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { session }, error } = await supabase.auth.getSession()
 
-  if (error || !session) {
-    return null
-  }
+    if (error || !session) {
+      return null
+    }
 
-  return session
+    return session
+  })
 }
 
 /**
@@ -98,21 +103,23 @@ export async function requireAuth(): Promise<User> {
  * For users needing to switch tenants, a tenant switcher UI would be required.
  */
 export async function getUserTenantId(userId: string): Promise<string | null> {
-  const supabase = await createClient()
+  return withAuthSpan('get_tenant', async () => {
+    const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('tenant_users')
-    .select('tenant_id')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('joined_at', { ascending: false })
-    .limit(1)
+    const { data, error } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: false })
+      .limit(1)
 
-  if (error || !data || data.length === 0) {
-    return null
-  }
+    if (error || !data || data.length === 0) {
+      return null
+    }
 
-  return data[0].tenant_id
+    return data[0].tenant_id
+  })
 }
 
 /**
@@ -224,25 +231,27 @@ export interface UserContext {
  * Use this instead of calling getUserTenantId + getUserRole + getUserStatus separately.
  */
 export async function getUserContext(userId: string): Promise<UserContext | null> {
-  const supabase = await createClient()
+  return withAuthSpan('get_tenant', async () => {
+    const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, role, status')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('joined_at', { ascending: false })
-    .limit(1)
+    const { data, error } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role, status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: false })
+      .limit(1)
 
-  if (error || !data || data.length === 0) {
-    return null
-  }
+    if (error || !data || data.length === 0) {
+      return null
+    }
 
-  return {
-    tenantId: data[0].tenant_id,
-    role: data[0].role ?? 'user',
-    status: (data[0].status as UserStatus) || 'active',
-  }
+    return {
+      tenantId: data[0].tenant_id,
+      role: data[0].role ?? 'user',
+      status: (data[0].status as UserStatus) || 'active',
+    }
+  })
 }
 
 /**

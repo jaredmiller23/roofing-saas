@@ -7,6 +7,7 @@ import { resendClient, isResendConfigured, getFromAddress } from './client'
 import { EmailError, EmailConfigurationError, EmailValidationError } from './errors'
 import { logger } from '@/lib/logger'
 import { withRetry, type RetryOptions } from '@/lib/api/retry'
+import { resendSpan } from '@/lib/instrumentation'
 
 // Email sending parameters
 export interface SendEmailParams {
@@ -111,21 +112,30 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResponse>
   }
 
   try {
-    const result = await withRetry(async () => {
-      return await resendClient!.emails.send({
-        from: params.from || getFromAddress(),
-        to: params.to,
-        subject: params.subject,
-        html: params.html,
-        text: params.text,
-        replyTo: params.replyTo,
-        cc: params.cc,
-        bcc: params.bcc,
-        attachments: params.attachments,
-        tags: params.tags,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
-    }, retryOptions)
+    const result = await resendSpan(
+      'send_email',
+      async () => {
+        return await withRetry(async () => {
+          return await resendClient!.emails.send({
+            from: params.from || getFromAddress(),
+            to: params.to,
+            subject: params.subject,
+            html: params.html,
+            text: params.text,
+            replyTo: params.replyTo,
+            cc: params.cc,
+            bcc: params.bcc,
+            attachments: params.attachments,
+            tags: params.tags,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any)
+        }, retryOptions)
+      },
+      {
+        'email.recipient_count': Array.isArray(params.to) ? params.to.length : 1,
+        'email.has_attachments': !!params.attachments?.length,
+      }
+    )
 
     if (result.error) {
       throw new EmailError(result.error.message || 'Failed to send email')

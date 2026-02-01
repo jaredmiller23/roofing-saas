@@ -17,6 +17,7 @@ import type {
   ChatCompletion,
 } from 'openai/resources/chat/completions'
 import { logger } from '@/lib/logger'
+import { openaiSpan } from '@/lib/instrumentation'
 
 // Default to gpt-4o in production, but allow override for testing
 const DEFAULT_MODEL = 'gpt-4o'
@@ -82,35 +83,44 @@ export async function createChatCompletion(
 ): Promise<ChatCompletion> {
   const model = getOpenAIModel()
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      return await openai.chat.completions.create({
-        ...params,
-        model,
-      })
-    } catch (error) {
-      if (isRateLimitError(error) && attempt < MAX_RETRIES - 1) {
-        const waitTime = getRetryDelay(error, attempt)
+  return openaiSpan(
+    'chat_completion',
+    async () => {
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          return await openai.chat.completions.create({
+            ...params,
+            model,
+          })
+        } catch (error) {
+          if (isRateLimitError(error) && attempt < MAX_RETRIES - 1) {
+            const waitTime = getRetryDelay(error, attempt)
 
-        logger.warn('OpenAI rate limited, retrying', {
-          attempt: attempt + 1,
-          maxRetries: MAX_RETRIES,
-          waitTimeMs: waitTime,
-          model,
-        })
+            logger.warn('OpenAI rate limited, retrying', {
+              attempt: attempt + 1,
+              maxRetries: MAX_RETRIES,
+              waitTimeMs: waitTime,
+              model,
+            })
 
-        await sleep(waitTime)
-        continue
+            await sleep(waitTime)
+            continue
+          }
+
+          // Re-throw non-rate-limit errors or if we've exhausted retries
+          throw error
+        }
       }
 
-      // Re-throw non-rate-limit errors or if we've exhausted retries
-      throw error
+      // This should never be reached due to the throw in the loop,
+      // but TypeScript needs it for type safety
+      throw new Error('OpenAI: Max retries exceeded')
+    },
+    {
+      'openai.model': model,
+      'openai.message_count': params.messages.length,
     }
-  }
-
-  // This should never be reached due to the throw in the loop,
-  // but TypeScript needs it for type safety
-  throw new Error('OpenAI: Max retries exceeded')
+  )
 }
 
 /**
@@ -130,35 +140,44 @@ export async function createStreamingChatCompletion(
 ): Promise<AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
   const model = getOpenAIModel()
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const stream = await openai.chat.completions.create({
-        ...params,
-        model,
-        stream: true,
-      })
+  return openaiSpan(
+    'streaming',
+    async () => {
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const stream = await openai.chat.completions.create({
+            ...params,
+            model,
+            stream: true,
+          })
 
-      return stream
-    } catch (error) {
-      if (isRateLimitError(error) && attempt < MAX_RETRIES - 1) {
-        const waitTime = getRetryDelay(error, attempt)
+          return stream
+        } catch (error) {
+          if (isRateLimitError(error) && attempt < MAX_RETRIES - 1) {
+            const waitTime = getRetryDelay(error, attempt)
 
-        logger.warn('OpenAI rate limited (streaming), retrying', {
-          attempt: attempt + 1,
-          maxRetries: MAX_RETRIES,
-          waitTimeMs: waitTime,
-          model,
-        })
+            logger.warn('OpenAI rate limited (streaming), retrying', {
+              attempt: attempt + 1,
+              maxRetries: MAX_RETRIES,
+              waitTimeMs: waitTime,
+              model,
+            })
 
-        await sleep(waitTime)
-        continue
+            await sleep(waitTime)
+            continue
+          }
+
+          throw error
+        }
       }
 
-      throw error
+      throw new Error('OpenAI: Max retries exceeded (streaming)')
+    },
+    {
+      'openai.model': model,
+      'openai.message_count': params.messages.length,
     }
-  }
-
-  throw new Error('OpenAI: Max retries exceeded (streaming)')
+  )
 }
 
 /**

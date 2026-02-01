@@ -7,6 +7,7 @@ import { twilioClient, isTwilioConfigured, getTwilioPhoneNumber } from './client
 import { TwilioError } from './errors'
 import { logger } from '@/lib/logger'
 import { withRetry, type RetryOptions } from '@/lib/api/retry'
+import { twilioSpan } from '@/lib/instrumentation'
 
 // Call parameters
 export interface MakeCallParams {
@@ -52,18 +53,27 @@ export async function makeCall(params: MakeCallParams): Promise<CallResponse> {
   }
 
   try {
-    const call = await withRetry(async () => {
-      return await twilioClient!.calls.create({
-        to: params.to,
-        from: params.from || getTwilioPhoneNumber()!,
-        url: params.url || getDefaultTwiMLUrl(),
-        record: params.record,
-        recordingStatusCallback: params.recordingStatusCallback,
-        statusCallback: params.statusCallback,
-        statusCallbackMethod: params.statusCallbackMethod || 'POST',
-        statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-      })
-    }, retryOptions)
+    const call = await twilioSpan(
+      'make_call',
+      async () => {
+        return await withRetry(async () => {
+          return await twilioClient!.calls.create({
+            to: params.to,
+            from: params.from || getTwilioPhoneNumber()!,
+            url: params.url || getDefaultTwiMLUrl(),
+            record: params.record,
+            recordingStatusCallback: params.recordingStatusCallback,
+            statusCallback: params.statusCallback,
+            statusCallbackMethod: params.statusCallbackMethod || 'POST',
+            statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+          })
+        }, retryOptions)
+      },
+      {
+        'twilio.to_masked': params.to.slice(-4),
+        'twilio.record': params.record || false,
+      }
+    )
 
     const duration = Date.now() - startTime
     logger.info('Call initiated successfully', {
