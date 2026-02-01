@@ -28,6 +28,9 @@ if (isProduction) {
 export default defineConfig({
   testDir: './e2e',
 
+  /* Match both .spec.ts and .smoke.ts files */
+  testMatch: /.*\.(spec|smoke|test)\.ts/,
+
   /* Run tests in files in parallel */
   fullyParallel: true,
 

@@ -227,9 +227,10 @@ test.describe('Edge Cases', () => {
        pageText?.includes('Create') ||
        await page.locator('[role="status"]').count() > 0)
 
-    // The important thing is the page didn't crash
+    // The important thing is the page didn't crash AND shows appropriate empty state
     await expect(page.locator('body')).toBeVisible()
-    expect(hasEmptyState || pageText).toBeTruthy()
+    // Empty state indicator should be present when API returns empty data
+    expect(hasEmptyState).toBeTruthy()
   })
 
   test('should handle malformed API responses without crashing', async ({ page }) => {

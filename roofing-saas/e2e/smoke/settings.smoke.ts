@@ -188,8 +188,10 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
       // Switch back to general
       await page.getByRole('tab', { name: /General/ }).click()
 
-      // Tab switching should work without errors
-      expect(true).toBeTruthy()
+      // Verify General tab content is visible after switching back
+      const hasGeneralContent = await page.getByText(/Organization|Profile|Company|Business/i).isVisible()
+      const hasSettingsForm = await page.locator('form').isVisible()
+      expect(hasGeneralContent || hasSettingsForm).toBeTruthy()
     })
 
     test('should show appropriate settings content for each tab', async ({ page }) => {
@@ -271,9 +273,7 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
         const hasDatePicker = await page.locator('input[type="date"], [data-testid*="date"]').isVisible()
 
         // Audit logs should have search/filter capabilities
-        if (hasSearchInput || hasFilterOptions || hasDatePicker) {
-          expect(true).toBeTruthy()
-        }
+        expect(hasSearchInput || hasFilterOptions || hasDatePicker).toBeTruthy()
       }
     })
   })

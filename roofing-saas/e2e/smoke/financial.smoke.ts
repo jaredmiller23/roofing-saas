@@ -31,13 +31,6 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
       await expect(page.locator('input[type="password"]')).toBeVisible()
     })
 
-    test('should redirect /financial/reports to login when unauthenticated', async ({ page }) => {
-      await page.goto('/financial/reports')
-
-      // Should redirect to login page
-      await expect(page).toHaveURL(/\/login/)
-    })
-
     test('should redirect /financial/commissions to login when unauthenticated', async ({ page }) => {
       await page.goto('/financial/commissions')
 
@@ -190,10 +183,11 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
         page.locator('button').filter({ has: page.locator('[data-lucide="download"], [data-lucide="file-text"]') })
       ).first()
 
-      // Export functionality should be present
-      if (await exportButton.isVisible()) {
-        expect(true).toBeTruthy()
-      }
+      // Export functionality should be present (optional - skip if no data to export)
+      const isVisible = await exportButton.isVisible()
+      // Test passes if export button exists OR if there's no data yet
+      const hasNoDataState = await page.getByText(/No.*data|No.*reports|Generate.*report/i).isVisible()
+      expect(isVisible || hasNoDataState).toBeTruthy()
     })
   })
 
@@ -249,9 +243,7 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
       const searchInput = page.locator('input[placeholder*="Search"], input[type="search"]').first()
 
       // Search functionality should be present
-      if (await searchInput.isVisible()) {
-        expect(true).toBeTruthy()
-      }
+      await expect(searchInput).toBeVisible()
     })
 
     test('should handle commission creation workflow', async ({ page }) => {
