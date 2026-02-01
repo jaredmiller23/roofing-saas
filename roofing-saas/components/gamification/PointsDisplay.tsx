@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api/client'
-import { Trophy, TrendingUp, Target } from 'lucide-react'
+import { Trophy, TrendingUp, Target, Calendar } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 interface PointsData {
   total_points: number
@@ -17,6 +18,8 @@ interface PointsData {
   weekly_points: number
   monthly_points: number
 }
+
+type TimePeriod = 'daily' | 'weekly' | 'monthly'
 
 interface PointsDisplayProps {
   /** Optional pre-fetched data from consolidated API */
@@ -28,6 +31,7 @@ interface PointsDisplayProps {
 export function PointsDisplay({ data: externalData, isLoading: externalLoading }: PointsDisplayProps) {
   const [points, setPoints] = useState<PointsData | null>(null)
   const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('daily')
 
   const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
   const effectivePoints = externalData || points
@@ -117,61 +121,129 @@ export function PointsDisplay({ data: externalData, isLoading: externalLoading }
         </p>
       </div>
 
-      {/* Daily, Weekly, Monthly Stats */}
+      {/* Daily, Weekly, Monthly Stats - Clickable period toggles */}
       <TooltipProvider>
         <div className="grid grid-cols-3 gap-3">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+              <button
+                type="button"
+                onClick={() => setSelectedPeriod('daily')}
+                className={cn(
+                  "text-center p-3 rounded-lg cursor-pointer transition-all duration-200 w-full",
+                  selectedPeriod === 'daily'
+                    ? "bg-primary/20 ring-2 ring-primary"
+                    : "bg-muted/30 hover:bg-muted/50"
+                )}
+              >
                 <div className="flex items-center justify-center mb-1">
-                  <Target className="h-4 w-4 text-muted-foreground mr-1" />
-                  <span className="text-xs text-muted-foreground">Daily</span>
+                  <Target className={cn(
+                    "h-4 w-4 mr-1",
+                    selectedPeriod === 'daily' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-xs",
+                    selectedPeriod === 'daily' ? "text-primary font-medium" : "text-muted-foreground"
+                  )}>Daily</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
                   {effectivePoints.daily_points}
                 </p>
-              </div>
+              </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Points earned today</p>
+              <p>Points earned today - Click to view daily details</p>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+              <button
+                type="button"
+                onClick={() => setSelectedPeriod('weekly')}
+                className={cn(
+                  "text-center p-3 rounded-lg cursor-pointer transition-all duration-200 w-full",
+                  selectedPeriod === 'weekly'
+                    ? "bg-primary/20 ring-2 ring-primary"
+                    : "bg-muted/30 hover:bg-muted/50"
+                )}
+              >
                 <div className="flex items-center justify-center mb-1">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground mr-1" />
-                  <span className="text-xs text-muted-foreground">Weekly</span>
+                  <TrendingUp className={cn(
+                    "h-4 w-4 mr-1",
+                    selectedPeriod === 'weekly' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-xs",
+                    selectedPeriod === 'weekly' ? "text-primary font-medium" : "text-muted-foreground"
+                  )}>Weekly</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
                   {effectivePoints.weekly_points}
                 </p>
-              </div>
+              </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Points earned this week</p>
+              <p>Points earned this week - Click to view weekly details</p>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-center p-3 bg-muted/30 rounded-lg cursor-help hover:bg-muted/50 transition-colors">
+              <button
+                type="button"
+                onClick={() => setSelectedPeriod('monthly')}
+                className={cn(
+                  "text-center p-3 rounded-lg cursor-pointer transition-all duration-200 w-full",
+                  selectedPeriod === 'monthly'
+                    ? "bg-primary/20 ring-2 ring-primary"
+                    : "bg-muted/30 hover:bg-muted/50"
+                )}
+              >
                 <div className="flex items-center justify-center mb-1">
-                  <Trophy className="h-4 w-4 text-muted-foreground mr-1" />
-                  <span className="text-xs text-muted-foreground">Monthly</span>
+                  <Calendar className={cn(
+                    "h-4 w-4 mr-1",
+                    selectedPeriod === 'monthly' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-xs",
+                    selectedPeriod === 'monthly' ? "text-primary font-medium" : "text-muted-foreground"
+                  )}>Monthly</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">
                   {effectivePoints.monthly_points}
                 </p>
-              </div>
+              </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Points earned this month</p>
+              <p>Points earned this month - Click to view monthly details</p>
             </TooltipContent>
           </Tooltip>
         </div>
       </TooltipProvider>
+
+      {/* Selected Period Details */}
+      <div className="mt-4 p-3 bg-muted/20 rounded-lg border border-border">
+        <div className="flex items-center gap-2 mb-2">
+          {selectedPeriod === 'daily' && <Target className="h-4 w-4 text-primary" />}
+          {selectedPeriod === 'weekly' && <TrendingUp className="h-4 w-4 text-primary" />}
+          {selectedPeriod === 'monthly' && <Calendar className="h-4 w-4 text-primary" />}
+          <span className="text-sm font-medium text-foreground capitalize">
+            {selectedPeriod} Summary
+          </span>
+        </div>
+        <p className="text-2xl font-bold text-primary">
+          {selectedPeriod === 'daily' && effectivePoints.daily_points}
+          {selectedPeriod === 'weekly' && effectivePoints.weekly_points}
+          {selectedPeriod === 'monthly' && effectivePoints.monthly_points}
+          <span className="text-sm font-normal text-muted-foreground ml-2">points</span>
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {selectedPeriod === 'daily' && "Points earned today"}
+          {selectedPeriod === 'weekly' && "Points earned this week (Mon-Sun)"}
+          {selectedPeriod === 'monthly' && `Points earned in ${new Date().toLocaleString('default', { month: 'long' })}`}
+        </p>
+      </div>
     </div>
   )
 }
