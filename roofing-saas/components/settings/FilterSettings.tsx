@@ -229,9 +229,9 @@ export function FilterSettings() {
     <div className="space-y-6">
       {/* Success Message */}
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-900">
+        <Alert variant="success">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
             Filter configuration saved successfully!
           </AlertDescription>
         </Alert>
@@ -239,8 +239,8 @@ export function FilterSettings() {
 
       {/* Error Message */}
       {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <AlertDescription className="text-red-900">{error}</AlertDescription>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
