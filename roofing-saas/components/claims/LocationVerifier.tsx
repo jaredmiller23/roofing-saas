@@ -208,7 +208,7 @@ export function LocationVerifier({
             {(status === 'idle' || status === 'too_far' || status === 'error') && (
               <button
                 onClick={verifyLocation}
-                className="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+                className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90"
               >
                 {status === 'idle' ? 'Verify My Location' : 'Try Again'}
               </button>
