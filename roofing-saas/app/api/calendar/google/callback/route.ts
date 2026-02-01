@@ -48,7 +48,10 @@ export async function GET(request: NextRequest) {
 
     // Check state is not too old (5 minutes)
     if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
-      throw ValidationError('State token expired')
+      logger.warn('Google OAuth state token expired', { timestamp: stateData.timestamp })
+      return NextResponse.redirect(
+        `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent('Authorization expired. Please try again.')}`
+      )
     }
 
     const supabase = await createClient()

@@ -276,12 +276,18 @@ export async function getGoogleCalendarClient(userId: string, tenantId: string):
     .rpc('decrypt_google_token', { encrypted_data: token.refresh_token })
 
   if (accessTokenError || refreshTokenError || !decryptedAccessToken || !decryptedRefreshToken) {
-    logger.error('Failed to decrypt Google tokens', {
+    logger.error('Failed to decrypt Google tokens - encryption key may be missing', {
       userId,
       tenantId,
       accessTokenError,
       refreshTokenError
     })
+    // Delete corrupted token so user can re-authorize
+    await supabase
+      .from('google_calendar_tokens')
+      .delete()
+      .eq('user_id', userId)
+      .eq('tenant_id', tenantId)
     return null
   }
 
@@ -295,7 +301,13 @@ export async function getGoogleCalendarClient(userId: string, tenantId: string):
     const newToken = await refreshAccessToken(decryptedRefreshToken as string)
 
     if (!newToken) {
-      logger.error('Failed to refresh Google token', { userId, tenantId })
+      logger.error('Failed to refresh Google token - deleting stale token', { userId, tenantId })
+      // Refresh failed (likely revoked) - delete stale token so user can re-authorize
+      await supabase
+        .from('google_calendar_tokens')
+        .delete()
+        .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
       return null
     }
 
@@ -347,21 +359,37 @@ export async function exchangeAuthCode(
     grant_type: 'authorization_code',
   })
 
-  const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  })
+  // Add timeout to prevent indefinite hangs
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
 
-  if (!response.ok) {
-    const error = await response.text()
-    logger.error('Failed to exchange Google auth code', { error })
-    throw new Error(`Token exchange failed: ${error}`)
+  try {
+    const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params,
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      const error = await response.text()
+      logger.error('Failed to exchange Google auth code', { error })
+      throw new Error(`Token exchange failed: ${error}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error('Google token exchange timed out')
+      throw new Error('Token exchange timed out - please try again')
+    }
+    throw error
   }
-
-  return await response.json()
 }
 
 /**
@@ -382,21 +410,38 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
     grant_type: 'refresh_token',
   })
 
-  const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  })
+  // Add timeout to prevent indefinite hangs
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 seconds
 
-  if (!response.ok) {
-    const error = await response.text()
+  try {
+    const response = await fetch(`${GOOGLE_OAUTH_URL}/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params,
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      const error = await response.text()
+      logger.error('Failed to refresh Google token', { error })
+      return null
+    }
+
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      logger.error('Google token refresh timed out')
+      return null
+    }
     logger.error('Failed to refresh Google token', { error })
     return null
   }
-
-  return await response.json()
 }
 
 /**
