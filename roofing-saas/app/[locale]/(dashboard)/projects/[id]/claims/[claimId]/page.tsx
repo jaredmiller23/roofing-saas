@@ -73,8 +73,8 @@ export default function ClaimDetailPage() {
       const res = await fetch(`/api/claims/${claimId}`)
       if (res.ok) {
         const data = await res.json()
-        // API returns { success: true, data: { claim: {...} } }
-        setClaim(data.data?.claim || data.claim)
+        // API returns { success: true, data: <claim object> }
+        setClaim(data.data || data.claim || data)
       } else {
         console.error('Failed to fetch claim:', res.status)
       }
