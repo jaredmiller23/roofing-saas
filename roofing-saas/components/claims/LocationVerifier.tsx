@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { calculateDistance } from '@/lib/claims/inspection-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface LocationVerifierProps {
   propertyLatitude?: number
@@ -195,9 +196,11 @@ export function LocationVerifier({
 
           {/* GPS accuracy indicator */}
           {currentCoords && currentCoords.accuracy > 50 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700">
-              GPS accuracy: {Math.round(currentCoords.accuracy)}m. Move to an open area for better accuracy.
-            </div>
+            <Alert variant="warning">
+              <AlertDescription>
+                GPS accuracy: {Math.round(currentCoords.accuracy)}m. Move to an open area for better accuracy.
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Actions */}

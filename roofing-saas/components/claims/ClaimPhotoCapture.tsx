@@ -6,6 +6,7 @@ import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   DamageTypeSelector,
   SeveritySelector,
@@ -537,17 +538,17 @@ export function ClaimPhotoCapture({
 
           {/* Success */}
           {uploadState.status === 'success' && (
-            <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 text-center">
-              {uploadState.message}
-            </div>
+            <Alert variant="success">
+              <AlertDescription>{uploadState.message}</AlertDescription>
+            </Alert>
           )}
 
           {/* Error */}
           {uploadState.status === 'error' && (
             <div className="space-y-3">
-              <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4">
-                {uploadState.message}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{uploadState.message}</AlertDescription>
+              </Alert>
               <button
                 onClick={handleCancel}
                 className="w-full py-2 border border-border text-muted-foreground rounded-lg hover:bg-accent"
