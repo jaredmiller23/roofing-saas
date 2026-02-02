@@ -353,28 +353,162 @@ export async function migrateProlineData(
 // =================
 
 /**
- * Parse CSV file
+ * Parse result with error tracking
+ */
+interface ParseResult<T> {
+  data: T[]
+  errors: Array<{
+    row: number
+    message: string
+    code?: string
+  }>
+  meta: {
+    totalRows: number
+    parsedRows: number
+    errorRows: number
+  }
+}
+
+/**
+ * Parse CSV file with row-level error handling
+ * Continues processing even if individual rows fail
  */
 async function parseCsv<T>(filePath: string): Promise<T[]> {
   const fileContent = fs.readFileSync(filePath, 'utf-8')
+  const parseResult = await parseCsvWithErrors<T>(fileContent)
 
-  interface PapaParseResult {
-    data: unknown[]
+  // Log any parsing errors but continue with valid rows
+  if (parseResult.errors.length > 0) {
+    console.warn(`[CSV Parse] ${parseResult.errors.length} rows had parsing errors:`)
+    parseResult.errors.slice(0, 10).forEach(err => {
+      console.warn(`  Row ${err.row}: ${err.message}`)
+    })
+    if (parseResult.errors.length > 10) {
+      console.warn(`  ... and ${parseResult.errors.length - 10} more errors`)
+    }
   }
 
-  return new Promise((resolve, reject) => {
-    Papa.parse(fileContent, {
+  console.log(`[CSV Parse] Parsed ${parseResult.meta.parsedRows}/${parseResult.meta.totalRows} rows successfully`)
+  return parseResult.data
+}
+
+/**
+ * Parse CSV with detailed error tracking
+ */
+function parseCsvWithErrors<T>(content: string): Promise<ParseResult<T>> {
+  return new Promise((resolve) => {
+    const data: T[] = []
+    const errors: ParseResult<T>['errors'] = []
+    let totalRows = 0
+
+    interface PapaParseRowResult {
+      data: T
+      errors: Array<{ row?: number; message: string; code?: string }>
+      meta: { cursor?: number }
+    }
+
+    interface PapaParseMeta {
+      lines?: number
+      aborted?: boolean
+      cursor?: number
+    }
+
+    Papa.parse(content, {
       header: true,
       skipEmptyLines: true,
       transformHeader: (header: string) => header.trim().toLowerCase().replace(/\s+/g, '_'),
-      complete: (results: PapaParseResult) => {
-        resolve(results.data as T[])
+
+      // Process each row individually (allows row-level error recovery)
+      step: (results: PapaParseRowResult, _parser: unknown) => {
+        totalRows++
+
+        // Check for row-level errors from papaparse
+        if (results.errors && results.errors.length > 0) {
+          for (const err of results.errors) {
+            errors.push({
+              row: err.row ?? totalRows,
+              message: err.message,
+              code: err.code,
+            })
+          }
+          // Still try to use the data if available (partial row)
+          if (results.data && Object.keys(results.data as object).length > 0) {
+            try {
+              validateRowData(results.data as T)
+              data.push(results.data)
+            } catch (validationError) {
+              errors.push({
+                row: totalRows,
+                message: `Validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
+              })
+            }
+          }
+        } else {
+          // No parse errors - validate and add the row
+          try {
+            validateRowData(results.data as T)
+            data.push(results.data)
+          } catch (validationError) {
+            errors.push({
+              row: totalRows,
+              message: `Validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
+            })
+          }
+        }
       },
+
+      complete: (meta: PapaParseMeta) => {
+        resolve({
+          data,
+          errors,
+          meta: {
+            totalRows: totalRows || meta.lines || 0,
+            parsedRows: data.length,
+            errorRows: errors.length,
+          },
+        })
+      },
+
       error: (error: Error) => {
-        reject(error)
+        // Fatal parse error (e.g., file encoding issues)
+        // Still return what we have so far
+        errors.push({
+          row: 0,
+          message: `Fatal parse error: ${error.message}`,
+          code: 'FATAL',
+        })
+        resolve({
+          data,
+          errors,
+          meta: {
+            totalRows,
+            parsedRows: data.length,
+            errorRows: errors.length,
+          },
+        })
       },
     })
   })
+}
+
+/**
+ * Basic validation of row data
+ * Throws if row is completely empty or malformed
+ */
+function validateRowData<T>(row: T): void {
+  if (!row || typeof row !== 'object') {
+    throw new Error('Row is null or not an object')
+  }
+
+  // Check if row is completely empty (all values are empty strings or null)
+  const values = Object.values(row as Record<string, unknown>)
+  const hasAnyValue = values.some(v =>
+    v !== null && v !== undefined && v !== ''
+  )
+
+  if (!hasAnyValue) {
+    throw new Error('Row is empty - all fields are blank')
+  }
 }
 
 /**
