@@ -66,6 +66,15 @@ export async function GET(request: NextRequest) {
       ? (scopeParam as DashboardScope)
       : 'company'
 
+    // Per-query timing for performance diagnosis
+    const timings: Record<string, number> = {}
+    const timed = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
+      const start = Date.now()
+      const result = await fn()
+      timings[name] = Date.now() - start
+      return result
+    }
+
     // Execute user info map and metrics/data queries in parallel
     // userInfoMap is needed by activity feed and leaderboards, so fetch it
     // concurrently with metrics (which don't need it), then pass to dependents
@@ -76,20 +85,20 @@ export async function GET(request: NextRequest) {
       points
     ] = await Promise.all([
       // User info map (shared across activity feed and leaderboards)
-      fetchUserInfoMap(supabase, tenantId),
+      timed('userInfoMap', () => fetchUserInfoMap(supabase, tenantId)),
 
       // Metrics (tier-appropriate)
-      mode === 'field'
+      timed('metrics', () => mode === 'field'
         ? getFieldMetrics(supabase, tenantId, userId)
         : mode === 'manager'
           ? getManagerMetrics(supabase, tenantId, scope, userId)
-          : getFullMetrics(supabase, tenantId, scope, userId),
+          : getFullMetrics(supabase, tenantId, scope, userId)),
 
       // Weekly challenge
-      fetchWeeklyChallenge(supabase, tenantId, userId),
+      timed('challenge', () => fetchWeeklyChallenge(supabase, tenantId, userId)),
 
       // User points
-      fetchUserPoints(supabase, userId)
+      timed('points', () => fetchUserPoints(supabase, userId))
     ])
 
     // Second parallel batch: queries that depend on userInfoMap
@@ -99,21 +108,24 @@ export async function GET(request: NextRequest) {
       salesLeaderboard,
     ] = await Promise.all([
       // Activity feed
-      fetchActivityFeed(supabase, tenantId, userInfoMap),
+      timed('activity', () => fetchActivityFeed(supabase, tenantId, userInfoMap)),
 
       // Knock leaderboard (weekly)
-      fetchLeaderboard(supabase, tenantId, userId, 'knocks', 'weekly', 10, userInfoMap),
+      timed('knockLeaderboard', () => fetchLeaderboard(supabase, tenantId, userId, 'knocks', 'weekly', 10, userInfoMap)),
 
       // Sales leaderboard (weekly)
-      fetchLeaderboard(supabase, tenantId, userId, 'sales', 'weekly', 10, userInfoMap),
+      timed('salesLeaderboard', () => fetchLeaderboard(supabase, tenantId, userId, 'sales', 'weekly', 10, userInfoMap)),
     ])
 
     const duration = Date.now() - startTime
-    // Log performance
+    // Log performance with per-query breakdown
+    const timingStr = Object.entries(timings)
+      .map(([k, v]) => `${k}=${v}ms`)
+      .join(', ')
     if (duration > 2000) {
-      console.warn(`[Dashboard Consolidated] Slow response: ${duration}ms`)
+      console.warn(`[Dashboard Consolidated] Slow response: ${duration}ms | ${timingStr}`)
     } else {
-      console.log(`[Dashboard Consolidated] Response time: ${duration}ms`)
+      console.log(`[Dashboard Consolidated] Response time: ${duration}ms | ${timingStr}`)
     }
 
     // Return consolidated response (meta folded into data payload)
