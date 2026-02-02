@@ -31,6 +31,15 @@ import {
 // ENRICHMENT QUEUE MANAGER
 // =====================================================
 
+/**
+ * Provider fallback order - if primary fails, try these in sequence
+ * Order based on: data quality > coverage > cost
+ */
+const PROVIDER_FALLBACK_ORDER: EnrichmentProvider[] = [
+  'batchdata',   // Primary - best property data
+  'tracerfy',    // Secondary - good skip trace data
+];
+
 export class EnrichmentQueueManager {
   private supabase: Awaited<ReturnType<typeof createClient>>;
   private batchDataClient?: BatchDataClient;
@@ -42,21 +51,50 @@ export class EnrichmentQueueManager {
 
   /**
    * Initialize enrichment provider clients
+   * Initializes all available providers for fallback support
    */
-  private initializeProviderClients(provider: EnrichmentProvider) {
-    if (provider === 'batchdata' && !this.batchDataClient) {
+  private initializeProviderClients(_preferredProvider: EnrichmentProvider) {
+    // Always try to initialize both providers for fallback support
+    if (!this.batchDataClient) {
       const apiKey = process.env.BATCHDATA_API_KEY;
       if (apiKey) {
         this.batchDataClient = new BatchDataClient({ api_key: apiKey });
       }
     }
 
-    if (provider === 'tracerfy' && !this.tracerfyClient) {
+    if (!this.tracerfyClient) {
       const apiKey = process.env.TRACERFY_API_KEY;
       if (apiKey) {
         this.tracerfyClient = new TracerfyClient({ api_key: apiKey });
       }
     }
+  }
+
+  /**
+   * Get available providers in fallback order, starting with the requested one
+   */
+  private getAvailableProviders(preferredProvider: EnrichmentProvider): EnrichmentProvider[] {
+    const available: EnrichmentProvider[] = [];
+
+    // Start with preferred provider
+    if (preferredProvider === 'batchdata' && this.batchDataClient) {
+      available.push('batchdata');
+    } else if (preferredProvider === 'tracerfy' && this.tracerfyClient) {
+      available.push('tracerfy');
+    }
+
+    // Add fallbacks (excluding preferred since it's already first)
+    for (const provider of PROVIDER_FALLBACK_ORDER) {
+      if (provider === preferredProvider) continue;
+      if (provider === 'batchdata' && this.batchDataClient && !available.includes('batchdata')) {
+        available.push('batchdata');
+      }
+      if (provider === 'tracerfy' && this.tracerfyClient && !available.includes('tracerfy')) {
+        available.push('tracerfy');
+      }
+    }
+
+    return available;
   }
 
   /**
@@ -191,25 +229,74 @@ export class EnrichmentQueueManager {
     const delayMs = options.delay_ms || 100;
     const maxRetries = options.max_retries || 3;
 
+    // Get available providers for fallback
+    const availableProviders = this.getAvailableProviders(provider);
+    if (availableProviders.length === 0) {
+      throw new Error(`No enrichment providers configured. Set BATCHDATA_API_KEY or TRACERFY_API_KEY.`);
+    }
+
     for (let i = 0; i < addresses.length; i += batchSize) {
       const batch = addresses.slice(i, i + batchSize);
 
-      // Enrich batch
+      // Enrich batch with fallback support
       let batchResults: PropertyEnrichmentResult[] = [];
+      let lastError: Error | null = null;
+      let usedProvider: EnrichmentProvider | null = null;
 
-      if (provider === 'batchdata' && this.batchDataClient) {
-        batchResults = await this.batchDataClient.enrichPropertyBatch(batch, {
-          batchSize,
-          delayMs,
-          maxRetries,
+      // Try each provider in fallback order until one succeeds
+      for (const currentProvider of availableProviders) {
+        try {
+          if (currentProvider === 'batchdata' && this.batchDataClient) {
+            batchResults = await this.batchDataClient.enrichPropertyBatch(batch, {
+              batchSize,
+              delayMs,
+              maxRetries,
+            });
+            usedProvider = 'batchdata';
+            break; // Success - exit fallback loop
+          } else if (currentProvider === 'tracerfy' && this.tracerfyClient) {
+            // Tracerfy uses asynchronous batch processing with polling
+            batchResults = await this.tracerfyClient.enrichPropertyBatch(batch, {
+              maxRetries,
+            });
+            usedProvider = 'tracerfy';
+            break; // Success - exit fallback loop
+          }
+        } catch (providerError) {
+          lastError = providerError instanceof Error ? providerError : new Error(String(providerError));
+          console.warn(`[Enrichment] Provider ${currentProvider} failed for batch, trying fallback`, {
+            error: lastError.message,
+            batchIndex: i,
+            remainingProviders: availableProviders.slice(availableProviders.indexOf(currentProvider) + 1),
+          });
+          // Continue to next provider in fallback chain
+        }
+      }
+
+      // If all providers failed, use the last error
+      if (batchResults.length === 0 && lastError) {
+        console.error(`[Enrichment] All providers failed for batch`, {
+          batchIndex: i,
+          error: lastError.message,
         });
-      } else if (provider === 'tracerfy' && this.tracerfyClient) {
-        // Tracerfy uses asynchronous batch processing with polling
-        batchResults = await this.tracerfyClient.enrichPropertyBatch(batch, {
-          maxRetries,
-        });
-      } else {
-        throw new Error(`Provider ${provider} not supported or not configured`);
+        // Mark all addresses in this batch as failed
+        for (const addr of batch) {
+          errors.push({
+            address: addr,
+            error_type: 'api_error',
+            error_message: `All providers failed: ${lastError.message}`,
+            error_details: { providers_tried: availableProviders },
+            retry_count: maxRetries,
+            timestamp: new Date().toISOString(),
+          });
+          failedCount++;
+        }
+        continue; // Skip to next batch
+      }
+
+      // Log if we used a fallback provider
+      if (usedProvider && usedProvider !== provider) {
+        console.info(`[Enrichment] Used fallback provider ${usedProvider} instead of ${provider}`);
       }
 
       // Process batch results
