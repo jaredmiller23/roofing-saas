@@ -720,7 +720,13 @@ export default function SignDocumentPage() {
       if (signerType === 'company') {
         return '/signatures'
       }
-      // For customers, just go home (they likely don't have CRM access)
+      // For in-person signing (customer on employee's device), stay in app
+      if (isInPerson) {
+        return document?.project_id
+          ? `/projects/${document.project_id}#signatures`
+          : '/signatures'
+      }
+      // For remote customers (signing from email link), go to public landing
       return '/'
     }
 
