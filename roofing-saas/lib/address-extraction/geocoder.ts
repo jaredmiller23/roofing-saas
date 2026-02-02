@@ -142,7 +142,9 @@ export class GeocodingClient {
   private apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+    // Use server-side key (no referer restrictions) for API route calls
+    // Falls back to public key for backwards compatibility
+    this.apiKey = apiKey || process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
     if (!this.apiKey) {
       console.warn('Google Maps API key not configured');
