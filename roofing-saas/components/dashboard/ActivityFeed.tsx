@@ -58,7 +58,7 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ data: externalData, isLoading: externalLoading }: ActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([])
-  const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [internalLoading, setInternalLoading] = useState(externalLoading === undefined)
   const [error, setError] = useState<string | null>(null)
 
   const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
@@ -98,8 +98,8 @@ export function ActivityFeed({ data: externalData, isLoading: externalLoading }:
   }, [externalData])
 
   const fetchActivities = async () => {
-    // Skip fetch if external data is provided
-    if (externalData !== undefined) return
+    // Skip fetch if parent is handling data loading
+    if (externalLoading !== undefined) return
 
     setInternalLoading(true)
     setError(null)
@@ -132,12 +132,12 @@ export function ActivityFeed({ data: externalData, isLoading: externalLoading }:
   }
 
   useEffect(() => {
-    // Only fetch if no external data provided
-    if (externalData === undefined) {
+    // Only fetch if parent is NOT handling data loading
+    if (externalLoading === undefined) {
       fetchActivities()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalData])
+  }, [externalLoading])
 
   const getIcon = (type: Activity['type']) => {
     switch (type) {

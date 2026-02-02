@@ -52,7 +52,7 @@ export function Leaderboard({
 }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null)
-  const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [internalLoading, setInternalLoading] = useState(externalLoading === undefined)
   const [selectedPeriod, setSelectedPeriod] = useState(period)
 
   // Use external data if provided
@@ -67,16 +67,16 @@ export function Leaderboard({
   }, [externalData])
 
   useEffect(() => {
-    // Only fetch if no external data and period changes
-    if (externalData === undefined) {
+    // Only fetch if parent is NOT handling data loading
+    if (externalLoading === undefined) {
       fetchLeaderboard()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPeriod, type, externalData])
+  }, [selectedPeriod, type, externalLoading])
 
   const fetchLeaderboard = async () => {
-    // Skip fetch if external data is provided
-    if (externalData !== undefined) return
+    // Skip fetch if parent is handling data loading
+    if (externalLoading !== undefined) return
 
     setInternalLoading(true)
     try {

@@ -44,7 +44,7 @@ interface WeeklyChallengeWidgetProps {
 
 export function WeeklyChallengeWidget({ data: externalData, isLoading: externalLoading }: WeeklyChallengeWidgetProps) {
   const [challenge, setChallenge] = useState<Challenge | null>(null)
-  const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [internalLoading, setInternalLoading] = useState(externalLoading === undefined)
   const [error, setError] = useState<string | null>(null)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
@@ -52,8 +52,8 @@ export function WeeklyChallengeWidget({ data: externalData, isLoading: externalL
   const effectiveChallenge = externalData || challenge
 
   const fetchWeeklyChallenge = async () => {
-    // Skip fetch if external data is provided
-    if (externalData !== undefined) return
+    // Skip fetch if parent is handling data loading
+    if (externalLoading !== undefined) return
 
     setInternalLoading(true)
     setError(null)
@@ -86,8 +86,8 @@ export function WeeklyChallengeWidget({ data: externalData, isLoading: externalL
   }
 
   useEffect(() => {
-    // Only fetch if no external data provided
-    if (externalData === undefined) {
+    // Only fetch if parent is NOT handling data loading
+    if (externalLoading === undefined) {
       fetchWeeklyChallenge()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -30,23 +30,23 @@ interface PointsDisplayProps {
 
 export function PointsDisplay({ data: externalData, isLoading: externalLoading }: PointsDisplayProps) {
   const [points, setPoints] = useState<PointsData | null>(null)
-  const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [internalLoading, setInternalLoading] = useState(externalLoading === undefined)
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('daily')
 
   const isLoading = externalLoading !== undefined ? externalLoading : internalLoading
   const effectivePoints = externalData || points
 
   useEffect(() => {
-    // Only fetch if no external data provided
-    if (externalData === undefined) {
+    // Only fetch if parent is NOT handling data loading
+    if (externalLoading === undefined) {
       fetchPoints()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalData])
+  }, [externalLoading])
 
   const fetchPoints = async () => {
-    // Skip fetch if external data is provided
-    if (externalData !== undefined) return
+    // Skip fetch if parent is handling data loading
+    if (externalLoading !== undefined) return
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
