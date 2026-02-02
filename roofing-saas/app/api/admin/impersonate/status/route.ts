@@ -62,33 +62,26 @@ export async function GET(_request: NextRequest) {
     const supabase = await createClient()
 
     // Get admin and impersonated user details
-    const { data: adminData } = await supabase
+    // Two-step query: tenant_users FK references auth.users, not public.users
+    const { data: impersonatedTenantData } = await supabase
       .from('tenant_users')
-      .select(`
-        users:user_id (
-          email
-        )
-      `)
-      .eq('user_id', sessionData.admin_user_id)
-      .single()
-
-    const { data: impersonatedData } = await supabase
-      .from('tenant_users')
-      .select(`
-        role,
-        users:user_id (
-          email
-        )
-      `)
+      .select('role')
       .eq('user_id', sessionData.impersonated_user_id)
       .single()
+
+    // Get user emails from public.users
+    const { data: usersData } = await supabase
+      .from('users')
+      .select('id, email')
+      .in('id', [sessionData.admin_user_id, sessionData.impersonated_user_id])
 
     // Calculate time remaining
     const timeRemainingMs = expiresAt.getTime() - now.getTime()
     const timeRemainingSeconds = Math.floor(timeRemainingMs / 1000)
 
-    const adminUserData = adminData?.users as { email?: string } | null
-    const impersonatedUserData = impersonatedData?.users as { email?: string } | null
+    const adminUserData = usersData?.find(u => u.id === sessionData.admin_user_id)
+    const impersonatedUserData = usersData?.find(u => u.id === sessionData.impersonated_user_id)
+    const impersonatedData = impersonatedTenantData
 
     const response: ImpersonationStatusResponse = {
       is_impersonating: true,
@@ -99,7 +92,7 @@ export async function GET(_request: NextRequest) {
       impersonated_user: {
         id: sessionData.impersonated_user_id,
         email: impersonatedUserData?.email || '',
-        role: impersonatedData?.role || 'user',
+        role: impersonatedData?.role ?? 'user',
       },
       started_at: sessionData.started_at,
       expires_at: sessionData.expires_at,

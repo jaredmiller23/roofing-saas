@@ -103,7 +103,7 @@ export default function EventsPage() {
     }
   }, [])
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (range?: Date[] | { start: Date; end: Date }) => {
     setIsLoading(true)
     try {
       interface ApiEvent {
@@ -119,7 +119,31 @@ export default function EventsPage() {
         contact_id?: string | null
         project_id?: string | null
       }
-      const { data: eventsList } = await apiFetchPaginated<ApiEvent[]>('/api/events')
+
+      // Build URL with date range if provided
+      let url = '/api/events?limit=100' // Increase limit for calendar view
+      if (range) {
+        let startAfter: string
+        let endBefore: string
+        if (Array.isArray(range)) {
+          // Array of dates (e.g., week view gives [Sun, Mon, Tue, ...])
+          startAfter = range[0].toISOString()
+          endBefore = range[range.length - 1].toISOString()
+        } else {
+          // Object with start/end (e.g., month view)
+          startAfter = range.start.toISOString()
+          endBefore = range.end.toISOString()
+        }
+        url += `&start_after=${encodeURIComponent(startAfter)}&end_before=${encodeURIComponent(endBefore)}`
+      } else {
+        // Default to current month if no range specified
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+        url += `&start_after=${encodeURIComponent(startOfMonth.toISOString())}&end_before=${encodeURIComponent(endOfMonth.toISOString())}`
+      }
+
+      const { data: eventsList } = await apiFetchPaginated<ApiEvent[]>(url)
 
       // Transform events for calendar
       const calendarEvents: PageCalendarEvent[] = eventsList.map((event) => ({

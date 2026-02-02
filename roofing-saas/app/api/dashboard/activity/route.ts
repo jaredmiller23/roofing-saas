@@ -82,37 +82,28 @@ export async function GET() {
       }
     }
 
-    // Batch lookup user names from tenant_users -> auth.users
+    // Batch lookup user names from public.users
+    // Two-step query: tenant_users FK references auth.users, not public.users
     const userMap = new Map<string, string>()
     if (userIds.size > 0) {
-      const { data: users } = await supabase
-        .from('tenant_users')
-        .select(`
-          user_id,
-          users:user_id (
-            email,
-            raw_user_meta_data
-          )
-        `)
-        .eq('tenant_id', tenantId)
-        .in('user_id', Array.from(userIds))
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email, raw_user_meta_data')
+        .in('id', Array.from(userIds))
 
-      if (users) {
-        for (const tu of users) {
-          const userData = tu.users as {
-            email?: string
-            raw_user_meta_data?: {
-              first_name?: string
-              last_name?: string
-              name?: string
-              full_name?: string
-            }
-          } | null
-          const metadata = userData?.raw_user_meta_data || {}
+      if (usersData) {
+        for (const userData of usersData) {
+          if (!userData.id) continue
+          const metadata = (userData.raw_user_meta_data as {
+            first_name?: string
+            last_name?: string
+            name?: string
+            full_name?: string
+          }) || {}
           const firstName = metadata.first_name || metadata.name?.split(' ')[0] || ''
           const lastName = metadata.last_name || metadata.name?.split(' ').slice(1).join(' ') || ''
-          const fullName = metadata.full_name || `${firstName} ${lastName}`.trim() || userData?.email?.split('@')[0] || 'Team Member'
-          userMap.set(tu.user_id, fullName)
+          const fullName = metadata.full_name || `${firstName} ${lastName}`.trim() || userData.email?.split('@')[0] || 'Team Member'
+          userMap.set(userData.id, fullName)
         }
       }
     }

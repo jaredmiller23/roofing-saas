@@ -57,39 +57,36 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Verify target user exists and is in same tenant
-    const { data: targetUser, error: targetError } = await supabase
+    // Two-step query: tenant_users FK references auth.users, not public.users
+    const { data: targetTenantUser, error: targetError } = await supabase
       .from('tenant_users')
-      .select(`
-        user_id,
-        tenant_id,
-        role,
-        users:user_id (
-          email
-        )
-      `)
+      .select('user_id, tenant_id, role')
       .eq('user_id', targetUserId)
       .eq('tenant_id', tenantId)
       .single()
 
-    if (targetError || !targetUser) {
+    if (targetError || !targetTenantUser) {
       throw ValidationError('Target user not found in your tenant')
     }
 
     // Prevent impersonating another admin
-    if (targetUser.role === 'admin') {
+    if (targetTenantUser.role === 'admin') {
       throw AuthorizationError('Cannot impersonate another admin')
     }
 
-    // Get admin user email
-    const { data: adminData } = await supabase
-      .from('tenant_users')
-      .select(`
-        users:user_id (
-          email
-        )
-      `)
-      .eq('user_id', user.id)
-      .single()
+    // Get user emails from public.users
+    const { data: usersData } = await supabase
+      .from('users')
+      .select('id, email')
+      .in('id', [targetUserId, user.id])
+
+    const targetUser = {
+      ...targetTenantUser,
+      users: usersData?.find(u => u.id === targetUserId) || null
+    }
+    const adminData = {
+      users: usersData?.find(u => u.id === user.id) || null
+    }
 
     // Calculate expiration time
     const startedAt = new Date()

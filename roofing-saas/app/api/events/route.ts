@@ -32,6 +32,9 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('project_id')
     const jobId = searchParams.get('job_id')
     const search = searchParams.get('search')
+    // Date range filtering for calendar views
+    const startAfter = searchParams.get('start_after') // ISO date string - get events starting after this
+    const endBefore = searchParams.get('end_before') // ISO date string - get events ending before this
 
     const supabase = await createClient()
     let query = supabase
@@ -50,9 +53,20 @@ export async function GET(request: NextRequest) {
       const escapedSearch = search.replace(/[%_\\]/g, '\\$&')
       query = query.or(`title.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,location.ilike.%${escapedSearch}%`)
     }
+    // Date range filtering - events that overlap with the requested range
+    // An event overlaps if it starts before the range ends AND ends after the range starts
+    if (startAfter) {
+      query = query.gte('end_at', startAfter) // Event ends after range start
+    }
+    if (endBefore) {
+      query = query.lte('start_at', endBefore) // Event starts before range end
+    }
 
+    // When date range is specified, order by start time ascending (chronological)
+    // Otherwise, order by start time descending (most recent first)
+    const orderAscending = !!(startAfter || endBefore)
     query = query
-      .order('start_at', { ascending: false })
+      .order('start_at', { ascending: orderAscending })
       .range((page - 1) * limit, page * limit - 1)
 
     const { data: events, error, count } = await query

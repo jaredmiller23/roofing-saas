@@ -2,15 +2,23 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { EventForm } from '@/components/events/event-form'
 
+interface NewEventPageProps {
+  searchParams: Promise<{ start?: string; end?: string }>
+}
+
 /**
  * New event page
  */
-export default async function NewEventPage() {
+export default async function NewEventPage({ searchParams }: NewEventPageProps) {
   const user = await getCurrentUser()
 
   if (!user) {
     redirect('/login')
   }
+
+  const params = await searchParams
+  const initialStart = params.start || undefined
+  const initialEnd = params.end || undefined
 
   return (
     <div className="p-8">
@@ -22,7 +30,7 @@ export default async function NewEventPage() {
           </p>
         </div>
 
-        <EventForm />
+        <EventForm initialStart={initialStart} initialEnd={initialEnd} />
       </div>
     </div>
   )

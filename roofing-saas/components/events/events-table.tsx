@@ -201,7 +201,11 @@ export function EventsTable({ params }: EventsTableProps) {
           </thead>
           <tbody className="bg-card divide-y divide-border">
             {events.map((event) => (
-              <tr key={event.id} className="hover:bg-accent">
+              <tr
+                key={event.id}
+                className="hover:bg-accent cursor-pointer"
+                onClick={() => router.push(`/events/${event.id}`)}
+              >
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -253,7 +257,10 @@ export function EventsTable({ params }: EventsTableProps) {
                     {event.status?.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td
+                  className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Link
                     href={`/events/${event.id}`}
                     className="text-primary hover:text-primary/80 mr-4"

@@ -145,40 +145,40 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch user names for team performance display
+    // Two-step query: tenant_users FK references auth.users, not public.users
     const { data: tenantUsers } = await supabase
       .from('tenant_users')
-      .select(`
-        user_id,
-        users:user_id (
-          email,
-          raw_user_meta_data
-        )
-      `)
+      .select('user_id')
       .eq('tenant_id', tenantId)
 
     // Build user name map
     const userNames: Record<string, string> = {}
-    if (tenantUsers) {
-      for (const tu of tenantUsers) {
-        const userData = tu.users as {
-          email?: string
-          raw_user_meta_data?: {
+    if (tenantUsers && tenantUsers.length > 0) {
+      const userIds = tenantUsers.map(tu => tu.user_id)
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email, raw_user_meta_data')
+        .in('id', userIds)
+
+      if (usersData) {
+        for (const userData of usersData) {
+          if (!userData.id) continue
+          const metadata = (userData.raw_user_meta_data as {
             full_name?: string
             first_name?: string
             last_name?: string
             name?: string
-          }
-        } | null
-        const metadata = userData?.raw_user_meta_data || {}
+          }) || {}
 
-        // Try to get full name from metadata
-        const fullName = metadata.full_name ||
-                        (metadata.first_name && metadata.last_name ? `${metadata.first_name} ${metadata.last_name}` : '') ||
-                        metadata.name ||
-                        userData?.email?.split('@')[0] ||
-                        'Unknown'
+          // Try to get full name from metadata
+          const fullName = metadata.full_name ||
+                          (metadata.first_name && metadata.last_name ? `${metadata.first_name} ${metadata.last_name}` : '') ||
+                          metadata.name ||
+                          userData.email?.split('@')[0] ||
+                          'Unknown'
 
-        userNames[tu.user_id] = fullName
+          userNames[userData.id] = fullName
+        }
       }
     }
 

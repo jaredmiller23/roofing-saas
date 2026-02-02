@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { CalendarDays, Clock, MapPin, User } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { AddressLookup } from '@/components/events/address-lookup'
 
 interface TeamMember {
   id: string
@@ -34,9 +36,12 @@ interface EventFormProps {
     outcome_notes: string | null
     organizer: string | null
   }
+  // Initial start/end times from calendar click (ISO strings)
+  initialStart?: string
+  initialEnd?: string
 }
 
-export function EventForm({ event }: EventFormProps) {
+export function EventForm({ event, initialStart, initialEnd }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,8 +79,9 @@ export function EventForm({ event }: EventFormProps) {
     title: event?.title || '',
     description: event?.description || '',
     event_type: event?.event_type || 'appointment',
-    start_at: formatDateTimeLocal(event?.start_at || null),
-    end_at: formatDateTimeLocal(event?.end_at || null),
+    // Use event data first, then initial props from calendar click, then empty
+    start_at: formatDateTimeLocal(event?.start_at || initialStart || null),
+    end_at: formatDateTimeLocal(event?.end_at || initialEnd || null),
     all_day: event?.all_day || false,
     status: event?.status || 'scheduled',
     location: event?.location || '',
@@ -253,12 +259,10 @@ export function EventForm({ event }: EventFormProps) {
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Start *
               </label>
-              <input
-                type="datetime-local"
-                required
+              <DateTimePicker
                 value={formData.start_at}
-                onChange={(e) => setFormData({ ...formData, start_at: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={(value) => setFormData({ ...formData, start_at: value })}
+                placeholder="Select start date & time"
               />
             </div>
 
@@ -266,12 +270,10 @@ export function EventForm({ event }: EventFormProps) {
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 End *
               </label>
-              <input
-                type="datetime-local"
-                required
+              <DateTimePicker
                 value={formData.end_at}
-                onChange={(e) => setFormData({ ...formData, end_at: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={(value) => setFormData({ ...formData, end_at: value })}
+                placeholder="Select end date & time"
               />
             </div>
           </div>
@@ -286,6 +288,26 @@ export function EventForm({ event }: EventFormProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
+          {/* Quick fill from contact or project */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
+              Quick Fill
+            </label>
+            <AddressLookup
+              onSelect={(address) => {
+                setFormData({
+                  ...formData,
+                  location: address.location,
+                  address_street: address.address_street,
+                  address_city: address.address_city,
+                  address_state: address.address_state,
+                  address_zip: address.address_zip,
+                })
+              }}
+              className="w-full"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               Location Name
