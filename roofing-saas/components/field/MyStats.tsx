@@ -422,11 +422,11 @@ export function MyStats({ className }: MyStatsProps) {
                   </h3>
                   <div className="space-y-2">
                     {stats.achievements.slice(0, 3).map((achievement) => (
-                      <div key={achievement.id} className="flex items-center gap-3 p-2 bg-yellow-50 rounded-lg">
+                      <div key={achievement.id} className="flex items-center gap-3 p-2 bg-yellow-500/10 rounded-lg">
                         <span className="text-lg">{achievement.icon}</span>
                         <div className="flex-1">
-                          <div className="font-medium text-yellow-900">{achievement.title}</div>
-                          <div className="text-sm text-yellow-700">{achievement.description}</div>
+                          <div className="font-medium text-yellow-500">{achievement.title}</div>
+                          <div className="text-sm text-yellow-500/80">{achievement.description}</div>
                         </div>
                       </div>
                     ))}

@@ -34,7 +34,7 @@ interface Task {
 const columns = [
   { id: 'todo', title: 'To Do', color: 'border-border bg-muted/30' },
   { id: 'in_progress', title: 'In Progress', color: 'border-primary bg-primary/10' },
-  { id: 'completed', title: 'Completed', color: 'border-green-300 bg-green-50' }
+  { id: 'completed', title: 'Completed', color: 'border-green-500 bg-green-500/10' }
 ]
 
 export function TaskBoard() {

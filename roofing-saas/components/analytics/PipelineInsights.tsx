@@ -93,14 +93,14 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
 
         {/* Performance Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="h-5 w-5 text-green-600" />
-              <h4 className="font-medium text-green-800">Top Performer</h4>
+              <Users className="h-5 w-5 text-green-500" />
+              <h4 className="font-medium text-green-500">Top Performer</h4>
             </div>
             <div className="space-y-1">
-              <div className="font-bold text-green-800">{topPerformer.userName}</div>
-              <div className="text-sm text-green-700">
+              <div className="font-bold text-green-500">{topPerformer.userName}</div>
+              <div className="text-sm text-green-500/80">
                 {formatPercentage(topPerformer.winRate)} win rate • {formatCurrency(topPerformer.totalRevenue)} revenue
               </div>
             </div>
@@ -126,11 +126,11 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
 
           <div className="space-y-2">
             {data.conversionFunnel.overallConversionRate < 15 && (
-              <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
                 <div>
-                  <div className="font-medium text-red-800">Low Conversion Rate</div>
-                  <div className="text-sm text-red-700">
+                  <div className="font-medium text-red-500">Low Conversion Rate</div>
+                  <div className="text-sm text-red-500/80">
                     Only {formatPercentage(data.conversionFunnel.overallConversionRate)} of prospects convert.
                     Consider improving qualification criteria and sales process.
                   </div>
@@ -139,11 +139,11 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
             )}
 
             {data.velocity.bottlenecks.length > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                <Clock className="h-5 w-5 text-orange-500 mt-0.5" />
                 <div>
-                  <div className="font-medium text-orange-800">Stage Bottlenecks Identified</div>
-                  <div className="text-sm text-orange-700">
+                  <div className="font-medium text-orange-500">Stage Bottlenecks Identified</div>
+                  <div className="text-sm text-orange-500/80">
                     Deals are getting stuck in: {data.velocity.bottlenecks.join(', ')}.
                     Review these stages for process improvements.
                   </div>
@@ -152,11 +152,11 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
             )}
 
             {data.winLossAnalysis.lossReasons.length > 0 && data.winLossAnalysis.lossReasons[0].percentage > 25 && (
-              <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <Target className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <Target className="h-5 w-5 text-yellow-500 mt-0.5" />
                 <div>
-                  <div className="font-medium text-yellow-800">Primary Loss Reason</div>
-                  <div className="text-sm text-yellow-700">
+                  <div className="font-medium text-yellow-500">Primary Loss Reason</div>
+                  <div className="text-sm text-yellow-500/80">
                     &quot;{data.winLossAnalysis.lossReasons[0].reason}&quot; accounts for {formatPercentage(data.winLossAnalysis.lossReasons[0].percentage)} of losses.
                     Focus on addressing this specific issue.
                   </div>
@@ -165,11 +165,11 @@ export function PipelineInsights({ data, className }: PipelineInsightsProps) {
             )}
 
             {data.revenueForecast.pipelineGrowth > 30 && (
-              <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-500 mt-0.5" />
                 <div>
-                  <div className="font-medium text-green-800">Strong Growth Trend</div>
-                  <div className="text-sm text-green-700">
+                  <div className="font-medium text-green-500">Strong Growth Trend</div>
+                  <div className="text-sm text-green-500/80">
                     Pipeline growing {formatPercentage(data.revenueForecast.pipelineGrowth)}!
                     Consider scaling your sales team to handle increased volume.
                   </div>

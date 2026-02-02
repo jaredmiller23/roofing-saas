@@ -185,9 +185,9 @@ export function TodayView({ className }: TodayViewProps) {
 
   const getPriorityColor = (priority: TodayTask['priority']) => {
     switch (priority) {
-      case 'high': return 'border-l-red-500 bg-red-50/50'
-      case 'medium': return 'border-l-yellow-500 bg-yellow-50/50'
-      case 'low': return 'border-l-green-500 bg-green-50/50'
+      case 'high': return 'border-l-red-500 bg-red-500/10'
+      case 'medium': return 'border-l-yellow-500 bg-yellow-500/10'
+      case 'low': return 'border-l-green-500 bg-green-500/10'
     }
   }
 

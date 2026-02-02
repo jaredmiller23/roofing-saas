@@ -238,7 +238,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteConfirmId(doc.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-500/10"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

@@ -72,44 +72,44 @@ export function WinLossAnalysis({ data, onReasonClick, onSourceClick, className 
 
         {/* Revenue Metrics */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <h4 className="font-medium text-green-800">Won Deals</h4>
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <h4 className="font-medium text-green-500">Won Deals</h4>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-green-700">Total Revenue</span>
-                <span className="font-bold text-green-800">{formatCurrency(data.totalWonRevenue)}</span>
+                <span className="text-sm text-green-500/80">Total Revenue</span>
+                <span className="font-bold text-green-500">{formatCurrency(data.totalWonRevenue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-green-700">Average Deal Size</span>
-                <span className="font-medium text-green-800">{formatCurrency(data.averageWonValue)}</span>
+                <span className="text-sm text-green-500/80">Average Deal Size</span>
+                <span className="font-medium text-green-500">{formatCurrency(data.averageWonValue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-green-700">Average Close Time</span>
-                <span className="font-medium text-green-800">{Math.round(data.averageWonTime)} days</span>
+                <span className="text-sm text-green-500/80">Average Close Time</span>
+                <span className="font-medium text-green-500">{Math.round(data.averageWonTime)} days</span>
               </div>
             </div>
           </div>
 
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <XCircle className="h-5 w-5 text-red-600" />
-              <h4 className="font-medium text-red-800">Lost Deals</h4>
+              <XCircle className="h-5 w-5 text-red-500" />
+              <h4 className="font-medium text-red-500">Lost Deals</h4>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-red-700">Lost Revenue</span>
-                <span className="font-bold text-red-800">{formatCurrency(data.totalLostRevenue)}</span>
+                <span className="text-sm text-red-500/80">Lost Revenue</span>
+                <span className="font-bold text-red-500">{formatCurrency(data.totalLostRevenue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-red-700">Average Lost Value</span>
-                <span className="font-medium text-red-800">{formatCurrency(data.averageLostValue)}</span>
+                <span className="text-sm text-red-500/80">Average Lost Value</span>
+                <span className="font-medium text-red-500">{formatCurrency(data.averageLostValue)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-red-700">Average Lost Time</span>
-                <span className="font-medium text-red-800">{Math.round(data.averageLostTime)} days</span>
+                <span className="text-sm text-red-500/80">Average Lost Time</span>
+                <span className="font-medium text-red-500">{Math.round(data.averageLostTime)} days</span>
               </div>
             </div>
           </div>
@@ -123,26 +123,26 @@ export function WinLossAnalysis({ data, onReasonClick, onSourceClick, className 
               {data.lossReasons.slice(0, 5).map((reason) => (
                 <div
                   key={reason.reason}
-                  className={`p-3 bg-red-50 border border-red-200 rounded-lg ${
-                    onReasonClick ? 'cursor-pointer hover:bg-red-100' : ''
+                  className={`p-3 bg-red-500/10 border border-red-500/30 rounded-lg ${
+                    onReasonClick ? 'cursor-pointer hover:bg-red-500/20' : ''
                   }`}
                   onClick={() => onReasonClick?.(reason.reason)}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-red-800">{reason.reason}</span>
-                    <span className="text-sm text-red-600">{reason.count} deals</span>
+                    <span className="font-medium text-red-500">{reason.reason}</span>
+                    <span className="text-sm text-red-500/80">{reason.count} deals</span>
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 bg-red-200 rounded-full w-24">
+                      <div className="h-2 bg-red-500/30 rounded-full w-24">
                         <div
                           className="h-full bg-red-500 rounded-full"
                           style={{ width: `${reason.percentage}%` }}
                         />
                       </div>
-                      <span className="text-sm text-red-600">{formatPercentage(reason.percentage)}</span>
+                      <span className="text-sm text-red-500/80">{formatPercentage(reason.percentage)}</span>
                     </div>
-                    <span className="text-sm text-red-700">
+                    <span className="text-sm text-red-500">
                       Avg: {formatCurrency(reason.averageValue)}
                     </span>
                   </div>

@@ -25,9 +25,9 @@ interface AuditEntryDetailProps {
 }
 
 const actionColors: Record<AuditActionType, string> = {
-  create: 'bg-green-100 text-green-800',
-  update: 'bg-blue-100 text-blue-800',
-  delete: 'bg-red-100 text-red-800',
+  create: 'bg-green-500/10 text-green-500',
+  update: 'bg-blue-500/10 text-blue-500',
+  delete: 'bg-red-500/10 text-red-500',
 }
 
 const actionIcons: Record<AuditActionType, React.ComponentType<{ className?: string }>> = {
@@ -37,9 +37,9 @@ const actionIcons: Record<AuditActionType, React.ComponentType<{ className?: str
 }
 
 const diffTypeColors = {
-  added: 'bg-green-50 border-green-200 text-green-800',
-  removed: 'bg-red-50 border-red-200 text-red-800',
-  changed: 'bg-blue-50 border-blue-200 text-blue-800',
+  added: 'bg-green-500/10 border-green-500/30 text-green-500',
+  removed: 'bg-red-500/10 border-red-500/30 text-red-500',
+  changed: 'bg-blue-500/10 border-blue-500/30 text-blue-500',
 }
 
 const diffTypeIcons = {

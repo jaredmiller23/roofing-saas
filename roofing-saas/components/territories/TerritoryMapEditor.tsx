@@ -274,8 +274,8 @@ export function TerritoryMapEditor({
 
   if (loadError) {
     return (
-      <div className="flex items-center justify-center bg-red-50 rounded-lg p-4" style={{ height }}>
-        <p className="text-red-600">Error loading map: {loadError.message}</p>
+      <div className="flex items-center justify-center bg-red-500/10 rounded-lg p-4" style={{ height }}>
+        <p className="text-red-500">Error loading map: {loadError.message}</p>
       </div>
     )
   }
@@ -342,7 +342,7 @@ export function TerritoryMapEditor({
             </div>
             <button
               onClick={handleClear}
-              className="px-3 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+              className="px-3 py-1 text-xs bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors"
             >
               Clear
             </button>

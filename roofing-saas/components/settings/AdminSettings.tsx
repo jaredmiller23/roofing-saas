@@ -139,10 +139,10 @@ export function AdminSettings() {
   // Currently impersonating
   if (impersonationStatus?.is_impersonating) {
     return (
-      <Alert className="border-orange-500 bg-orange-50">
-        <AlertTriangle className="h-4 w-4 text-orange-600" />
-        <AlertTitle className="text-orange-900">Active Impersonation Session</AlertTitle>
-        <AlertDescription className="text-orange-800">
+      <Alert className="border-orange-500/30 bg-orange-500/10">
+        <AlertTriangle className="h-4 w-4 text-orange-500" />
+        <AlertTitle className="text-orange-500">Active Impersonation Session</AlertTitle>
+        <AlertDescription className="text-orange-500/80">
           You are currently impersonating <strong>{impersonationStatus.impersonated_user?.email}</strong>.
           Exit the impersonation session using the banner at the top of the page to access admin settings.
         </AlertDescription>

@@ -92,7 +92,7 @@ export function InspectionSummary({
                   <span className="text-sm text-muted-foreground">{area.label}</span>
                   <div className="flex items-center gap-2">
                     {area.hasSeverePhoto && (
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded">
                         Severe
                       </span>
                     )}

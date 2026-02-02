@@ -94,11 +94,11 @@ export function CallStatus({ state, duration, errorMessage, className }: CallSta
       {/* Status icon */}
       <div className={cn(
         'w-16 h-16 rounded-full flex items-center justify-center',
-        state === 'in-progress' && 'bg-green-100 dark:bg-green-900/30',
-        state === 'ringing' && 'bg-yellow-100 dark:bg-yellow-900/30',
+        state === 'in-progress' && 'bg-green-500/10',
+        state === 'ringing' && 'bg-yellow-500/10',
         (state === 'initiating' || state === 'connecting') && 'bg-primary/10',
-        (state === 'failed' || state === 'blocked') && 'bg-red-100 dark:bg-red-900/30',
-        state === 'completed' && 'bg-green-100 dark:bg-green-900/30',
+        (state === 'failed' || state === 'blocked') && 'bg-red-500/10',
+        state === 'completed' && 'bg-green-500/10',
         state === 'idle' && 'bg-muted',
       )}>
         <Icon className={cn(

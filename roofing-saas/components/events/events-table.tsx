@@ -103,24 +103,24 @@ export function EventsTable({ params }: EventsTableProps) {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      confirmed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+      scheduled: 'bg-blue-500/10 text-blue-500',
+      confirmed: 'bg-green-500/10 text-green-500',
+      cancelled: 'bg-red-500/10 text-red-500',
       completed: 'bg-muted text-muted-foreground',
-      no_show: 'bg-orange-100 text-orange-800',
+      no_show: 'bg-orange-500/10 text-orange-500',
     }
     return badges[status as keyof typeof badges] || 'bg-muted text-muted-foreground'
   }
 
   const getEventTypeBadge = (type: string) => {
     const badges = {
-      appointment: 'bg-blue-100 text-blue-800',
-      inspection: 'bg-purple-100 text-purple-800',
-      adjuster_meeting: 'bg-green-100 text-green-800',
-      crew_meeting: 'bg-yellow-100 text-yellow-800',
-      follow_up: 'bg-orange-100 text-orange-800',
-      callback: 'bg-pink-100 text-pink-800',
-      estimate: 'bg-indigo-100 text-indigo-800',
+      appointment: 'bg-blue-500/10 text-blue-500',
+      inspection: 'bg-purple-500/10 text-purple-500',
+      adjuster_meeting: 'bg-green-500/10 text-green-500',
+      crew_meeting: 'bg-yellow-500/10 text-yellow-500',
+      follow_up: 'bg-orange-500/10 text-orange-500',
+      callback: 'bg-pink-500/10 text-pink-500',
+      estimate: 'bg-indigo-500/10 text-indigo-500',
       other: 'bg-muted text-muted-foreground',
     }
     return badges[type as keyof typeof badges] || 'bg-muted text-muted-foreground'

@@ -80,22 +80,22 @@ export function JobsTable({ params }: JobsTableProps) {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      on_hold: 'bg-orange-100 text-orange-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+      scheduled: 'bg-blue-500/10 text-blue-500',
+      in_progress: 'bg-yellow-500/10 text-yellow-500',
+      on_hold: 'bg-orange-500/10 text-orange-500',
+      completed: 'bg-green-500/10 text-green-500',
+      cancelled: 'bg-red-500/10 text-red-500',
     }
     return badges[status as keyof typeof badges] || 'bg-muted text-muted-foreground'
   }
 
   const getJobTypeBadge = (type: string) => {
     const badges = {
-      roof_replacement: 'bg-purple-100 text-purple-800',
-      roof_repair: 'bg-blue-100 text-blue-800',
+      roof_replacement: 'bg-purple-500/10 text-purple-500',
+      roof_repair: 'bg-blue-500/10 text-blue-500',
       inspection: 'bg-muted text-muted-foreground',
-      maintenance: 'bg-green-100 text-green-800',
-      emergency: 'bg-red-100 text-red-800',
+      maintenance: 'bg-green-500/10 text-green-500',
+      emergency: 'bg-red-500/10 text-red-500',
       other: 'bg-muted text-muted-foreground',
     }
     return badges[type as keyof typeof badges] || 'bg-muted text-muted-foreground'

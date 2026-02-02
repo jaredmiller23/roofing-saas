@@ -204,12 +204,12 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
 
         {/* Bottlenecks Alert */}
         {data.bottlenecks.length > 0 && (
-          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <h4 className="font-medium text-orange-800">Identified Bottlenecks</h4>
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <h4 className="font-medium text-orange-500">Identified Bottlenecks</h4>
             </div>
-            <div className="text-sm text-orange-700">
+            <div className="text-sm text-orange-500/80">
               The following stages are taking longer than average and may need attention:
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -218,7 +218,7 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
                 return (
                   <div
                     key={bottleneck}
-                    className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-sm"
                   >
                     {stageData?.stageName} ({formatDays(stageData?.averageDays || 0)})
                   </div>
@@ -230,22 +230,22 @@ export function VelocityChart({ data, onStageClick, className }: VelocityChartPr
 
         {/* Fast Closers */}
         {data.fastestDeals.length > 0 && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-5 w-5 text-green-600" />
-              <h4 className="font-medium text-green-800">Fastest Closing Deals</h4>
+              <Zap className="h-5 w-5 text-green-500" />
+              <h4 className="font-medium text-green-500">Fastest Closing Deals</h4>
             </div>
-            <div className="text-sm text-green-700 mb-3">
+            <div className="text-sm text-green-500/80 mb-3">
               These deals closed quickly and represent best practices:
             </div>
             <div className="space-y-2">
               {data.fastestDeals.slice(0, 3).map((deal) => (
                 <div
                   key={deal.id}
-                  className="flex items-center justify-between p-2 bg-green-100 rounded text-sm"
+                  className="flex items-center justify-between p-2 bg-green-500/20 rounded text-sm"
                 >
-                  <span className="font-medium text-green-800">{deal.name}</span>
-                  <div className="flex items-center gap-2 text-green-600">
+                  <span className="font-medium text-green-500">{deal.name}</span>
+                  <div className="flex items-center gap-2 text-green-500/80">
                     {deal.contact && (
                       <span>{deal.contact.first_name} {deal.contact.last_name}</span>
                     )}

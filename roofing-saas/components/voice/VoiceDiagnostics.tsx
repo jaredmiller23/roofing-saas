@@ -198,19 +198,19 @@ export function VoiceDiagnostics() {
                 key={key}
                 className={`p-4 rounded-lg border-2 ${
                   result.status === 'success'
-                    ? 'border-green-200 bg-green-50'
+                    ? 'border-green-500/30 bg-green-500/10'
                     : result.status === 'warning'
-                    ? 'border-yellow-200 bg-yellow-50'
-                    : 'border-red-200 bg-red-50'
+                    ? 'border-yellow-500/30 bg-yellow-500/10'
+                    : 'border-red-500/30 bg-red-500/10'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   {result.status === 'success' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
                   ) : result.status === 'warning' ? (
-                    <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                    <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
                   )}
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground text-sm">

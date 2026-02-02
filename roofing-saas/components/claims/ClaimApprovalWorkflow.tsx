@@ -113,15 +113,15 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
         <CardContent className="space-y-4">
           {/* Approval Status */}
           {isApproved && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 border border-green-200">
-              <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+              <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
               <div className="flex-1">
-                <div className="font-semibold text-green-900">Claim Approved</div>
-                <div className="text-sm text-green-700 mt-1">
+                <div className="font-semibold text-green-500">Claim Approved</div>
+                <div className="text-sm text-green-500/80 mt-1">
                   This claim has been approved and is ready for payment processing.
                 </div>
                 {claim.approved_amount && (
-                  <div className="text-sm text-green-700 mt-1">
+                  <div className="text-sm text-green-500/80 mt-1">
                     Approved Amount: <span className="font-medium">${claim.approved_amount.toLocaleString()}</span>
                   </div>
                 )}
@@ -130,11 +130,11 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
           )}
 
           {isRejected && (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-red-50 border border-red-200">
-              <XCircle className="h-6 w-6 text-red-600 flex-shrink-0" />
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+              <XCircle className="h-6 w-6 text-red-500 flex-shrink-0" />
               <div className="flex-1">
-                <div className="font-semibold text-red-900">Claim Rejected</div>
-                <div className="text-sm text-red-700 mt-1">
+                <div className="font-semibold text-red-500">Claim Rejected</div>
+                <div className="text-sm text-red-500/80 mt-1">
                   This claim has been rejected. Contact the homeowner for more information.
                 </div>
               </div>
@@ -144,11 +144,11 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
           {/* Pending Review */}
           {isReviewable && (
             <>
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-                <Clock className="h-6 w-6 text-yellow-600 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                <Clock className="h-6 w-6 text-yellow-500 flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="font-semibold text-yellow-900">Pending Review</div>
-                  <div className="text-sm text-yellow-700 mt-1">
+                  <div className="font-semibold text-yellow-500">Pending Review</div>
+                  <div className="text-sm text-yellow-500/80 mt-1">
                     This claim is awaiting approval. Review the details below and make a decision.
                   </div>
                 </div>
@@ -160,31 +160,31 @@ export function ClaimApprovalWorkflow({ claim, onApprovalChange }: ClaimApproval
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     {claim.policy_number ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <AlertCircle className="h-4 w-4 text-red-500" />
                     )}
-                    <span className={claim.policy_number ? 'text-green-700' : 'text-red-700'}>
+                    <span className={claim.policy_number ? 'text-green-500' : 'text-red-500'}>
                       Policy number verified
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {claim.estimated_damage ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
                     )}
-                    <span className={claim.estimated_damage ? 'text-green-700' : 'text-yellow-700'}>
+                    <span className={claim.estimated_damage ? 'text-green-500' : 'text-yellow-500'}>
                       Initial estimate provided ({claim.estimated_damage ? `$${claim.estimated_damage.toLocaleString()}` : 'Missing'})
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {claim.inspection_completed_at ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-green-500" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
                     )}
-                    <span className={claim.inspection_completed_at ? 'text-green-700' : 'text-yellow-700'}>
+                    <span className={claim.inspection_completed_at ? 'text-green-500' : 'text-yellow-500'}>
                       Inspection completed {claim.inspection_completed_at ? `(${format(new Date(claim.inspection_completed_at), 'MMM d, yyyy')})` : '(Pending)'}
                     </span>
                   </div>

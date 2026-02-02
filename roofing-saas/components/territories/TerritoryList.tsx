@@ -400,7 +400,7 @@ export function TerritoryList({
                               e.stopPropagation()
                               setDeleteConfirm(territory.id)
                             }}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
                             title="Delete"
                           >
                             <svg

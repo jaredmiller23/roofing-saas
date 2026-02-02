@@ -604,7 +604,7 @@ function FilterConfigCard({
           {config.field_type.replace('_', ' ')}
         </span>
         {config.is_quick_filter && (
-          <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded">
+          <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 rounded">
             Quick
           </span>
         )}

@@ -161,10 +161,10 @@ export function QuickCall({ className }: QuickCallProps) {
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700'
-      case 'medium': return 'bg-yellow-100 text-yellow-700'
-      case 'low': return 'bg-green-100 text-green-700'
-      default: return 'bg-gray-100 text-gray-700'
+      case 'high': return 'bg-red-500/10 text-red-500'
+      case 'medium': return 'bg-yellow-500/10 text-yellow-500'
+      case 'low': return 'bg-green-500/10 text-green-500'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
 

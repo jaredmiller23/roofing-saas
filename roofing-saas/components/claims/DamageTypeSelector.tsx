@@ -90,10 +90,10 @@ export function SeveritySelector({
               'flex-1 py-2 px-3 text-sm rounded-lg border transition-all',
               value === level.value
                 ? level.color === 'yellow'
-                  ? 'border-yellow-500 bg-yellow-50 text-yellow-700 font-medium'
+                  ? 'border-yellow-500 bg-yellow-500/10 text-yellow-500 font-medium'
                   : level.color === 'orange'
-                    ? 'border-orange-500 bg-orange-50 text-orange-700 font-medium'
-                    : 'border-red-500 bg-red-50 text-red-700 font-medium'
+                    ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-medium'
+                    : 'border-red-500 bg-red-500/10 text-red-500 font-medium'
                 : 'border-border hover:border-muted-foreground/20 text-muted-foreground'
             )}
           >

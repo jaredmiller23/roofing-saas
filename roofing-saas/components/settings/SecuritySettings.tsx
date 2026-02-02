@@ -136,7 +136,7 @@ export function SecuritySettings() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${hasMFA ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
+              <div className={`p-2 rounded-lg ${hasMFA ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
                 {hasMFA ? <ShieldCheck className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
               </div>
               <div>
@@ -155,12 +155,12 @@ export function SecuritySettings() {
         <CardContent className="space-y-4">
           {hasMFA ? (
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <ShieldCheck className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-green-900">MFA is Active</span>
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <span className="font-medium text-green-500">MFA is Active</span>
                 </div>
-                <p className="text-sm text-green-800">
+                <p className="text-sm text-green-500/80">
                   Your account is protected with two-factor authentication. You&apos;ll be prompted
                   for a verification code each time you sign in.
                 </p>
@@ -202,12 +202,12 @@ export function SecuritySettings() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <span className="font-medium text-yellow-900">MFA Recommended</span>
+                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                  <span className="font-medium text-yellow-500">MFA Recommended</span>
                 </div>
-                <p className="text-sm text-yellow-800">
+                <p className="text-sm text-yellow-500/80">
                   Two-factor authentication significantly improves your account security.
                   {isAdminUser && ' As an admin user, MFA is required for system security.'}
                 </p>

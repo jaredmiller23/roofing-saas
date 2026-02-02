@@ -214,8 +214,8 @@ function TerritoryMapClient({
   if (loadError) {
     return (
       <div className={`relative ${className}`} style={{ height }}>
-        <div className="flex items-center justify-center h-full bg-red-50 rounded-lg border border-red-200">
-          <p className="text-red-800">Error loading Google Maps</p>
+        <div className="flex items-center justify-center h-full bg-red-500/10 rounded-lg border border-red-500/30">
+          <p className="text-red-500">Error loading Google Maps</p>
         </div>
       </div>
     )

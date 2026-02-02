@@ -449,9 +449,9 @@ export function VoiceSession({
       {/* Status indicator */}
       <div className="text-center">
         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm md:text-base font-medium ${
-          status === 'connected' ? 'bg-green-100 text-green-800' :
-          status === 'connecting' ? 'bg-yellow-100 text-yellow-800' :
-          status === 'error' ? 'bg-red-100 text-red-800' :
+          status === 'connected' ? 'bg-green-500/10 text-green-500' :
+          status === 'connecting' ? 'bg-yellow-500/10 text-yellow-500' :
+          status === 'error' ? 'bg-red-500/10 text-red-500' :
           'bg-muted text-muted-foreground'
         }`}>
           {status === 'connecting' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -557,7 +557,7 @@ export function VoiceSession({
                       ? 'bg-primary text-primary-foreground'
                       : message.role === 'assistant'
                       ? 'bg-muted text-foreground'
-                      : 'bg-purple-100 text-purple-900 text-xs'
+                      : 'bg-purple-500/10 text-purple-500 text-xs'
                   }`}
                 >
                   {message.role === 'system' && message.functionCall ? (

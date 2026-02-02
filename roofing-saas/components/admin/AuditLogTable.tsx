@@ -27,9 +27,9 @@ interface AuditLogTableProps {
 }
 
 const actionColors: Record<AuditActionType, string> = {
-  create: 'bg-green-100 text-green-800 hover:bg-green-200',
-  update: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  delete: 'bg-red-100 text-red-800 hover:bg-red-200',
+  create: 'bg-green-500/10 text-green-500 hover:bg-green-500/20',
+  update: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20',
+  delete: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
 }
 
 const entityIcons: Record<AuditEntityType, React.ComponentType<{ className?: string }>> = {
