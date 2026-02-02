@@ -45,16 +45,30 @@ interface SettingsLayoutProps {
 
 export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutProps) {
   const isMobile = useIsMobile()
+  // Track if we've done initial mobile detection
+  const [hasInitialized, setHasInitialized] = useState(false)
   // On mobile, start with null to show the list. On desktop, show the initial section.
   const [activeSection, setActiveSection] = useState<string | null>(initialSection)
 
-  // When switching from desktop to mobile, if we have a section selected, keep it
+  // Handle initial state based on viewport
+  // - Mobile: reset to null so user sees the settings list first
+  // - Desktop: keep the initialSection
+  useEffect(() => {
+    if (!hasInitialized) {
+      setHasInitialized(true)
+      if (isMobile) {
+        // On mobile, start with the list view (null), not a selected section
+        setActiveSection(null)
+      }
+    }
+  }, [hasInitialized, isMobile])
+
   // When switching from mobile to desktop, ensure we have a section (default to 'general')
   useEffect(() => {
-    if (!isMobile && activeSection === null) {
+    if (hasInitialized && !isMobile && activeSection === null) {
       setActiveSection('general')
     }
-  }, [isMobile, activeSection])
+  }, [hasInitialized, isMobile, activeSection])
 
   const handleSelect = (section: string) => {
     setActiveSection(section)
