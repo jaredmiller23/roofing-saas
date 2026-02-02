@@ -131,38 +131,58 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [leaderboardOpen, setLeaderboardOpen] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  const fetchDashboardData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
+  // Fetch dashboard data with proper cleanup on unmount/re-render
+  useEffect(() => {
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), 30000)
 
-    try {
-      const result = await apiFetch<ConsolidatedDashboardData>(
-        `/api/dashboard/consolidated?scope=${scope}&mode=full`,
-        { signal: abortController.signal }
-      )
-      clearTimeout(timeoutId)
-      setData(result)
-    } catch (err) {
-      clearTimeout(timeoutId)
-      console.error('Failed to fetch dashboard data:', err)
+    const fetchData = async () => {
+      setIsLoading(true)
+      setError(null)
 
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('Request timeout - please try again')
-      } else {
-        setError('Failed to load dashboard data')
+      try {
+        const result = await apiFetch<ConsolidatedDashboardData>(
+          `/api/dashboard/consolidated?scope=${scope}&mode=full`,
+          { signal: abortController.signal }
+        )
+        clearTimeout(timeoutId)
+        setData(result)
+      } catch (err) {
+        clearTimeout(timeoutId)
+        // Don't set error state if we aborted intentionally (cleanup)
+        if (abortController.signal.aborted) {
+          return
+        }
+        console.error('Failed to fetch dashboard data:', err)
+
+        if (err instanceof Error && err.name === 'AbortError') {
+          setError('Request timeout - please try again')
+        } else {
+          setError('Failed to load dashboard data')
+        }
+      } finally {
+        // Only update loading state if not aborted
+        if (!abortController.signal.aborted) {
+          setIsLoading(false)
+        }
       }
-    } finally {
-      setIsLoading(false)
     }
-  }, [scope])
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [fetchDashboardData])
+    fetchData()
+
+    // Cleanup: abort fetch if component unmounts or scope changes
+    return () => {
+      clearTimeout(timeoutId)
+      abortController.abort()
+    }
+  }, [scope, refreshKey])
+
+  // Manual refresh function for retry button
+  const refreshDashboard = useCallback(() => {
+    setRefreshKey(k => k + 1)
+  }, [])
 
   // Full page error state
   if (error && !data) {
@@ -174,7 +194,7 @@ export default function DashboardPage() {
               <p className="text-lg font-medium mb-2">Unable to load dashboard</p>
               <p className="text-sm">{error}</p>
             </div>
-            <Button onClick={() => fetchDashboardData()} variant="outline">
+            <Button onClick={refreshDashboard} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
