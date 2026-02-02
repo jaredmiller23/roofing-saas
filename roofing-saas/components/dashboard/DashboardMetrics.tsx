@@ -65,7 +65,7 @@ const METRIC_CARD_CONFIGS: Record<MetricCardType, MetricCardConfig> = {
 export function DashboardMetrics({ scope, data: externalData, isLoading: externalLoading }: DashboardMetricsProps) {
   const { isFieldMode, isManagerMode } = useUIMode()
   const [metrics, setMetrics] = useState<TieredMetrics | null>(null)
-  const [internalLoading, setInternalLoading] = useState(!externalData)
+  const [internalLoading, setInternalLoading] = useState(externalLoading === undefined)
   const [error, setError] = useState<string | null>(null)
 
   // Use external data if provided
@@ -85,8 +85,8 @@ export function DashboardMetrics({ scope, data: externalData, isLoading: externa
   }, [tier])
 
   const fetchMetrics = useCallback(async () => {
-    // Skip fetch if external data is provided
-    if (externalData !== undefined) return
+    // Skip fetch if parent is handling data loading (isLoading prop passed = parent controls data)
+    if (externalLoading !== undefined) return
 
     setInternalLoading(true)
     setError(null)
@@ -115,14 +115,14 @@ export function DashboardMetrics({ scope, data: externalData, isLoading: externa
     } finally {
       setInternalLoading(false)
     }
-  }, [scope, tier, externalData])
+  }, [scope, tier, externalLoading])
 
   useEffect(() => {
-    // Only fetch if no external data provided
-    if (externalData === undefined) {
+    // Only fetch if parent is NOT handling data loading
+    if (externalLoading === undefined) {
       fetchMetrics()
     }
-  }, [fetchMetrics, externalData])
+  }, [fetchMetrics, externalLoading])
 
   const formatValue = (value: number, type: 'currency' | 'number' | 'percentage') => {
     if (type === 'currency') {

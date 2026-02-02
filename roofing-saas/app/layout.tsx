@@ -160,22 +160,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preload critical resources */}
-        <link
-          rel="preload"
-          href="/fonts/geist-sans-regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/geist-mono-regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        
+        {/*
+          Note: Geist fonts are loaded via next/font/google (lines 8-18).
+          No manual preloading needed - Next.js handles font optimization automatically.
+        */}
+
         {/* PWA Icons - Enhanced */}
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
