@@ -258,16 +258,17 @@ export default function EventsPage() {
                 <GoogleCalendarWithParams onDisconnect={() => handleCalendarTypeChange('standard')} />
               </Suspense>
             ) : (
-              isLoading ? (
-                <div className="flex items-center justify-center h-96">
-                  <div className="text-muted-foreground">Loading calendar...</div>
-                </div>
-              ) : (
+              <div className="relative">
+                {isLoading && (
+                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+                    <div className="text-muted-foreground">Loading events...</div>
+                  </div>
+                )}
                 <StandardCalendar
                   events={events}
                   onRangeChange={fetchEvents}
                 />
-              )
+              </div>
             )}
           </div>
         ) : (

@@ -326,19 +326,18 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
         </Alert>
       )}
 
-      {isLoadingEvents && events.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-12">
+      <div className="relative">
+        {isLoadingEvents && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
             <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
             <span className="text-muted-foreground">Loading events...</span>
-          </CardContent>
-        </Card>
-      ) : (
+          </div>
+        )}
         <StandardCalendar
           events={events}
           onRangeChange={fetchEvents}
         />
-      )}
+      </div>
     </div>
   )
 }
