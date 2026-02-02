@@ -59,7 +59,7 @@ export default function CampaignBuilderPage() {
 
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [steps, setSteps] = useState<CampaignStep[]>([])
-  const [_triggers, _setTriggers] = useState<CampaignTrigger[]>([])
+  const [triggers, setTriggers] = useState<CampaignTrigger[]>([])
   const [enrollments, setEnrollments] = useState<CampaignEnrollment[]>([])
   const [enrollmentTotal, setEnrollmentTotal] = useState(0)
   const [enrollmentPage, setEnrollmentPage] = useState(1)
@@ -78,13 +78,16 @@ export default function CampaignBuilderPage() {
   const fetchCampaignData = async () => {
     setLoading(true)
     try {
-      // Fetch campaign details
-      const campaignData = await apiFetch<Campaign>(`/api/campaigns/${campaignId}`)
-      setCampaign(campaignData)
+      // Fetch campaign details, steps, and triggers in parallel
+      const [campaignData, stepsData, triggersData] = await Promise.all([
+        apiFetch<Campaign>(`/api/campaigns/${campaignId}`),
+        apiFetch<CampaignStep[]>(`/api/campaigns/${campaignId}/steps`),
+        apiFetch<CampaignTrigger[]>(`/api/campaigns/${campaignId}/triggers`).catch(() => []),
+      ])
 
-      // Fetch steps
-      const stepsData = await apiFetch<CampaignStep[]>(`/api/campaigns/${campaignId}/steps`)
+      setCampaign(campaignData)
       setSteps(stepsData)
+      setTriggers(triggersData)
     } catch (error) {
       console.error('Error fetching campaign data:', error)
     } finally {
@@ -147,6 +150,22 @@ export default function CampaignBuilderPage() {
     } catch (error) {
       console.error('Error deleting step:', error)
       alert('Failed to delete step')
+    }
+  }
+
+  const handleAddTrigger = () => {
+    router.push(`/campaigns/${campaignId}/builder/new-trigger`)
+  }
+
+  const handleDeleteTrigger = async (triggerId: string) => {
+    if (!confirm('Are you sure you want to delete this trigger?')) return
+
+    try {
+      await apiFetch<void>(`/api/campaigns/${campaignId}/triggers/${triggerId}`, { method: 'DELETE' })
+      await fetchCampaignData()
+    } catch (error) {
+      console.error('Error deleting trigger:', error)
+      alert('Failed to delete trigger')
     }
   }
 
@@ -297,34 +316,52 @@ export default function CampaignBuilderPage() {
                     Define when contacts should be enrolled in this campaign
                   </CardDescription>
                 </div>
-                <Button size="sm">
+                <Button size="sm" onClick={handleAddTrigger}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Trigger
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              {_triggers.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No triggers configured. Add a trigger to automatically enroll
-                  contacts.
-                </p>
+              {triggers.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">
+                    No triggers configured. Add a trigger to automatically enroll
+                    contacts.
+                  </p>
+                  <Button onClick={handleAddTrigger}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Trigger
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-2">
-                  {_triggers.map((trigger: CampaignTrigger) => (
+                  {triggers.map((trigger: CampaignTrigger) => (
                     <div
                       key={trigger.id}
                       className="border rounded-lg p-4 flex items-center justify-between"
                     >
                       <div>
-                        <p className="font-medium">{trigger.trigger_type}</p>
+                        <p className="font-medium capitalize">
+                          {trigger.trigger_type.replace(/_/g, ' ')}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           Priority: {trigger.priority}
                         </p>
                       </div>
-                      <Badge variant={trigger.is_active ? 'default' : 'secondary'}>
-                        {trigger.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={trigger.is_active ? 'default' : 'secondary'}>
+                          {trigger.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTrigger(trigger.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
