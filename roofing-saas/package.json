@@ -142,5 +142,8 @@
     "typescript": "^5",
     "vercel": "^50.0.1",
     "vitest": "^4.0.16"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
