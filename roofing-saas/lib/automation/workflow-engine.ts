@@ -1,6 +1,15 @@
 /**
- * Workflow Engine Core
- * Orchestrates trigger evaluation and action execution
+ * Workflow Engine Core (Client-Side / Preview Only)
+ *
+ * @deprecated For actual execution, use executeWorkflowById() from engine.ts
+ * which uses persistent database scheduling via workflow-scheduler.ts.
+ *
+ * This class is kept for client-side preview/testing only. It uses setTimeout
+ * for delays which doesn't survive page navigation or restarts.
+ *
+ * Actual workflow execution should go through:
+ * - API: POST /api/automations/execute
+ * - Server: executeWorkflowById() or triggerWorkflow()
  */
 
 import type {

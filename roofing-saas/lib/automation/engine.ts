@@ -18,6 +18,70 @@ import { replaceVariables } from './variables'
 import { startWorkflowExecution } from './workflow-scheduler'
 
 /**
+ * Execute a specific workflow by ID
+ * Used by API routes for manual/direct workflow execution
+ *
+ * @returns The execution ID or null if the workflow wasn't found/active
+ */
+export async function executeWorkflowById(
+  workflowId: string,
+  tenantId: string,
+  triggerData: Record<string, unknown>
+): Promise<string | null> {
+  const supabase = await createClient()
+
+  // Verify workflow exists and is active
+  const { data: workflow, error: workflowError } = await supabase
+    .from('workflows')
+    .select('id, name, is_active')
+    .eq('id', workflowId)
+    .eq('tenant_id', tenantId)
+    .eq('is_deleted', false)
+    .single()
+
+  if (workflowError || !workflow) {
+    logger.warn('Workflow not found for execution', { workflowId, tenantId })
+    return null
+  }
+
+  if (!workflow.is_active) {
+    logger.warn('Workflow is not active', { workflowId, name: workflow.name })
+    return null
+  }
+
+  // Create execution record
+  const { data: execution, error: execError } = await supabase
+    .from('workflow_executions')
+    .insert({
+      workflow_id: workflowId,
+      tenant_id: tenantId,
+      trigger_data: triggerData as unknown as Json,
+      status: 'pending',
+    })
+    .select('id')
+    .single()
+
+  if (execError || !execution) {
+    logger.error('Failed to create workflow execution', {
+      error: execError,
+      workflowId,
+    })
+    return null
+  }
+
+  logger.info('Workflow execution created via direct call', {
+    executionId: execution.id,
+    workflowId,
+    workflowName: workflow.name,
+  })
+
+  // Start execution via persistent scheduler
+  await startWorkflowExecution(execution.id, workflowId, triggerData)
+
+  return execution.id
+}
+
+/**
  * Trigger a workflow based on an event
  */
 export async function triggerWorkflow(

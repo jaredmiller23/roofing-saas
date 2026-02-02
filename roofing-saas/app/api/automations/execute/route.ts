@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
-import { workflowEngine } from '@/lib/automation/workflow-engine'
-import type { VariableContext } from '@/lib/automation/workflow-types'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { executeWorkflowById } from '@/lib/automation/engine'
 import { AuthenticationError, ValidationError, NotFoundError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,48 +12,51 @@ export async function POST(request: NextRequest) {
       throw AuthenticationError('Unauthorized')
     }
 
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthenticationError('User not associated with a tenant')
+    }
+
     const body = await request.json()
-    const { workflow_id, trigger_data, context } = body
+    const { workflow_id, trigger_data } = body
 
     if (!workflow_id || !trigger_data) {
       throw ValidationError('Missing required fields: workflow_id, trigger_data')
     }
 
-    // Get workflow from the mock data or database
-    const workflowResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/automations/${workflow_id}`)
-    if (!workflowResponse.ok) {
-      throw NotFoundError('Workflow')
-    }
-
-    const workflow = await workflowResponse.json()
-
-    // Create execution context
-    const executionContext: VariableContext = {
-      contact: trigger_data.contact || {},
-      project: trigger_data.project || {},
+    // Merge user context into trigger data
+    const enrichedTriggerData = {
+      ...trigger_data,
       user: { id: user.id, ...trigger_data.user },
-      organization: trigger_data.organization || {},
-      custom: trigger_data.custom || {},
-      ...context
     }
 
-    // Execute workflow
-    const execution = await workflowEngine.executeWorkflow(
-      workflow,
-      trigger_data,
-      executionContext
+    // Execute workflow using server-side persistent scheduler
+    // This ensures delays survive restarts and scale-outs
+    const executionId = await executeWorkflowById(
+      workflow_id,
+      tenantId,
+      enrichedTriggerData
     )
 
+    if (!executionId) {
+      throw NotFoundError('Workflow not found or not active')
+    }
+
+    logger.info('Workflow execution started via API', {
+      executionId,
+      workflowId: workflow_id,
+      userId: user.id,
+    })
+
     return successResponse({
-      execution_id: execution.id,
-      status: execution.status,
-      started_at: execution.started_at,
-      completed_at: execution.completed_at,
-      executed_actions: execution.executed_actions.length,
-      error_message: execution.error_message
+      execution_id: executionId,
+      status: 'pending',
+      message: 'Workflow execution started. Steps will be processed by the scheduler.',
     })
   } catch (error) {
-    console.error('Error executing workflow:', error)
+    logger.error('Error executing workflow', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     return errorResponse(error as Error)
   }
 }
@@ -66,6 +69,11 @@ export async function PUT(request: NextRequest) {
       throw AuthenticationError('Unauthorized')
     }
 
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthenticationError('User not associated with a tenant')
+    }
+
     const body = await request.json()
     const { workflow_id, manual_data } = body
 
@@ -73,14 +81,39 @@ export async function PUT(request: NextRequest) {
       throw ValidationError('Missing required field: workflow_id')
     }
 
-    // Trigger manual workflow execution
-    await workflowEngine.triggerManual(workflow_id, manual_data || {})
+    // Merge user context into manual data
+    const enrichedData = {
+      ...(manual_data || {}),
+      user: { id: user.id },
+      triggered_manually: true,
+      triggered_at: new Date().toISOString(),
+    }
+
+    // Execute workflow using server-side persistent scheduler
+    const executionId = await executeWorkflowById(
+      workflow_id,
+      tenantId,
+      enrichedData
+    )
+
+    if (!executionId) {
+      throw NotFoundError('Workflow not found or not active')
+    }
+
+    logger.info('Manual workflow execution started', {
+      executionId,
+      workflowId: workflow_id,
+      userId: user.id,
+    })
 
     return successResponse({
-      message: 'Manual workflow triggered successfully'
+      execution_id: executionId,
+      message: 'Manual workflow triggered successfully',
     })
   } catch (error) {
-    console.error('Error triggering manual workflow:', error)
+    logger.error('Error triggering manual workflow', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     return errorResponse(error as Error)
   }
 }
