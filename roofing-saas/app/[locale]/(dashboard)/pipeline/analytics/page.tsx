@@ -58,8 +58,8 @@ export default function PipelineAnalyticsPage() {
 
       const response = await fetch(`/api/analytics/pipeline?${params}`)
       if (response.ok) {
-        const data = await response.json()
-        setAnalytics(data)
+        const result = await response.json()
+        setAnalytics(result.data)
       } else {
         console.error('Failed to fetch analytics:', response.statusText)
       }
