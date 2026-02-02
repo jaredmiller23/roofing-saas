@@ -34,15 +34,15 @@ interface ClaimDocument {
 }
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
-  'new': 'bg-blue-500',
+  'new': 'bg-primary',
   'documents_pending': 'bg-yellow-500',
-  'under_review': 'bg-purple-500',
+  'under_review': 'bg-secondary',
   'approved': 'bg-green-500',
-  'paid': 'bg-emerald-500',
-  'closed': 'bg-background0',
+  'paid': 'bg-green-500',
+  'closed': 'bg-muted-foreground',
   'disputed': 'bg-red-500',
   'supplement_filed': 'bg-orange-500',
-  'escalated': 'bg-pink-500',
+  'escalated': 'bg-red-500',
 }
 
 const STATUS_LABELS: Record<ClaimStatus, string> = {
@@ -269,7 +269,7 @@ export default function ClaimDetailPage() {
             <CardDescription>Approved Amount</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-500">
               {claim.approved_amount
                 ? `$${claim.approved_amount.toLocaleString()}`
                 : 'Pending'}
@@ -281,7 +281,7 @@ export default function ClaimDetailPage() {
             <CardDescription>Paid Amount</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
+            <div className="text-2xl font-bold text-green-500">
               {claim.paid_amount
                 ? `$${claim.paid_amount.toLocaleString()}`
                 : 'Pending'}
@@ -420,8 +420,8 @@ export default function ClaimDetailPage() {
               {/* Date Filed */}
               {claim.date_filed && (
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                    <FileText className="h-4 w-4 text-green-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                    <FileText className="h-4 w-4 text-green-500" />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Claim Filed</div>
@@ -450,8 +450,8 @@ export default function ClaimDetailPage() {
               {/* Inspection Scheduled */}
               {claim.inspection_scheduled_at && (
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100">
-                    <Clock className="h-4 w-4 text-yellow-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/10">
+                    <Clock className="h-4 w-4 text-yellow-500" />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Inspection Scheduled</div>
@@ -465,8 +465,8 @@ export default function ClaimDetailPage() {
               {/* Inspection Completed */}
               {claim.inspection_completed_at && (
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Inspection Completed</div>
@@ -480,8 +480,8 @@ export default function ClaimDetailPage() {
               {/* Decision Date */}
               {claim.decision_date && (
                 <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
-                    <DollarSign className="h-4 w-4 text-emerald-600" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
+                    <DollarSign className="h-4 w-4 text-green-500" />
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Decision Received</div>

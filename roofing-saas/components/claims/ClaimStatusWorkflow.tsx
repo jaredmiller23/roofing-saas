@@ -43,60 +43,69 @@ const STATUS_TRANSITIONS: Record<ClaimStatus, ClaimStatus[]> = {
   'escalated': ['under_review', 'approved'],
 }
 
-const STATUS_INFO: Record<ClaimStatus, { icon: React.ElementType; color: string; label: string; description: string }> = {
+const STATUS_INFO: Record<ClaimStatus, { icon: React.ElementType; iconColor: string; bgColor: string; label: string; description: string }> = {
   'new': {
     icon: FileText,
-    color: 'text-blue-600 bg-blue-100',
+    iconColor: 'text-primary',
+    bgColor: 'bg-primary/10',
     label: 'New',
     description: 'Claim has been created and needs documentation',
   },
   'documents_pending': {
     icon: Clock,
-    color: 'text-yellow-600 bg-yellow-100',
-    label: 'Documents Pending',
-    description: 'Waiting for additional documentation from homeowner',
+    iconColor: 'text-yellow-500',
+    bgColor: 'bg-yellow-500/10',
+    label: 'Docs Pending',
+    description: 'Waiting for additional documentation',
   },
   'under_review': {
     icon: FileStack,
-    color: 'text-purple-600 bg-purple-100',
+    iconColor: 'text-secondary',
+    bgColor: 'bg-secondary/10',
     label: 'Under Review',
-    description: 'Insurance adjuster is reviewing the claim',
+    description: 'Adjuster is reviewing the claim',
   },
   'approved': {
     icon: CheckCircle,
-    color: 'text-green-600 bg-green-100',
+    iconColor: 'text-green-500',
+    bgColor: 'bg-green-500/10',
     label: 'Approved',
-    description: 'Claim has been approved by insurance company',
+    description: 'Claim has been approved',
   },
   'paid': {
     icon: DollarSign,
-    color: 'text-emerald-600 bg-emerald-100',
+    iconColor: 'text-green-500',
+    bgColor: 'bg-green-500/10',
     label: 'Paid',
-    description: 'Insurance payment has been received',
+    description: 'Payment has been received',
   },
   'closed': {
     icon: CheckCircle,
-    color: 'text-muted-foreground bg-muted',
+    iconColor: 'text-muted-foreground',
+    bgColor: 'bg-muted',
     label: 'Closed',
-    description: 'Claim has been completed and closed',
+    description: 'Claim has been completed',
   },
   'disputed': {
     icon: AlertTriangle,
-    color: 'text-red-600 bg-red-100',
+    iconColor: 'text-red-500',
+    bgColor: 'bg-red-500/10',
     label: 'Disputed',
-    description: 'Claim decision is being disputed',
+    description: 'Decision is being disputed',
   },
   'supplement_filed': {
     icon: FileStack,
-    color: 'text-orange-600 bg-orange-100',
-    label: 'Supplement Filed',
-    description: 'Additional supplement claim has been filed',
+    iconColor: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    label: 'Supplement',
+    description: 'Supplement claim has been filed',
   },
   'escalated': {
     icon: Ban,
-    color: 'text-pink-600 bg-pink-100',
+    iconColor: 'text-red-500',
+    bgColor: 'bg-red-500/10',
     label: 'Escalated',
-    description: 'Claim has been escalated to management',
+    description: 'Escalated to management',
   },
 }
 
@@ -205,11 +214,13 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
           {/* Current Status */}
           <div>
             <Label className="text-sm text-muted-foreground mb-2 block">Current Status</Label>
-            <div className={`flex items-center gap-3 p-4 rounded-lg ${currentInfo.color}`}>
-              <CurrentIcon className="h-6 w-6" />
-              <div className="flex-1">
-                <div className="font-semibold">{currentInfo.label}</div>
-                <div className="text-sm opacity-80">{currentInfo.description}</div>
+            <div className={`flex items-center gap-3 p-4 rounded-lg border ${currentInfo.bgColor}`}>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${currentInfo.bgColor}`}>
+                <CurrentIcon className={`h-5 w-5 ${currentInfo.iconColor}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-foreground">{currentInfo.label}</div>
+                <div className="text-sm text-muted-foreground">{currentInfo.description}</div>
               </div>
             </div>
           </div>
@@ -229,15 +240,15 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
                       key={nextStatus}
                       variant="outline"
                       onClick={() => handleStatusClick(nextStatus)}
-                      className="h-auto p-4 flex items-start gap-3 justify-start"
+                      className="h-auto p-3 flex items-center gap-3 justify-start min-w-0"
                       disabled={!!error && error.includes('required')}
                     >
-                      <div className={`flex h-8 w-8 items-center justify-center rounded-full ${info.color}`}>
-                        <Icon className="h-4 w-4" />
+                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${info.bgColor}`}>
+                        <Icon className={`h-4 w-4 ${info.iconColor}`} />
                       </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium">{info.label}</div>
-                        <div className="text-xs text-muted-foreground font-normal">
+                      <div className="flex-1 text-left min-w-0 overflow-hidden">
+                        <div className="font-medium truncate">{info.label}</div>
+                        <div className="text-xs text-muted-foreground font-normal truncate">
                           {error || info.description}
                         </div>
                       </div>
@@ -335,7 +346,7 @@ export function ClaimStatusWorkflow({ claim, onStatusChange }: ClaimStatusWorkfl
               )}
 
               {validationError && !validationError.includes('required') && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                <div className="text-sm text-red-500 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                   {validationError}
                 </div>
               )}

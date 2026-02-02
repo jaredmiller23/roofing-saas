@@ -21,15 +21,15 @@ interface Project {
 }
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
-  'new': 'bg-blue-500',
+  'new': 'bg-primary',
   'documents_pending': 'bg-yellow-500',
-  'under_review': 'bg-purple-500',
+  'under_review': 'bg-secondary',
   'approved': 'bg-green-500',
-  'paid': 'bg-emerald-500',
-  'closed': 'bg-gray-500',
+  'paid': 'bg-green-500',
+  'closed': 'bg-muted-foreground',
   'disputed': 'bg-red-500',
   'supplement_filed': 'bg-orange-500',
-  'escalated': 'bg-pink-500',
+  'escalated': 'bg-red-500',
 }
 
 const STATUS_LABELS: Record<ClaimStatus, string> = {
@@ -302,13 +302,13 @@ export default function ClaimsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>In Progress</CardDescription>
-            <CardTitle className="text-3xl text-yellow-600">{stats.pending}</CardTitle>
+            <CardTitle className="text-3xl text-yellow-500">{stats.pending}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Total Approved</CardDescription>
-            <CardTitle className="text-3xl text-green-600">
+            <CardTitle className="text-3xl text-green-500">
               ${stats.totalApproved.toLocaleString()}
             </CardTitle>
           </CardHeader>
@@ -493,7 +493,7 @@ export default function ClaimsPage() {
                     {claim.approved_amount && (
                       <div className="text-right">
                         <div className="text-sm text-muted-foreground">Approved Amount</div>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-green-500">
                           ${claim.approved_amount.toLocaleString()}
                         </div>
                       </div>
@@ -537,7 +537,7 @@ export default function ClaimsPage() {
 
                   {/* Status-specific alerts */}
                   {claim.status === 'documents_pending' && (
-                    <div className="mt-4 flex items-center gap-2 text-yellow-600 bg-yellow-50 p-3 rounded-lg">
+                    <div className="mt-4 flex items-center gap-2 text-yellow-500 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
                       <AlertCircle className="h-5 w-5" />
                       <span className="text-sm font-medium">
                         Waiting for additional documentation
@@ -545,7 +545,7 @@ export default function ClaimsPage() {
                     </div>
                   )}
                   {claim.status === 'disputed' && (
-                    <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg">
+                    <div className="mt-4 flex items-center gap-2 text-red-500 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
                       <AlertCircle className="h-5 w-5" />
                       <span className="text-sm font-medium">
                         Claim is under dispute - action required

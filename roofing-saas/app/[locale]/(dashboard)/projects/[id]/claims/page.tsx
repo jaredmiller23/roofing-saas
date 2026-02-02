@@ -26,15 +26,15 @@ interface Contact {
 }
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
-  'new': 'bg-blue-500',
+  'new': 'bg-primary',
   'documents_pending': 'bg-yellow-500',
-  'under_review': 'bg-purple-500',
+  'under_review': 'bg-secondary',
   'approved': 'bg-green-500',
-  'paid': 'bg-emerald-500',
-  'closed': 'bg-muted',
+  'paid': 'bg-green-500',
+  'closed': 'bg-muted-foreground',
   'disputed': 'bg-red-500',
   'supplement_filed': 'bg-orange-500',
-  'escalated': 'bg-pink-500',
+  'escalated': 'bg-red-500',
 }
 
 const STATUS_LABELS: Record<ClaimStatus, string> = {
@@ -236,7 +236,7 @@ export default function ProjectClaimsPage() {
                   {claim.approved_amount && (
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">Approved Amount</div>
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-2xl font-bold text-green-500">
                         ${claim.approved_amount.toLocaleString()}
                       </div>
                     </div>
