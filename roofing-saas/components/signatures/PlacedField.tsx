@@ -15,6 +15,7 @@ export interface SignatureFieldPlacement {
   height: number // pixels
   required: boolean
   assignedTo: 'customer' | 'company' | 'any'
+  content?: string // Optional preset text content for 'text' type fields
 }
 
 interface PlacedFieldProps {
@@ -131,7 +132,9 @@ export function PlacedField({
       {/* Field Content */}
       <div className="flex items-center justify-center h-full gap-1 px-1">
         {Icon && <Icon className="h-3 w-3 text-muted-foreground shrink-0" />}
-        <span className="text-xs text-foreground truncate">{field.label}</span>
+        <span className="text-xs text-foreground truncate">
+          {field.type === 'text' && field.content ? field.content : field.label}
+        </span>
         {field.required && <span className="text-red-500 text-xs shrink-0">*</span>}
       </div>
 

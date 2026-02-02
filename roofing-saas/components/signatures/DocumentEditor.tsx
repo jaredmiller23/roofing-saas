@@ -9,6 +9,7 @@ import { PlacedField, type SignatureFieldPlacement } from './PlacedField'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   ChevronLeft,
   ChevronRight,
@@ -232,6 +233,24 @@ export function DocumentEditor({
                 />
                 Required field
               </label>
+
+              {/* Text Content - only for text fields */}
+              {selectedField.type === 'text' && (
+                <div>
+                  <Label htmlFor="field-content" className="text-xs">Default Text Content</Label>
+                  <Textarea
+                    id="field-content"
+                    value={selectedField.content || ''}
+                    onChange={(e) => updateField(selectedField.id, { content: e.target.value })}
+                    placeholder="Enter preset text or leave empty for signer input..."
+                    rows={3}
+                    className="mt-1 text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If set, this text will appear on the document. Leave empty to let signer enter text.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -69,6 +69,7 @@ interface SignatureFieldPlacement {
   height: number
   required: boolean
   assignedTo: 'customer' | 'company' | 'any'
+  content?: string // Optional preset text content for 'text' type fields
 }
 
 interface SignatureDocument {
@@ -214,6 +215,12 @@ export default function SignDocumentPage() {
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null)
   const [showFieldCapture, setShowFieldCapture] = useState(false)
   const [currentFieldForCapture, setCurrentFieldForCapture] = useState<SignatureFieldPlacement | null>(null)
+
+  // Text field input state
+  const [showTextInput, setShowTextInput] = useState(false)
+  const [currentTextFieldId, setCurrentTextFieldId] = useState<string | null>(null)
+  const [textInputValue, setTextInputValue] = useState('')
+  const [textFieldValues, setTextFieldValues] = useState<Map<string, string>>(new Map())
 
   // Decline workflow state
   const [showDeclineDialog, setShowDeclineDialog] = useState(false)
@@ -426,9 +433,18 @@ export default function SignDocumentPage() {
         return newSet
       })
     } else {
-      // Text field - mark as completed on click (simplified)
-      setCompletedFields((prev) => new Set(prev).add(field.id))
-      moveToNextField(field.id)
+      // Text field handling
+      if (field.content) {
+        // Preset text from template - auto-complete
+        setTextFieldValues(prev => new Map(prev).set(field.id, field.content!))
+        setCompletedFields((prev) => new Set(prev).add(field.id))
+        moveToNextField(field.id)
+      } else {
+        // No preset - open text input modal for signer
+        setCurrentTextFieldId(field.id)
+        setTextInputValue(textFieldValues.get(field.id) || '')
+        setShowTextInput(true)
+      }
     }
   }
 
@@ -454,6 +470,24 @@ export default function SignDocumentPage() {
 
     // Move to next field
     moveToNextField(currentFieldForCapture.id)
+  }
+
+  const handleTextInputSave = () => {
+    if (!currentTextFieldId) return
+
+    // Save the text value
+    setTextFieldValues(prev => new Map(prev).set(currentTextFieldId, textInputValue))
+
+    // Mark field as completed
+    setCompletedFields((prev) => new Set(prev).add(currentTextFieldId))
+
+    // Close modal and reset
+    setShowTextInput(false)
+    setCurrentTextFieldId(null)
+    setTextInputValue('')
+
+    // Move to next field
+    moveToNextField(currentTextFieldId)
   }
 
   const handleFinalSubmit = async () => {
@@ -1216,6 +1250,53 @@ export default function SignDocumentPage() {
               disabled={!declineReason.trim() || isSubmittingDecline}
             >
               {isSubmittingDecline ? 'Declining...' : 'Confirm Decline'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Text Input Dialog for text fields without preset content */}
+      <Dialog open={showTextInput} onOpenChange={setShowTextInput}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Type className="h-5 w-5 text-primary" />
+              Enter Text
+            </DialogTitle>
+            <DialogDescription>
+              Please enter the required text for this field.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="text-input" className="text-sm font-medium">
+              {signerFields.find(f => f.id === currentTextFieldId)?.label || 'Text'}
+              {signerFields.find(f => f.id === currentTextFieldId)?.required && ' *'}
+            </Label>
+            <Textarea
+              id="text-input"
+              placeholder="Enter text here..."
+              value={textInputValue}
+              onChange={(e) => setTextInputValue(e.target.value)}
+              className="mt-2 min-h-[100px]"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowTextInput(false)
+                setCurrentTextFieldId(null)
+                setTextInputValue('')
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleTextInputSave}
+              disabled={!textInputValue.trim()}
+            >
+              Save Text
             </Button>
           </DialogFooter>
         </DialogContent>
