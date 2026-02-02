@@ -412,7 +412,7 @@ export default function VoiceCallPage() {
 
         {/* Error Display */}
         {error && callState === 'failed' && !complianceFailure && (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
+          <Card className="border-red-500/30 bg-red-500/10">
             <CardContent className="py-4">
               <p className="text-red-700 dark:text-red-300">{error}</p>
             </CardContent>

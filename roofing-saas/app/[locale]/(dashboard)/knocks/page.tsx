@@ -322,14 +322,14 @@ export default function KnocksPage() {
                 <span className="font-medium">{locationError}</span>
                 <button
                   onClick={retryLocation}
-                  className="px-2 py-0.5 text-xs bg-orange-100 hover:bg-orange-200 rounded shrink-0"
+                  className="px-2 py-0.5 text-xs bg-orange-500/20 hover:bg-orange-500/30 rounded shrink-0"
                   title="Retry location"
                 >
                   Retry
                 </button>
               </div>
               {locationErrorInstructions && locationErrorInstructions.length > 0 && (
-                <div className="text-xs text-orange-800 bg-orange-50 rounded p-2 border border-orange-200">
+                <div className="text-xs text-orange-400 bg-orange-500/10 rounded p-2 border border-orange-500/30">
                   <div className="font-medium mb-1">How to fix this:</div>
                   <ol className="list-decimal list-inside space-y-1">
                     {locationErrorInstructions.map((instruction, index) => (

@@ -460,7 +460,7 @@ export default function NewSignatureDocumentPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="h-8 w-8 text-green-600" />
           </div>
           <h2 className="text-xl font-semibold text-foreground mb-2">Document Created!</h2>
@@ -503,7 +503,7 @@ export default function NewSignatureDocumentPage() {
                     ${step === s.number
                       ? 'bg-primary text-white'
                       : step > s.number
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-green-500/20 text-green-400'
                         : 'bg-muted text-muted-foreground'
                     }`}
                 >

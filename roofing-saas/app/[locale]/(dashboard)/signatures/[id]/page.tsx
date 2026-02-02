@@ -337,7 +337,7 @@ export default function ViewSignatureDocumentPage() {
                 variant="outline"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 {isDeleting ? 'Deleting...' : 'Delete'}
@@ -440,12 +440,12 @@ export default function ViewSignatureDocumentPage() {
 
           {/* Decline Reason */}
           {document.status === 'declined' && document.decline_reason && (
-            <div className="bg-red-50 border border-red-200 rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-red-600" />
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-red-500" />
                 Decline Reason
               </h2>
-              <p className="text-red-800 whitespace-pre-wrap">{document.decline_reason}</p>
+              <p className="text-red-300 whitespace-pre-wrap">{document.decline_reason}</p>
             </div>
           )}
 
@@ -552,7 +552,7 @@ export default function ViewSignatureDocumentPage() {
                     {document.signatures.map((sig) => (
                       <div
                         key={sig.id}
-                        className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg"
                       >
                         <div className="flex items-center gap-3">
                           <CheckCircle className="h-5 w-5 text-green-600" />

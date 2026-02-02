@@ -59,10 +59,10 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
   const getStatusBadge = (status: string | null) => {
     if (!status) return 'bg-muted text-foreground'
     const badges: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-500/20 text-yellow-400',
+      approved: 'bg-blue-500/20 text-blue-400',
+      paid: 'bg-green-500/20 text-green-400',
+      cancelled: 'bg-red-500/20 text-red-400',
     }
     return badges[status] || 'bg-muted text-foreground'
   }

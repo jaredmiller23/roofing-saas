@@ -647,7 +647,7 @@ export default function SignDocumentPage() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
             <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+              <div className="mx-auto w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center">
                 <CloudOff className="h-8 w-8 text-yellow-600" />
               </div>
             </div>
@@ -657,7 +657,7 @@ export default function SignDocumentPage() {
             <p className="text-muted-foreground mb-6">
               {offlineSubmitMessage}
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-2 text-yellow-800 text-sm">
                 <WifiOff className="h-4 w-4 shrink-0" />
                 <span>Your signature is saved locally and will sync automatically.</span>
@@ -696,7 +696,7 @@ export default function SignDocumentPage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
           <div className="mb-6">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
           </div>
@@ -729,7 +729,7 @@ export default function SignDocumentPage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-card rounded-lg shadow-lg p-6 md:p-8 text-center">
           <div className="mb-6">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
               <Ban className="h-8 w-8 text-red-600" />
             </div>
           </div>
@@ -784,9 +784,9 @@ export default function SignDocumentPage() {
     const StatusIcon = config.icon
 
     const containerStyles: Record<string, string> = {
-      expired: 'bg-yellow-100 border-yellow-300',
-      signed: 'bg-green-100 border-green-300',
-      declined: 'bg-red-100 border-red-300'
+      expired: 'bg-yellow-500/20 border-yellow-500/40',
+      signed: 'bg-green-500/20 border-green-500/40',
+      declined: 'bg-red-500/20 border-red-500/40'
     }
     const iconStyles: Record<string, string> = {
       expired: 'text-yellow-600',
@@ -1152,7 +1152,7 @@ export default function SignDocumentPage() {
             <Button
               variant="outline"
               onClick={handleDeclineClick}
-              className="sm:w-auto text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 min-h-[48px] md:min-h-[44px]"
+              className="sm:w-auto text-red-600 border-red-500/40 hover:bg-red-500/10 hover:text-red-700 min-h-[48px] md:min-h-[44px]"
             >
               <Ban className="h-4 w-4 mr-2" />
               Decline to Sign

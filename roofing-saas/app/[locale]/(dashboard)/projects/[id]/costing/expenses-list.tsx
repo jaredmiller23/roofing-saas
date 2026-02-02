@@ -43,15 +43,15 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
 
   const getExpenseTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      labor: 'bg-blue-100 text-blue-800',
-      material: 'bg-purple-100 text-purple-800',
-      equipment: 'bg-orange-100 text-orange-800',
-      subcontractor: 'bg-green-100 text-green-800',
-      permit: 'bg-yellow-100 text-yellow-800',
-      disposal: 'bg-muted text-gray-800',
-      other: 'bg-muted text-gray-800',
+      labor: 'bg-blue-500/20 text-blue-400',
+      material: 'bg-purple-500/20 text-purple-400',
+      equipment: 'bg-orange-500/20 text-orange-400',
+      subcontractor: 'bg-green-500/20 text-green-400',
+      permit: 'bg-yellow-500/20 text-yellow-400',
+      disposal: 'bg-muted text-muted-foreground',
+      other: 'bg-muted text-muted-foreground',
     }
-    return colors[type] || 'bg-muted text-gray-800'
+    return colors[type] || 'bg-muted text-muted-foreground'
   }
 
   const handleDelete = (expenseId: string) => {
@@ -158,12 +158,12 @@ export function ExpensesList({ expenses, projectId }: ExpensesListProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   {expense.is_approved ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">
                       <CheckCircle className="h-3 w-3" />
                       Approved
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-medium rounded-full">
                       <AlertCircle className="h-3 w-3" />
                       Pending
                     </span>

@@ -193,8 +193,8 @@ export default function SignatureTemplatesPage() {
     const colors: Record<string, string> = {
       contracts: 'bg-primary/10 text-primary',
       estimates: 'bg-secondary/10 text-secondary',
-      waivers: 'bg-yellow-100 text-yellow-700',
-      change_orders: 'bg-purple-100 text-purple-700',
+      waivers: 'bg-yellow-500/20 text-yellow-400',
+      change_orders: 'bg-purple-500/20 text-purple-400',
       other: 'bg-muted text-muted-foreground',
     }
 
@@ -413,7 +413,7 @@ export default function SignatureTemplatesPage() {
                       variant="ghost"
                       onClick={() => handleDelete(template)}
                       title="Delete"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

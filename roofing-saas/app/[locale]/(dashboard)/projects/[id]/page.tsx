@@ -264,15 +264,15 @@ export default function ProjectDetailPage() {
 
     const colors = {
       lead: 'bg-primary/10 text-primary',
-      won: 'bg-green-100 text-green-800',
-      lost: 'bg-red-100 text-red-800',
-      proposal: 'bg-yellow-100 text-yellow-800',
+      won: 'bg-green-500/20 text-green-400',
+      lost: 'bg-red-500/20 text-red-400',
+      proposal: 'bg-yellow-500/20 text-yellow-400',
       negotiation: 'bg-secondary/10 text-secondary',
       estimate: 'bg-primary/10 text-primary',
-      approved: 'bg-green-100 text-green-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+      approved: 'bg-green-500/20 text-green-400',
+      in_progress: 'bg-yellow-500/20 text-yellow-400',
+      completed: 'bg-green-500/20 text-green-400',
+      cancelled: 'bg-red-500/20 text-red-400',
     }
 
     return (
@@ -356,13 +356,13 @@ export default function ProjectDetailPage() {
                 </Button>
               )}
               {project.pipeline_stage === 'production' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">
                   <div className="animate-pulse h-2 w-2 bg-yellow-500 rounded-full" />
                   In Production
                 </div>
               )}
               {project.pipeline_stage === 'complete' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                   <CheckCircle className="h-4 w-4" />
                   Complete
                 </div>
@@ -546,10 +546,10 @@ export default function ProjectDetailPage() {
                     <div>
                       <label className="text-sm font-medium text-muted-foreground mb-2 block">Current Stage</label>
                       <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                        project.pipeline_stage === 'won' ? 'bg-green-100 text-green-800 border border-green-200' :
-                        project.pipeline_stage === 'production' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                        project.pipeline_stage === 'complete' ? 'bg-green-100 text-green-800 border border-green-200' :
-                        project.pipeline_stage === 'lost' ? 'bg-red-100 text-red-800 border border-red-200' :
+                        project.pipeline_stage === 'won' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                        project.pipeline_stage === 'production' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                        project.pipeline_stage === 'complete' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                        project.pipeline_stage === 'lost' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
                         'bg-primary/10 text-primary border border-primary/30'
                       }`}>
                         {STAGE_DISPLAY_NAMES[project.pipeline_stage] || project.pipeline_stage}

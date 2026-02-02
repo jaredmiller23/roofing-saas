@@ -54,12 +54,12 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  apprentice: 'bg-blue-100 text-blue-800',
-  journeyman: 'bg-green-100 text-green-800',
-  master: 'bg-purple-100 text-purple-800',
-  foreman: 'bg-orange-100 text-orange-800',
-  project_manager: 'bg-red-100 text-red-800',
-  subcontractor: 'bg-gray-100 text-gray-800',
+  apprentice: 'bg-blue-500/20 text-blue-400',
+  journeyman: 'bg-green-500/20 text-green-400',
+  master: 'bg-purple-500/20 text-purple-400',
+  foreman: 'bg-orange-500/20 text-orange-400',
+  project_manager: 'bg-red-500/20 text-red-400',
+  subcontractor: 'bg-muted text-muted-foreground',
 }
 
 export default function CrewManagementPage() {

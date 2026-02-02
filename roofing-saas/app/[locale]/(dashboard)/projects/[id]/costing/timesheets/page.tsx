@@ -59,10 +59,10 @@ interface Timesheet {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-800',
-  submitted: 'bg-blue-100 text-blue-800',
-  approved: 'bg-green-100 text-green-800',
-  paid: 'bg-purple-100 text-purple-800',
+  draft: 'bg-muted text-muted-foreground',
+  submitted: 'bg-blue-500/20 text-blue-400',
+  approved: 'bg-green-500/20 text-green-400',
+  paid: 'bg-purple-500/20 text-purple-400',
 }
 
 const STATUS_LABELS: Record<string, string> = {

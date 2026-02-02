@@ -41,10 +41,10 @@ export default async function CallLogDetailPage({
     return (
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-red-900 mb-2">Call Log Not Found</h2>
-            <p className="text-red-700 mb-4">The call log you are trying to view does not exist.</p>
-            <Link href="/call-logs" className="text-red-600 hover:text-red-900 underline">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-red-400 mb-2">Call Log Not Found</h2>
+            <p className="text-red-300 mb-4">The call log you are trying to view does not exist.</p>
+            <Link href="/call-logs" className="text-red-400 hover:text-red-300 underline">
               Back to Call Logs
             </Link>
           </div>

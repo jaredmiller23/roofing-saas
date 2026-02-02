@@ -105,11 +105,11 @@ export function MarginAnalysis({ projects, marginThresholds }: MarginAnalysisPro
   }
 
   const getMarginBgColor = (margin: number) => {
-    if (margin >= excellent) return 'bg-green-100'
+    if (margin >= excellent) return 'bg-green-500/20'
     if (margin >= good) return 'bg-primary/10'
-    if (margin >= fair) return 'bg-yellow-100'
-    if (margin >= 0) return 'bg-orange-100'
-    return 'bg-red-100'
+    if (margin >= fair) return 'bg-yellow-500/20'
+    if (margin >= 0) return 'bg-orange-500/20'
+    return 'bg-red-500/20'
   }
 
   return (
@@ -171,7 +171,7 @@ export function MarginAnalysis({ projects, marginThresholds }: MarginAnalysisPro
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">Top Margin Projects</h3>
             <div className="space-y-2">
               {analysis.bestPerformers.map((project, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}
@@ -195,7 +195,7 @@ export function MarginAnalysis({ projects, marginThresholds }: MarginAnalysisPro
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">Lowest Margin Projects</h3>
             <div className="space-y-2">
               {analysis.worstPerformers.map((project, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-red-500/10 rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {project.project_name}

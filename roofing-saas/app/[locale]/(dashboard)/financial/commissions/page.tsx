@@ -175,7 +175,7 @@ export default async function CommissionsPage() {
                         {userSummary.total_commissions}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500/20 text-green-400">
                           Active
                         </span>
                       </td>

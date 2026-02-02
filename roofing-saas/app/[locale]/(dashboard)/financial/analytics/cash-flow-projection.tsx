@@ -106,28 +106,28 @@ export function CashFlowProjection({ projects, arAging, costRate }: CashFlowProj
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-muted-foreground mb-3">Accounts Receivable Aging</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-green-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-green-700 mb-1">Current</p>
-              <p className="text-lg font-bold text-green-900">{formatCurrency(arAging.current)}</p>
-              <p className="text-xs text-green-600 mt-1">0-30 days</p>
+            <div className="bg-green-500/10 rounded-lg p-3">
+              <p className="text-xs font-medium text-green-400 mb-1">Current</p>
+              <p className="text-lg font-bold text-green-300">{formatCurrency(arAging.current)}</p>
+              <p className="text-xs text-green-500 mt-1">0-30 days</p>
             </div>
 
-            <div className="bg-yellow-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-yellow-700 mb-1">30-60 Days</p>
-              <p className="text-lg font-bold text-yellow-900">{formatCurrency(arAging.days30)}</p>
-              <p className="text-xs text-yellow-600 mt-1">Medium risk</p>
+            <div className="bg-yellow-500/10 rounded-lg p-3">
+              <p className="text-xs font-medium text-yellow-400 mb-1">30-60 Days</p>
+              <p className="text-lg font-bold text-yellow-300">{formatCurrency(arAging.days30)}</p>
+              <p className="text-xs text-yellow-500 mt-1">Medium risk</p>
             </div>
 
-            <div className="bg-orange-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-orange-700 mb-1">60-90 Days</p>
-              <p className="text-lg font-bold text-orange-900">{formatCurrency(arAging.days60)}</p>
-              <p className="text-xs text-orange-600 mt-1">High risk</p>
+            <div className="bg-orange-500/10 rounded-lg p-3">
+              <p className="text-xs font-medium text-orange-400 mb-1">60-90 Days</p>
+              <p className="text-lg font-bold text-orange-300">{formatCurrency(arAging.days60)}</p>
+              <p className="text-xs text-orange-500 mt-1">High risk</p>
             </div>
 
-            <div className="bg-red-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-red-700 mb-1">90+ Days</p>
-              <p className="text-lg font-bold text-red-900">{formatCurrency(arAging.days90plus)}</p>
-              <p className="text-xs text-red-600 mt-1">Collection needed</p>
+            <div className="bg-red-500/10 rounded-lg p-3">
+              <p className="text-xs font-medium text-red-400 mb-1">90+ Days</p>
+              <p className="text-lg font-bold text-red-300">{formatCurrency(arAging.days90plus)}</p>
+              <p className="text-xs text-red-500 mt-1">Collection needed</p>
             </div>
           </div>
         </div>
@@ -163,11 +163,11 @@ export function CashFlowProjection({ projects, arAging, costRate }: CashFlowProj
                     </td>
                     <td className="px-4 py-3 text-center">
                       {projection.netCashFlow >= 0 ? (
-                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        <span className="px-2 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full">
                           Positive
                         </span>
                       ) : (
-                        <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full flex items-center justify-center gap-1">
+                        <span className="px-2 py-1 text-xs font-medium bg-red-500/20 text-red-400 rounded-full flex items-center justify-center gap-1">
                           <AlertTriangle className="h-3 w-3" />
                           Shortfall
                         </span>

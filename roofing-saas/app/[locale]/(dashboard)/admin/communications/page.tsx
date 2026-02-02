@@ -210,14 +210,14 @@ export default function CommunicationsAdminPage() {
               {config?.twilio.configured ? (
                 <>
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
                     Connected
                   </Badge>
                 </>
               ) : (
                 <>
                   <XCircle className="h-5 w-5 text-red-600" />
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                  <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30">
                     Not Configured
                   </Badge>
                 </>
@@ -250,14 +250,14 @@ export default function CommunicationsAdminPage() {
               {config?.resend.configured ? (
                 <>
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
                     Connected
                   </Badge>
                 </>
               ) : (
                 <>
                   <XCircle className="h-5 w-5 text-red-600" />
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                  <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30">
                     Not Configured
                   </Badge>
                 </>
@@ -347,7 +347,7 @@ export default function CommunicationsAdminPage() {
             </div>
 
             {/* Opted In */}
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="p-4 bg-green-500/10 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <span className="font-medium">Opted In</span>
@@ -361,7 +361,7 @@ export default function CommunicationsAdminPage() {
             </div>
 
             {/* Opted Out */}
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+            <div className="p-4 bg-red-500/10 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <UserX className="h-4 w-4 text-red-600" />
                 <span className="font-medium">Opted Out</span>
@@ -375,7 +375,7 @@ export default function CommunicationsAdminPage() {
             </div>
 
             {/* No Consent */}
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <div className="p-4 bg-yellow-500/10 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="h-4 w-4 text-yellow-600" />
                 <span className="font-medium">No Consent</span>
@@ -398,7 +398,7 @@ export default function CommunicationsAdminPage() {
             <CardTitle className="flex items-center gap-2 text-yellow-700">
               <Send className="h-5 w-5" />
               Test Communications
-              <Badge variant="outline" className="ml-2 bg-yellow-100 text-yellow-800 border-yellow-300">
+              <Badge variant="outline" className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-500/40">
                 Dev Only
               </Badge>
             </CardTitle>

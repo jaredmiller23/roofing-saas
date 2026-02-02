@@ -38,7 +38,7 @@ export default function Error({
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+          <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
           </div>
           <CardTitle className="text-2xl">Something Went Wrong</CardTitle>
@@ -49,7 +49,7 @@ export default function Error({
 
         <CardContent className="space-y-4">
           {process.env.NODE_ENV === 'development' && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-md">
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-md">
               <p className="text-sm font-mono text-red-800 dark:text-red-200 break-all">
                 {error.message}
               </p>

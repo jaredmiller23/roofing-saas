@@ -38,10 +38,10 @@ export default async function ProjectFileDetailPage({
     return (
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-red-900 mb-2">File Not Found</h2>
-            <p className="text-red-700 mb-4">The file you are looking for does not exist.</p>
-            <Link href="/project-files" className="text-red-600 hover:text-red-900 underline">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-red-400 mb-2">File Not Found</h2>
+            <p className="text-red-300 mb-4">The file you are looking for does not exist.</p>
+            <Link href="/project-files" className="text-red-400 hover:text-red-300 underline">
               Back to Files
             </Link>
           </div>

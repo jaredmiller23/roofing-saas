@@ -117,7 +117,7 @@ export default function EditTerritoryPage({ params }: EditTerritoryPageProps) {
     return (
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-6 text-center">
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Error Loading Territory</h2>
             <p className="mb-4">{error || 'Territory not found'}</p>
             <Link

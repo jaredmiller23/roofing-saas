@@ -39,10 +39,10 @@ export default async function JobDetailPage({
     return (
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-red-900 mb-2">Job Not Found</h2>
-            <p className="text-red-700 mb-4">The job you are trying to view does not exist.</p>
-            <Link href="/jobs" className="text-red-600 hover:text-red-900 underline">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-8 text-center">
+            <h2 className="text-xl font-semibold text-red-400 mb-2">Job Not Found</h2>
+            <p className="text-red-300 mb-4">The job you are trying to view does not exist.</p>
+            <Link href="/jobs" className="text-red-400 hover:text-red-300 underline">
               Back to Jobs
             </Link>
           </div>
@@ -53,11 +53,11 @@ export default async function JobDetailPage({
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      scheduled: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      on_hold: 'bg-orange-100 text-orange-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
+      scheduled: 'bg-blue-500/20 text-blue-400',
+      in_progress: 'bg-yellow-500/20 text-yellow-400',
+      on_hold: 'bg-orange-500/20 text-orange-400',
+      completed: 'bg-green-500/20 text-green-400',
+      cancelled: 'bg-red-500/20 text-red-400',
     }
     return badges[status as keyof typeof badges] || 'bg-muted text-gray-800'
   }
