@@ -64,7 +64,7 @@ export async function generatePacket(
           email,
           phone,
           insurance_carrier,
-          insurance_policy_number,
+          policy_number,
           address_street,
           address_city,
           address_state,
@@ -199,7 +199,7 @@ export async function generatePacket(
       email: contactData?.email,
       phone: contactData?.phone,
       insurance_carrier: contactData?.insurance_carrier,
-      policy_number: contactData?.insurance_policy_number,
+      policy_number: contactData?.policy_number,
     }
 
     // 13. Determine recommended action
