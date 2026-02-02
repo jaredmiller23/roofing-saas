@@ -197,15 +197,24 @@ export async function getAssuranceLevel() {
  * Generate recovery codes for MFA
  * Note: Supabase doesn't have built-in recovery codes, so we generate and store them
  * In a production system, these should be hashed before storage
+ *
+ * Uses crypto.getRandomValues() for cryptographically secure randomness.
+ * Math.random() is NOT suitable for security-sensitive code generation.
  */
 export function generateRecoveryCodes(count: number = 10): string[] {
   const codes: string[] = []
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const charCount = chars.length
 
   for (let i = 0; i < count; i++) {
     let code = ''
+    // Generate 8 cryptographically secure random bytes
+    const randomBytes = new Uint8Array(8)
+    crypto.getRandomValues(randomBytes)
+
     for (let j = 0; j < 8; j++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length))
+      // Use modulo to select a character (slight bias is acceptable for 36 chars)
+      code += chars.charAt(randomBytes[j] % charCount)
     }
     // Format as XXXX-XXXX
     codes.push(`${code.slice(0, 4)}-${code.slice(4)}`)
