@@ -1,6 +1,9 @@
 /**
  * Workflow Execution Engine
  * Core engine for executing automation workflows
+ *
+ * Uses persistent scheduling via workflow-scheduler.ts for reliable execution.
+ * Steps with delays are scheduled in the database and processed by cron.
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -12,6 +15,7 @@ import {
 } from './types'
 import { executeStep } from './executors'
 import { replaceVariables } from './variables'
+import { startWorkflowExecution } from './workflow-scheduler'
 
 /**
  * Trigger a workflow based on an event
@@ -80,9 +84,17 @@ export async function triggerWorkflow(
         workflowName: workflow.name,
       })
 
-      // Start execution asynchronously (don't wait for completion)
-      executeWorkflow(execution.id).catch((error) => {
-        logger.error('Workflow execution failed', { error, executionId: execution.id })
+      // Start execution via persistent scheduler (schedules first step)
+      // This is fire-and-forget - the cron job will process scheduled steps
+      startWorkflowExecution(
+        execution.id,
+        workflow.id,
+        triggerData
+      ).catch((error) => {
+        logger.error('Failed to start workflow execution', {
+          error,
+          executionId: execution.id,
+        })
       })
     }
 
@@ -113,7 +125,11 @@ function matchesTriggerConfig(config: Record<string, unknown>, data: Record<stri
 }
 
 /**
- * Execute a workflow
+ * Execute a workflow synchronously (DEPRECATED)
+ *
+ * @deprecated Use startWorkflowExecution() + cron processing instead.
+ * This function uses setTimeout for delays which doesn't survive process restarts.
+ * Kept for backwards compatibility only.
  */
 export async function executeWorkflow(executionId: string): Promise<void> {
   const supabase = await createClient()

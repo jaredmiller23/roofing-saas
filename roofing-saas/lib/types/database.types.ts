@@ -9217,9 +9217,11 @@ export type Database = {
           execution_id: string
           id: string
           result_data: Json | null
+          scheduled_at: string | null
           started_at: string | null
           status: string | null
           step_id: string
+          trigger_data: Json | null
         }
         Insert: {
           completed_at?: string | null
@@ -9228,9 +9230,11 @@ export type Database = {
           execution_id: string
           id?: string
           result_data?: Json | null
+          scheduled_at?: string | null
           started_at?: string | null
           status?: string | null
           step_id: string
+          trigger_data?: Json | null
         }
         Update: {
           completed_at?: string | null
@@ -9239,9 +9243,11 @@ export type Database = {
           execution_id?: string
           id?: string
           result_data?: Json | null
+          scheduled_at?: string | null
           started_at?: string | null
           status?: string | null
           step_id?: string
+          trigger_data?: Json | null
         }
         Relationships: []
       }
