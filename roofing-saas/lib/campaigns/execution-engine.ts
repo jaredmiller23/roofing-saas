@@ -516,15 +516,131 @@ async function executeNotify(
   context: StepExecutionContext,
   config: NotifyStepConfig
 ): Promise<ExecutionResult> {
-  // TODO: Implement notification system
-  logger.info('Notifying users', {
+  const supabase = await createClient()
+  const notificationType = config.notification_type || 'email'
+  const results: Array<{ userId: string; email: boolean; inApp: boolean }> = []
+
+  logger.info('[Campaign Notify] Starting notification delivery', {
     users: config.notify_users,
-    message: config.message,
+    type: notificationType,
+    contactId: context.contact.id,
   })
 
+  // Build message with contact context
+  const contactName = String(context.contact.full_name ||
+    `${context.contact.first_name || ''} ${context.contact.last_name || ''}`.trim() ||
+    'A contact')
+  const contactEmail = String(context.contact.email || '')
+  const contactPhone = String(context.contact.phone || '')
+  const message = config.message
+    .replace(/\{contact\.name\}/g, contactName)
+    .replace(/\{contact\.email\}/g, contactEmail)
+    .replace(/\{contact\.phone\}/g, contactPhone)
+
+  for (const userId of config.notify_users) {
+    const result = { userId, email: false, inApp: false }
+
+    try {
+      // Look up user email
+      const { data: tenantUser, error: tuError } = await supabase
+        .from('tenant_users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .eq('tenant_id', context.enrollment.tenant_id)
+        .single()
+
+      if (tuError || !tenantUser) {
+        logger.warn('[Campaign Notify] User not found in tenant', { userId })
+        results.push(result)
+        continue
+      }
+
+      // Get user's email from users table
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('email, raw_user_meta_data')
+        .eq('id', userId)
+        .single()
+
+      if (userError || !user?.email) {
+        logger.warn('[Campaign Notify] User email not found', { userId })
+        results.push(result)
+        continue
+      }
+
+      // Send email notification
+      if (notificationType === 'email' || notificationType === 'both') {
+        if (isResendConfigured() && resendClient) {
+          try {
+            const meta = user.raw_user_meta_data as Record<string, unknown> | null
+            const userName = (meta?.full_name as string) || 'Team Member'
+
+            await resendClient.emails.send({
+              from: getFromAddress(),
+              to: user.email,
+              subject: `Campaign Notification: ${contactName}`,
+              html: `
+                <p>Hi ${userName},</p>
+                <p>${message.replace(/\n/g, '<br>')}</p>
+                <hr>
+                <p style="color: #666; font-size: 12px;">
+                  This notification was triggered by a campaign step.
+                  Contact: ${contactName}
+                </p>
+              `,
+            })
+            result.email = true
+            logger.info('[Campaign Notify] Email sent', { userId, email: user.email })
+          } catch (err) {
+            logger.error('[Campaign Notify] Failed to send email', {
+              userId,
+              error: err instanceof Error ? err.message : String(err),
+            })
+          }
+        } else {
+          logger.warn('[Campaign Notify] Email provider not configured, skipping email')
+        }
+      }
+
+      // In-app notification (store in activities as a notification type)
+      if (notificationType === 'in_app' || notificationType === 'both') {
+        try {
+          await supabase.from('activities').insert({
+            tenant_id: context.enrollment.tenant_id,
+            contact_id: context.contact.id,
+            type: 'notification',
+            subject: `Campaign Notification`,
+            content: message,
+            created_by: userId, // The recipient, so it shows in their activity feed
+            created_at: new Date().toISOString(),
+          })
+          result.inApp = true
+          logger.info('[Campaign Notify] In-app notification created', { userId })
+        } catch (err) {
+          logger.error('[Campaign Notify] Failed to create in-app notification', {
+            userId,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
+      }
+    } catch (err) {
+      logger.error('[Campaign Notify] Error notifying user', {
+        userId,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+
+    results.push(result)
+  }
+
+  const successCount = results.filter(r => r.email || r.inApp).length
+
   return {
-    notified: true,
+    notified: successCount > 0,
     users: config.notify_users,
+    results,
+    successCount,
+    failureCount: results.length - successCount,
   }
 }
 
