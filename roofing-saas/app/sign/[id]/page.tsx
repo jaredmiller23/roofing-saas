@@ -536,14 +536,15 @@ export default function SignDocumentPage() {
           signer_type: signerType,
           signature_data: 'field-based-signature',
           signature_method: 'draw',
-          completed_fields: Array.from(completedFields)
+          completed_fields: Array.from(completedFields),
+          field_values: Object.fromEntries(textFieldValues)
         })
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit signature')
+        throw new Error(data.error?.message || data.error || 'Failed to submit signature')
       }
 
       setSuccess(true)
@@ -603,7 +604,7 @@ export default function SignDocumentPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to decline document')
+        throw new Error(data.error?.message || data.error || 'Failed to decline document')
       }
 
       setShowDeclineDialog(false)

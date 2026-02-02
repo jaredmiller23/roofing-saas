@@ -105,9 +105,9 @@ export function PlacedField({
   }
 
   const assigneeColor = {
-    customer: 'border-primary bg-primary/10',
-    company: 'border-secondary bg-secondary/10',
-    any: 'border-muted-foreground bg-muted/30',
+    customer: 'border-primary bg-primary/20',
+    company: 'border-secondary bg-secondary/20',
+    any: 'border-muted-foreground bg-muted/50',
   }[field.assignedTo]
 
   return (
@@ -132,7 +132,7 @@ export function PlacedField({
       {/* Field Content */}
       <div className="flex items-center justify-center h-full gap-1 px-1">
         {Icon && <Icon className="h-3 w-3 text-muted-foreground shrink-0" />}
-        <span className="text-xs text-foreground truncate">
+        <span className={`truncate ${field.type === 'text' && field.content ? 'text-sm font-medium text-foreground' : 'text-xs text-foreground'}`}>
           {field.type === 'text' && field.content ? field.content : field.label}
         </span>
         {field.required && <span className="text-red-500 text-xs shrink-0">*</span>}

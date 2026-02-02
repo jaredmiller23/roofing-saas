@@ -58,7 +58,8 @@ export async function POST(
       signature_method = 'draw',
       verification_code,
       decline_reason,
-      completed_fields = []
+      completed_fields = [],
+      field_values = {}
     } = body
 
     // Handle decline action
@@ -251,11 +252,13 @@ export async function POST(
       throw ValidationError('Document has expired')
     }
 
-    // Transform completed_fields to include timestamps
+    // Transform completed_fields to include timestamps and values
+    const fieldValuesMap = field_values as Record<string, string>
     const completedFieldsWithTimestamps = Array.isArray(completed_fields)
       ? completed_fields.map((fieldId: string) => ({
           field_id: fieldId,
-          completed_at: new Date().toISOString()
+          completed_at: new Date().toISOString(),
+          value: fieldValuesMap[fieldId] || null
         }))
       : []
 
