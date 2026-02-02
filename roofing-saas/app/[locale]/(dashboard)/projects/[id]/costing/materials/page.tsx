@@ -429,12 +429,13 @@ export default function MaterialsPage() {
           </Card>
         </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
+        {/* Materials Content */}
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Purchases</CardTitle>
@@ -496,7 +497,7 @@ export default function MaterialsPage() {
               )}
             </CardContent>
           </Card>
-        )}
+        </div>
       </div>
     </div>
   )

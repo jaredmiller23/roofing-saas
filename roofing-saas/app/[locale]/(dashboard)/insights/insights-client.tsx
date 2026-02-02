@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { apiFetch } from '@/lib/api/client'
-import { Sparkles, Plus, Clock, Star, TrendingUp } from 'lucide-react'
+import { Sparkles, Plus, Clock, Star, TrendingUp, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QueryInput, useQueryInput } from '@/components/bi/QueryInput'
@@ -280,21 +280,28 @@ export function InsightsPageClient({
 
           {/* Results Tab */}
           <TabsContent value="results" className="space-y-6">
-            {currentQuery || isLoading ? (
-              <QueryResults
-                result={currentResult}
-                query={currentQuery}
-                isLoading={isLoading}
-                isFavorite={isFavoriteQuery}
-                onToggleFavorite={() => handleToggleFavorite()}
-                onExportCSV={handleExportCSV}
-                onViewSQL={() => {
-                  if (currentResult?.metadata.sql) {
-                    console.log('SQL:', currentResult.metadata.sql)
-                    // In a real app, this would open a modal or copy to clipboard
-                  }
-                }}
-              />
+            {currentQuery ? (
+              <div className="relative">
+                {isLoading && (
+                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+                <QueryResults
+                  result={currentResult}
+                  query={currentQuery}
+                  isLoading={isLoading}
+                  isFavorite={isFavoriteQuery}
+                  onToggleFavorite={() => handleToggleFavorite()}
+                  onExportCSV={handleExportCSV}
+                  onViewSQL={() => {
+                    if (currentResult?.metadata.sql) {
+                      console.log('SQL:', currentResult.metadata.sql)
+                      // In a real app, this would open a modal or copy to clipboard
+                    }
+                  }}
+                />
+              </div>
             ) : (
               <div className="text-center py-12">
                 <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />

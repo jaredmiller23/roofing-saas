@@ -288,34 +288,35 @@ export default function SignatureTemplatesPage() {
         )}
 
         {/* Templates List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading templates...</p>
-          </div>
-        ) : filteredTemplates.length === 0 ? (
-          <div className="bg-card rounded-lg shadow-sm border border-border p-12 text-center">
-            <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No templates found
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {searchQuery
-                ? 'Try adjusting your search or filters'
-                : 'Create your first signature template to get started'}
-            </p>
-            {!searchQuery && (
-              <Button
-                onClick={() => router.push('/signatures/templates/new')}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Template
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid gap-4">
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          )}
+          {filteredTemplates.length === 0 ? (
+            <div className="bg-card rounded-lg shadow-sm border border-border p-12 text-center">
+              <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {isLoading ? 'Loading templates...' : 'No templates found'}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {isLoading ? '' : searchQuery
+                  ? 'Try adjusting your search or filters'
+                  : 'Create your first signature template to get started'}
+              </p>
+              {!isLoading && !searchQuery && (
+                <Button
+                  onClick={() => router.push('/signatures/templates/new')}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Template
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
             {filteredTemplates.map((template) => (
               <div
                 key={template.id}
@@ -421,7 +422,8 @@ export default function SignatureTemplatesPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Template Preview Modal */}

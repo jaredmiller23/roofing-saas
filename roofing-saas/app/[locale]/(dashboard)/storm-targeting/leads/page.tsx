@@ -398,16 +398,18 @@ export default function StormLeadsPage() {
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Addresses</h3>
 
-                {isLoading ? (
-                  <div className="text-center py-12">
-                    <Loader2 className="w-8 h-8 mx-auto animate-spin text-muted-foreground" />
-                  </div>
-                ) : filteredAddresses.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    No addresses match the current filter
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="relative">
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {filteredAddresses.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      {isLoading ? 'Loading addresses...' : 'No addresses match the current filter'}
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
                     {filteredAddresses.map((addr) => (
                       <div
                         key={addr.id}
@@ -457,7 +459,8 @@ export default function StormLeadsPage() {
                       </div>
                     ))}
                   </div>
-                )}
+                  )}
+                </div>
               </Card>
             </>
           )}

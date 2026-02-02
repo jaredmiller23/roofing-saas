@@ -156,27 +156,30 @@ export function TasksList({ params = {} }: TasksListProps) {
       )}
 
       {/* Tasks List */}
-      {isLoading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading tasks...</p>
-        </div>
-      ) : tasks.length === 0 ? (
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        )}
+        {tasks.length === 0 ? (
           <div className="bg-card rounded-lg shadow-sm border border p-12 text-center">
             <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              No tasks found
+              {isLoading ? 'Loading tasks...' : 'No tasks found'}
             </h3>
             <p className="text-muted-foreground mb-6">
-              Try adjusting your search or filters
+              {isLoading ? '' : 'Try adjusting your search or filters'}
             </p>
-            <Button
-              onClick={() => router.push('/tasks/new')}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Task
-            </Button>
+            {!isLoading && (
+              <Button
+                onClick={() => router.push('/tasks/new')}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Task
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -271,6 +274,7 @@ export function TasksList({ params = {} }: TasksListProps) {
             ))}
           </div>
         )}
+      </div>
     </div>
   )
 }

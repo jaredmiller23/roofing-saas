@@ -333,34 +333,35 @@ export default function SignaturesPage() {
         )}
 
         {/* Documents List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading documents...</p>
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <div className="bg-card rounded-lg shadow-sm border border p-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No documents found
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {searchQuery
-                ? 'Try adjusting your search or filters'
-                : 'Get started by creating your first signature document'}
-            </p>
-            {!searchQuery && (
-              <Button
-                onClick={() => router.push('/signatures/new')}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Document
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          )}
+          {filteredDocuments.length === 0 ? (
+            <div className="bg-card rounded-lg shadow-sm border border p-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {isLoading ? 'Loading documents...' : 'No documents found'}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {isLoading ? '' : searchQuery
+                  ? 'Try adjusting your search or filters'
+                  : 'Get started by creating your first signature document'}
+              </p>
+              {!isLoading && !searchQuery && (
+                <Button
+                  onClick={() => router.push('/signatures/new')}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Document
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
             {filteredDocuments.map((doc) => (
               <div
                 key={doc.id}
@@ -501,7 +502,8 @@ export default function SignaturesPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

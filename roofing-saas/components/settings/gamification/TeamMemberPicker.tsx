@@ -176,16 +176,18 @@ export function TeamMemberPicker({
               </div>
 
               {/* Individual Users */}
-              {isLoading ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  Loading users...
-                </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  {searchQuery ? 'No users found' : 'No users available'}
-                </div>
-              ) : (
-                filteredUsers.map((user) => (
+              <div className="relative">
+                {isLoading && (
+                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+                    <div className="p-4 text-center text-sm text-muted-foreground">Loading users...</div>
+                  </div>
+                )}
+                {filteredUsers.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    {isLoading ? 'Loading...' : searchQuery ? 'No users found' : 'No users available'}
+                  </div>
+                ) : (
+                  filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center space-x-2 rounded-md p-2 hover:bg-accent cursor-pointer"
@@ -214,7 +216,8 @@ export function TeamMemberPicker({
                     </div>
                   </div>
                 ))
-              )}
+                )}
+              </div>
             </div>
           </ScrollArea>
         </PopoverContent>

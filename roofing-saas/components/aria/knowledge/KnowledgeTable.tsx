@@ -123,14 +123,15 @@ export function KnowledgeTable() {
       </div>
 
       {/* Table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+      <div className="bg-card rounded-lg border border-border overflow-hidden relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredEntries.length === 0 ? (
+        )}
+        {filteredEntries.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground text-sm">
-            {entries.length === 0 ? 'No knowledge entries yet.' : 'No entries match your search.'}
+            {isLoading ? 'Loading...' : entries.length === 0 ? 'No knowledge entries yet.' : 'No entries match your search.'}
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -324,21 +324,25 @@ export function SendSignatureDialog({
           </TabsList>
 
           <TabsContent value="template" className="space-y-4 mt-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">Loading templates...</span>
-              </div>
-            ) : templates.length === 0 ? (
-              <div className="text-center py-8">
-                <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-2">No templates available</p>
-                <p className="text-sm text-muted-foreground">
-                  Create a signature template first in E-Signatures → Templates
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
+            <div className="relative">
+              {isLoading && (
+                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="ml-2 text-muted-foreground">Loading templates...</span>
+                </div>
+              )}
+              {templates.length === 0 ? (
+                <div className="text-center py-8">
+                  <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground mb-2">{isLoading ? 'Loading...' : 'No templates available'}</p>
+                  {!isLoading && (
+                    <p className="text-sm text-muted-foreground">
+                      Create a signature template first in E-Signatures → Templates
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
                 {/* Template Selection */}
                 <div>
                   <Label htmlFor="template">Select Template *</Label>
@@ -406,7 +410,8 @@ export function SendSignatureDialog({
                   </div>
                 )}
               </div>
-            )}
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="upload" className="space-y-4 mt-4">

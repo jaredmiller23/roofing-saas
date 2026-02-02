@@ -397,12 +397,13 @@ export default function CrewManagementPage() {
           </Link>
         </div>
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
+        {/* Crew Content */}
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 rounded-lg">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
           <>
             {/* Active Crew Members */}
             <Card className="mb-6">
@@ -512,7 +513,7 @@ export default function CrewManagementPage() {
               </Card>
             )}
           </>
-        )}
+        </div>
       </div>
     </div>
   )

@@ -136,14 +136,15 @@ export function UserPicker({ onUserSelect, disabled = false }: UserPickerProps) 
         <DropdownMenuSeparator />
 
         {/* User list */}
-        <div className="max-h-[400px] overflow-y-auto">
-          {isLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Loading users...
+        <div className="max-h-[400px] overflow-y-auto relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+              <div className="p-4 text-center text-sm text-muted-foreground">Loading users...</div>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          )}
+          {filteredUsers.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              {searchQuery ? 'No users found' : 'No users available'}
+              {isLoading ? 'Loading...' : searchQuery ? 'No users found' : 'No users available'}
             </div>
           ) : (
             filteredUsers.map((user) => (
