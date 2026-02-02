@@ -17,8 +17,12 @@ import { IntegrationsSettings } from './IntegrationsSettings'
 import { BillingSettings } from '@/components/billing/BillingSettings'
 
 // Hook to detect mobile viewport (below lg breakpoint = 1024px)
+// IMPORTANT: Initial state must match server-render assumption.
+// We default to showing mobile layout to avoid the "no sidebar, no nav" bug
+// that occurs when JS says "desktop" but CSS hides the sidebar.
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
+  // Start with undefined to detect SSR vs client
+  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024)
@@ -27,7 +31,9 @@ function useIsMobile() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  return isMobile
+  // During SSR or before hydration, default to true (mobile-first)
+  // This ensures users always have navigation available
+  return isMobile ?? true
 }
 
 // Get human-readable title for a section
@@ -46,15 +52,26 @@ interface SettingsLayoutProps {
 export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutProps) {
   const isMobile = useIsMobile()
   // On mobile, start with null to show the list. On desktop, show the initial section.
-  const [activeSection, setActiveSection] = useState<string | null>(initialSection)
+  // Initialize to null - we'll set it properly after we know the viewport
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [initialized, setInitialized] = useState(false)
 
-  // When switching from desktop to mobile, if we have a section selected, keep it
+  // Initialize activeSection based on viewport after mount
+  useEffect(() => {
+    if (!initialized && isMobile !== undefined) {
+      // On mobile, start with null to show list
+      // On desktop, show the initial section
+      setActiveSection(isMobile ? null : initialSection)
+      setInitialized(true)
+    }
+  }, [isMobile, initialized, initialSection])
+
   // When switching from mobile to desktop, ensure we have a section (default to 'general')
   useEffect(() => {
-    if (!isMobile && activeSection === null) {
+    if (initialized && !isMobile && activeSection === null) {
       setActiveSection('general')
     }
-  }, [isMobile, activeSection])
+  }, [isMobile, activeSection, initialized])
 
   const handleSelect = (section: string) => {
     setActiveSection(section)
