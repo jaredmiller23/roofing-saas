@@ -68,11 +68,6 @@ export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutPro
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop Sidebar - Fixed on left */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:top-16 lg:border-r lg:border-border lg:bg-card">
-        <SettingsSidebar activeSection={activeSection} onSelect={handleSelect} />
-      </aside>
-
       {/* Mobile Header with Menu */}
       <div className="lg:hidden sticky top-0 z-40 flex items-center gap-4 px-4 py-3 bg-card border-b border-border">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -91,12 +86,20 @@ export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutPro
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="lg:pl-64">
-        <div className="p-6 lg:p-8 max-w-5xl">
-          {renderContent()}
-        </div>
-      </main>
+      {/* Desktop: Flex layout with sticky sidebar */}
+      <div className="lg:flex">
+        {/* Desktop Sidebar - Sticky within content flow */}
+        <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-border lg:bg-card">
+          <SettingsSidebar activeSection={activeSection} onSelect={handleSelect} />
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0">
+          <div className="p-6 lg:p-8 max-w-5xl">
+            {renderContent()}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
