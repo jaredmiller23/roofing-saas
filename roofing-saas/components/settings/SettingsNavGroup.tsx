@@ -4,9 +4,11 @@ import { SettingsNavItem, type SettingsNavItemProps } from './SettingsNavItem'
 
 export interface SettingsNavGroupProps {
   label: string
-  items: Omit<SettingsNavItemProps, 'isActive' | 'onClick'>[]
-  activeId: string
+  items: Omit<SettingsNavItemProps, 'isActive' | 'onClick' | 'variant'>[]
+  activeId: string | null
   onSelect: (id: string) => void
+  /** Render as list (full-width) or sidebar */
+  variant?: 'sidebar' | 'list'
 }
 
 export function SettingsNavGroup({
@@ -14,6 +16,7 @@ export function SettingsNavGroup({
   items,
   activeId,
   onSelect,
+  variant = 'sidebar',
 }: SettingsNavGroupProps) {
   return (
     <div className="space-y-1">
@@ -27,6 +30,7 @@ export function SettingsNavGroup({
             {...item}
             isActive={activeId === item.id}
             onClick={() => onSelect(item.id)}
+            variant={variant}
           />
         ))}
       </nav>

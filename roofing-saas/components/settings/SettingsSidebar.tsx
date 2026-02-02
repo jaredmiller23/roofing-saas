@@ -54,23 +54,29 @@ const settingsGroups = [
 ]
 
 interface SettingsSidebarProps {
-  activeSection: string
+  activeSection: string | null
   onSelect: (section: string) => void
+  /** Render as list (full-width mobile) or sidebar (desktop) */
+  variant?: 'sidebar' | 'list'
 }
 
-export function SettingsSidebar({ activeSection, onSelect }: SettingsSidebarProps) {
+export function SettingsSidebar({ activeSection, onSelect, variant = 'sidebar' }: SettingsSidebarProps) {
+  const isList = variant === 'list'
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-6 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">Settings</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your CRM configuration
-        </p>
-      </div>
+    <div className={isList ? 'flex flex-col' : 'flex flex-col h-full'}>
+      {/* Header - only show in sidebar mode */}
+      {!isList && (
+        <div className="px-4 py-6 border-b border-border">
+          <h2 className="text-lg font-semibold text-foreground">Settings</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your CRM configuration
+          </p>
+        </div>
+      )}
 
       {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
+      <div className={isList ? 'px-4 py-4 space-y-6' : 'flex-1 overflow-y-auto px-2 py-4 space-y-6'}>
         {settingsGroups.map((group) => (
           <SettingsNavGroup
             key={group.label}
@@ -78,6 +84,7 @@ export function SettingsSidebar({ activeSection, onSelect }: SettingsSidebarProp
             items={group.items}
             activeId={activeSection}
             onSelect={onSelect}
+            variant={variant}
           />
         ))}
       </div>

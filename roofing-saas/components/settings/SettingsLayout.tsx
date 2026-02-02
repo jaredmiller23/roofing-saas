@@ -1,14 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Menu } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { SettingsSidebar } from './SettingsSidebar'
+import { useState, useEffect } from 'react'
+import { SettingsSidebar, settingsGroups } from './SettingsSidebar'
+import { SettingsMobileHeader } from './SettingsMobileHeader'
 import { GeneralSettings } from './GeneralSettings'
 import { BrandingSettings } from './BrandingSettings'
 import { PipelineSettings } from './PipelineSettings'
@@ -22,17 +16,52 @@ import { GamificationSettings } from './GamificationSettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
 import { BillingSettings } from '@/components/billing/BillingSettings'
 
+// Hook to detect mobile viewport (below lg breakpoint = 1024px)
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  return isMobile
+}
+
+// Get human-readable title for a section
+function getSectionTitle(sectionId: string): string {
+  for (const group of settingsGroups) {
+    const item = group.items.find(i => i.id === sectionId)
+    if (item) return item.label
+  }
+  return 'Settings'
+}
+
 interface SettingsLayoutProps {
   initialSection?: string
 }
 
 export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutProps) {
-  const [activeSection, setActiveSection] = useState(initialSection)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const isMobile = useIsMobile()
+  // On mobile, start with null to show the list. On desktop, show the initial section.
+  const [activeSection, setActiveSection] = useState<string | null>(initialSection)
+
+  // When switching from desktop to mobile, if we have a section selected, keep it
+  // When switching from mobile to desktop, ensure we have a section (default to 'general')
+  useEffect(() => {
+    if (!isMobile && activeSection === null) {
+      setActiveSection('general')
+    }
+  }, [isMobile, activeSection])
 
   const handleSelect = (section: string) => {
     setActiveSection(section)
-    setMobileMenuOpen(false)
+  }
+
+  const handleBack = () => {
+    setActiveSection(null)
   }
 
   const renderContent = () => {
@@ -66,31 +95,47 @@ export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutPro
     }
   }
 
+  // MOBILE: List/Detail navigation pattern
+  if (isMobile) {
+    // No section selected → show settings list
+    if (activeSection === null) {
+      return (
+        <div className="min-h-screen bg-background">
+          <SettingsMobileHeader title="Settings" backHref="/dashboard" />
+          <SettingsSidebar
+            variant="list"
+            activeSection={null}
+            onSelect={handleSelect}
+          />
+        </div>
+      )
+    }
+
+    // Section selected → show section content with back button
+    return (
+      <div className="min-h-screen bg-background">
+        <SettingsMobileHeader
+          title={getSectionTitle(activeSection)}
+          onBack={handleBack}
+        />
+        <main className="p-4">
+          {renderContent()}
+        </main>
+      </div>
+    )
+  }
+
+  // DESKTOP: Sidebar + Content layout
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile Header with Menu */}
-      <div className="lg:hidden sticky top-0 z-40 flex items-center gap-4 px-4 py-3 bg-card border-b border-border">
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open settings menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0">
-            <SettingsSidebar activeSection={activeSection} onSelect={handleSelect} />
-          </SheetContent>
-        </Sheet>
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">Settings</h1>
-        </div>
-      </div>
-
-      {/* Desktop: Flex layout with sticky sidebar */}
       <div className="lg:flex">
         {/* Desktop Sidebar - Sticky within content flow */}
         <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-border lg:bg-card">
-          <SettingsSidebar activeSection={activeSection} onSelect={handleSelect} />
+          <SettingsSidebar
+            variant="sidebar"
+            activeSection={activeSection}
+            onSelect={handleSelect}
+          />
         </aside>
 
         {/* Main Content Area */}
