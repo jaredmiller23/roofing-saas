@@ -37,12 +37,14 @@ export function successResponse<T>(
   status = 200,
   headers?: HeadersInit
 ): NextResponse<ApiResponse<T>> {
+  // Only include headers in options if actually provided (avoid passing undefined)
+  const options = headers ? { status, headers } : { status }
   return NextResponse.json(
     {
       success: true,
       data,
     },
-    { status, headers }
+    options
   )
 }
 

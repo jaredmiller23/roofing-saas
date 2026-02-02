@@ -66,7 +66,7 @@ export function withAuth(handler: AuthHandler) {
       const user = await getCurrentUser()
       if (!user) {
         return NextResponse.json(
-          { error: 'Unauthorized', message: 'User not authenticated' },
+          { success: false, error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } },
           { status: 401 }
         )
       }
@@ -74,7 +74,7 @@ export function withAuth(handler: AuthHandler) {
       const tenantId = await getUserTenantId(user.id)
       if (!tenantId) {
         return NextResponse.json(
-          { error: 'Forbidden', message: 'User is not associated with a tenant' },
+          { success: false, error: { code: 'FORBIDDEN', message: 'User is not associated with a tenant' } },
           { status: 403 }
         )
       }
@@ -103,7 +103,7 @@ export function withAuthParams(handler: AuthHandlerWithParams) {
       const user = await getCurrentUser()
       if (!user) {
         return NextResponse.json(
-          { error: 'Unauthorized', message: 'User not authenticated' },
+          { success: false, error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } },
           { status: 401 }
         )
       }
@@ -111,7 +111,7 @@ export function withAuthParams(handler: AuthHandlerWithParams) {
       const tenantId = await getUserTenantId(user.id)
       if (!tenantId) {
         return NextResponse.json(
-          { error: 'Forbidden', message: 'User is not associated with a tenant' },
+          { success: false, error: { code: 'FORBIDDEN', message: 'User is not associated with a tenant' } },
           { status: 403 }
         )
       }
