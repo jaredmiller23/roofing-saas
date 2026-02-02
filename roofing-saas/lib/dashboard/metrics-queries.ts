@@ -2,12 +2,12 @@
  * Dashboard Metrics Query Functions
  *
  * Tier-specific query functions for the dashboard metrics API.
- * Each tier builds on the previous to avoid query duplication.
+ * Each function is STANDALONE - no nested function calls.
  *
  * Tiers:
- * - field: 2-3 queries, personal stats only
- * - manager: 5-6 queries, team overview + basic pipeline
- * - full: 8-10 queries, complete analytics
+ * - field: 2 queries, personal stats only
+ * - manager: 4 queries, field data + pipeline/conversion
+ * - full: 10 queries, all metrics in single parallel batch
  */
 
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -88,7 +88,8 @@ export async function getFieldMetrics(
 
 /**
  * Get metrics for manager tier (admins on tablet)
- * Includes field metrics + pipeline and conversion data
+ * Includes field-level metrics + pipeline and conversion data
+ * STANDALONE: Does not call getFieldMetrics() - runs all queries directly
  */
 export async function getManagerMetrics(
   supabase: SupabaseClient,
@@ -96,19 +97,51 @@ export async function getManagerMetrics(
   scope: DashboardScope,
   userId: string
 ): Promise<ManagerMetrics> {
-  // Get field metrics (reuse, don't duplicate)
-  const fieldMetricsPromise = getFieldMetrics(supabase, tenantId, userId)
+  const now = new Date()
+  const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Additional manager-level queries
-  const [fieldMetrics, pipelineResult, conversionResult] = await Promise.all([
-    fieldMetricsPromise,
+  // Run all queries in parallel (field-level + manager-level)
+  const [knocksResult, recentWinsResult, pipelineResult, conversionResult] =
+    await Promise.all([
+      // Field-level: Personal knock count (7 days)
+      supabase
+        .from('activities')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('type', 'door_knock')
+        .eq('created_by', userId)
+        .gte('created_at', last7Days.toISOString()),
 
-    // Pipeline summary (uses database function)
-    supabase.rpc('get_pipeline_summary', { p_tenant_id: tenantId }),
+      // Field-level: Personal recent wins (30 days, limit 5)
+      supabase
+        .from('projects')
+        .select(
+          'id, name, final_value, approved_value, estimated_value, updated_at'
+        )
+        .eq('tenant_id', tenantId)
+        .eq('is_deleted', false)
+        .eq('status', 'won')
+        .eq('created_by', userId)
+        .gte('updated_at', last30Days.toISOString())
+        .order('updated_at', { ascending: false })
+        .limit(5),
 
-    // Conversion counts (uses database function)
-    supabase.rpc('get_conversion_counts', { p_tenant_id: tenantId }),
-  ])
+      // Manager-level: Pipeline summary (uses database function)
+      supabase.rpc('get_pipeline_summary', { p_tenant_id: tenantId }),
+
+      // Manager-level: Conversion counts (uses database function)
+      supabase.rpc('get_conversion_counts', { p_tenant_id: tenantId }),
+    ])
+
+  // Process field-level data
+  const knockCount = knocksResult.count || 0
+  const recentWins: RecentWin[] = (recentWinsResult.data || []).map((p) => ({
+    id: p.id,
+    name: p.name || 'Unnamed Project',
+    value: p.final_value || p.approved_value || p.estimated_value || 0,
+    date: p.updated_at,
+  }))
 
   // Process pipeline data
   const pipelineData = (pipelineResult.data || []) as Array<{
@@ -143,15 +176,20 @@ export async function getManagerMetrics(
     totalProjects > 0 ? (wonProjects / totalProjects) * 100 : 0
 
   return {
-    ...fieldMetrics,
+    knocks: {
+      value: knockCount,
+      change: 0,
+      trend: knockCount > 0 ? 'up' : 'down',
+    },
+    recentWins,
     pipeline: {
       value: totalPipelineValue,
-      change: totalPipelineCount, // Show count as change indicator
+      change: totalPipelineCount,
       trend: totalPipelineCount > 0 ? 'up' : 'down',
     },
     conversion: {
       value: Math.round(conversionRate * 10) / 10,
-      change: 0, // Would need historical data
+      change: 0,
       trend: conversionRate > 20 ? 'up' : 'down',
     },
     pipelineStatus,
@@ -165,6 +203,7 @@ export async function getManagerMetrics(
 /**
  * Get metrics for full tier (owners on desktop)
  * Complete analytics including trends and extended stats
+ * STANDALONE: Does not call getManagerMetrics() - runs all queries directly
  */
 export async function getFullMetrics(
   supabase: SupabaseClient,
@@ -174,18 +213,17 @@ export async function getFullMetrics(
 ): Promise<FullMetrics> {
   const now = new Date()
   const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Get manager metrics (reuse, don't duplicate)
-  const managerMetricsPromise = getManagerMetrics(
-    supabase,
-    tenantId,
-    scope,
-    userId
-  )
-
-  // Additional full-tier queries
+  // Run ALL queries in parallel (field + manager + full tier)
   const [
-    managerMetrics,
+    // Field-level queries
+    knocksResult,
+    recentWinsResult,
+    // Manager-level queries
+    pipelineResult,
+    conversionResult,
+    // Full-tier queries
     revenueResult,
     revenueTrendResult,
     contactsResult,
@@ -193,22 +231,49 @@ export async function getFullMetrics(
     wonProjectsResult,
     activitiesResult,
   ] = await Promise.all([
-    managerMetricsPromise,
+    // Field-level: Personal knock count (7 days)
+    supabase
+      .from('activities')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('type', 'door_knock')
+      .eq('created_by', userId)
+      .gte('created_at', last7Days.toISOString()),
 
-    // Revenue summary (uses database function)
+    // Field-level: Personal recent wins (30 days, limit 5)
+    supabase
+      .from('projects')
+      .select(
+        'id, name, final_value, approved_value, estimated_value, updated_at'
+      )
+      .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
+      .eq('status', 'won')
+      .eq('created_by', userId)
+      .gte('updated_at', last30Days.toISOString())
+      .order('updated_at', { ascending: false })
+      .limit(5),
+
+    // Manager-level: Pipeline summary (uses database function)
+    supabase.rpc('get_pipeline_summary', { p_tenant_id: tenantId }),
+
+    // Manager-level: Conversion counts (uses database function)
+    supabase.rpc('get_conversion_counts', { p_tenant_id: tenantId }),
+
+    // Full-tier: Revenue summary (uses database function)
     supabase.rpc('get_revenue_summary', { p_tenant_id: tenantId }),
 
-    // Revenue trend (uses database function)
+    // Full-tier: Revenue trend (uses database function)
     supabase.rpc('get_revenue_trend', { p_tenant_id: tenantId, p_months: 6 }),
 
-    // Total contacts count
+    // Full-tier: Total contacts count
     supabase
       .from('contacts')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false),
 
-    // Active projects count
+    // Full-tier: Active projects count
     supabase
       .from('projects')
       .select('*', { count: 'exact', head: true })
@@ -217,26 +282,69 @@ export async function getFullMetrics(
       .neq('status', 'won')
       .neq('status', 'lost'),
 
-    // Won projects for avg job value and sales cycle
+    // Full-tier: Won projects for avg job value and sales cycle
     supabase
       .from('projects')
-      .select('final_value, approved_value, estimated_value, created_at, updated_at')
+      .select(
+        'final_value, approved_value, estimated_value, created_at, updated_at'
+      )
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
       .eq('status', 'won')
       .limit(100)
       .order('updated_at', { ascending: false }),
 
-    // Activities for trend (7 days)
+    // Full-tier: Activities for trend (7 days)
     supabase
       .from('activities')
       .select('type, created_at')
       .eq('tenant_id', tenantId)
-      .eq('is_deleted', false)
-      .gte('created_at', last7Days.toISOString()),
+      .gte('created_at', last7Days.toISOString())
+      .limit(500),
   ])
 
-  // Process revenue data
+  // Process field-level data
+  const knockCount = knocksResult.count || 0
+  const recentWins: RecentWin[] = (recentWinsResult.data || []).map((p) => ({
+    id: p.id,
+    name: p.name || 'Unnamed Project',
+    value: p.final_value || p.approved_value || p.estimated_value || 0,
+    date: p.updated_at,
+  }))
+
+  // Process manager-level pipeline data
+  const pipelineData = (pipelineResult.data || []) as Array<{
+    status: string
+    count: number
+    total_value: number
+  }>
+
+  const pipelineStatus: PipelineStatus[] = pipelineData.map((p) => ({
+    status: p.status.charAt(0).toUpperCase() + p.status.slice(1),
+    count: Number(p.count),
+    value: Number(p.total_value),
+  }))
+
+  const totalPipelineValue = pipelineData.reduce(
+    (sum, p) => sum + Number(p.total_value),
+    0
+  )
+  const totalPipelineCount = pipelineData.reduce(
+    (sum, p) => sum + Number(p.count),
+    0
+  )
+
+  // Process manager-level conversion data
+  const conversionData = conversionResult.data?.[0] || {
+    total_projects: 0,
+    won_projects: 0,
+  }
+  const totalProjects = Number(conversionData.total_projects)
+  const wonProjectCount = Number(conversionData.won_projects)
+  const conversionRate =
+    totalProjects > 0 ? (wonProjectCount / totalProjects) * 100 : 0
+
+  // Process full-tier revenue data
   const revenueData = revenueResult.data?.[0] || {
     current_month_revenue: 0,
     previous_month_revenue: 0,
@@ -305,7 +413,26 @@ export async function getFullMetrics(
   )
 
   return {
-    ...managerMetrics,
+    // Field-level metrics
+    knocks: {
+      value: knockCount,
+      change: 0,
+      trend: knockCount > 0 ? 'up' : 'down',
+    },
+    recentWins,
+    // Manager-level metrics
+    pipeline: {
+      value: totalPipelineValue,
+      change: totalPipelineCount,
+      trend: totalPipelineCount > 0 ? 'up' : 'down',
+    },
+    conversion: {
+      value: Math.round(conversionRate * 10) / 10,
+      change: 0,
+      trend: conversionRate > 20 ? 'up' : 'down',
+    },
+    pipelineStatus,
+    // Full-tier metrics
     revenue: {
       value: currentRevenue,
       change: revenueChange,
