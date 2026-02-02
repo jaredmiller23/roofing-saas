@@ -217,10 +217,10 @@ export function WorkflowCanvas({
             </div>
             {conditions.map((condition, index) => (
               <div key={condition.id} className="relative">
-                <Card className="border-2 border-amber-500 bg-amber-50">
+                <Card className="border-2 border-amber-500 bg-amber-500/10">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <GitBranch className="h-5 w-5 text-amber-600" />
+                      <GitBranch className="h-5 w-5 text-amber-500" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">Condition {index + 1}</span>
@@ -257,7 +257,7 @@ export function WorkflowCanvas({
                 <Card
                   className={`border-2 cursor-pointer hover:shadow-md transition-shadow ${
                     action.enabled
-                      ? 'border-green-500 bg-green-50'
+                      ? 'border-green-500 bg-green-500/10'
                       : 'border-border bg-muted'
                   }`}
                   onClick={() => onActionClick?.(action)}

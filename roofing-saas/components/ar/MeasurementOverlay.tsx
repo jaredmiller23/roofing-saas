@@ -181,7 +181,7 @@ export function MeasurementOverlay({
 
                   <button
                     onClick={() => onMeasurementDelete(measurement.id)}
-                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                    className="p-1 text-red-500 hover:bg-red-500/10 rounded"
                     title="Delete measurement"
                   >
                     <Trash2 className="h-4 w-4" />

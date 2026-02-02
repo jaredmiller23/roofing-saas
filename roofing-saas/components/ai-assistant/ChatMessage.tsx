@@ -345,7 +345,7 @@ export function ChatMessage({ message, showTimestamp = false }: ChatMessageProps
 
           {/* Error indicator */}
           {message.error && (
-            <div className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+            <div className="mt-2 text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">
               {message.error}
             </div>
           )}

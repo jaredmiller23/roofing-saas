@@ -65,9 +65,9 @@ export default function SignatureDocuments({
       draft: 'bg-muted text-muted-foreground',
       sent: 'bg-primary/10 text-primary',
       viewed: 'bg-secondary/10 text-secondary',
-      signed: 'bg-green-100 text-green-700',
-      expired: 'bg-yellow-100 text-yellow-700',
-      declined: 'bg-red-100 text-red-700'
+      signed: 'bg-green-500/10 text-green-500',
+      expired: 'bg-yellow-500/10 text-yellow-500',
+      declined: 'bg-red-500/10 text-red-500'
     }
 
     return (

@@ -117,14 +117,14 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleQuickFilter('priority', 'urgent')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full text-sm font-medium transition-colors"
           >
             <AlertCircle className="h-3.5 w-3.5" />
             Urgent
           </button>
           <button
             onClick={() => handleQuickFilter('priority', 'high')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 rounded-full text-sm font-medium transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             High Priority
@@ -138,14 +138,14 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
           </button>
           <button
             onClick={() => handleQuickFilter('stage', 'negotiation')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 rounded-full text-sm font-medium transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Active Deals
           </button>
           <button
             onClick={() => handleQuickFilter('stage', 'won')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-800 rounded-full text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-full text-sm font-medium transition-colors"
           >
             <DollarSign className="h-3.5 w-3.5" />
             Customers
@@ -189,9 +189,9 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
             </span>
           )}
           {priority && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm capitalize">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-sm capitalize">
               Priority: {priority}
-              <button onClick={() => removeFilter('priority')} className="ml-1 hover:text-red-900">
+              <button onClick={() => removeFilter('priority')} className="ml-1 hover:text-red-400">
                 <X className="h-3 w-3" />
               </button>
             </span>

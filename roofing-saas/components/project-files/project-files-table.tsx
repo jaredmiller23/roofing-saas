@@ -162,11 +162,11 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
   const getFileTypeColor = (type: string | null) => {
     const colors: Record<string, string> = {
-      photo: 'bg-purple-100 text-purple-800',
-      document: 'bg-blue-100 text-blue-800',
-      contract: 'bg-green-100 text-green-800',
-      estimate: 'bg-yellow-100 text-yellow-800',
-      invoice: 'bg-orange-100 text-orange-800',
+      photo: 'bg-purple-500/10 text-purple-500',
+      document: 'bg-blue-500/10 text-blue-500',
+      contract: 'bg-green-500/10 text-green-500',
+      estimate: 'bg-yellow-500/10 text-yellow-500',
+      invoice: 'bg-orange-500/10 text-orange-500',
       other: 'bg-muted text-muted-foreground',
     }
     return type ? colors[type] || 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'

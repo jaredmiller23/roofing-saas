@@ -55,13 +55,13 @@ export function DamageMarker({
   const getSeverityColor = (severity: DamageSeverity) => {
     switch (severity) {
       case DamageSeverity.MINOR:
-        return 'text-yellow-600 bg-yellow-100'
+        return 'text-yellow-500 bg-yellow-500/10'
       case DamageSeverity.MODERATE:
-        return 'text-orange-600 bg-orange-100'
+        return 'text-orange-500 bg-orange-500/10'
       case DamageSeverity.SEVERE:
-        return 'text-red-600 bg-red-100'
+        return 'text-red-500 bg-red-500/10'
       case DamageSeverity.CRITICAL:
-        return 'text-red-800 bg-red-200'
+        return 'text-red-600 bg-red-500/20'
       default:
         return 'text-muted-foreground bg-muted'
     }
@@ -168,7 +168,7 @@ export function DamageMarker({
           </button>
           <button
             onClick={() => onDelete(marker.id)}
-            className="p-1 text-red-500 hover:bg-red-50 rounded"
+            className="p-1 text-red-500 hover:bg-red-500/10 rounded"
             title="Delete marker"
           >
             <Trash2 className="h-4 w-4" />

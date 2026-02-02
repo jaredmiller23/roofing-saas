@@ -181,7 +181,7 @@ export function AIConversationList({ className = '', onClose }: AIConversationLi
                       {/* Archive */}
                       <button
                         onClick={(e) => handleArchiveConversation(conversation.id, e)}
-                        className="p-1.5 text-muted-foreground hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 rounded transition-colors"
                         title="Archive conversation"
                       >
                         <Archive className="h-3.5 w-3.5" />
@@ -190,7 +190,7 @@ export function AIConversationList({ className = '', onClose }: AIConversationLi
                       {/* Delete */}
                       <button
                         onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                        className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                         title="Delete conversation"
                       >
                         {isDeleting ? (

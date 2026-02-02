@@ -175,7 +175,7 @@ export default function OfflineQueueStatus() {
               <button
                 onClick={handleRetry}
                 disabled={isProcessing}
-                className="flex-1 text-sm bg-red-50 text-red-700 px-3 py-2 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="flex-1 text-sm bg-red-500/10 text-red-500 px-3 py-2 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isProcessing ? 'Retrying...' : 'Retry Failed'}
               </button>

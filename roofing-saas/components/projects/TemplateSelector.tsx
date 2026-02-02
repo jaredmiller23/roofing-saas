@@ -55,37 +55,37 @@ const CATEGORY_INFO = {
     name: 'Residential',
     description: 'Single-family and multi-family homes',
     icon: Home,
-    color: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+    color: 'bg-blue-500/10 text-blue-500'
   },
   commercial: {
     name: 'Commercial',
     description: 'Office buildings and commercial properties',
     icon: Building2,
-    color: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+    color: 'bg-purple-500/10 text-purple-500'
   },
   repair: {
     name: 'Repair',
     description: 'Maintenance and repair projects',
     icon: Wrench,
-    color: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
+    color: 'bg-orange-500/10 text-orange-500'
   },
   inspection: {
     name: 'Inspection',
     description: 'Assessment and evaluation services',
     icon: Search,
-    color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
+    color: 'bg-green-500/10 text-green-500'
   },
   insurance: {
     name: 'Insurance',
     description: 'Insurance claim projects',
     icon: ShieldCheck,
-    color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+    color: 'bg-indigo-500/10 text-indigo-500'
   },
   emergency: {
     name: 'Emergency',
     description: 'Urgent repair and emergency services',
     icon: AlertTriangle,
-    color: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
+    color: 'bg-red-500/10 text-red-500'
   }
 } as const
 

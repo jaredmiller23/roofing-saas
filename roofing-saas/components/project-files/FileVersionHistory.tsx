@@ -224,13 +224,13 @@ export function FileVersionHistory({
       {/* Version List */}
       <div className="divide-y divide-border max-h-96 overflow-y-auto">
         {/* Current Version */}
-        <div className="p-4 bg-green-50/50">
+        <div className="p-4 bg-green-500/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="font-medium text-foreground">Current Version</span>
-                <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                <span className="text-sm bg-green-500/20 text-green-500 px-2 py-1 rounded">
                   v{currentFile.version}
                 </span>
               </div>

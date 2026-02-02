@@ -107,9 +107,9 @@ export function QueryResults({
             <Badge
               variant={result.metadata.riskLevel === 'LOW' ? 'default' : 'destructive'}
               className={
-                result.metadata.riskLevel === 'LOW' ? 'bg-green-100 text-green-700' :
-                result.metadata.riskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-red-100 text-red-700'
+                result.metadata.riskLevel === 'LOW' ? 'bg-green-500/10 text-green-500' :
+                result.metadata.riskLevel === 'MEDIUM' ? 'bg-yellow-500/10 text-yellow-500' :
+                'bg-red-500/10 text-red-500'
               }
             >
               {result.metadata.riskLevel} Risk

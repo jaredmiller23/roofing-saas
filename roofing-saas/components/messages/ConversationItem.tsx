@@ -30,7 +30,7 @@ export function ConversationItem({ conversation, isActive, onClick }: Conversati
       className={`
         w-full flex items-start gap-3 p-4 hover:bg-accent transition-colors text-left
         ${isActive ? 'bg-accent' : ''}
-        ${hasUnread ? 'bg-blue-50/50' : ''}
+        ${hasUnread ? 'bg-blue-500/10' : ''}
         border-b border-border
       `}
     >

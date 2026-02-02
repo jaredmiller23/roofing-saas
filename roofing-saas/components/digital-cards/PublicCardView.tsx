@@ -315,9 +315,9 @@ export function PublicCardView({ card }: PublicCardViewProps) {
               <div className="mt-8 p-6 border rounded-lg">
                 {submitted ? (
                   <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <svg
-                        className="w-8 h-8 text-green-600"
+                        className="w-8 h-8 text-green-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

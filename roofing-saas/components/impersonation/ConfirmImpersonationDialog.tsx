@@ -119,12 +119,12 @@ export function ConfirmImpersonationDialog({
           </div>
 
           {/* Warning messages */}
-          <div className="rounded-lg border-2 border-orange-200 bg-orange-50 p-3 space-y-2">
-            <div className="font-semibold text-sm text-orange-900 flex items-center gap-2">
+          <div className="rounded-lg border-2 border-orange-500/20 bg-orange-500/10 p-3 space-y-2">
+            <div className="font-semibold text-sm text-orange-500 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               Important Security Information
             </div>
-            <ul className="text-xs text-orange-800 space-y-1 pl-6 list-disc">
+            <ul className="text-xs text-orange-500/80 space-y-1 pl-6 list-disc">
               <li>Your session will be logged and audited</li>
               <li>All actions you perform will be attributed to you</li>
               <li>The impersonated user will see this in their activity log</li>

@@ -495,7 +495,7 @@ export function VoiceSession({
               onClick={toggleMute}
               className={`p-5 md:p-4 rounded-full transition-colors touch-manipulation ${
                 isMuted
-                  ? 'bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300'
+                  ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 active:bg-red-500/30'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80 active:bg-muted/70'
               }`}
               aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}

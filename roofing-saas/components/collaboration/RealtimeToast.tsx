@@ -80,38 +80,38 @@ const typeConfig: Record<
 > = {
   "user-joined": {
     icon: UserPlus,
-    iconClassName: "text-green-600 dark:text-green-500",
-    bgClassName: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900",
+    iconClassName: "text-green-500",
+    bgClassName: "bg-green-500/10 border-green-500/30",
   },
   "user-left": {
     icon: UserMinus,
-    iconClassName: "text-orange-600 dark:text-orange-500",
-    bgClassName: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900",
+    iconClassName: "text-orange-500",
+    bgClassName: "bg-orange-500/10 border-orange-500/30",
   },
   "data-updated": {
     icon: RefreshCw,
-    iconClassName: "text-blue-600 dark:text-blue-500",
-    bgClassName: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900",
+    iconClassName: "text-blue-500",
+    bgClassName: "bg-blue-500/10 border-blue-500/30",
   },
   "conflict": {
     icon: AlertTriangle,
     iconClassName: "text-destructive",
-    bgClassName: "bg-destructive/10 dark:bg-destructive/20 border-destructive/30",
+    bgClassName: "bg-destructive/10 border-destructive/30",
   },
   "success": {
     icon: CheckCircle2,
-    iconClassName: "text-green-600 dark:text-green-500",
-    bgClassName: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900",
+    iconClassName: "text-green-500",
+    bgClassName: "bg-green-500/10 border-green-500/30",
   },
   "info": {
     icon: Info,
-    iconClassName: "text-blue-600 dark:text-blue-500",
-    bgClassName: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900",
+    iconClassName: "text-blue-500",
+    bgClassName: "bg-blue-500/10 border-blue-500/30",
   },
   "warning": {
     icon: AlertTriangle,
-    iconClassName: "text-yellow-600 dark:text-yellow-500",
-    bgClassName: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900",
+    iconClassName: "text-yellow-500",
+    bgClassName: "bg-yellow-500/10 border-yellow-500/30",
   },
 }
 

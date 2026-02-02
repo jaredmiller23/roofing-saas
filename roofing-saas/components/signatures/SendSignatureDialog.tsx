@@ -442,11 +442,11 @@ export function SendSignatureDialog({
               <Label>PDF Document *</Label>
               {pdfUrl ? (
                 <div className="mt-1 space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <FileCheck className="h-8 w-8 text-green-600" />
+                  <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <FileCheck className="h-8 w-8 text-green-500" />
                     <div className="flex-1">
-                      <p className="font-medium text-green-900">PDF Uploaded Successfully</p>
-                      <p className="text-sm text-green-700">{pdfFile?.name}</p>
+                      <p className="font-medium text-green-500">PDF Uploaded Successfully</p>
+                      <p className="text-sm text-green-500/80">{pdfFile?.name}</p>
                     </div>
                     <Button
                       variant="outline"

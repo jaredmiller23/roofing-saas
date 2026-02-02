@@ -144,28 +144,28 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
       value: 'interested' as Disposition,
       label: 'Interested',
       icon: ThumbsUp,
-      color: 'bg-green-100 hover:bg-green-200 text-green-900',
+      color: 'bg-green-500/10 hover:bg-green-500/20 text-green-500',
       activeColor: 'bg-green-600 text-white'
     },
     {
       value: 'not_interested' as Disposition,
       label: 'Not Interested',
       icon: ThumbsDown,
-      color: 'bg-red-100 hover:bg-red-200 text-red-900',
+      color: 'bg-red-500/10 hover:bg-red-500/20 text-red-500',
       activeColor: 'bg-red-600 text-white'
     },
     {
       value: 'appointment_set' as Disposition,
       label: 'Set Appointment',
       icon: Calendar,
-      color: 'bg-blue-100 hover:bg-blue-200 text-blue-900',
+      color: 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-500',
       activeColor: 'bg-blue-600 text-white'
     },
     {
       value: 'callback_later' as Disposition,
       label: 'Callback Later',
       icon: Phone,
-      color: 'bg-purple-100 hover:bg-purple-200 text-purple-900',
+      color: 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-500',
       activeColor: 'bg-purple-600 text-white'
     }
   ]

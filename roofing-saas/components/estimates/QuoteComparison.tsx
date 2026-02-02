@@ -216,8 +216,8 @@ function QuoteOptionComparisonCard({
   showSelection
 }: QuoteOptionComparisonCardProps) {
   const getCardColor = () => {
-    if (isRecommended) return 'border-yellow-400 bg-yellow-50/50'
-    if (rank === 1) return 'border-green-400 bg-green-50/50'
+    if (isRecommended) return 'border-yellow-500/50 bg-yellow-500/5'
+    if (rank === 1) return 'border-green-500/50 bg-green-500/5'
     return ''
   }
 
@@ -235,14 +235,14 @@ function QuoteOptionComparisonCard({
               <CardTitle className="text-xl">{option.name}</CardTitle>
 
               {isRecommended && (
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500">
                   <Star className="h-3 w-3 mr-1" />
                   Recommended
                 </Badge>
               )}
 
               {rank === 1 && !isRecommended && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-green-500/10 text-green-500">
                   Most Economical
                 </Badge>
               )}
