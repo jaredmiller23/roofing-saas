@@ -123,7 +123,7 @@ export function Leaderboard({
       badges.push({
         icon: <Star className="h-3 w-3" />,
         label: 'Top Performer',
-        color: 'bg-yellow-100 text-yellow-800'
+        color: 'bg-yellow-500/10 text-yellow-500'
       })
     }
 
@@ -141,7 +141,7 @@ export function Leaderboard({
       badges.push({
         icon: <TrendingUp className="h-3 w-3" />,
         label: 'Rising Star',
-        color: 'bg-green-100 text-green-800'
+        color: 'bg-green-500/10 text-green-500'
       })
     }
 

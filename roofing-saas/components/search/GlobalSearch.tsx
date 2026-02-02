@@ -34,14 +34,14 @@ const ENTITY_CONFIG = {
   job: {
     label: 'Jobs',
     icon: MapPin,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10',
   },
   territory: {
     label: 'Territories',
     icon: MapPin,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
   },
   file: {
     label: 'Files',

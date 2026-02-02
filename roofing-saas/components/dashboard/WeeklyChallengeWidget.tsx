@@ -209,9 +209,9 @@ export function WeeklyChallengeWidget({ data: externalData, isLoading: externalL
   const isCompleted = progress >= 100
 
   const getStatusColor = () => {
-    if (isCompleted) return 'text-green-600 bg-green-100'
-    if (isNearCompletion) return 'text-orange-600 bg-orange-100'
-    return 'text-blue-600 bg-blue-100'
+    if (isCompleted) return 'text-green-500 bg-green-500/10'
+    if (isNearCompletion) return 'text-orange-500 bg-orange-500/10'
+    return 'text-blue-500 bg-blue-500/10'
   }
 
   const getStatusText = () => {

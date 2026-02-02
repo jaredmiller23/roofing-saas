@@ -86,7 +86,7 @@ const getStatusRingColor = (status: EnhancedStory['status']) => {
       return 'ring-yellow-500'
     case 'offline':
     default:
-      return 'ring-gray-300'
+      return 'ring-muted-foreground/30'
   }
 }
 
@@ -96,48 +96,48 @@ const defaultQuickActions: QuickAction[] = [
     id: 'new-lead',
     label: 'New Lead',
     icon: UserPlus,
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-    textColor: 'text-blue-700 dark:text-blue-300',
+    bgColor: 'bg-blue-500/10',
+    textColor: 'text-blue-500',
     onClick: () => {},
   },
   {
     id: 'check-in',
     label: 'Check In',
     icon: CheckCircle,
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
-    textColor: 'text-green-700 dark:text-green-300',
+    bgColor: 'bg-green-500/10',
+    textColor: 'text-green-500',
     onClick: () => {},
   },
   {
     id: 'make-call',
     label: 'Call',
     icon: Phone,
-    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-    textColor: 'text-purple-700 dark:text-purple-300',
+    bgColor: 'bg-purple-500/10',
+    textColor: 'text-purple-500',
     onClick: () => {},
   },
   {
     id: 'send-message',
     label: 'Message',
     icon: MessageSquare,
-    bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-    textColor: 'text-orange-700 dark:text-orange-300',
+    bgColor: 'bg-orange-500/10',
+    textColor: 'text-orange-500',
     onClick: () => {},
   },
   {
     id: 'territory',
     label: 'Territory',
     icon: MapPin,
-    bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-    textColor: 'text-indigo-700 dark:text-indigo-300',
+    bgColor: 'bg-indigo-500/10',
+    textColor: 'text-indigo-500',
     onClick: () => {},
   },
   {
     id: 'targeting',
     label: 'Target',
     icon: Target,
-    bgColor: 'bg-pink-100 dark:bg-pink-900/30',
-    textColor: 'text-pink-700 dark:text-pink-300',
+    bgColor: 'bg-pink-500/10',
+    textColor: 'text-pink-500',
     onClick: () => {},
   },
 ]

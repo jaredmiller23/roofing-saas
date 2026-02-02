@@ -19,24 +19,24 @@ import { Card, CardContent } from '@/components/ui/card'
 // ============================================================================
 
 const STATUS_COLORS = {
-  // Pipeline stages
-  prospect: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  qualified: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-  quote_sent: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  negotiation: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  won: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  lost: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  production: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  complete: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  // Pipeline stages - using opacity pattern for dark theme compatibility
+  prospect: 'bg-blue-500/10 text-blue-500',
+  qualified: 'bg-indigo-500/10 text-indigo-500',
+  quote_sent: 'bg-purple-500/10 text-purple-500',
+  negotiation: 'bg-yellow-500/10 text-yellow-500',
+  won: 'bg-green-500/10 text-green-500',
+  lost: 'bg-red-500/10 text-red-500',
+  production: 'bg-orange-500/10 text-orange-500',
+  complete: 'bg-green-500/10 text-green-500',
 
   // General statuses
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  inactive: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
-  error: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  in_progress: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  pending: 'bg-yellow-500/10 text-yellow-500',
+  active: 'bg-green-500/10 text-green-500',
+  inactive: 'bg-muted text-muted-foreground',
+  error: 'bg-red-500/10 text-red-500',
+  scheduled: 'bg-blue-500/10 text-blue-500',
+  in_progress: 'bg-yellow-500/10 text-yellow-500',
+  completed: 'bg-green-500/10 text-green-500',
 } as const
 
 type StatusType = keyof typeof STATUS_COLORS
@@ -90,7 +90,7 @@ export function QuickActionRow({ actions, className }: QuickActionRowProps) {
           'flex-1 h-12 flex items-center justify-center gap-2 rounded-lg font-medium transition-colors',
           action.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
           action.variant === 'secondary' && 'bg-muted hover:bg-muted/80',
-          action.variant === 'destructive' && 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-200',
+          action.variant === 'destructive' && 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
           !action.variant && 'bg-muted hover:bg-muted/80',
           action.disabled && 'opacity-50 cursor-not-allowed'
         )

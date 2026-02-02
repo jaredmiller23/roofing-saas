@@ -173,17 +173,17 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
   }
 
   const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-50'
+    if (score >= 80) return 'text-green-500 bg-green-500/10'
     if (score >= 60) return 'text-primary bg-primary/10'
-    if (score >= 40) return 'text-yellow-600 bg-yellow-50'
+    if (score >= 40) return 'text-yellow-500 bg-yellow-500/10'
     return 'text-muted-foreground bg-muted'
   }
 
   const getStageColor = (stage: string) => {
     const colors: Record<string, string> = {
       lead: 'bg-primary/10 text-primary',
-      active: 'bg-yellow-100 text-yellow-800',
-      customer: 'bg-green-100 text-green-800',
+      active: 'bg-yellow-500/10 text-yellow-500',
+      customer: 'bg-green-500/10 text-green-500',
       lost: 'bg-muted text-muted-foreground',
     }
     return colors[stage] || 'bg-muted text-muted-foreground'
@@ -247,9 +247,9 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
             <div className="text-sm text-primary font-medium">Total Leads</div>
             <div className="text-2xl font-bold text-primary">{total}</div>
           </div>
-          <div className="bg-green-50 rounded-lg p-3">
-            <div className="text-sm text-green-600 font-medium">Pipeline Value</div>
-            <div className="text-2xl font-bold text-green-900">{formatCurrency(totalPipelineValue)}</div>
+          <div className="bg-green-500/10 rounded-lg p-3">
+            <div className="text-sm text-green-500 font-medium">Pipeline Value</div>
+            <div className="text-2xl font-bold text-green-500">{formatCurrency(totalPipelineValue)}</div>
           </div>
           <div className="bg-secondary/10 rounded-lg p-3">
             <div className="text-sm text-secondary font-medium">Avg. Value</div>
@@ -372,7 +372,7 @@ export function LeadsTable({ params = {} }: LeadsTableProps) {
                       {(lead.phone || lead.mobile_phone) && (
                         <a
                           href={`tel:${lead.phone || lead.mobile_phone}`}
-                          className="inline-flex items-center justify-center w-8 h-8 bg-green-50 hover:bg-green-100 text-green-700 rounded-md transition-colors"
+                          className="inline-flex items-center justify-center w-8 h-8 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-md transition-colors"
                           title="Call"
                         >
                           <Phone className="h-4 w-4" />

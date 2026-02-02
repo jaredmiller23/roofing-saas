@@ -355,7 +355,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {(contact.phone || contact.mobile_phone) && (
                       <a
                         href={`tel:${contact.phone || contact.mobile_phone}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-green-50 hover:bg-green-100 text-green-700 rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-8 h-8 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-md transition-colors"
                         title="Call"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -443,11 +443,11 @@ export function ContactsTable({ params }: ContactsTableProps) {
 function getStageColor(stage: string) {
   const colors: Record<string, string> = {
     new: 'bg-primary/10 text-primary',
-    contacted: 'bg-yellow-100 text-yellow-800',
+    contacted: 'bg-yellow-500/10 text-yellow-500',
     qualified: 'bg-secondary/10 text-secondary',
     proposal: 'bg-primary/10 text-primary',
-    negotiation: 'bg-orange-100 text-orange-800',
-    won: 'bg-green-100 text-green-800',
+    negotiation: 'bg-orange-500/10 text-orange-500',
+    won: 'bg-green-500/10 text-green-500',
     lost: 'bg-muted text-muted-foreground',
   }
   return colors[stage] || 'bg-muted text-muted-foreground'
