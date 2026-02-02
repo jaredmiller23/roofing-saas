@@ -73,3 +73,11 @@ export {
   type LoginEventType as ActivityType,
   type LoginActivity as ActivityLog
 } from './activity-log'
+
+// API route wrappers
+export {
+  withAuth,
+  withAuthParams,
+  withOptionalAuth,
+  type AuthContext
+} from './with-auth'

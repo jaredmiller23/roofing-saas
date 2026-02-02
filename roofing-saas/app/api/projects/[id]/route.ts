@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams, type AuthContext } from '@/lib/auth/with-auth'
 import {
   validateCompleteTransition,
   getStatusForPipelineStage,
@@ -8,7 +8,7 @@ import {
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { handleStageChange } from '@/lib/campaigns/trigger-handler'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { PipelineStage } from '@/lib/types/api'
 import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit-middleware'
@@ -19,21 +19,12 @@ export const dynamic = 'force-dynamic'
  * GET /api/projects/[id]
  * Fetch a single project by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const supabase = await createClient()
     const resolvedParams = await params
     const id = resolvedParams.id
@@ -114,28 +105,19 @@ export async function GET(
     logger.error('Error in GET /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/projects/[id]
  * Update a project's details (including pipeline_stage)
  * Includes validation for pipeline stage transitions
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -313,27 +295,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/projects/[id]
  * Soft delete a project
  */
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -376,4 +349,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/projects/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

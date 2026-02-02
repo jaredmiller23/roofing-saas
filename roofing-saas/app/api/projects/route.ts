@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
+import { AuthenticationError, InternalError, ValidationError } from '@/lib/api/errors'
 import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { getAuditContext, auditedCreate } from '@/lib/audit/audit-middleware'
@@ -15,18 +15,8 @@ import { withDbSpan } from '@/lib/instrumentation'
  * POST /api/projects - Create new project
  */
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const supabase = await createClient()
     const searchParams = request.nextUrl.searchParams
 
@@ -148,20 +138,10 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/projects', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -240,4 +220,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/projects', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

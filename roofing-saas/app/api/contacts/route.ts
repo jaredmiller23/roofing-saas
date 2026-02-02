@@ -1,12 +1,11 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 
 import { createContactSchema, contactFiltersSchema } from '@/lib/validations/contact'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
   mapZodError,
   ConflictError
@@ -23,20 +22,10 @@ import { withDbSpan } from '@/lib/instrumentation'
  * GET /api/contacts
  * List contacts with filtering, search, and pagination
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }: AuthContext) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     logger.apiRequest('GET', '/api/contacts', { tenantId, userId })
 
     // Parse query parameters
@@ -180,26 +169,16 @@ export async function GET(request: NextRequest) {
     logger.error('Contacts API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/contacts
  * Create a new contact
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, userId, tenantId }: AuthContext) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -386,4 +365,4 @@ export async function POST(request: NextRequest) {
     logger.error('Create contact error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

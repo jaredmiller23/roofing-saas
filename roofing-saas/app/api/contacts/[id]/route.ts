@@ -1,10 +1,10 @@
 import type { Database } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams, type AuthContext } from '@/lib/auth/with-auth'
 import { updateContactSchema } from '@/lib/validations/contact'
 import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit-middleware'
 
@@ -12,21 +12,12 @@ import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit
  * GET /api/contacts/[id]
  * Get a single contact by ID
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -47,27 +38,18 @@ export async function GET(
     logger.error('Error in GET /api/contacts/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/contacts/[id]
  * Update a contact
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -167,27 +149,18 @@ export async function PATCH(
 
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/contacts/[id]
  * Soft delete a contact
  */
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {
@@ -230,4 +203,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/contacts/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
