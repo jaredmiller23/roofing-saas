@@ -136,7 +136,11 @@ export default function DashboardPage() {
   // Fetch dashboard data with proper cleanup on unmount/re-render
   useEffect(() => {
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 30000)
+    let didTimeout = false
+    const timeoutId = setTimeout(() => {
+      didTimeout = true
+      abortController.abort()
+    }, 30000)
 
     const fetchData = async () => {
       setIsLoading(true)
@@ -151,20 +155,20 @@ export default function DashboardPage() {
         setData(result)
       } catch (err) {
         clearTimeout(timeoutId)
-        // Don't set error state if we aborted intentionally (cleanup)
-        if (abortController.signal.aborted) {
+        // Cleanup abort (component unmount/scope change) — don't update state
+        if (abortController.signal.aborted && !didTimeout) {
           return
         }
         console.error('Failed to fetch dashboard data:', err)
 
-        if (err instanceof Error && err.name === 'AbortError') {
+        if (didTimeout) {
           setError('Request timeout - please try again')
         } else {
           setError('Failed to load dashboard data')
         }
       } finally {
-        // Only update loading state if not aborted
-        if (!abortController.signal.aborted) {
+        // Only skip state update on cleanup abort, NOT timeout
+        if (!abortController.signal.aborted || didTimeout) {
           setIsLoading(false)
         }
       }

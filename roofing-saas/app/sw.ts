@@ -1,6 +1,6 @@
 import { defaultCache } from '@serwist/next/worker';
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist';
-import { Serwist } from 'serwist';
+import { Serwist, NetworkOnly } from 'serwist';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -15,7 +15,15 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [
+    // API routes must NEVER be cached — they contain authenticated, tenant-specific data
+    {
+      matcher: /\/api\/.*/i,
+      handler: new NetworkOnly(),
+    },
+    // Default caching for everything else (static assets, pages, etc.)
+    ...defaultCache,
+  ],
 });
 
 serwist.addEventListeners();
