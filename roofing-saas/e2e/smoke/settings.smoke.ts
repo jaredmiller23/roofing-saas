@@ -175,15 +175,13 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
 
       // Test tab switching functionality
       await page.getByRole('tab', { name: /Templates/ }).click()
-
-      // Wait for tab content to load
-      await page.waitForTimeout(500)
+      // Wait for Templates tab content to render
+      await expect(page.getByRole('tab', { name: /Templates/ })).toHaveAttribute('aria-selected', 'true', { timeout: 5000 }).catch(() => {})
 
       // Switch to another tab
       await page.getByRole('tab', { name: /Team/ }).click()
-
-      // Wait for tab content to load
-      await page.waitForTimeout(500)
+      // Wait for Team tab content to render
+      await expect(page.getByRole('tab', { name: /Team/ })).toHaveAttribute('aria-selected', 'true', { timeout: 5000 }).catch(() => {})
 
       // Switch back to general
       await page.getByRole('tab', { name: /General/ }).click()
@@ -239,7 +237,7 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
       await page.goto('/admin/audit-logs')
 
       // Wait for page to load or redirect
-      await page.waitForTimeout(1000)
+      await expect(page).toHaveURL(/./, { timeout: 10000 })
 
       const isOnAuditLogs = page.url().includes('/admin/audit-logs')
 
@@ -262,7 +260,7 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
       await page.goto('/admin/audit-logs')
 
       // Wait for page to load or redirect
-      await page.waitForTimeout(1000)
+      await expect(page).toHaveURL(/./, { timeout: 10000 })
 
       const isOnAuditLogs = page.url().includes('/admin/audit-logs')
 
@@ -361,7 +359,8 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
 
       for (const tab of tabs) {
         await page.getByRole('tab', { name: new RegExp(tab) }).click()
-        await page.waitForTimeout(200)
+        // Wait for tab to become active before switching to next
+        await expect(page.getByRole('tab', { name: new RegExp(tab) })).toHaveAttribute('aria-selected', 'true', { timeout: 3000 }).catch(() => {})
       }
 
       // Tab switching should work without critical errors
@@ -382,7 +381,8 @@ test.describe('Settings & Admin Module - Smoke Tests', () => {
 
       // Check different tabs handle empty states gracefully
       await page.getByRole('tab', { name: /Automations/ }).click()
-      await page.waitForTimeout(500)
+      // Wait for tab content to render
+      await expect(page.getByRole('tab', { name: /Automations/ })).toHaveAttribute('aria-selected', 'true', { timeout: 5000 }).catch(() => {})
 
       // Should show either content or proper empty state
       const hasContent = await page.locator('form, table, .automation-item').count() > 0

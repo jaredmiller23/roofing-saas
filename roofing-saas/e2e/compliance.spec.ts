@@ -134,8 +134,10 @@ test.describe('Compliance Settings - Authenticated', () => {
     })
 
     test('should display statistics metrics when data exists', async ({ page }) => {
-      // Wait for the statistics section to load
-      await page.waitForTimeout(1000)
+      // Wait for either stats content or empty state to appear
+      await expect(
+        page.getByText('Total Checks').or(page.getByText('No compliance statistics available yet'))
+      ).toBeVisible({ timeout: 10000 })
 
       // These elements will be visible if stats exist, or a "no data" message will show
       const statsSection = page.locator('text=Compliance Statistics').locator('..')
@@ -150,8 +152,10 @@ test.describe('Compliance Settings - Authenticated', () => {
     })
 
     test('should show stats when data is available', async ({ page }) => {
-      // Wait for the page to load
-      await page.waitForTimeout(1000)
+      // Wait for either stats content or empty state to render
+      await expect(
+        page.getByText('Total Checks').or(page.getByText('No compliance statistics available yet'))
+      ).toBeVisible({ timeout: 10000 })
 
       // Try to find the Total Checks stat
       const totalChecks = page.getByText('Total Checks')
@@ -170,8 +174,10 @@ test.describe('Compliance Settings - Authenticated', () => {
     })
 
     test('should display DNC Registry Counts section when data exists', async ({ page }) => {
-      // Wait for the page to load
-      await page.waitForTimeout(1000)
+      // Wait for either stats content or empty state
+      await expect(
+        page.getByText('Total Checks').or(page.getByText('No compliance statistics available yet'))
+      ).toBeVisible({ timeout: 10000 })
 
       // Check if stats exist
       const totalChecks = page.getByText('Total Checks')
@@ -226,8 +232,10 @@ test.describe('Compliance Settings - Authenticated', () => {
     })
 
     test('should display audit log table headers when logs exist', async ({ page }) => {
-      // Wait for the page to load
-      await page.waitForTimeout(1000)
+      // Wait for either audit log table or empty state
+      await expect(
+        page.getByText('Check Type').or(page.getByText('No audit log entries found'))
+      ).toBeVisible({ timeout: 10000 })
 
       // Check for either table or empty state
       const auditSection = page.locator('text=Compliance Audit Log').locator('..')
@@ -241,8 +249,10 @@ test.describe('Compliance Settings - Authenticated', () => {
     })
 
     test('should show table headers when logs are available', async ({ page }) => {
-      // Wait for the page to load
-      await page.waitForTimeout(1000)
+      // Wait for either audit log content or empty state
+      await expect(
+        page.getByText('Check Type').or(page.getByText('No audit log entries found'))
+      ).toBeVisible({ timeout: 10000 })
 
       // Try to find the Check Type header
       const checkTypeHeader = page.getByText('Check Type')
@@ -279,8 +289,9 @@ test.describe('Compliance Settings - Authenticated', () => {
       // Wait for compliance content to load
       await expect(page.getByText('Do Not Call (DNC) Management')).toBeVisible()
 
-      // Wait a bit for any async operations
-      await page.waitForTimeout(2000)
+      // Wait for all three sections to render (confirms async operations complete)
+      await expect(page.getByText('Compliance Statistics')).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText('Compliance Audit Log')).toBeVisible({ timeout: 10000 })
 
       // Filter out known non-critical errors (like Sentry)
       const criticalErrors = errors.filter(e =>
@@ -298,13 +309,10 @@ test.describe('Compliance Settings - Authenticated', () => {
       await page.waitForSelector('[role="tablist"]')
       await page.getByRole('tab', { name: /Compliance/i }).click()
 
-      // Wait for page to load
-      await page.waitForTimeout(1000)
-
-      // Verify all three main sections are present
-      await expect(page.getByText('Do Not Call (DNC) Management')).toBeVisible()
-      await expect(page.getByText('Compliance Statistics')).toBeVisible()
-      await expect(page.getByText('Compliance Audit Log')).toBeVisible()
+      // Wait for all three compliance sections to render
+      await expect(page.getByText('Do Not Call (DNC) Management')).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText('Compliance Statistics')).toBeVisible({ timeout: 10000 })
+      await expect(page.getByText('Compliance Audit Log')).toBeVisible({ timeout: 10000 })
     })
   })
 })
@@ -359,12 +367,9 @@ test.describe('Compliance Settings - Smoke Tests (Authenticated)', () => {
     await page.waitForSelector('[role="tablist"]')
     await page.getByRole('tab', { name: /Compliance/i }).click()
 
-    // Wait for the page to load (even if APIs fail)
-    await page.waitForTimeout(2000)
-
-    // The page should still show UI structure even if APIs fail
-    await expect(page.getByText('Do Not Call (DNC) Management')).toBeVisible()
-    await expect(page.getByText('Compliance Statistics')).toBeVisible()
-    await expect(page.getByText('Compliance Audit Log')).toBeVisible()
+    // Wait for all three compliance sections (even if APIs fail, the UI structure renders)
+    await expect(page.getByText('Do Not Call (DNC) Management')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Compliance Statistics')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Compliance Audit Log')).toBeVisible({ timeout: 10000 })
   })
 })

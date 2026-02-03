@@ -10,7 +10,8 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('1. Dashboard loads with widgets', async ({ page }) => {
     await page.goto(`/en/dashboard`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    // Wait for dashboard content to render (KPI cards or activity feed)
+    await expect(page.locator('h1, h2, [class*="card"]').first()).toBeVisible({ timeout: 10000 })
 
     expect(page.url()).toContain('/dashboard')
 
@@ -35,21 +36,23 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('2. Tasks list page loads', async ({ page }) => {
     await page.goto(`/en/tasks`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for tasks page to be ready
+    const newTaskBtn = page.locator('a:has-text("New Task"), button:has-text("New Task")')
+    await expect(newTaskBtn.first()).toBeVisible({ timeout: 10000 })
 
     expect(page.url()).toContain('/tasks')
 
     const boardViewBtn = page.locator('a:has-text("Board"), button:has-text("Board")')
-    const newTaskBtn = page.locator('a:has-text("New Task"), button:has-text("New Task")')
     console.log(`[AUDIT] Board View button: ${await boardViewBtn.count() > 0 ? 'FOUND' : 'MISSING'}`)
-    console.log(`[AUDIT] New Task button: ${await newTaskBtn.count() > 0 ? 'FOUND' : 'MISSING'}`)
+    console.log(`[AUDIT] New Task button: FOUND`)
 
     await page.screenshot({ path: 'e2e/audit/screenshots/tasks-list.png', fullPage: true })
   })
 
   test('3. Tasks board (Kanban) loads', async ({ page }) => {
     await page.goto(`/en/tasks/board`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for kanban columns to render
+    await expect(page.locator('text=To Do, text=Todo, text=In Progress').first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     const pageText = await page.textContent('body')
     const hasToDo = pageText?.includes('To Do') || pageText?.includes('Todo')
@@ -64,10 +67,11 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('4. New task form loads', async ({ page }) => {
     await page.goto(`/en/tasks/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
-
+    // Wait for form to render
     const titleInput = page.locator('input[name="title"], #title')
-    console.log(`[AUDIT] Title input: ${await titleInput.count() > 0 ? 'FOUND' : 'MISSING'}`)
+    await expect(titleInput.first()).toBeVisible({ timeout: 10000 })
+
+    console.log(`[AUDIT] Title input: FOUND`)
 
     const submitBtn = page.locator('button[type="submit"], button:has-text("Create"), button:has-text("Save")')
     console.log(`[AUDIT] Submit button: ${await submitBtn.count() > 0 ? 'FOUND' : 'MISSING'}`)
@@ -77,11 +81,12 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('5. Events page loads with calendar', async ({ page }) => {
     await page.goto(`/en/events`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for events page to be ready
+    const scheduleBtn = page.locator('a:has-text("Schedule"), button:has-text("Schedule")')
+    await expect(scheduleBtn.first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     expect(page.url()).toContain('/events')
 
-    const scheduleBtn = page.locator('a:has-text("Schedule"), button:has-text("Schedule")')
     console.log(`[AUDIT] Schedule Event button: ${await scheduleBtn.count() > 0 ? 'FOUND' : 'MISSING'}`)
 
     const calToggle = page.locator('button:has-text("Calendar"), button:has-text("List")')
@@ -92,10 +97,11 @@ test.describe('Dashboard, Tasks & Events Runtime Audit', () => {
 
   test('6. New event form loads', async ({ page }) => {
     await page.goto(`/en/events/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
-
+    // Wait for form to render
     const titleInput = page.locator('input[name="title"], #title')
-    console.log(`[AUDIT] Title input: ${await titleInput.count() > 0 ? 'FOUND' : 'MISSING'}`)
+    await expect(titleInput.first()).toBeVisible({ timeout: 10000 })
+
+    console.log(`[AUDIT] Title input: FOUND`)
 
     const pageText = await page.textContent('body')
     const hasEventType = pageText?.includes('Event Type') || pageText?.includes('event type') || pageText?.includes('Type')
