@@ -13,7 +13,8 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('1. Pipeline page loads with Kanban view', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    // Wait for view toggle to confirm page is ready
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     expect(page.url()).toContain('/projects')
 
@@ -36,7 +37,7 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('2. Pipeline Kanban filters and search', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     // Quick filter chips
     const chips = ['All', 'Active Sales', 'In Production', 'Closed']
@@ -61,13 +62,14 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('3. Pipeline Table view loads', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     // Try switching to table view
-    const tableBtn = page.locator('button:has-text("Table"), button:has-text("List")')
+    const tableBtn = page.locator('[data-testid="table-view-button"]')
     if (await tableBtn.count() > 0) {
       await tableBtn.first().click()
-      await page.waitForTimeout(3000)
+      // Wait for table view container to appear
+      await expect(page.locator('[data-testid="table-view"]')).toBeVisible({ timeout: 10000 })
 
       // Check for table stats cards
       const pageText = await page.textContent('body')
@@ -92,13 +94,14 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('4. Project detail page loads with tabs', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     // Find first project link on the page
     const projectLink = page.locator('a[href*="/projects/"]').first()
     if (await projectLink.count() > 0) {
       await projectLink.click()
-      await page.waitForTimeout(3000)
+      // Wait for project detail page to load
+      await page.waitForURL(/\/projects\/[a-f0-9-]+/, { timeout: 10000 })
 
       console.log(`[AUDIT] Project detail URL: ${page.url()}`)
 
@@ -134,18 +137,19 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('5. Project detail — Quote Options tab (STUBS check)', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
     if (await projectLink.count() > 0) {
       await projectLink.click()
-      await page.waitForTimeout(3000)
+      await page.waitForURL(/\/projects\/[a-f0-9-]+/, { timeout: 10000 })
 
       // Click Quote Options tab
       const quoteTab = page.locator('button:has-text("Quote Options"), [role="tab"]:has-text("Quote")')
       if (await quoteTab.count() > 0) {
         await quoteTab.first().click()
-        await page.waitForTimeout(2000)
+        // Wait for tab content to render
+        await page.waitForResponse(resp => resp.url().includes('/api/'), { timeout: 5000 }).catch(() => {})
 
         // STUB: Send Proposal button
         const sendProposal = page.locator('button:has-text("Send Proposal")')
@@ -174,17 +178,18 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('6. Project detail — Jobs tab', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
     if (await projectLink.count() > 0) {
       await projectLink.click()
-      await page.waitForTimeout(3000)
+      await page.waitForURL(/\/projects\/[a-f0-9-]+/, { timeout: 10000 })
 
       const jobsTab = page.locator('button:has-text("Jobs"), [role="tab"]:has-text("Jobs")')
       if (await jobsTab.count() > 0) {
         await jobsTab.first().click()
-        await page.waitForTimeout(2000)
+        // Wait for tab content to render
+        await page.waitForResponse(resp => resp.url().includes('/api/'), { timeout: 5000 }).catch(() => {})
 
         // Create Job link
         const createJob = page.locator('a:has-text("Create Job"), a:has-text("+ Create")')
@@ -197,19 +202,20 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('7. Project edit page loads pre-populated', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     // Navigate to first project
     const projectLink = page.locator('a[href*="/projects/"]').first()
     if (await projectLink.count() > 0) {
       await projectLink.click()
-      await page.waitForTimeout(3000)
+      await page.waitForURL(/\/projects\/[a-f0-9-]+/, { timeout: 10000 })
 
       // Click edit link
       const editLink = page.locator('a:has-text("Edit"), a[href*="edit"]').first()
       if (await editLink.count() > 0) {
         await editLink.click()
-        await page.waitForTimeout(3000)
+        // Wait for edit page to load
+        await page.waitForURL(/\/edit/, { timeout: 10000 })
 
         console.log(`[AUDIT] Edit page URL: ${page.url()}`)
 
@@ -237,18 +243,19 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('8. Job Costing page loads with KPIs', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     const projectLink = page.locator('a[href*="/projects/"]').first()
     if (await projectLink.count() > 0) {
       await projectLink.click()
-      await page.waitForTimeout(3000)
+      await page.waitForURL(/\/projects\/[a-f0-9-]+/, { timeout: 10000 })
 
       // Navigate to costing
       const costingLink = page.locator('a:has-text("Job Costing"), a[href*="costing"]').first()
       if (await costingLink.count() > 0) {
         await costingLink.click()
-        await page.waitForTimeout(3000)
+        // Wait for costing page to load
+        await page.waitForURL(/\/costing/, { timeout: 10000 })
 
         console.log(`[AUDIT] Costing URL: ${page.url()}`)
 
@@ -278,7 +285,8 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('9. New Project guidance page', async ({ page }) => {
     await page.goto(`/en/projects/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for guidance page content to render
+    await expect(page.locator('a:has-text("Contact"), button:has-text("Contact")').first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     console.log(`[AUDIT] /projects/new URL: ${page.url()}`)
 
@@ -296,10 +304,10 @@ test.describe('Projects/Pipeline Runtime Audit', () => {
 
   test('10. Project card stage navigation', async ({ page }) => {
     await page.goto(`/en/projects`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(4000)
+    await expect(page.locator('[data-testid="view-mode-toggle"]')).toBeVisible({ timeout: 10000 })
 
     // Look for stage navigation arrows on project cards
-    const stageArrows = page.locator('button[aria-label*="stage"], button:has-text("→"), button:has-text("←")')
+    const stageArrows = page.locator('button[aria-label*="stage"], button:has-text("\u2192"), button:has-text("\u2190")')
     console.log(`[AUDIT] Stage nav buttons: ${await stageArrows.count()} found`)
 
     // Check for drag-and-drop Kanban columns

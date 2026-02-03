@@ -13,14 +13,15 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('1. Signatures list page loads', async ({ page }) => {
     await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for page to be ready
+    const newDoc = page.locator('a:has-text("New Document"), button:has-text("New Document")')
+    await expect(newDoc.first()).toBeVisible({ timeout: 10000 })
 
     expect(page.url()).toContain('/signatures')
 
     // Key elements
-    const newDoc = page.locator('a:has-text("New Document"), button:has-text("New Document")')
     const templates = page.locator('a:has-text("Templates"), button:has-text("Templates")')
-    console.log(`[AUDIT] New Document button: ${await newDoc.count() > 0 ? 'FOUND' : 'MISSING'}`)
+    console.log(`[AUDIT] New Document button: FOUND`)
     console.log(`[AUDIT] Templates button: ${await templates.count() > 0 ? 'FOUND' : 'MISSING'}`)
 
     // Search + status filter
@@ -35,7 +36,8 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('2. Create document wizard — Step 1 (templates)', async ({ page }) => {
     await page.goto(`/en/signatures/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for wizard to load — look for template section or "Start from Scratch"
+    await expect(page.locator('text=Template, text=Scratch, text=Blank').first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     console.log(`[AUDIT] Wizard URL: ${page.url()}`)
 
@@ -54,20 +56,23 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('3. Create document wizard — Step 2 (details)', async ({ page }) => {
     await page.goto(`/en/signatures/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for wizard step 1 to load
+    await expect(page.locator('text=Template, text=Scratch, text=Blank').first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     // Try to advance to step 2 by clicking "Start from Scratch" or equivalent
     const scratch = page.locator('button:has-text("Start from Scratch"), button:has-text("Blank"), button:has-text("Skip")')
     if (await scratch.count() > 0) {
       await scratch.first().click()
-      await page.waitForTimeout(1500)
+      // Wait for next step to render
+      await page.waitForResponse(resp => resp.url().includes('/api/'), { timeout: 5000 }).catch(() => {})
     }
 
     // Also try clicking Next if visible
     const nextBtn = page.locator('button:has-text("Next")')
     if (await nextBtn.count() > 0) {
       await nextBtn.first().click()
-      await page.waitForTimeout(1500)
+      // Wait for step transition
+      await page.waitForResponse(resp => resp.url().includes('/api/'), { timeout: 5000 }).catch(() => {})
     }
 
     // Check for step 2 fields
@@ -81,12 +86,13 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('4. Templates list page loads', async ({ page }) => {
     await page.goto(`/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    // Wait for templates page to be ready
+    const newTemplate = page.locator('a:has-text("New Template"), button:has-text("New Template")')
+    await expect(newTemplate.first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     expect(page.url()).toContain('/templates')
 
     // Key elements
-    const newTemplate = page.locator('a:has-text("New Template"), button:has-text("New Template")')
     console.log(`[AUDIT] New Template button: ${await newTemplate.count() > 0 ? 'FOUND' : 'MISSING'}`)
 
     const search = page.locator('input[placeholder*="Search"], input[placeholder*="search"]')
@@ -102,10 +108,10 @@ test.describe('Signatures Runtime Audit', () => {
 
   test('5. Create template page loads with editor', async ({ page }) => {
     await page.goto(`/en/signatures/templates/new`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
-
-    // Form fields
+    // Wait for form to load
     const nameInput = page.locator('input[name="name"], #name, input[placeholder*="name"]')
+    await expect(nameInput.first()).toBeVisible({ timeout: 10000 }).catch(() => {})
+
     console.log(`[AUDIT] Template name: ${await nameInput.count() > 0 ? 'FOUND' : 'MISSING'}`)
 
     // PDF upload zone
@@ -127,13 +133,14 @@ test.describe('Signatures Runtime Audit', () => {
   test('6. Template PATCH verification — confirms [B] finding', async ({ page }) => {
     // Navigate to templates list to find any existing template
     await page.goto(`/en/signatures/templates`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    await expect(page.locator('a:has-text("New Template"), button:has-text("New Template")').first()).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     // Look for any template edit link
     const editLink = page.locator('a[href*="/signatures/templates/"]').first()
     if (await editLink.count() > 0) {
       await editLink.click()
-      await page.waitForTimeout(3000)
+      // Wait for template detail page to load
+      await page.waitForURL(/\/signatures\/templates\//, { timeout: 10000 })
 
       console.log(`[AUDIT] Template detail URL: ${page.url()}`)
 
@@ -168,7 +175,7 @@ test.describe('Signatures Runtime Audit', () => {
   test('7. Document detail page structure', async ({ page }) => {
     // Navigate to signatures list and click first document
     await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    await expect(page.locator('a:has-text("New Document"), button:has-text("New Document")').first()).toBeVisible({ timeout: 10000 })
 
     const docLink = page.locator('a[href*="/signatures/"]').first()
     if (await docLink.count() > 0) {
@@ -176,7 +183,8 @@ test.describe('Signatures Runtime Audit', () => {
       const links = page.locator('a[href*="/signatures/"]:not([href*="template"]):not([href*="new"])')
       if (await links.count() > 0) {
         await links.first().click()
-        await page.waitForTimeout(3000)
+        // Wait for document detail page to load
+        await page.waitForURL(/\/signatures\/[a-f0-9-]+/, { timeout: 10000 })
 
         console.log(`[AUDIT] Document detail URL: ${page.url()}`)
 
@@ -207,13 +215,14 @@ test.describe('Signatures Runtime Audit', () => {
   test('8. Send page structure', async ({ page }) => {
     // Try to reach send page (need a draft document)
     await page.goto(`/en/signatures`, { waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(3000)
+    await expect(page.locator('a:has-text("New Document"), button:has-text("New Document")').first()).toBeVisible({ timeout: 10000 })
 
     // Look for Send button (only appears on draft documents)
     const sendBtn = page.locator('a:has-text("Send"), button:has-text("Send")')
     if (await sendBtn.count() > 0) {
       await sendBtn.first().click()
-      await page.waitForTimeout(3000)
+      // Wait for send page to load
+      await page.waitForURL(/\/send|\/signatures\//, { timeout: 10000 }).catch(() => {})
 
       console.log(`[AUDIT] Send page URL: ${page.url()}`)
 
