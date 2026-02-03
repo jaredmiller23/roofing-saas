@@ -3,11 +3,13 @@
 /**
  * TodayView Component
  *
- * Shows today's schedule including tasks, callbacks, and appointments.
+ * Shows today's schedule including tasks, events, and appointments.
  * Designed for field workers to quickly see what's on their agenda.
+ * Fetches real data from /api/tasks and /api/events.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,12 +26,14 @@ import {
   Navigation,
   User,
   Building,
-  Route,
+  CheckSquare,
   RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 
-interface TodayTask {
+interface TodayItem {
   id: string
   title: string
   type: 'task' | 'callback' | 'appointment'
@@ -48,18 +52,138 @@ interface TodayTask {
     company?: string
   }
   notes?: string
+  sourceType: 'task' | 'event'
+}
+
+interface TaskRecord {
+  id: string
+  title: string
+  description: string | null
+  status: 'todo' | 'in_progress' | 'completed' | 'cancelled'
+  priority: 'high' | 'medium' | 'low'
+  due_date: string | null
+  start_date: string | null
+  project?: { id: string; name: string } | null
+  contact?: { id: string; first_name: string; last_name: string } | null
+}
+
+interface EventRecord {
+  id: string
+  title: string
+  description: string | null
+  event_type: string | null
+  status: string | null
+  start_at: string
+  end_at: string | null
+  location: string | null
 }
 
 interface TodayViewProps {
   className?: string
 }
 
+function getTodayRange() {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const end = new Date(start)
+  end.setDate(end.getDate() + 1)
+  return {
+    todayStr: start.toISOString().split('T')[0],
+    startISO: start.toISOString(),
+    endISO: end.toISOString(),
+  }
+}
+
+function formatTimeFromISO(isoString: string): string {
+  const date = new Date(isoString)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+function getDurationMinutes(startAt: string, endAt: string | null): number | undefined {
+  if (!endAt) return undefined
+  const start = new Date(startAt).getTime()
+  const end = new Date(endAt).getTime()
+  const minutes = Math.round((end - start) / 60000)
+  return minutes > 0 ? minutes : undefined
+}
+
 export function TodayView({ className }: TodayViewProps) {
   const { isFieldMode } = useUIMode()
-  const [todayItems, setTodayItems] = useState<TodayTask[]>([])
+  const router = useRouter()
+  const [todayItems, setTodayItems] = useState<TodayItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
+
+  const fetchTodaySchedule = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { todayStr, startISO, endISO } = getTodayRange()
+
+      // Fetch tasks and events in parallel
+      const [tasks, events] = await Promise.all([
+        apiFetch<TaskRecord[]>(
+          `/api/tasks?limit=100&sort_by=due_date&sort_order=asc`
+        ),
+        apiFetch<EventRecord[]>(
+          `/api/events?start_after=${encodeURIComponent(startISO)}&end_before=${encodeURIComponent(endISO)}&limit=50`
+        ),
+      ])
+
+      // Map tasks: include tasks due today or overdue, not completed/cancelled
+      const taskItems: TodayItem[] = (tasks || [])
+        .filter(t =>
+          t.due_date &&
+          t.due_date <= todayStr &&
+          (t.status === 'todo' || t.status === 'in_progress')
+        )
+        .map(t => ({
+          id: t.id,
+          title: t.title,
+          type: 'task' as const,
+          status: t.status === 'in_progress' ? 'in_progress' as const : 'pending' as const,
+          priority: t.priority,
+          time: '',
+          contact: t.contact ? {
+            name: `${t.contact.first_name} ${t.contact.last_name}`.trim(),
+            phone: '',
+          } : undefined,
+          notes: t.description || undefined,
+          sourceType: 'task' as const,
+        }))
+
+      // Map events
+      const eventItems: TodayItem[] = (events || []).map(e => ({
+        id: e.id,
+        title: e.title,
+        type: 'appointment' as const,
+        status: e.status === 'completed' ? 'completed' as const : 'pending' as const,
+        priority: 'medium' as const,
+        time: formatTimeFromISO(e.start_at),
+        duration: getDurationMinutes(e.start_at, e.end_at),
+        location: e.location ? { address: e.location, city: '', state: '' } : undefined,
+        notes: e.description || undefined,
+        sourceType: 'event' as const,
+      }))
+
+      // Merge: events with times sorted chronologically, then tasks without times
+      const sorted = [
+        ...eventItems.sort((a, b) => a.time.localeCompare(b.time)),
+        ...taskItems,
+      ]
+
+      setTodayItems(sorted)
+    } catch (err) {
+      console.error('Error fetching today\'s schedule:', err)
+      setError('Failed to load today\'s schedule')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     fetchTodaySchedule()
@@ -70,103 +194,9 @@ export function TodayView({ className }: TodayViewProps) {
     }, 60000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchTodaySchedule])
 
-  const fetchTodaySchedule = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      // Mock data for today's schedule
-      const mockItems: TodayTask[] = [
-        {
-          id: '1',
-          title: 'Smith Property Inspection',
-          type: 'appointment',
-          status: 'pending',
-          priority: 'high',
-          time: '09:00',
-          duration: 60,
-          location: {
-            address: '123 Oak Street',
-            city: 'Springfield',
-            state: 'IL'
-          },
-          contact: {
-            name: 'John Smith',
-            phone: '+1-555-0123',
-            company: 'ABC Construction'
-          },
-          notes: 'Roof damage assessment after storm'
-        },
-        {
-          id: '2',
-          title: 'Follow up: Wilson estimate',
-          type: 'callback',
-          status: 'pending',
-          priority: 'medium',
-          time: '11:30',
-          contact: {
-            name: 'Mike Wilson',
-            phone: '+1-555-0125',
-            company: 'Wilson Properties'
-          },
-          notes: 'Decision deadline today'
-        },
-        {
-          id: '3',
-          title: 'Upload photos from yesterday',
-          type: 'task',
-          status: 'completed',
-          priority: 'low',
-          time: '08:00',
-          notes: 'Brown property documentation'
-        },
-        {
-          id: '4',
-          title: 'Davis Consultation',
-          type: 'appointment',
-          status: 'pending',
-          priority: 'medium',
-          time: '14:00',
-          duration: 45,
-          location: {
-            address: '456 Maple Avenue',
-            city: 'Springfield',
-            state: 'IL'
-          },
-          contact: {
-            name: 'Emily Davis',
-            phone: '+1-555-0126'
-          },
-          notes: 'New customer - gutter replacement'
-        },
-        {
-          id: '5',
-          title: 'Submit daily report',
-          type: 'task',
-          status: 'pending',
-          priority: 'medium',
-          time: '17:00',
-          notes: 'End of day summary'
-        }
-      ]
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      // Sort by time
-      const sorted = mockItems.sort((a, b) => a.time.localeCompare(b.time))
-      setTodayItems(sorted)
-    } catch (err) {
-      console.error('Error fetching today&apos;s schedule:', err)
-      setError('Failed to load today&apos;s schedule')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const getItemIcon = (type: TodayTask['type'], status: TodayTask['status']) => {
+  const getItemIcon = (type: TodayItem['type'], status: TodayItem['status']) => {
     if (status === 'completed') {
       return <CheckCircle2 className="h-5 w-5 text-green-600" />
     }
@@ -183,7 +213,7 @@ export function TodayView({ className }: TodayViewProps) {
     }
   }
 
-  const getPriorityColor = (priority: TodayTask['priority']) => {
+  const getPriorityColor = (priority: TodayItem['priority']) => {
     switch (priority) {
       case 'high': return 'border-l-red-500 bg-red-500/10'
       case 'medium': return 'border-l-yellow-500 bg-yellow-500/10'
@@ -191,17 +221,19 @@ export function TodayView({ className }: TodayViewProps) {
     }
   }
 
-  const getTypeLabel = (type: TodayTask['type']) => {
+  const getTypeLabel = (type: TodayItem['type']) => {
     switch (type) {
-      case 'appointment': return 'Appointment'
+      case 'appointment': return 'Event'
       case 'callback': return 'Callback'
       case 'task': return 'Task'
     }
   }
 
   const isUpcoming = (timeString: string) => {
-    const itemTime = new Date()
+    if (!timeString) return false
     const [hours, minutes] = timeString.split(':').map(Number)
+    if (isNaN(hours) || isNaN(minutes)) return false
+    const itemTime = new Date()
     itemTime.setHours(hours, minutes, 0, 0)
     return itemTime > currentTime
   }
@@ -210,20 +242,40 @@ export function TodayView({ className }: TodayViewProps) {
     window.location.href = `tel:${phone}`
   }
 
-  const handleGetDirections = (location: TodayTask['location']) => {
+  const handleGetDirections = (location: TodayItem['location']) => {
     if (location) {
-      const address = `${location.address}, ${location.city}, ${location.state}`
-      const encodedAddress = encodeURIComponent(address)
+      const parts = [location.address, location.city, location.state].filter(Boolean)
+      const encodedAddress = encodeURIComponent(parts.join(', '))
       window.open(`https://maps.google.com/maps?q=${encodedAddress}`, '_blank')
     }
   }
 
-  const markCompleted = (id: string) => {
+  const markCompleted = async (item: TodayItem) => {
+    // Optimistic update
     setTodayItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, status: 'completed' } : item
+      items.map(i =>
+        i.id === item.id ? { ...i, status: 'completed' as const } : i
       )
     )
+
+    try {
+      if (item.sourceType === 'task') {
+        await apiFetch(`/api/tasks/${item.id}`, {
+          method: 'PATCH',
+          body: { status: 'completed', completed_at: new Date().toISOString() },
+        })
+        toast.success('Task completed')
+      }
+    } catch (err) {
+      // Revert optimistic update
+      setTodayItems(items =>
+        items.map(i =>
+          i.id === item.id ? { ...i, status: item.status } : i
+        )
+      )
+      console.error('Failed to mark as completed:', err)
+      toast.error('Failed to update status')
+    }
   }
 
   return (
@@ -234,7 +286,7 @@ export function TodayView({ className }: TodayViewProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-Today&apos;s Schedule
+                Today&apos;s Schedule
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {new Date().toLocaleDateString('en-US', {
@@ -288,12 +340,12 @@ Today&apos;s Schedule
             <div className="space-y-3">
               {todayItems.map((item) => (
                 <div
-                  key={item.id}
+                  key={`${item.sourceType}-${item.id}`}
                   className={cn(
                     'p-4 border rounded-lg border-l-4 transition-colors',
                     getPriorityColor(item.priority),
                     item.status === 'completed' && 'opacity-60',
-                    isUpcoming(item.time) && item.status === 'pending' && 'ring-2 ring-primary/20'
+                    item.time && isUpcoming(item.time) && item.status === 'pending' && 'ring-2 ring-primary/20'
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -317,10 +369,10 @@ Today&apos;s Schedule
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {item.time}
+                          {item.time || 'All day'}
                           {item.duration && ` (${item.duration}min)`}
                         </span>
-                        {isUpcoming(item.time) && item.status === 'pending' && (
+                        {item.time && isUpcoming(item.time) && item.status === 'pending' && (
                           <Badge className="bg-primary/10 text-primary text-xs">
                             Upcoming
                           </Badge>
@@ -344,10 +396,10 @@ Today&apos;s Schedule
                       )}
 
                       {/* Location Info */}
-                      {item.location && (
+                      {item.location && item.location.address && (
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                           <MapPin className="h-3 w-3" />
-                          {item.location.address}, {item.location.city}
+                          {[item.location.address, item.location.city].filter(Boolean).join(', ')}
                         </div>
                       )}
 
@@ -365,7 +417,7 @@ Today&apos;s Schedule
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => markCompleted(item.id)}
+                          onClick={() => markCompleted(item)}
                           className={cn(isFieldMode && 'h-9 px-3')}
                         >
                           <CheckCircle2 className="h-3 w-3" />
@@ -383,7 +435,7 @@ Today&apos;s Schedule
                         </Button>
                       )}
 
-                      {item.location && (
+                      {item.location && item.location.address && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -420,6 +472,7 @@ Today&apos;s Schedule
                 variant="outline"
                 size={isFieldMode ? "lg" : "sm"}
                 className="flex items-center gap-2"
+                onClick={() => router.push('/events')}
               >
                 <Calendar className="h-4 w-4" />
                 Full Calendar
@@ -428,9 +481,10 @@ Today&apos;s Schedule
                 variant="outline"
                 size={isFieldMode ? "lg" : "sm"}
                 className="flex items-center gap-2"
+                onClick={() => router.push('/tasks')}
               >
-                <Route className="h-4 w-4" />
-                Route Planner
+                <CheckSquare className="h-4 w-4" />
+                All Tasks
               </Button>
             </div>
           </div>

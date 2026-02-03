@@ -18,6 +18,7 @@ import {
   CheckSquare,
   Settings,
   Calendar,
+  CalendarClock,
   Map,
   Menu,
   LogOut,
@@ -53,12 +54,13 @@ interface FieldWorkerNavProps {
   userRole?: string
 }
 
-// Simplified navigation for field workers (7 essential items)
-// Field workers need: knock, contacts, pipeline, signatures, tasks, events, settings
+// Simplified navigation for field workers (8 essential items)
+// Field workers need: today, knock, contacts, pipeline, signatures, tasks, events, settings
 const navSections: NavSection[] = [
   {
     // No section label - flat list for simplicity
     items: [
+      { href: '/field/today', label: 'Today', icon: CalendarClock },
       { href: '/knocks', label: 'Knock', icon: Map },
       { href: '/contacts', label: 'Contacts', icon: Users },
       { href: '/projects', label: 'Pipeline', icon: Workflow },
