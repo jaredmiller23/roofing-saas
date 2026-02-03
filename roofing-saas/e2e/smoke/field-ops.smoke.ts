@@ -303,11 +303,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Storm Targeting' })).toBeVisible()
 
-      // Map should be present (give it time to load)
-      await page.waitForTimeout(2000)
-
-      // Should have area selection controls
-      await expect(page.getByRole('heading', { name: 'Area Selection' })).toBeVisible()
+      // Should have area selection controls (map loads alongside)
+      await expect(page.getByRole('heading', { name: 'Area Selection' })).toBeVisible({ timeout: 10000 })
     })
 
     test('should display ZIP code input for boundary loading', async ({ page }) => {
@@ -524,12 +521,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Field Activity' })).toBeVisible()
 
-      // Wait for potential Google Maps load
-      await page.waitForTimeout(3000)
-
-      // Should not show Google Maps error
-      const hasMapError = await page.getByText(/Failed to load Google Maps/i).isVisible()
-      expect(hasMapError).toBeFalsy()
+      // Wait for map content to settle — verify no error message appears
+      await expect(page.getByText(/Failed to load Google Maps/i)).not.toBeVisible({ timeout: 10000 })
     })
 
     test('should load Google Maps API successfully on storm targeting page', async ({ page }) => {
@@ -538,12 +531,8 @@ test.describe('Field Operations Module - Smoke Tests', () => {
       // Wait for page to load
       await expect(page.getByRole('heading', { name: 'Storm Targeting' })).toBeVisible()
 
-      // Wait for potential Google Maps load
-      await page.waitForTimeout(3000)
-
-      // Should not show Google Maps error
-      const hasMapError = await page.getByText(/Failed to load Google Maps/i).isVisible()
-      expect(hasMapError).toBeFalsy()
+      // Wait for map content to settle — verify no error message appears
+      await expect(page.getByText(/Failed to load Google Maps/i)).not.toBeVisible({ timeout: 10000 })
     })
   })
 })

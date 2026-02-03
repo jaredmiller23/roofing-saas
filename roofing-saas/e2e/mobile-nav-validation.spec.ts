@@ -24,7 +24,10 @@ test.describe('Mobile Navigation Validation', () => {
     const appearanceTab = page.getByRole('tab', { name: /appearance/i })
     await expect(appearanceTab).toBeVisible({ timeout: 10000 })
     await appearanceTab.click()
-    await page.waitForTimeout(500)
+    // Wait for Appearance tab content to render
+    await expect(
+      page.locator('#nav-instagram').or(page.locator('input[type="radio"][value="instagram"]'))
+    ).toBeVisible({ timeout: 5000 })
     console.log('✓ Clicked Appearance tab')
 
     // Step 3: Find and click on Field mode radio button
@@ -45,12 +48,14 @@ test.describe('Mobile Navigation Validation', () => {
     console.log('✓ Selected Instagram nav style')
 
     // Wait for preference to save to DB
-    await page.waitForTimeout(1500)
+    await page.waitForResponse(
+      resp => resp.url().includes('/api/') && resp.request().method() !== 'GET',
+      { timeout: 5000 }
+    ).catch(() => {})
 
     // Step 5: Navigate to dashboard
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000) // Allow layout to render
 
     // Step 6: Verify the bottom navigation is visible with correct buttons
     const bottomNav = page.locator('nav[aria-label="Bottom navigation"]')
@@ -87,7 +92,6 @@ test.describe('Mobile Navigation Validation', () => {
     // So the session should already have Instagram nav style set
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1000)
 
     // In Instagram layout, the top bar has Notifications and Settings buttons
     const notificationsButton = page.getByRole('button', { name: /notifications/i })

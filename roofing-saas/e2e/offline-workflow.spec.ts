@@ -140,7 +140,12 @@ test.describe('PWA Offline Workflow', () => {
     await goOnline(page)
 
     // Wait for automatic sync (Background Sync API or network listener)
-    await page.waitForTimeout(3000)
+    // Poll IndexedDB until pending photos are cleared
+    await expect(async () => {
+      const photos = await getIndexedDBData(page, 'RoofingSaaSOfflineQueue', 'queuedPhotos')
+      const pending = photos.filter((p) => p.status === 'pending')
+      expect(pending.length).toBe(0)
+    }).toPass({ timeout: 10000 })
 
     // Verify photo was uploaded and marked as completed
     queuedPhotos = await getIndexedDBData(
@@ -165,7 +170,8 @@ test.describe('PWA Offline Workflow', () => {
     for (let i = 0; i < 3; i++) {
       const fileInput = page.locator('input[type="file"]')
       await fileInput.setInputFiles(TEST_IMAGE_PATH)
-      await page.waitForTimeout(1000)
+      // Wait for queue confirmation before next upload
+      await waitForNotification(page, 'Photo saved').catch(() => {})
     }
 
     // Check queue status UI
@@ -197,8 +203,12 @@ test.describe('PWA Offline Workflow', () => {
     if (await syncButton.isVisible()) {
       await syncButton.click()
 
-      // Wait for sync to complete
-      await page.waitForTimeout(2000)
+      // Wait for sync to complete by polling IndexedDB
+      await expect(async () => {
+        const photos = await getIndexedDBData(page, 'RoofingSaaSOfflineQueue', 'queuedPhotos')
+        const pending = photos.filter((p) => p.status === 'pending')
+        expect(pending.length).toBe(0)
+      }).toPass({ timeout: 10000 })
 
       // Verify photo was uploaded
       const queuedPhotos = await getIndexedDBData(
@@ -224,8 +234,12 @@ test.describe('PWA Offline Workflow', () => {
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(TEST_IMAGE_PATH)
 
-    // Wait for failure
-    await page.waitForTimeout(2000)
+    // Wait for failure by polling IndexedDB for failed status
+    await expect(async () => {
+      const photos = await getIndexedDBData(page, 'RoofingSaaSOfflineQueue', 'queuedPhotos')
+      const failed = photos.filter((p) => p.status === 'failed')
+      expect(failed.length).toBeGreaterThan(0)
+    }).toPass({ timeout: 10000 })
 
     // Verify photo is marked as failed
     let queuedPhotos = await getIndexedDBData(
@@ -244,8 +258,12 @@ test.describe('PWA Offline Workflow', () => {
     if (await retryButton.isVisible()) {
       await retryButton.click()
 
-      // Wait for retry to complete
-      await page.waitForTimeout(2000)
+      // Wait for retry to complete by polling IndexedDB
+      await expect(async () => {
+        const photos = await getIndexedDBData(page, 'RoofingSaaSOfflineQueue', 'queuedPhotos')
+        const failed = photos.filter((p) => p.status === 'failed')
+        expect(failed.length).toBe(0)
+      }).toPass({ timeout: 10000 })
 
       // Verify photo was successfully uploaded
       queuedPhotos = await getIndexedDBData(

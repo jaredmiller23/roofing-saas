@@ -85,12 +85,9 @@ test.describe('Projects/Sales Page - View Modes', () => {
       // Click the Table view button using test ID
       await page.getByTestId('table-view-button').click()
 
-      // Wait for table to load (allow time for potential timeout)
+      // Wait for table view to render (may involve API call)
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(12000) // Wait for potential 10s timeout + buffer
-
-      // Verify table view is visible
-      await expect(page.getByTestId('table-view')).toBeVisible({ timeout: 5000 })
+      await expect(page.getByTestId('table-view')).toBeVisible({ timeout: 15000 })
 
       // Should show either the table (if there are leads) or empty state (if no leads)
       // Error state should NOT be accepted - if there's an error, the test should fail
@@ -115,7 +112,13 @@ test.describe('Projects/Sales Page - View Modes', () => {
       if (await tableButton.isVisible({ timeout: 2000 })) {
         await tableButton.click()
         await page.waitForLoadState('networkidle')
-        await page.waitForTimeout(1000)
+
+        // Wait for table or empty state to appear
+        await expect(
+          page.locator('table').first()
+            .or(page.locator('text=No leads found').first())
+            .or(page.locator('[role="alert"]').first())
+        ).toBeVisible({ timeout: 15000 }).catch(() => {})
 
         // Should NOT show error
         const hasError = await page.locator('[role="alert"]:has-text("Failed to fetch leads")').count() > 0
@@ -258,10 +261,9 @@ test.describe('Projects/Sales Page - View Modes', () => {
       // Click Table button to switch views
       await page.getByTestId('table-view-button').click()
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(12000) // Wait for potential 10s timeout + buffer
 
-      // Should show table view (either table or empty state)
-      await expect(page.getByTestId('table-view')).toBeVisible({ timeout: 3000 })
+      // Wait for table view to render (may involve API call)
+      await expect(page.getByTestId('table-view')).toBeVisible({ timeout: 15000 })
       const hasTable = await page.locator('table').first().isVisible().catch(() => false)
       const hasEmptyState = await page.locator('text=No leads found').isVisible().catch(() => false)
 
@@ -367,7 +369,9 @@ test.describe('Regression Tests for Known Bugs', () => {
     // Switch to Table view (this used to fail)
     await page.getByTestId('table-view-button').click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(12000) // Wait for potential 10s timeout + buffer
+
+    // Wait for table view to render (may involve API call)
+    await expect(page.getByTestId('table-view')).toBeVisible({ timeout: 15000 })
 
     // Should NOT have error about "updated" column
     const alert = page.locator('[role="alert"]').first()

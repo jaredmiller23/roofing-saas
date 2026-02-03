@@ -36,8 +36,11 @@ test.describe('Storm Leads Management', () => {
   })
 
   test('displays targeting areas list', async ({ page }) => {
-    // Wait for areas to load
-    await page.waitForTimeout(1000)
+    // Wait for areas to load — either area buttons or "no areas" message
+    await expect(
+      page.locator('button:has-text("addresses")').first()
+        .or(page.locator('text=/no targeting areas|extract addresses/i').first())
+    ).toBeVisible({ timeout: 10000 })
 
     // Check for either areas list or "no targeting areas" message
     const hasAreas = (await page.locator('button:has-text("addresses")').count()) > 0
@@ -192,7 +195,13 @@ test.describe('Storm Leads UI Interactions', () => {
     // Click first area to load addresses
     await areaButtons[0].click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1000)
+
+    // Wait for filter buttons to appear after area loads
+    await expect(
+      page.locator('button:has-text("All")').first()
+        .or(page.locator('button:has-text("Enriched")').first())
+        .or(page.locator('button:has-text("Need Data")').first())
+    ).toBeVisible({ timeout: 10000 })
 
     // Check for filter buttons - at least one should be visible
     const allButton = page.locator('button:has-text("All")')
@@ -222,7 +231,6 @@ test.describe('Storm Leads UI Interactions', () => {
 
     await areaButtons[0].click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(500)
 
     // Look for download template button
     const downloadBtn = page.locator('button:has-text("Download CSV Template")')
@@ -249,7 +257,6 @@ test.describe('Storm Leads UI Interactions', () => {
 
     await areaButtons[0].click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(500)
 
     // Look for upload button
     const uploadLabel = page.locator('text=/Upload.*CSV/i')
@@ -270,7 +277,6 @@ test.describe('Storm Leads UI Interactions', () => {
 
     await areaButtons[0].click()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(500)
 
     // Look for import button with count
     const importBtn = page.locator('button:has-text("Import")')

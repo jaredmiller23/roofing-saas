@@ -163,11 +163,9 @@ test.describe('Error State Handling', () => {
       await page.goto('/digital-cards')
       await page.waitForLoadState('networkidle')
 
-      // Allow time for error to appear
-      await page.waitForTimeout(1000)
-
+      // Wait for error alert to appear
       const alert = page.locator('[role="alert"], .text-red-900, .text-red-600').first()
-      if (await alert.isVisible({ timeout: 2000 })) {
+      if (await alert.isVisible({ timeout: 5000 })) {
         const errorText = await alert.textContent()
         expect(errorText).not.toContain('[object')
       }
@@ -199,7 +197,8 @@ test.describe('Error State Handling', () => {
         await submitButton.click()
 
         // Should show validation errors (not [object Object])
-        await page.waitForTimeout(500)
+        // Wait for any validation message to appear
+        await expect(page.locator('body')).not.toHaveText(/^\s*$/, { timeout: 3000 }).catch(() => {})
         const pageText = await page.locator('body').textContent()
         expect(pageText).not.toContain('[object')
       }
@@ -286,11 +285,10 @@ test.describe('Geolocation Error Handling', () => {
     const mapViewSelector = page.locator('select[role="combobox"], [data-testid="view-selector"]')
     if (await mapViewSelector.count() > 0) {
       await mapViewSelector.selectOption('map')
-      await page.waitForTimeout(500)
     }
 
-    // Wait a moment for geolocation to be attempted
-    await page.waitForTimeout(2000)
+    // Wait for geolocation to be attempted — indicator should appear with result
+    await expect(page.locator('.absolute.top-3.left-3')).toBeVisible({ timeout: 10000 })
 
     // Should show error message, NOT "Locating..."
     const locationIndicator = page.locator('.absolute.top-3.left-3')
@@ -313,7 +311,9 @@ test.describe('Geolocation Error Handling', () => {
     // Clicking retry should attempt geolocation again (if retry button exists)
     if (await retryButton.count() > 0) {
       await retryButton.click()
-      await page.waitForTimeout(1000)
+
+      // Wait for geolocation retry to resolve — indicator should update
+      await expect(page.locator('.absolute.top-3.left-3')).toBeVisible({ timeout: 5000 })
 
       // Should still show error (since permission is still denied)
       const updatedText = await locationIndicator.textContent()
