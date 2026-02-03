@@ -262,7 +262,8 @@ export function MobileFileUpload({
         })
 
         if (!response.ok) {
-          throw new Error(`Upload failed for ${file.name}`)
+          const errBody = await response.json().catch(() => ({ error: `Server returned ${response.status}` }))
+          throw new Error(`Upload failed for ${file.name}: ${errBody.error || errBody.message || response.statusText}`)
         }
 
         const result = await response.json()
