@@ -2,6 +2,8 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ContactsWithFilters } from '@/components/contacts/contacts-with-filters'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 /**
  * Contacts list page
@@ -32,11 +34,11 @@ export default async function ContactsPage() {
             </p>
           </div>
 
-          <Link
-            href="/contacts/new"
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
-          >
-            + Add Contact
+          <Link href="/contacts/new">
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Contact
+            </Button>
           </Link>
         </div>
 

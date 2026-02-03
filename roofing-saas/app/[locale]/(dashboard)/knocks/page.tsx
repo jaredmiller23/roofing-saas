@@ -238,7 +238,7 @@ export default function KnocksPage() {
                     {knock.contact_created && knock.contact_id && (
                       <Link
                         href={`/contacts/${knock.contact_id}`}
-                        className="text-xs text-primary hover:text-primary/90 mt-1 inline-block"
+                        className="text-sm text-primary hover:text-primary/90 mt-1 inline-block py-1"
                       >
                         View Contact →
                       </Link>
@@ -270,7 +270,6 @@ export default function KnocksPage() {
         <Button
           onClick={() => setPinDropEnabled(!pinDropEnabled)}
           variant={pinDropEnabled ? 'default' : 'outline'}
-          size="sm"
           className="gap-2"
         >
           <MapPin className="h-4 w-4" />
@@ -309,10 +308,11 @@ export default function KnocksPage() {
                   map?.setCenter({ lat: userLocation.latitude, lng: userLocation.longitude })
                   map?.setZoom(16)
                 }}
-                className="p-1 hover:bg-muted rounded"
+                className="h-11 w-11 flex items-center justify-center hover:bg-muted rounded-lg"
                 title="Center on my location"
+                aria-label="Center on my location"
               >
-                <Crosshair className="h-4 w-4 text-green-600" />
+                <Crosshair className="h-5 w-5 text-green-600" />
               </button>
             </div>
           ) : locationError ? (
@@ -322,8 +322,9 @@ export default function KnocksPage() {
                 <span className="font-medium">{locationError}</span>
                 <button
                   onClick={retryLocation}
-                  className="px-2 py-0.5 text-xs bg-orange-500/20 hover:bg-orange-500/30 rounded shrink-0"
+                  className="px-3 py-1.5 text-sm font-medium bg-orange-500/20 hover:bg-orange-500/30 rounded-md shrink-0"
                   title="Retry location"
+                  aria-label="Retry location detection"
                 >
                   Retry
                 </button>
@@ -451,7 +452,6 @@ export default function KnocksPage() {
                   {selectedTerritory && (
                     <Button
                       variant="ghost"
-                      size="sm"
                       onClick={() => setSelectedTerritory(null)}
                     >
                       Clear Selection

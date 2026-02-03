@@ -148,7 +148,7 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
             <SheetTrigger asChild>
               <button
                 className={cn(
-                  "p-2 rounded-lg transition-all duration-200",
+                  "h-11 w-11 flex items-center justify-center rounded-lg transition-all duration-200",
                   "hover:bg-accent hover:text-accent-foreground",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   !prefersReducedMotion && "active:scale-95"
@@ -272,7 +272,7 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
                     <button
                       type="submit"
                       className={cn(
-                        "w-full flex items-center gap-3 px-4 py-2 rounded-lg",
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-lg",
                         "text-sidebar-foreground/80 hover:bg-sidebar/80 hover:text-sidebar-foreground",
                         "transition-all duration-200",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

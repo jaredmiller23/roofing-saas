@@ -299,9 +299,10 @@ export function TodayView({ className }: TodayViewProps) {
             </div>
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={fetchTodaySchedule}
               disabled={isLoading}
+              aria-label="Refresh schedule"
             >
               <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
             </Button>
@@ -415,34 +416,34 @@ export function TodayView({ className }: TodayViewProps) {
                     <div className="flex flex-col gap-2">
                       {item.status !== 'completed' && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
                           onClick={() => markCompleted(item)}
-                          className={cn(isFieldMode && 'h-9 px-3')}
+                          aria-label="Mark completed"
                         >
-                          <CheckCircle2 className="h-3 w-3" />
+                          <CheckCircle2 className="h-4 w-4" />
                         </Button>
                       )}
 
                       {item.contact?.phone && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
                           onClick={() => handleCall(item.contact!.phone)}
-                          className={cn(isFieldMode && 'h-9 px-3')}
+                          aria-label="Call contact"
                         >
-                          <Phone className="h-3 w-3" />
+                          <Phone className="h-4 w-4" />
                         </Button>
                       )}
 
                       {item.location && item.location.address && (
                         <Button
-                          size="sm"
+                          size="icon"
                           variant="outline"
                           onClick={() => handleGetDirections(item.location!)}
-                          className={cn(isFieldMode && 'h-9 px-3')}
+                          aria-label="Get directions"
                         >
-                          <Navigation className="h-3 w-3" />
+                          <Navigation className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -470,7 +471,7 @@ export function TodayView({ className }: TodayViewProps) {
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
-                size={isFieldMode ? "lg" : "sm"}
+                size={isFieldMode ? "lg" : "default"}
                 className="flex items-center gap-2"
                 onClick={() => router.push('/events')}
               >
@@ -479,7 +480,7 @@ export function TodayView({ className }: TodayViewProps) {
               </Button>
               <Button
                 variant="outline"
-                size={isFieldMode ? "lg" : "sm"}
+                size={isFieldMode ? "lg" : "default"}
                 className="flex items-center gap-2"
                 onClick={() => router.push('/tasks')}
               >

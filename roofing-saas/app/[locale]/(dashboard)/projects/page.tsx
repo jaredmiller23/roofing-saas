@@ -47,7 +47,7 @@ export default function ProjectsPage() {
                 <button
                   data-testid="kanban-view-button"
                   onClick={() => setViewMode('kanban')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'kanban'
                       ? 'bg-card text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -59,7 +59,7 @@ export default function ProjectsPage() {
                 <button
                   data-testid="table-view-button"
                   onClick={() => setViewMode('table')}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'table'
                       ? 'bg-card text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'

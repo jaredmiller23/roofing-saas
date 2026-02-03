@@ -361,7 +361,7 @@ export function FieldWorkerBottomNav({ className }: FieldWorkerBottomNavProps) {
                 onClick={handleVoiceSessionEnd}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-muted/50"
+                className="hover:bg-muted/50"
                 aria-label="Close voice assistant"
               >
                 <X className="h-5 w-5" />
