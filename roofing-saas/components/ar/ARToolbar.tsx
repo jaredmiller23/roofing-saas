@@ -14,6 +14,7 @@ import {
   Settings
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface ARToolbarProps {
   session: ARSession | null
@@ -275,11 +276,16 @@ export function ARToolbar({
               <label className="block text-sm font-medium text-foreground mb-1">
                 Measurement Unit
               </label>
-              <select className="w-full px-3 py-1 text-sm border border-border rounded">
-                <option value="ft">Feet</option>
-                <option value="m">Meters</option>
-                <option value="in">Inches</option>
-              </select>
+              <Select defaultValue="ft">
+                <SelectTrigger className="w-full" aria-label="Measurement unit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ft">Feet</SelectItem>
+                  <SelectItem value="m">Meters</SelectItem>
+                  <SelectItem value="in">Inches</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/errors'
 import { createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import { isHeicBuffer, isHeicMimeType, convertHeicToJpeg } from '@/lib/images/heic-converter'
 
 /**
  * POST /api/project-files/upload
@@ -54,17 +55,36 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // Read file buffer once for HEIC detection, conversion, and thumbnail generation
+    const arrayBuffer = await file.arrayBuffer()
+    let buffer: Buffer = Buffer.from(arrayBuffer)
+    const originalExt = file.name.split('.').pop() || 'bin'
+    let effectiveExt = originalExt
+    let effectiveMimeType = file.type
+
+    // Detect and convert HEIC/HEIF files to JPEG
+    const isHeic = isHeicMimeType(file.type) || isHeicBuffer(buffer) ||
+                   ['heic', 'heif'].includes(originalExt.toLowerCase())
+
+    if (isHeic) {
+      logger.info('HEIC file detected, converting to JPEG', { fileName: file.name, size: file.size })
+      const conversion = await convertHeicToJpeg(buffer)
+      buffer = conversion.buffer
+      effectiveMimeType = 'image/jpeg'
+      effectiveExt = 'jpg'
+    }
+
     // Generate unique filename for storage
-    const fileExt = file.name.split('.').pop() || 'bin'
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2)
-    const storageFileName = `${timestamp}_${randomStr}.${fileExt}`
+    const storageFileName = `${timestamp}_${randomStr}.${effectiveExt}`
     const storagePath = `project-files/${storageFileName}`
 
-    // Upload file to Supabase storage
+    // Upload file buffer to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('files')
-      .upload(storagePath, file, {
+      .upload(storagePath, buffer, {
+        contentType: effectiveMimeType,
         cacheControl: '3600',
         upsert: false
       })
@@ -81,13 +101,11 @@ export async function POST(request: NextRequest) {
 
     // Generate thumbnail for image files
     let thumbnailUrl: string | null = null
-    const isImage = file.type.startsWith('image/')
+    const isImage = effectiveMimeType.startsWith('image/')
 
     if (isImage) {
       try {
         const sharp = (await import('sharp')).default
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
 
         const thumbnailBuffer = await sharp(buffer)
           .resize(200, 200, { fit: 'inside', withoutEnlargement: true })
@@ -127,9 +145,9 @@ export async function POST(request: NextRequest) {
       file_category: fileCategory,
       file_url: publicUrl,
       thumbnail_url: thumbnailUrl,
-      file_size: file.size,
-      file_extension: fileExt,
-      mime_type: file.type,
+      file_size: buffer.length,
+      file_extension: effectiveExt,
+      mime_type: effectiveMimeType,
       project_id: projectId,
       contact_id: contactId,
       folder_path: folderPath,
@@ -143,7 +161,8 @@ export async function POST(request: NextRequest) {
       metadata: {
         original_filename: file.name,
         upload_method: 'direct',
-        storage_path: storagePath
+        storage_path: storagePath,
+        ...(isHeic ? { converted_from: 'heic', original_extension: originalExt } : {})
       }
     }
 

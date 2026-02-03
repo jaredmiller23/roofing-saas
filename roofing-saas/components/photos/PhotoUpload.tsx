@@ -63,10 +63,13 @@ export function PhotoUpload({
   }, [])
 
   // Validate file type and size
+  // Windows browsers sometimes don't set file.type correctly — fall back to extension check
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
-    // Check file type (allow image/* and HEIC files)
-    const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
-    if (!file.type.startsWith('image/') && !isHeic) {
+    const imageExtensions = /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp|tiff?|svg)$/i
+    const hasImageMime = file.type.startsWith('image/')
+    const hasImageExtension = imageExtensions.test(file.name)
+
+    if (!hasImageMime && !hasImageExtension) {
       return { valid: false, error: 'File must be an image (JPEG, PNG, WebP, HEIC, etc.)' }
     }
 
@@ -503,7 +506,7 @@ export function PhotoUpload({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,.heic,.heif"
+                accept="image/*,.heic,.heif,.bmp,.tiff,.tif"
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"

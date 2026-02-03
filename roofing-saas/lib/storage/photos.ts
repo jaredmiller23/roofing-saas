@@ -109,8 +109,9 @@ export async function uploadPhoto(options: PhotoUploadOptions): Promise<{
   try {
     const supabase = createClient()
 
-    // Validate file type
-    if (!options.file.type.startsWith('image/')) {
+    // Validate file type — check MIME and extension (Windows may not set MIME correctly)
+    const imageExtensions = /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp|tiff?|svg)$/i
+    if (!options.file.type.startsWith('image/') && !imageExtensions.test(options.file.name)) {
       return {
         success: false,
         error: 'File must be an image',

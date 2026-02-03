@@ -76,9 +76,14 @@ export function ClaimPhotoCapture({
   const [isCameraActive, setIsCameraActive] = useState(false)
 
   // Validate file type and size
+  // Windows browsers sometimes don't set file.type correctly — fall back to extension check
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
-    if (!file.type.startsWith('image/')) {
-      return { valid: false, error: 'File must be an image (JPEG, PNG, WebP, etc.)' }
+    const imageExtensions = /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp|tiff?|svg)$/i
+    const hasImageMime = file.type.startsWith('image/')
+    const hasImageExtension = imageExtensions.test(file.name)
+
+    if (!hasImageMime && !hasImageExtension) {
+      return { valid: false, error: 'File must be an image (JPEG, PNG, WebP, HEIC, etc.)' }
     }
     const maxSizeMB = 20
     const maxBytes = maxSizeMB * 1024 * 1024
@@ -467,7 +472,7 @@ export function ClaimPhotoCapture({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif,.bmp,.tiff,.tif"
                 capture="environment"
                 onChange={handleFileSelect}
                 className="hidden"

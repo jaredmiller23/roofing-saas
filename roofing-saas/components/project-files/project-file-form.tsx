@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { FileText, Upload, Camera, FolderOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RoofingFileCategory, FileType, suggestFileTypeForCategory } from '@/lib/types/file'
 import { FileCategories, CategoryGrid } from './FileCategories'
 import { MobileFileUpload } from './MobileFileUpload'
@@ -29,7 +30,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadMode, setUploadMode] = useState<'url' | 'upload' | 'mobile'>('upload')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [showMobileUpload, setShowMobileUpload] = useState(false)
   const [categorySelectionMode, setCategorySelectionMode] = useState<'dropdown' | 'grid'>('dropdown')
 
@@ -45,30 +46,41 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
   })
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (selectedFile) {
-      setSelectedFile(selectedFile)
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
 
-      // Auto-fill file name if empty
-      if (!formData.file_name) {
-        setFormData({ ...formData, file_name: selectedFile.name })
-      }
+    setSelectedFiles(prev => [...prev, ...files])
 
-      // Auto-suggest file type and category based on file
-      if (selectedFile.type.startsWith('image/')) {
-        setFormData(prev => ({
-          ...prev,
-          file_type: 'photo',
-          file_category: prev.file_category || 'photos-before'
-        }))
-      } else if (selectedFile.type.includes('pdf')) {
-        setFormData(prev => ({
-          ...prev,
-          file_type: 'document',
-          file_category: prev.file_category || 'contracts-agreements'
-        }))
-      }
+    // Auto-fill file name if empty and single file
+    if (!formData.file_name && files.length === 1) {
+      setFormData(prev => ({ ...prev, file_name: files[0].name }))
     }
+
+    // Auto-suggest file type and category based on first file
+    const firstFile = files[0]
+    const isImage = firstFile.type.startsWith('image/') ||
+      /\.(heic|heif)$/i.test(firstFile.name)
+
+    if (isImage) {
+      setFormData(prev => ({
+        ...prev,
+        file_type: 'photo',
+        file_category: prev.file_category || 'photos-before'
+      }))
+    } else if (firstFile.type.includes('pdf')) {
+      setFormData(prev => ({
+        ...prev,
+        file_type: 'document',
+        file_category: prev.file_category || 'contracts-agreements'
+      }))
+    }
+
+    // Reset the input so re-selecting the same files works
+    e.target.value = ''
+  }
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleCategoryChange = (category: RoofingFileCategory | null) => {
@@ -131,40 +143,85 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
     setError(null)
 
     try {
-      let fileUrl = formData.file_url
+      // Edit mode — single file, existing behavior
+      if (file) {
+        let fileUrl = formData.file_url
 
-      // Upload file if in upload mode and file is selected
-      if (uploadMode === 'upload' && selectedFile) {
+        if (uploadMode === 'upload' && selectedFiles.length > 0) {
+          setUploading(true)
+          fileUrl = await uploadFile(selectedFiles[0])
+          setUploading(false)
+        }
+
+        if (!fileUrl) {
+          throw new Error('Please provide a file URL or upload a file')
+        }
+
+        const payload = {
+          ...formData,
+          file_url: fileUrl,
+          project_id: formData.project_id || null,
+        }
+
+        const response = await fetch(`/api/project-files/${file.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save file')
+        }
+      }
+      // Create mode with file upload — uses server route for HEIC conversion
+      else if (uploadMode === 'upload' && selectedFiles.length > 0) {
         setUploading(true)
-        fileUrl = await uploadFile(selectedFile)
+
+        for (const selectedFile of selectedFiles) {
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', selectedFile)
+          uploadFormData.append('file_name', selectedFiles.length === 1 ? (formData.file_name || selectedFile.name) : selectedFile.name)
+          uploadFormData.append('file_type', formData.file_type)
+          if (formData.file_category) uploadFormData.append('file_category', formData.file_category)
+          uploadFormData.append('description', formData.description)
+          if (formData.project_id) uploadFormData.append('project_id', formData.project_id)
+          if (formData.folder_path) uploadFormData.append('folder_path', formData.folder_path)
+
+          const response = await fetch('/api/project-files/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          })
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({ error: 'Upload failed' }))
+            throw new Error(err.error || `Failed to upload ${selectedFile.name}`)
+          }
+        }
+
         setUploading(false)
       }
+      // Create mode with URL
+      else if (uploadMode === 'url') {
+        if (!formData.file_url) {
+          throw new Error('Please provide a file URL')
+        }
 
-      // Validate file URL
-      if (!fileUrl) {
-        throw new Error('Please provide a file URL or upload a file')
-      }
+        const payload = {
+          ...formData,
+          project_id: formData.project_id || null,
+        }
 
-      const url = file
-        ? `/api/project-files/${file.id}`
-        : '/api/project-files'
-      const method = file ? 'PATCH' : 'POST'
+        const response = await fetch('/api/project-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
 
-      // Convert empty strings to null for UUID fields
-      const payload = {
-        ...formData,
-        file_url: fileUrl,
-        project_id: formData.project_id || null,
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save file')
+        if (!response.ok) {
+          throw new Error('Failed to save file')
+        }
+      } else {
+        throw new Error('Please select files or enter a URL')
       }
 
       router.push('/project-files')
@@ -278,22 +335,26 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 File Type
               </label>
-              <select
+              <Select
                 value={formData.file_type}
-                onChange={(e) => setFormData({ ...formData, file_type: e.target.value as FileType })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                onValueChange={(value) => setFormData({ ...formData, file_type: value as FileType })}
               >
-                <option value="photo">Photo</option>
-                <option value="document">Document</option>
-                <option value="contract">Contract</option>
-                <option value="estimate">Estimate</option>
-                <option value="invoice">Invoice</option>
-                <option value="permit">Permit</option>
-                <option value="insurance">Insurance</option>
-                <option value="warranty">Warranty</option>
-                <option value="specification">Specification</option>
-                <option value="other">Other</option>
-              </select>
+                <SelectTrigger className="w-full" aria-label="File type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="photo">Photo</SelectItem>
+                  <SelectItem value="document">Document</SelectItem>
+                  <SelectItem value="contract">Contract</SelectItem>
+                  <SelectItem value="estimate">Estimate</SelectItem>
+                  <SelectItem value="invoice">Invoice</SelectItem>
+                  <SelectItem value="permit">Permit</SelectItem>
+                  <SelectItem value="insurance">Insurance</SelectItem>
+                  <SelectItem value="warranty">Warranty</SelectItem>
+                  <SelectItem value="specification">Specification</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -363,14 +424,16 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                     <div className="text-center">
                       <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {selectedFile ? (
-                          <span className="font-medium text-primary">{selectedFile.name}</span>
+                        {selectedFiles.length > 0 ? (
+                          <span className="font-medium text-primary">
+                            {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} selected — click to add more
+                          </span>
                         ) : (
                           <>
-                            Click to upload or drag and drop
+                            Click to select files or drag and drop
                             <br />
                             <span className="text-xs text-muted-foreground">
-                              PDF, PNG, JPG, or any document
+                              PDF, PNG, JPG, HEIC, or any document — select multiple
                             </span>
                           </>
                         )}
@@ -382,10 +445,28 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
                     onChange={handleFileSelect}
                     className="hidden"
                     accept="*/*"
+                    multiple
                   />
                 </label>
+                {selectedFiles.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    {selectedFiles.map((f, i) => (
+                      <div key={`${f.name}-${i}`} className="flex items-center justify-between px-3 py-1.5 bg-muted/50 rounded text-sm">
+                        <span className="text-foreground truncate mr-2">{f.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile(i)}
+                          className="text-muted-foreground hover:text-destructive shrink-0"
+                          aria-label={`Remove ${f.name}`}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {uploading && (
-                  <p className="mt-2 text-sm text-primary">Uploading file...</p>
+                  <p className="mt-2 text-sm text-primary">Uploading files...</p>
                 )}
               </div>
             ) : (
@@ -429,7 +510,7 @@ export function ProjectFileForm({ file }: ProjectFileFormProps) {
           disabled={loading || uploading}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
         >
-          {uploading ? 'Uploading...' : loading ? 'Saving...' : file ? 'Update File' : 'Save File'}
+          {uploading ? `Uploading${selectedFiles.length > 1 ? ` (${selectedFiles.length} files)` : ''}...` : loading ? 'Saving...' : file ? 'Update File' : selectedFiles.length > 1 ? `Upload ${selectedFiles.length} Files` : 'Save File'}
         </button>
       </div>
     </form>
