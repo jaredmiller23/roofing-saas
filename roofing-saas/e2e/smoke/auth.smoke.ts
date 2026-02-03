@@ -260,11 +260,8 @@ test.describe('Authentication - Smoke Tests', () => {
       const submitButton = page.locator('button[type="submit"]').first()
       await submitButton.click()
 
-      // Wait a moment for error to appear
-      await page.waitForTimeout(2000)
-
       // Should show error message (check for common error patterns)
-      const errorVisible = await page.locator('text=/invalid|incorrect|wrong|failed|error/i').isVisible({ timeout: 5000 }).catch(() => false)
+      const errorVisible = await page.locator('text=/invalid|incorrect|wrong|failed|error/i').isVisible({ timeout: 10000 }).catch(() => false)
 
       // OR should still be on login page (not redirected)
       const stillOnLogin = page.url().includes('/login')

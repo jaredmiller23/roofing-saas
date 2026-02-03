@@ -83,7 +83,9 @@ test.describe('Claims Management', () => {
 
       // Click to open dropdown
       await statusFilter.click()
-      await page.waitForTimeout(300)
+
+      // Wait for dropdown options to appear
+      await expect(page.locator('[role="option"]').first()).toBeVisible({ timeout: 5000 })
 
       // Should show status options
       const statusOptions = page.locator('[role="option"]')

@@ -516,8 +516,12 @@ test.describe('Financial & Reporting Module - Smoke Tests', () => {
       // Wait for page to load
       await expect(page.getByRole('heading', { name: /Reports|Financial.*Reports|Revenue.*Reports/ })).toBeVisible()
 
-      // Wait a bit for charts to potentially load
-      await page.waitForTimeout(3000)
+      // Wait for charts to potentially render (canvas or SVG elements)
+      await expect(
+        page.locator('canvas').first()
+          .or(page.locator('svg.recharts-surface').first())
+          .or(page.getByText(/no data|no reports/i).first())
+      ).toBeVisible({ timeout: 10000 }).catch(() => {})
 
       // Should not have critical chart rendering errors
       expect(chartErrors.length).toBe(0)

@@ -133,8 +133,8 @@ export async function waitForPageLoad(page: Page, timeout: number = 10000) {
     // Wait for DOM content to be loaded
     await page.waitForLoadState('domcontentloaded', { timeout })
 
-    // Additional wait for any React hydration or dynamic content
-    await page.waitForTimeout(500)
+    // Wait for React hydration — body should have meaningful content
+    await expect(page.locator('body')).not.toHaveText(/^\s*$/, { timeout: 5000 }).catch(() => {})
 
     console.log('✅ Page fully loaded')
   } catch (error) {

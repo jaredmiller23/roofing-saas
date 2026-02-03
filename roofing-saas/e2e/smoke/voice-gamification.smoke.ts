@@ -176,8 +176,8 @@ test.describe('Voice AI & Gamification Module - Smoke Tests', () => {
         }
       })
 
-      // Wait a moment for any API calls that might be made on page load
-      await page.waitForTimeout(2000)
+      // Wait for page content to settle — body should have meaningful content
+      await expect(page.locator('body')).not.toHaveText(/^\s*$/, { timeout: 5000 }).catch(() => {})
 
       // If voice API calls were made, they should not result in 500 errors
       // This is a passive test - we're just making sure the page loads without critical API failures

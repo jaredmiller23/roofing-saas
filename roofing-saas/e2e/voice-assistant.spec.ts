@@ -321,7 +321,11 @@ test.describe('AI Assistant Integration', () => {
     await page.goto('/contacts')
     // Use domcontentloaded instead of networkidle to avoid timeout with polling/SSE
     await page.waitForLoadState('domcontentloaded')
-    await page.waitForTimeout(2000) // Allow initial render
+    // Wait for initial render — contacts page heading or table
+    await expect(
+      page.getByRole('heading', { name: /contacts/i }).first()
+        .or(page.locator('table').first())
+    ).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     // The AI assistant should be available with contact context
     // This is typically a floating button or sidebar

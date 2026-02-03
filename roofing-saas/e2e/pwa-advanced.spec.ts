@@ -152,8 +152,27 @@ test.describe('PWA Advanced Features', () => {
     // Go back online
     await goOnline(page)
 
-    // Wait for sync to complete
-    await page.waitForTimeout(3000)
+    // Poll for sync to complete — queue should be empty
+    await expect(async () => {
+      const queueStatus = await page.evaluate(async () => {
+        try {
+          const db = await new Promise<IDBDatabase>((resolve, reject) => {
+            const request = indexedDB.open('offline-queue', 1)
+            request.onsuccess = () => resolve(request.result)
+            request.onerror = () => reject(request.error)
+          })
+          const transaction = db.transaction(['queue'], 'readonly')
+          const store = transaction.objectStore('queue')
+          const count = await new Promise<number>((resolve) => {
+            const req = store.count()
+            req.onsuccess = () => resolve(req.result)
+          })
+          db.close()
+          return count
+        } catch { return -1 }
+      })
+      expect(queueStatus).toBe(0)
+    }).toPass({ timeout: 15000 })
 
     // Check that queue is empty
     const queueStatus = await page.evaluate(async () => {

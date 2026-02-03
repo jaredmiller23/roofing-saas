@@ -135,8 +135,11 @@ test.describe('Workflow CRUD Operations', () => {
     await page.getByRole('tab', { name: /Automations/ }).click()
     await expect(page.getByText('Workflow Automations')).toBeVisible()
 
-    // Wait for workflows to load
-    await page.waitForTimeout(1000)
+    // Wait for workflows to load — either switches or empty state message
+    await expect(
+      page.locator('[role="switch"]').first()
+        .or(page.getByText(/0 workflow/))
+    ).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     // Find a workflow toggle switch
     const switches = page.locator('[role="switch"]')
@@ -177,7 +180,7 @@ test.describe('Workflow CRUD Operations', () => {
     await expect(page.getByText('Workflow Automations')).toBeVisible()
 
     // Wait for workflows to load
-    await page.waitForTimeout(1000)
+    await expect(page.getByText(/\d+ workflow[s]? configured/)).toBeVisible({ timeout: 10000 })
 
     // Check for active or paused indicators
     const hasActiveIndicator = await page.getByText('Active').first().isVisible().catch(() => false)

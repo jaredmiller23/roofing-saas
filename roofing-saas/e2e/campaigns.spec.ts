@@ -257,8 +257,11 @@ test.describe('Campaign Builder', () => {
     // Trigger onBlur to save
     await page.getByLabel('Description').click()
 
-    // Wait for save to complete
-    await page.waitForTimeout(500)
+    // Wait for save API call to complete
+    await page.waitForResponse(
+      resp => resp.url().includes('/api/campaigns') && resp.request().method() === 'PATCH',
+      { timeout: 5000 }
+    ).catch(() => {})
 
     // Verify name updated in header
     await expect(page.getByRole('heading', { name: newName, level: 1 })).toBeVisible()
@@ -346,8 +349,11 @@ test.describe('Campaign Actions', () => {
   })
 
   test('should show campaign card dropdown menu', async ({ page }) => {
-    // Wait for campaigns to load
-    await page.waitForTimeout(1000)
+    // Wait for campaigns to load — either campaign cards or empty state
+    await expect(
+      page.locator('[data-testid="campaign-card"]').first()
+        .or(page.locator('text=/no campaigns|create.*campaign/i').first())
+    ).toBeVisible({ timeout: 10000 }).catch(() => {})
 
     // Find first campaign dropdown button (MoreVertical icon)
     const dropdownButton = page.locator('button').filter({ has: page.locator('svg') }).first()

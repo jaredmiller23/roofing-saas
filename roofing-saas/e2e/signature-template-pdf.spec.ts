@@ -25,7 +25,11 @@ test.describe('Signature Template PDF Generation', () => {
       const firstTemplate = page.locator('.cursor-pointer').first()
       if (await firstTemplate.isVisible({ timeout: 5000 })) {
         await firstTemplate.click()
-        await page.waitForTimeout(1000)
+        // Wait for template detail view to render
+        await expect(
+          page.getByRole('button', { name: /use/i })
+            .or(page.locator('.template-detail, [data-testid="template-detail"]'))
+        ).toBeVisible({ timeout: 5000 }).catch(() => {})
         await page.screenshot({ path: 'test-results/02-template-detail.png' })
 
         // Look for use button in modal or detail view
@@ -63,7 +67,8 @@ test.describe('Signature Template PDF Generation', () => {
     let stepCount = 0
     while (await nextButton.isVisible({ timeout: 2000 }) && stepCount < 5) {
       await nextButton.click()
-      await page.waitForTimeout(500)
+      // Wait for next step content to render
+      await page.waitForLoadState('domcontentloaded')
       stepCount++
     }
 

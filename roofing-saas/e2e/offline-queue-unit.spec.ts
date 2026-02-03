@@ -48,8 +48,14 @@ test.describe('Offline Queue System', () => {
   test('should create IndexedDB database for queue', async ({ page }) => {
     await page.goto('/login')
 
-    // Wait a moment for app initialization
-    await page.waitForTimeout(2000)
+    // Poll for IndexedDB database to be created during app initialization
+    await expect(async () => {
+      const hasDatabase = await page.evaluate(async () => {
+        const databases = await indexedDB.databases()
+        return databases.some(db => db.name === 'RoofingSaaSOfflineQueue')
+      })
+      expect(hasDatabase).toBe(true)
+    }).toPass({ timeout: 10000 })
 
     // Check if RoofingSaaSOfflineQueue database exists
     const hasDatabase = await page.evaluate(async () => {

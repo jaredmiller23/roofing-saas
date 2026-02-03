@@ -26,7 +26,8 @@ test.describe('QuickBooks Integration UI', () => {
 
     // Click the Integrations tab
     await page.click('button:has-text("Integrations")')
-    await page.waitForTimeout(500)
+    // Wait for Integrations content to render
+    await expect(page.locator('text=QuickBooks Online')).toBeVisible({ timeout: 5000 })
   })
 
   test('should display QuickBooks integration card', async ({ page }) => {

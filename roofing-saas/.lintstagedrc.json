@@ -1,5 +1,5 @@
 {
   "*.{js,jsx,ts,tsx}": [
-    "eslint --fix --max-warnings 10"
+    "eslint --fix --no-warn-ignored --max-warnings 10"
   ]
 }

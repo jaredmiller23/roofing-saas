@@ -227,8 +227,11 @@ test.describe('Multi-Tenant Isolation', () => {
     await page.click('[data-testid="switch-tenant-button"]')
     await page.click('[data-value="tenant-2"]')
 
-    // Verify switch occurred
-    await page.waitForTimeout(1000) // Wait for switch to complete
+    // Wait for tenant switch to complete — current-tenant text should change
+    await expect(async () => {
+      const newText = await page.locator('[data-testid="current-tenant"]').textContent()
+      expect(newText).not.toBe(currentTenant)
+    }).toPass({ timeout: 10000 })
     const newTenant = await page.locator('[data-testid="current-tenant"]').textContent()
 
     expect(newTenant).not.toBe(currentTenant)

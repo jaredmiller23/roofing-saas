@@ -240,8 +240,10 @@ test.describe('Contact CRUD Operations', () => {
       await page.locator('#email').fill(generateUniqueEmail())
       await page.getByRole('button', { name: 'Create Contact' }).click()
 
-      // Should stay on form (not redirect)
-      await page.waitForTimeout(3000)
+      // Should stay on form (not redirect) — wait for error message to appear
+      await expect(
+        page.locator('.bg-red-50, .text-red-800, .text-destructive').first()
+      ).toBeVisible({ timeout: 10000 })
       await expect(page).toHaveURL(/\/contacts\/new/)
 
       // Should show error message in form (uses bg-red-50 border-red-200 text-red-800)
