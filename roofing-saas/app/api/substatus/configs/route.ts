@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, isAdmin, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -88,18 +88,18 @@ export async function POST(request: NextRequest) {
       throw AuthenticationError()
     }
 
-    const supabase = await createClient()
-
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role, tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
+    // Check if user is admin (includes owner role)
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    const supabase = await createClient()
 
     const body: CreateSubstatusConfigRequest = await request.json()
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       await supabase
         .from('status_substatus_configs')
         .update({ is_default: false })
-        .eq('tenant_id', tenantUser.tenant_id)
+        .eq('tenant_id', tenantId)
         .eq('entity_type', body.entity_type)
         .eq('status_field_name', body.status_field_name)
         .eq('status_value', body.status_value)
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('status_substatus_configs')
       .insert({
-        tenant_id: tenantUser.tenant_id,
+        tenant_id: tenantId,
         entity_type: body.entity_type,
         status_field_name: body.status_field_name,
         status_value: body.status_value,

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, isAdmin } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -27,19 +27,14 @@ export async function PATCH(
     }
 
     const { id } = await params
-    const supabase = await createClient()
 
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role, tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
+    // Check if user is admin (includes owner role)
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
 
+    const supabase = await createClient()
     const body: UpdateSubstatusConfigRequest = await request.json()
 
     // Get existing config to check for default flag change
@@ -128,19 +123,14 @@ export async function DELETE(
     }
 
     const { id } = await params
-    const supabase = await createClient()
 
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
+    // Check if user is admin (includes owner role)
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
 
+    const supabase = await createClient()
     const { error } = await supabase
       .from('status_substatus_configs')
       .delete()
