@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ActiveFilter } from '@/lib/filters/types'
 import { FilterBar } from '@/components/filters/FilterBar'
 import { ContactsSearch } from './contacts-search'
@@ -13,18 +13,32 @@ import { ContactsTable } from './contacts-table'
  */
 export function ContactsWithFilters() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [_filterError, setFilterError] = useState<string | null>(null)
 
+  // Track previous filter count to avoid no-op pushes
+  const prevFilterCountRef = useRef(0)
+
   // Convert search params to object for child components
-  const params: { [key: string]: string | string[] | undefined } = {}
-  searchParams.forEach((value, key) => {
-    params[key] = value
-  })
+  // Memoize to prevent unstable object reference from triggering child re-fetches
+  const params = useMemo(() => {
+    const p: { [key: string]: string | string[] | undefined } = {}
+    searchParams.forEach((value, key) => {
+      p[key] = value
+    })
+    return p
+  }, [searchParams])
 
   // Handle filter changes from FilterBar
   const handleFiltersChange = useCallback(
     (filters: ActiveFilter[]) => {
+      // Skip no-op pushes: if filters were empty and still are, don't navigate
+      if (filters.length === 0 && prevFilterCountRef.current === 0) {
+        return
+      }
+      prevFilterCountRef.current = filters.length
+
       const newParams = new URLSearchParams(searchParams)
 
       // Clear existing filter params (but keep search, page, sort)
@@ -49,9 +63,10 @@ export function ContactsWithFilters() {
       // Reset to page 1 when filters change
       newParams.set('page', '1')
 
-      router.push(`/contacts?${newParams.toString()}`)
+      // Use pathname (which includes locale prefix) for correct routing
+      router.push(`${pathname}?${newParams.toString()}`)
     },
-    [router, searchParams]
+    [router, pathname, searchParams]
   )
 
   // Handle filter errors from FilterBar

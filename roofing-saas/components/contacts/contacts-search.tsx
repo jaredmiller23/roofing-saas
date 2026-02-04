@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Search, Filter, X, TrendingUp, Clock, AlertCircle, DollarSign } from 'lucide-react'
 
@@ -10,6 +10,7 @@ interface ContactsSearchProps {
 
 export function ContactsSearch({ params }: ContactsSearchProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
 
@@ -57,7 +58,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
     newParams.set('page', '1')
 
     startTransition(() => {
-      router.push(`/contacts?${newParams.toString()}`)
+      router.push(`${pathname}?${newParams.toString()}`)
     })
   }
 
@@ -68,7 +69,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
     setPriority('')
 
     startTransition(() => {
-      router.push('/contacts')
+      router.push(pathname)
     })
   }
 
@@ -78,7 +79,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
     newParams.set('page', '1')
 
     startTransition(() => {
-      router.push(`/contacts?${newParams.toString()}`)
+      router.push(`${pathname}?${newParams.toString()}`)
     })
 
     // Update local state
@@ -93,7 +94,7 @@ export function ContactsSearch({ params }: ContactsSearchProps) {
     newParams.set('page', '1')
 
     startTransition(() => {
-      router.push(`/contacts?${newParams.toString()}`)
+      router.push(`${pathname}?${newParams.toString()}`)
     })
 
     // Update local state

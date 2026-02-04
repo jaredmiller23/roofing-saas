@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Contact, getCombinedTypeLabel } from '@/lib/types/contact'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Phone, MessageSquare, Mail, Building2, RefreshCw } from 'lucide-react'
 import { DNCBadge } from './DNCBadge'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ type SortDirection = 'asc' | 'desc'
 
 export function ContactsTable({ params }: ContactsTableProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +28,13 @@ export function ContactsTable({ params }: ContactsTableProps) {
   const [sortDirection, setSortDirection] = useState<SortDirection>((params.sort_order as SortDirection) || 'asc')
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
   const [bulkActionLoading, setBulkActionLoading] = useState(false)
+
+  // Serialize params to a stable string for dependency comparison
+  const paramsKey = JSON.stringify(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => a.localeCompare(b))
+  )
 
   const fetchContacts = useCallback(async () => {
     setLoading(true)
@@ -64,7 +72,8 @@ export function ContactsTable({ params }: ContactsTableProps) {
     } finally {
       setLoading(false)
     }
-  }, [params])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey])
 
   useEffect(() => {
     fetchContacts()
@@ -91,7 +100,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
     newParams.set('sort_order', newDirection)
     newParams.set('page', '1') // Reset to first page when sorting
 
-    router.push(`/contacts?${newParams.toString()}`)
+    router.push(`${pathname}?${newParams.toString()}`)
   }
 
   const handleDelete = async (id: string) => {
@@ -414,7 +423,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
           <button
             onClick={() => {
               const newPage = page - 1
-              router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
+              router.push(`${pathname}?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={page <= 1}
             className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
@@ -427,7 +436,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
           <button
             onClick={() => {
               const newPage = page + 1
-              router.push(`/contacts?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
+              router.push(`${pathname}?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={contacts.length < 20}
             className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"

@@ -36,6 +36,9 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
   const onFiltersChangeRef = useRef(onFiltersChange)
   onFiltersChangeRef.current = onFiltersChange
 
+  // Track whether the user has actively changed filters (skip initial mount notification)
+  const hasUserChangedFilters = useRef(false)
+
   const fetchConfigs = useCallback(async () => {
     setError(null)
     try {
@@ -67,8 +70,10 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
     fetchSavedFilters()
   }, [fetchConfigs, fetchSavedFilters])
 
-  // Notify parent when active filters change
+  // Notify parent when active filters change (skip initial empty state on mount)
   useEffect(() => {
+    if (!hasUserChangedFilters.current && activeFilters.length === 0) return
+    hasUserChangedFilters.current = true
     onFiltersChangeRef.current(activeFilters)
   }, [activeFilters])
 
