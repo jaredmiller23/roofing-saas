@@ -76,8 +76,8 @@ export function CreateProjectDialog({ contactId, contactName }: CreateProjectDia
 
       setOpen(false)
 
-      // Navigate to the pipeline to see the new project
-      router.push('/pipeline')
+      // Navigate to the projects/pipeline to see the new project
+      router.push('/projects')
       router.refresh()
     } catch (err) {
       console.error('Error creating project:', err)
