@@ -56,7 +56,7 @@ export default function UpdatePasswordPage() {
       return
     }
 
-    router.push(`/${locale}/login?message=Password updated successfully`)
+    router.push('/login?message=Password updated successfully')
   }
 
   // Show loading spinner while checking session

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
-import { useSearchParams, useParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -139,8 +139,6 @@ const getSteps = () => [
 export default function NewSignatureDocumentPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const params = useParams()
-  const locale = params.locale as string || 'en'
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -422,7 +420,7 @@ export default function NewSignatureDocumentPage() {
         window.open(`${baseUrl}/sign/${documentId}`, '_blank')
         setSuccess(true)
         setTimeout(() => {
-          router.push(`/${locale}/signatures`)
+          router.push('/signatures')
         }, 1500)
       } else {
         // Send the document via email if a contact with email is selected
@@ -447,7 +445,7 @@ export default function NewSignatureDocumentPage() {
 
         setSuccess(true)
         setTimeout(() => {
-          router.push(`/${locale}/signatures`)
+          router.push('/signatures')
         }, 1500)
       }
     } catch (err) {
@@ -478,7 +476,7 @@ export default function NewSignatureDocumentPage() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <Button
             variant="ghost"
-            onClick={() => router.push(`/${locale}/signatures`)}
+            onClick={() => router.push('/signatures')}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -907,7 +905,7 @@ export default function NewSignatureDocumentPage() {
           <div className="flex gap-3">
             <Button
               variant="ghost"
-              onClick={() => router.push(`/${locale}/signatures`)}
+              onClick={() => router.push('/signatures')}
             >
               Cancel
             </Button>

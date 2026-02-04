@@ -55,7 +55,7 @@ export default function LoginPage() {
         }
 
         // Successful login without MFA or MFA already verified
-        router.push(`/${locale}/dashboard`)
+        router.push('/dashboard')
         router.refresh()
       }
     } catch {
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
   const handleMFAVerified = () => {
     setShowMFA(false)
-    router.push(`/${locale}/dashboard`)
+    router.push('/dashboard')
     router.refresh()
   }
 
