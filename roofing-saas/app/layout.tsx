@@ -38,7 +38,6 @@ export const metadata: Metadata = {
     "door-to-door", "sales", "estimates", "contractor", "mobile"
   ],
   referrer: "origin-when-cross-origin",
-  colorScheme: "light dark",
   creator: "Clarity Team",
   publisher: "Clarity",
   formatDetection: {
@@ -120,8 +119,7 @@ export const metadata: Metadata = {
     "msapplication-TileImage": "/icons/icon-144x144.png",
     "msapplication-config": "/browserconfig.xml",
     "theme-color": "#FF8243",
-    "color-scheme": "light dark",
-    
+
     // Security headers
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "SAMEORIGIN",
