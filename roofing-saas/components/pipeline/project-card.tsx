@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { apiFetch } from '@/lib/api/client'
@@ -12,7 +12,6 @@ interface ProjectCardProps {
   project: Project
   isDragging?: boolean
   onMoveProject?: (projectId: string, newStage: PipelineStage) => void
-  isDragDisabled?: boolean
 }
 
 // Active sales stages where Mark Lost button should appear
@@ -21,7 +20,7 @@ const ACTIVE_SALES_STAGES: PipelineStage[] = ['prospect', 'qualified', 'quote_se
 // Define stage order for navigation
 const STAGE_ORDER: PipelineStage[] = ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won', 'production', 'complete', 'lost']
 
-export function ProjectCard({ project, isDragging = false, onMoveProject, isDragDisabled = false }: ProjectCardProps) {
+export function ProjectCard({ project, isDragging = false, onMoveProject }: ProjectCardProps) {
   const router = useRouter()
   const [startingProduction, setStartingProduction] = useState(false)
   const [markingLost, setMarkingLost] = useState(false)
@@ -326,8 +325,8 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, isDrag
         </div>
       </div>
 
-      {/* Stage Navigation - Only when drag is disabled and onMoveProject is available */}
-      {isDragDisabled && onMoveProject && (previousStage || nextStage) && (
+      {/* Stage Navigation - Always available as explicit affordance + mobile fallback */}
+      {onMoveProject && (previousStage || nextStage) && (
         <div className="mt-3 pt-3 border-t border-border">
           <div className="flex items-center justify-between gap-2">
             {previousStage ? (

@@ -1,7 +1,7 @@
 /* eslint-disable */
 'use client'
 
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
 import { PipelineColumn } from './pipeline-column'
 import { ProjectCard } from './project-card'
@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { hexToTailwindBg } from '@/lib/utils/colors'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { DragDropContext, type DropResult } from '@hello-pangea/dnd'
 
 // Default stages - used as fallback if DB fetch fails
 // Colors use CSS variables from globals.css for theme consistency
@@ -291,6 +292,18 @@ export function PipelineBoard() {
     }
   }
 
+  // Handle drag-and-drop between columns
+  const handleDragEnd = useCallback((result: DropResult) => {
+    const { draggableId, destination, source } = result
+
+    // Dropped outside a valid column, or back to same column
+    if (!destination || destination.droppableId === source.droppableId) return
+
+    const newStage = destination.droppableId as PipelineStage
+    locallyDraggingRef.current.add(draggableId)
+    moveProject(draggableId, newStage)
+  }, [projects])
+
   // Filter projects based on search and selected stages
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
@@ -499,48 +512,50 @@ export function PipelineBoard() {
       </div>
 
       {/* Pipeline Board */}
-      <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
-        {stages.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
-          const stageProjects = projectsByStage[stage.id] as Project[]
-          const totalInStage = projectsByStage[`${stage.id}_total`] as number
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="flex gap-4 p-4 flex-1 overflow-x-auto">
+          {stages.filter(stage => selectedStages.includes(stage.id)).map((stage) => {
+            const stageProjects = projectsByStage[stage.id] as Project[]
+            const totalInStage = projectsByStage[`${stage.id}_total`] as number
 
-          const stageValue = getStageValue(stage.id)
+            const stageValue = getStageValue(stage.id)
 
-          return (
-            <div key={stage.id} className="flex flex-col min-w-[300px]">
-              {/* Column Header with Count and Value */}
-              <div className="mb-2 px-2">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-sm font-semibold text-muted-foreground">{stage.name}</h3>
-                  <span className="text-xs text-muted-foreground">
-                    {stageProjects.length}
-                    {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
-                  </span>
+            return (
+              <div key={stage.id} className="flex flex-col min-w-[300px]">
+                {/* Column Header with Count and Value */}
+                <div className="mb-2 px-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-sm font-semibold text-muted-foreground">{stage.name}</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {stageProjects.length}
+                      {totalInStage > PROJECTS_PER_COLUMN && ` of ${totalInStage}`}
+                    </span>
+                  </div>
+                  <div className="text-xs font-semibold text-green-700 h-4">
+                    {stageValue > 0 ? formatCurrency(stageValue) : '\u00A0'}
+                  </div>
                 </div>
-                <div className="text-xs font-semibold text-green-700 h-4">
-                  {stageValue > 0 ? formatCurrency(stageValue) : '\u00A0'}
-                </div>
+
+                <PipelineColumn
+                  stage={stage}
+                  projects={stageProjects || []}
+                  onMoveProject={moveProject}
+                  isDragDisabled={false}
+                />
+
+                {/* Show more indicator */}
+                {totalInStage > PROJECTS_PER_COLUMN && (
+                  <div className="mt-2 text-center">
+                    <p className="text-xs text-muted-foreground">
+                      + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
+                    </p>
+                  </div>
+                )}
               </div>
-
-              <PipelineColumn
-                stage={stage}
-                projects={stageProjects || []}
-                onMoveProject={moveProject}
-                isDragDisabled={true}
-              />
-
-              {/* Show more indicator */}
-              {totalInStage > PROJECTS_PER_COLUMN && (
-                <div className="mt-2 text-center">
-                  <p className="text-xs text-muted-foreground">
-                    + {totalInStage - PROJECTS_PER_COLUMN} more (use search to find)
-                  </p>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      </DragDropContext>
     </div>
   )
 }

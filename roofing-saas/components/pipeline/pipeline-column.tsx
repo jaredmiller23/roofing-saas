@@ -2,6 +2,7 @@
 
 import { Project, PipelineStage } from '@/lib/types/api'
 import { ProjectCard } from './project-card'
+import { Droppable, Draggable } from '@hello-pangea/dnd'
 
 interface PipelineColumnProps {
   stage: {
@@ -30,23 +31,50 @@ export function PipelineColumn({ stage, projects, onMoveProject, isDragDisabled 
         </div>
       </div>
 
-      {/* Cards Container */}
-      <div className="flex-1 bg-muted/30 rounded-b-lg border-x border-b border p-3 overflow-y-auto space-y-3 min-h-[200px]">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onMoveProject={onMoveProject}
-            isDragDisabled={isDragDisabled}
-          />
-        ))}
+      {/* Cards Container - Droppable zone */}
+      <Droppable droppableId={stage.id} isDropDisabled={isDragDisabled}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`flex-1 rounded-b-lg border-x border-b border p-3 overflow-y-auto space-y-3 min-h-[200px] transition-colors ${
+              snapshot.isDraggingOver
+                ? 'bg-primary/10 border-primary/30'
+                : 'bg-muted/30'
+            }`}
+          >
+            {projects.map((project, index) => (
+              <Draggable
+                key={project.id}
+                draggableId={project.id}
+                index={index}
+                isDragDisabled={isDragDisabled}
+              >
+                {(dragProvided, dragSnapshot) => (
+                  <div
+                    ref={dragProvided.innerRef}
+                    {...dragProvided.draggableProps}
+                    {...dragProvided.dragHandleProps}
+                  >
+                    <ProjectCard
+                      project={project}
+                      onMoveProject={onMoveProject}
+                      isDragging={dragSnapshot.isDragging}
+                    />
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
 
-        {projects.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            {isDragDisabled ? 'No opportunities in this stage' : 'Drop opportunities here'}
+            {projects.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                {isDragDisabled ? 'No opportunities in this stage' : 'Drop opportunities here'}
+              </div>
+            )}
           </div>
         )}
-      </div>
+      </Droppable>
     </div>
   )
 }
