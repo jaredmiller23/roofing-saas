@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { apiFetch } from '@/lib/api/client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,9 @@ import {
   Clock,
   ChevronDown,
   AlertCircle,
+  Plus,
+  Send,
+  X,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ACTIVITY_TYPE_COLORS } from '@/lib/constants/activity-colors'
@@ -49,6 +52,14 @@ const activityConfig: Record<string, { icon: typeof Phone; label: string; color:
   task: { icon: FileText, label: 'Task', color: ACTIVITY_TYPE_COLORS.task },
 }
 
+const QUICK_TYPES = [
+  { type: 'note', icon: FileText, label: 'Note' },
+  { type: 'call', icon: Phone, label: 'Call' },
+  { type: 'email', icon: Mail, label: 'Email' },
+  { type: 'meeting', icon: Calendar, label: 'Meeting' },
+  { type: 'door_knock', icon: MapPin, label: 'Knock' },
+] as const
+
 function getActivityConfig(type: string) {
   return activityConfig[type] || { icon: Clock, label: type.replace(/_/g, ' '), color: 'text-muted-foreground bg-muted' }
 }
@@ -60,7 +71,14 @@ export function ContactActivityTimeline({ contactId }: ContactActivityTimelinePr
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
 
-  const fetchActivities = async (limit: number, append = false) => {
+  // Activity input state
+  const [showForm, setShowForm] = useState(false)
+  const [selectedType, setSelectedType] = useState<string>('note')
+  const [activityContent, setActivityContent] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const fetchActivities = useCallback(async (limit: number, append = false) => {
     if (!append) setIsLoading(true)
     else setLoadingMore(true)
     setError(null)
@@ -70,12 +88,7 @@ export function ContactActivityTimeline({ contactId }: ContactActivityTimelinePr
         `/api/activities?contact_id=${contactId}&limit=${limit}`
       )
       const items = Array.isArray(result) ? result : []
-
-      if (append) {
-        setActivities(items)
-      } else {
-        setActivities(items)
-      }
+      setActivities(items)
       setHasMore(items.length >= limit)
     } catch (err) {
       console.error('Failed to fetch contact activities:', err)
@@ -84,15 +97,49 @@ export function ContactActivityTimeline({ contactId }: ContactActivityTimelinePr
       setIsLoading(false)
       setLoadingMore(false)
     }
-  }
+  }, [contactId])
 
   useEffect(() => {
     fetchActivities(INITIAL_LIMIT)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId])
+  }, [fetchActivities])
 
   const handleLoadMore = () => {
     fetchActivities(activities.length + LOAD_MORE_LIMIT, true)
+  }
+
+  const handleSubmitActivity = async () => {
+    if (!activityContent.trim()) return
+
+    setIsSaving(true)
+    setSaveError(null)
+
+    try {
+      const newActivity = await apiFetch<ActivityItem>('/api/activities', {
+        method: 'POST',
+        body: {
+          type: selectedType,
+          content: activityContent.trim(),
+          contact_id: contactId,
+        },
+      })
+
+      // Prepend new activity to the list
+      setActivities(prev => [newActivity, ...prev])
+      setActivityContent('')
+      setShowForm(false)
+    } catch (err) {
+      console.error('Failed to create activity:', err)
+      setSaveError(err instanceof Error ? err.message : 'Failed to save activity')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      handleSubmitActivity()
+    }
   }
 
   if (isLoading) {
@@ -131,15 +178,103 @@ export function ContactActivityTimeline({ contactId }: ContactActivityTimelinePr
 
   return (
     <div className="bg-card rounded-lg shadow p-6 mb-6">
-      <h2 className="text-lg font-semibold text-foreground mb-4">Activity Timeline</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-foreground">Activity Timeline</h2>
+        {!showForm && (
+          <Button
+            onClick={() => setShowForm(true)}
+            variant="outline"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Log Activity
+          </Button>
+        )}
+      </div>
 
-      {activities.length === 0 ? (
+      {/* Activity Input Form */}
+      {showForm && (
+        <div className="mb-4 border border-border rounded-lg p-3">
+          {/* Type selector */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {QUICK_TYPES.map(({ type, icon: TypeIcon, label }) => (
+              <button
+                key={type}
+                onClick={() => setSelectedType(type)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedType === type
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <TypeIcon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Content input */}
+          <textarea
+            value={activityContent}
+            onChange={(e) => setActivityContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={`Add a ${getActivityConfig(selectedType).label.toLowerCase()}...`}
+            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            rows={2}
+            autoFocus
+          />
+
+          {saveError && (
+            <p className="text-xs text-red-500 mt-1">{saveError}</p>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-muted-foreground">
+              {navigator.platform.includes('Mac') ? '\u2318' : 'Ctrl'}+Enter to save
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setShowForm(false)
+                  setActivityContent('')
+                  setSaveError(null)
+                }}
+                variant="ghost"
+                size="sm"
+              >
+                <X className="h-3.5 w-3.5 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitActivity}
+                size="sm"
+                disabled={!activityContent.trim() || isSaving}
+              >
+                <Send className="h-3.5 w-3.5 mr-1" />
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activities.length === 0 && !showForm ? (
         <div className="flex flex-col items-center py-6 text-center">
           <Clock className="h-8 w-8 text-muted-foreground mb-2" />
           <p className="text-muted-foreground text-sm">No activity recorded yet</p>
           <p className="text-muted-foreground text-xs mt-1">
             Calls, emails, notes, and other interactions will appear here
           </p>
+          <Button
+            onClick={() => setShowForm(true)}
+            variant="outline"
+            size="sm"
+            className="mt-3"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Log first activity
+          </Button>
         </div>
       ) : (
         <div className="relative">
