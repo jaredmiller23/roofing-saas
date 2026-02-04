@@ -85,7 +85,6 @@ export function MarginByTypeChart({ typeData }: MarginByTypeChartProps) {
               <span className="text-muted-foreground">Excellent (≥30%)</span>
             </div>
             <div className="flex items-center gap-1">
-              {/* eslint-disable-next-line theme-compliance/no-hardcoded-colors -- semantic color for margin indicator */}
               <div className="w-3 h-3 bg-blue-500 rounded" />
               <span className="text-muted-foreground">Good (20-29%)</span>
             </div>

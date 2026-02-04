@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { getCurrentUser, getUserContext } from '@/lib/auth/session'
 import { getMFARedirectPath } from '@/lib/auth/mfa-enforcement'
 import { Sidebar } from '@/components/layout/Sidebar'
