@@ -2,12 +2,12 @@
 // MFA Verify API Route
 // =============================================
 // Route: POST /api/auth/mfa/verify
-// Purpose: Verify TOTP code to complete enrollment or authenticate
+// Purpose: Verify TOTP code for login (with challengeId) or enrollment (without)
 // =============================================
 
 import { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/session'
-import { verifyMFAEnrollment, generateRecoveryCodes } from '@/lib/auth/mfa'
+import { verifyMFAEnrollment, verifyMFAChallenge, generateRecoveryCodes } from '@/lib/auth/mfa'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -27,28 +27,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate code format (6 digits)
-    if (!/^\d{6}$/.test(body.code)) {
+    if (!/^\d{6}$/.test(String(body.code))) {
       throw ValidationError('Code must be 6 digits')
     }
 
+    // Login flow: client provides challengeId from createMFAChallenge
+    // Enrollment flow: no challengeId, verifyMFAEnrollment creates its own
+    if (body.challengeId) {
+      const result = await verifyMFAChallenge(body.factorId, body.challengeId, body.code)
+
+      if (!result.success) {
+        throw ValidationError(result.error || 'Invalid verification code')
+      }
+
+      logger.info('MFA login verified', { userId: user.id })
+
+      return successResponse({
+        success: true,
+        message: 'MFA verification successful',
+      })
+    }
+
+    // Enrollment verification (no challengeId)
     const result = await verifyMFAEnrollment(body.factorId, body.code)
 
     if (!result.success) {
       throw ValidationError(result.error || 'Invalid verification code')
     }
 
-    // Generate recovery codes on successful enrollment
     const recoveryCodes = generateRecoveryCodes(10)
 
-    // In production, you should hash these and store them in the database
-    // For now, we just return them to show once to the user
     logger.info('MFA enrolled successfully', { userId: user.id })
 
     return successResponse({
       success: true,
       message: 'MFA enabled successfully',
       recoveryCodes,
-      // Important: Tell user to save these codes
       recoveryCodesWarning: 'Save these recovery codes in a safe place. They will not be shown again.',
     })
   } catch (error) {
