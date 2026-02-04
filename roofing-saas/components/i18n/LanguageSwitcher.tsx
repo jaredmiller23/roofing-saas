@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Globe, Check } from 'lucide-react'
 import { locales, localeNames, type Locale } from '@/lib/i18n/config'
-import { useRouter } from '@/lib/i18n/navigation'
-import { usePathname } from 'next/navigation'
+import { useRouter, usePathname } from '@/lib/i18n/navigation'
+import { useLocale } from 'next-intl'
 
 interface LanguageSwitcherProps {
   currentLocale?: Locale
@@ -20,13 +20,10 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const intlLocale = useLocale()
   const [isChanging, setIsChanging] = useState(false)
 
-  // Extract current locale from pathname if not provided
-  const detectedLocale = currentLocale ||
-    (pathname.startsWith('/en/') ? 'en' :
-     pathname.startsWith('/es/') ? 'es' :
-     pathname.startsWith('/fr/') ? 'fr' : 'en') as Locale
+  const detectedLocale = (currentLocale || intlLocale || 'en') as Locale
 
   const handleLocaleChange = async (newLocale: Locale) => {
     if (newLocale === detectedLocale) return
@@ -34,21 +31,7 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
     setIsChanging(true)
 
     try {
-      // Remove current locale from pathname
-      let newPath = pathname
-      for (const locale of locales) {
-        if (pathname.startsWith(`/${locale}/`)) {
-          newPath = pathname.slice(`/${locale}`.length)
-          break
-        }
-      }
-
-      // Add new locale to pathname
-      const finalPath = newLocale === 'en'
-        ? newPath || '/'
-        : `/${newLocale}${newPath || '/'}`
-
-      router.push(finalPath)
+      router.replace(pathname, { locale: newLocale })
     } catch (error) {
       console.error('Failed to change language:', error)
     } finally {

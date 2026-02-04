@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 import { locales } from '@/lib/i18n/config';
 
 interface LocaleLayoutProps {
@@ -22,5 +24,11 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  return children;
+  const messages = await getMessages();
+
+  return (
+    <NextIntlClientProvider messages={messages}>
+      {children}
+    </NextIntlClientProvider>
+  );
 }
