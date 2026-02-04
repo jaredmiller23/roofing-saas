@@ -431,7 +431,12 @@ export default function SignaturesPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => window.open('/sign/' + doc.id + '?as=customer&inperson=true', '_blank')}
+                        onClick={() => {
+                          const customerSigned = doc.signatures?.some(s => s.signer_type === 'customer')
+                          const needsCompany = doc.requires_company_signature && !doc.signatures?.some(s => s.signer_type === 'company')
+                          const signerType = customerSigned && needsCompany ? 'company' : 'customer'
+                          window.open(`/sign/${doc.id}?as=${signerType}&inperson=true`, '_blank')
+                        }}
                         className="text-primary hover:text-primary hover:bg-primary/10"
                       >
                         <PenLine className="h-4 w-4 mr-1" />

@@ -222,6 +222,9 @@ export default function SignDocumentPage() {
   const [textInputValue, setTextInputValue] = useState('')
   const [textFieldValues, setTextFieldValues] = useState<Map<string, string>>(new Map())
 
+  // Signature method tracking (draw/type/upload)
+  const [signatureMethod, setSignatureMethod] = useState<'draw' | 'type' | 'upload'>('draw')
+
   // Decline workflow state
   const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const [declineReason, setDeclineReason] = useState('')
@@ -460,8 +463,11 @@ export default function SignDocumentPage() {
     }
   }
 
-  const handleFieldSignatureCapture = async (_signatureData: string, _method: 'draw' | 'type' | 'upload') => {
+  const handleFieldSignatureCapture = async (_signatureData: string, method: 'draw' | 'type' | 'upload') => {
     if (!currentFieldForCapture) return
+
+    // Track the signature method used
+    setSignatureMethod(method)
 
     // Mark field as completed
     setCompletedFields((prev) => new Set(prev).add(currentFieldForCapture.id))
@@ -516,7 +522,7 @@ export default function SignDocumentPage() {
           signer_email: signerEmail,
           signer_type: signerType,
           signature_data: 'field-based-signature',
-          signature_method: 'draw',
+          signature_method: signatureMethod,
           completed_fields: Array.from(completedFields),
           captured_at: Date.now(),
         })
@@ -535,7 +541,7 @@ export default function SignDocumentPage() {
           signer_email: signerEmail,
           signer_type: signerType,
           signature_data: 'field-based-signature',
-          signature_method: 'draw',
+          signature_method: signatureMethod,
           completed_fields: Array.from(completedFields),
           field_values: Object.fromEntries(textFieldValues)
         })
@@ -558,7 +564,7 @@ export default function SignDocumentPage() {
             signer_email: signerEmail,
             signer_type: signerType,
             signature_data: 'field-based-signature',
-            signature_method: 'draw',
+            signature_method: signatureMethod,
             completed_fields: Array.from(completedFields),
             captured_at: Date.now(),
           })

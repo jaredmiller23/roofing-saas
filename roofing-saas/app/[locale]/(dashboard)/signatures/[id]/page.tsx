@@ -308,7 +308,12 @@ export default function ViewSignatureDocumentPage() {
               )}
               {['draft', 'sent', 'viewed'].includes(document.status) && (
                 <Button
-                  onClick={() => window.open('/sign/' + document.id + '?as=customer&inperson=true', '_blank')}
+                  onClick={() => {
+                    const customerSigned = document.signatures?.some(s => s.signer_type === 'customer')
+                    const needsCompany = document.requires_company_signature && !document.signatures?.some(s => s.signer_type === 'company')
+                    const signerType = customerSigned && needsCompany ? 'company' : 'customer'
+                    window.open(`/sign/${document.id}?as=${signerType}&inperson=true`, '_blank')
+                  }}
                   variant="outline"
                   className="text-primary hover:text-primary hover:bg-primary/10"
                 >
