@@ -1,6 +1,6 @@
 "use client"
 
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { toast } from 'sonner'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'

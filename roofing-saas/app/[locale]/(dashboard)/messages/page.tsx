@@ -1,7 +1,7 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { MessagesSplitView } from '@/components/messages'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { MessageSquare, Plus } from 'lucide-react'
 
 /**

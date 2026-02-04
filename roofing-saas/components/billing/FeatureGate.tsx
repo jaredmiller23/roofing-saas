@@ -7,7 +7,7 @@
  */
 
 import { ReactNode } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/i18n/navigation';
 import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import Link from 'next/link'
 import { TerritoryForm } from '@/components/territories/TerritoryForm'
 import { TerritoryMapEditor } from '@/components/territories/TerritoryMapEditor'

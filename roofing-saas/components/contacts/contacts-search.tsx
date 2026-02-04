@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Search, Filter, X, TrendingUp, Clock, AlertCircle, DollarSign } from 'lucide-react'
 

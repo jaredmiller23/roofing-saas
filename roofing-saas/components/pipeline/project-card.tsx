@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
 import Link from 'next/link'
 import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 

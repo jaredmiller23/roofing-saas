@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Globe, Check } from 'lucide-react'
 import { locales, localeNames, type Locale } from '@/lib/i18n/config'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { usePathname } from 'next/navigation'
 
 interface LanguageSwitcherProps {
   currentLocale?: Locale

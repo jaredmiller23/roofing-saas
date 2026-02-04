@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { TrendingUp, DollarSign, AlertTriangle, Package, BarChart3 } from 'lucide-react'
 import { RevenueForecast } from './revenue-forecast'
 import { CashFlowProjection } from './cash-flow-projection'

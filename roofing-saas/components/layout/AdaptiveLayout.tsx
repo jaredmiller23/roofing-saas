@@ -21,7 +21,8 @@
  */
 
 import { ReactNode, useEffect, useState, useCallback } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { usePathname } from 'next/navigation'
 import { useUIModeContext } from '@/lib/ui-mode/context'
 import { useUIPreferences } from '@/lib/hooks/useUIPreferences'
 import { FieldWorkerNav } from '@/components/layout/FieldWorkerNav'

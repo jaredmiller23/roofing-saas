@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { InspectionWizard } from '@/components/claims/InspectionWizard'
 import { WizardSkeleton } from '@/components/ui/skeletons'

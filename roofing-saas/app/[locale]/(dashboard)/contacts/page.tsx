@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { ContactsWithFilters } from '@/components/contacts/contacts-with-filters'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'

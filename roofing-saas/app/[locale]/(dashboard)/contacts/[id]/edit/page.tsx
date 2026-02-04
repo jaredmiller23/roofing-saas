@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ContactForm } from '@/components/contacts/contact-form'
 import type { Contact } from '@/lib/types/contact'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 /**
  * Edit contact page

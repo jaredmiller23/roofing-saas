@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { WorkflowBuilder } from '@/components/automation/WorkflowBuilder'
 import { apiFetch } from '@/lib/api/client'
 import type { Workflow } from '@/lib/automation/workflow-types'

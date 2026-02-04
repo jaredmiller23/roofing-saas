@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { Phone, PhoneIncoming, PhoneOutgoing, Clock, FileText, Mic } from 'lucide-react'
 import { AudioPlayer } from '@/components/call-logs/audio-player'
 import { CallTranscription } from '@/components/call-logs/call-transcription'

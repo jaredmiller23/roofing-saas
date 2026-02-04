@@ -21,7 +21,7 @@ import {
   RefreshCw,
   BarChart3,
 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 export default function PipelineAnalyticsPage() {
   const [analytics, setAnalytics] = useState<PipelineAnalytics | null>(null)

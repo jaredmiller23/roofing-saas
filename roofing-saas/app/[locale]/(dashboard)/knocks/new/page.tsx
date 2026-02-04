@@ -2,7 +2,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { KnockLogger } from '@/components/knocks/KnockLogger'
 import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 /**
  * Mobile knock logging page - optimized for field reps

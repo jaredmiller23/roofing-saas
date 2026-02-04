@@ -2,7 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProjectFileForm } from '@/components/project-files/project-file-form'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 /**
  * Edit project file page

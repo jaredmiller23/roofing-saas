@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { Voicemail, Phone, Clock, ArrowLeft, User, AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { AudioPlayer } from '@/components/call-logs/audio-player'

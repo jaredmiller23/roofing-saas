@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { IntelligenceClient } from './intelligence-client'
 

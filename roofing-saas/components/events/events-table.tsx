@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { CalendarDays, Clock, MapPin, ExternalLink, User } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'

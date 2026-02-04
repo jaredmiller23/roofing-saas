@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { PipelineBoard } from '@/components/pipeline/pipeline-board'
 import { LeadsWithFilters } from '@/components/projects/leads-with-filters'
 import { Button } from '@/components/ui/button'

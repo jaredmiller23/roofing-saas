@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Search, X, User, Briefcase, MapPin, FileText, Phone, Loader2 } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
 

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { MFAChallenge } from '@/components/auth/MFAChallenge'
 import { Alert, AlertDescription } from '@/components/ui/alert'

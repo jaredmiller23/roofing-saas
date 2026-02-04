@@ -16,7 +16,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import Image from 'next/image'
 import { Bell, Settings } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'

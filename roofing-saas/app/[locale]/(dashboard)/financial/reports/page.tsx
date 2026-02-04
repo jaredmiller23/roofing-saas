@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { DollarSign, TrendingUp, TrendingDown, Briefcase, Calendar } from 'lucide-react'
 import { RevenueChart } from './revenue-chart'
 import { MarginByTypeChart } from './margin-by-type-chart'

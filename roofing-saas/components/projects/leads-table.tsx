@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Contact } from '@/lib/types/contact'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Phone, MessageSquare, Mail, DollarSign, Briefcase, TrendingUp, Clock } from 'lucide-react'
 import { apiFetchPaginated } from '@/lib/api/client'
 

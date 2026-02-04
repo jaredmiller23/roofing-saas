@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 
 const locales = {
   'en-US': enUS,

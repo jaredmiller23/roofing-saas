@@ -1,7 +1,7 @@
 'use client'
 
 import { useState as _useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Contact } from '@/lib/types/contact'
 
 interface DuplicateMatch {

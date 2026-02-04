@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Briefcase, Calendar, DollarSign } from 'lucide-react'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'

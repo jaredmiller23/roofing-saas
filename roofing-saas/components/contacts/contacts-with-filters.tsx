@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ActiveFilter } from '@/lib/filters/types'
 import { FilterBar } from '@/components/filters/FilterBar'

@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { useUIMode } from '@/hooks/useUIMode'
 import {

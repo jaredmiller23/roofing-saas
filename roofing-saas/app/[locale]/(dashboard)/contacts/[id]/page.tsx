@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
 import { ContactActivityTimeline } from '@/components/contacts/ContactActivityTimeline'

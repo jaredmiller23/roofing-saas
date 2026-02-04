@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import Link from 'next/link'
 import { TerritoryList } from '@/components/territories/TerritoryList'
 import { TerritoryMap } from '@/components/territories/TerritoryMapWrapper'

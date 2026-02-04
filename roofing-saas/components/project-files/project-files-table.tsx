@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api/client'
 import {

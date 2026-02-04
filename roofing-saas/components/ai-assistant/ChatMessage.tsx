@@ -7,7 +7,7 @@
 
 import { Copy, Check, Mic, AlertCircle, Users, FileText, Search, CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import type { ChatMessage as ChatMessageType } from '@/lib/ai-assistant/types'
 
 interface ContactResult {

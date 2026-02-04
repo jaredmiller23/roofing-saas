@@ -2,7 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { EventForm } from '@/components/events/event-form'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 /**
  * Edit event page

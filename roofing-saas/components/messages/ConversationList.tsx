@@ -6,7 +6,7 @@ import { ConversationItem } from './ConversationItem'
 import { Input } from '@/components/ui/input'
 import { Search, MessageSquare, Plus } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 
 interface ConversationListProps {
   conversations: Conversation[]

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send } from 'lucide-react'
 import { toast } from 'sonner'
