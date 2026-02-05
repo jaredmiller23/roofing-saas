@@ -1,12 +1,17 @@
 -- Migration: Fix RLS policies that exclude 'owner' role from admin operations
 -- Rollback: Re-run original migration policies with role = 'admin' only
 --
--- Root cause: 9 RLS policies across 4 migration files used role = 'admin'
+-- Root cause: RLS policies across multiple migrations used role = 'admin'
 -- instead of role IN ('admin', 'owner'), preventing tenant owners from
 -- performing admin operations (e.g., Fahredin couldn't create substatuses).
 --
 -- The isAdmin() helper in the app layer correctly treats owner as admin,
 -- but the database policies did not. This migration fixes the mismatch.
+--
+-- Covers 14 policies across 8 tables. All DROP IF EXISTS + CREATE are
+-- idempotent — safe to re-run.
+
+BEGIN;
 
 -- ============================================================================
 -- 1. campaigns (from 20251119000100_campaigns_system.sql)
@@ -59,8 +64,6 @@ CREATE POLICY "Admins can manage campaign steps"
 
 -- ============================================================================
 -- 4. status_substatus_configs (from 20251119000500_substatus_system.sql)
---    Note: Already fixed in production via direct SQL, but this ensures
---    the migration file matches and is idempotent.
 -- ============================================================================
 
 DROP POLICY IF EXISTS "Admins can manage substatus configs" ON status_substatus_configs;
@@ -150,3 +153,86 @@ CREATE POLICY "Admins can manage all filters"
         AND role IN ('admin', 'owner')
     )
   );
+
+-- ============================================================================
+-- 10. filter_usage_logs (from 20251119000400_configurable_filters.sql)
+--     Original had admin + manager; adding owner
+-- ============================================================================
+
+DROP POLICY IF EXISTS "Users can view own filter usage" ON filter_usage_logs;
+CREATE POLICY "Users can view own filter usage"
+  ON filter_usage_logs FOR SELECT
+  USING (
+    user_id = auth.uid()
+    OR tenant_id IN (
+      SELECT tenant_id FROM tenant_users
+      WHERE user_id = auth.uid()
+        AND role IN ('admin', 'owner', 'manager')
+    )
+  );
+
+-- ============================================================================
+-- 11. digital_business_cards - INSERT
+-- ============================================================================
+
+DROP POLICY IF EXISTS "Admins can create cards" ON digital_business_cards;
+CREATE POLICY "Admins can create cards"
+  ON digital_business_cards FOR INSERT
+  WITH CHECK (
+    tenant_id IN (
+      SELECT tenant_id FROM tenant_users
+      WHERE user_id = auth.uid()
+        AND role IN ('admin', 'owner')
+    )
+  );
+
+-- ============================================================================
+-- 12. digital_business_cards - DELETE
+-- ============================================================================
+
+DROP POLICY IF EXISTS "Admins can delete cards" ON digital_business_cards;
+CREATE POLICY "Admins can delete cards"
+  ON digital_business_cards FOR DELETE
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM tenant_users
+      WHERE user_id = auth.uid()
+        AND role IN ('admin', 'owner')
+    )
+  );
+
+-- ============================================================================
+-- 13. digital_business_cards - UPDATE
+-- ============================================================================
+
+DROP POLICY IF EXISTS "Users can update their own card, admins can update any" ON digital_business_cards;
+CREATE POLICY "Users can update their own card, admins can update any"
+  ON digital_business_cards FOR UPDATE
+  USING (
+    user_id = auth.uid()
+    OR tenant_id IN (
+      SELECT tenant_id FROM tenant_users
+      WHERE user_id = auth.uid()
+        AND role IN ('admin', 'owner')
+    )
+  );
+
+-- ============================================================================
+-- 14. business_card_interactions - DELETE
+-- ============================================================================
+
+DROP POLICY IF EXISTS "Admins can delete interactions" ON business_card_interactions;
+CREATE POLICY "Admins can delete interactions"
+  ON business_card_interactions FOR DELETE
+  USING (
+    card_id IN (
+      SELECT id FROM digital_business_cards
+      WHERE tenant_id IN (
+        SELECT tenant_id FROM tenant_users
+        WHERE user_id = auth.uid()
+          AND role IN ('admin', 'owner')
+      )
+    )
+  );
+
+COMMIT;
