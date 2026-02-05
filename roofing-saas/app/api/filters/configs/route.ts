@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient()
-
     const body: CreateFilterConfigRequest = await request.json()
 
     // Validate required fields

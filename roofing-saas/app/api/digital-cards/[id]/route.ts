@@ -209,13 +209,13 @@ export async function DELETE(
       throw AuthenticationError()
     }
 
-    const supabase = await createClient()
-
     // Check if user is admin (includes owner role)
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
+
+    const supabase = await createClient()
 
     // Get user's tenant for scoped deletion
     const { data: tenantUser, error: tenantError } = await supabase
