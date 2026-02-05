@@ -44,5 +44,9 @@ import './analytics'
 // Team & Dispatch (availability, location, routing, reassignment, performance, notifications)
 import './team'
 
+// Platform Self-Awareness (ARIA 2.0 - Phase 2)
+// Diagnostic functions for error diagnosis, schema knowledge, data queries
+import './platform'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
