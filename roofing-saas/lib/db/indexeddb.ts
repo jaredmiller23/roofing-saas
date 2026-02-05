@@ -1,249 +1,195 @@
 /**
  * IndexedDB wrapper for offline storage
- * Uses idb library for Promise-based API
+ * Uses Dexie.js for type-safe Promise-based API
  */
 
-import { openDB, DBSchema, IDBPDatabase } from 'idb'
+import Dexie, { type Table } from 'dexie'
 
-// Database schema interface
-interface RoofingSaaSDB extends DBSchema {
-  contacts: {
-    key: string // UUID
-    value: {
-      id: string
-      tenant_id: string
-      first_name: string
-      last_name: string
-      email?: string
-      phone?: string
-      address?: string
-      city?: string
-      state?: string
-      zip?: string
-      pipeline_stage?: string
-      source?: string
-      tags?: string[]
-      notes?: string
-      created_at: string
-      updated_at: string
-      // Cache metadata
-      cached_at: number
-      synced: boolean
-    }
-    indexes: { 'by-tenant': string; 'by-updated': string }
-  }
-  projects: {
-    key: string // UUID
-    value: {
-      id: string
-      tenant_id: string
-      contact_id: string
-      name: string
-      description?: string
-      status: string
-      property_type?: string
-      roof_type?: string
-      square_footage?: number
-      estimated_value?: number
-      scheduled_date?: string
-      created_at: string
-      updated_at: string
-      // Cache metadata
-      cached_at: number
-      synced: boolean
-    }
-    indexes: { 'by-tenant': string; 'by-contact': string; 'by-updated': string }
-  }
-  pending_uploads: {
-    key: string // Temporary ID
-    value: {
-      id: string
-      tenant_id: string
-      contact_id?: string
-      project_id?: string
-      file: Blob
-      file_name: string
-      file_type: string
-      metadata?: Record<string, unknown>
-      created_at: number
-      retry_count: number
-      last_error?: string
-    }
-    indexes: { 'by-tenant': string; 'by-created': number }
-  }
-  pending_actions: {
-    key: string // Temporary ID
-    value: {
-      id: string
-      tenant_id: string
-      action_type: 'create' | 'update' | 'delete'
-      entity_type: 'contact' | 'project' | 'activity'
-      entity_id?: string // For updates/deletes
-      data: Record<string, unknown>
-      created_at: number
-      retry_count: number
-      last_error?: string
-    }
-    indexes: { 'by-tenant': string; 'by-created': number; 'by-entity': string }
+// Value types for each store
+
+interface CachedContact {
+  id: string
+  tenant_id: string
+  first_name: string
+  last_name: string
+  email?: string
+  phone?: string
+  address?: string
+  city?: string
+  state?: string
+  zip?: string
+  pipeline_stage?: string
+  source?: string
+  tags?: string[]
+  notes?: string
+  created_at: string
+  updated_at: string
+  cached_at: number
+  synced: boolean
+}
+
+interface CachedProject {
+  id: string
+  tenant_id: string
+  contact_id: string
+  name: string
+  description?: string
+  status: string
+  property_type?: string
+  roof_type?: string
+  square_footage?: number
+  estimated_value?: number
+  scheduled_date?: string
+  created_at: string
+  updated_at: string
+  cached_at: number
+  synced: boolean
+}
+
+export interface PendingUpload {
+  id: string
+  tenant_id: string
+  contact_id?: string
+  project_id?: string
+  file: Blob
+  file_name: string
+  file_type: string
+  metadata?: Record<string, unknown>
+  created_at: number
+  retry_count: number
+  last_error?: string
+}
+
+export interface PendingAction {
+  id: string
+  tenant_id: string
+  action_type: 'create' | 'update' | 'delete'
+  entity_type: 'contact' | 'project' | 'activity'
+  entity_id?: string
+  data: Record<string, unknown>
+  created_at: number
+  retry_count: number
+  last_error?: string
+}
+
+class RoofingSaaSDB extends Dexie {
+  contacts!: Table<CachedContact, string>
+  projects!: Table<CachedProject, string>
+  pending_uploads!: Table<PendingUpload, string>
+  pending_actions!: Table<PendingAction, string>
+
+  constructor() {
+    super('roofing-saas-db')
+
+    // Version 1: Minimal schema (matches stores created by previous idb implementation)
+    this.version(1).stores({
+      contacts: 'id',
+      projects: 'id',
+      pending_uploads: 'id',
+      pending_actions: 'id',
+    })
+
+    // Version 2: Full indexes for Dexie queries
+    this.version(2).stores({
+      contacts: 'id, tenant_id, updated_at',
+      projects: 'id, tenant_id, contact_id, updated_at',
+      pending_uploads: 'id, tenant_id, created_at',
+      pending_actions: 'id, tenant_id, created_at, entity_type',
+    })
   }
 }
 
-const DB_NAME = 'roofing-saas-db'
-const DB_VERSION = 1
-
-let dbInstance: IDBPDatabase<RoofingSaaSDB> | null = null
+const db = new RoofingSaaSDB()
 
 /**
- * Initialize and open the IndexedDB database
+ * Initialize the IndexedDB database
  */
-export async function initDB(): Promise<IDBPDatabase<RoofingSaaSDB>> {
-  if (dbInstance) {
-    return dbInstance
-  }
-
-  dbInstance = await openDB<RoofingSaaSDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // Create contacts store
-      if (!db.objectStoreNames.contains('contacts')) {
-        const contactsStore = db.createObjectStore('contacts', { keyPath: 'id' })
-        contactsStore.createIndex('by-tenant', 'tenant_id')
-        contactsStore.createIndex('by-updated', 'updated_at')
-      }
-
-      // Create projects store
-      if (!db.objectStoreNames.contains('projects')) {
-        const projectsStore = db.createObjectStore('projects', { keyPath: 'id' })
-        projectsStore.createIndex('by-tenant', 'tenant_id')
-        projectsStore.createIndex('by-contact', 'contact_id')
-        projectsStore.createIndex('by-updated', 'updated_at')
-      }
-
-      // Create pending_uploads store
-      if (!db.objectStoreNames.contains('pending_uploads')) {
-        const uploadsStore = db.createObjectStore('pending_uploads', { keyPath: 'id' })
-        uploadsStore.createIndex('by-tenant', 'tenant_id')
-        uploadsStore.createIndex('by-created', 'created_at')
-      }
-
-      // Create pending_actions store
-      if (!db.objectStoreNames.contains('pending_actions')) {
-        const actionsStore = db.createObjectStore('pending_actions', { keyPath: 'id' })
-        actionsStore.createIndex('by-tenant', 'tenant_id')
-        actionsStore.createIndex('by-created', 'created_at')
-        actionsStore.createIndex('by-entity', 'entity_type')
-      }
-    },
-  })
-
-  return dbInstance
+export async function initDB() {
+  await db.open()
+  return db
 }
 
 /**
- * Get the database instance (initialize if needed)
+ * Get the database instance
  */
-export async function getDB(): Promise<IDBPDatabase<RoofingSaaSDB>> {
-  if (!dbInstance) {
-    return await initDB()
-  }
-  return dbInstance
+export async function getDB() {
+  return db
 }
 
 // ==================== CONTACTS ====================
 
-export async function cacheContact(contact: RoofingSaaSDB['contacts']['value']) {
-  const db = await getDB()
-  await db.put('contacts', {
+export async function cacheContact(contact: CachedContact) {
+  await db.contacts.put({
     ...contact,
     cached_at: Date.now(),
     synced: true,
   })
 }
 
-export async function cacheContacts(contacts: RoofingSaaSDB['contacts']['value'][]) {
-  const db = await getDB()
-  const tx = db.transaction('contacts', 'readwrite')
-
-  await Promise.all([
-    ...contacts.map(contact =>
-      tx.store.put({
-        ...contact,
-        cached_at: Date.now(),
-        synced: true,
-      })
-    ),
-    tx.done,
-  ])
+export async function cacheContacts(contacts: CachedContact[]) {
+  await db.contacts.bulkPut(
+    contacts.map(contact => ({
+      ...contact,
+      cached_at: Date.now(),
+      synced: true,
+    }))
+  )
 }
 
 export async function getCachedContact(id: string) {
-  const db = await getDB()
-  return await db.get('contacts', id)
+  return await db.contacts.get(id)
 }
 
 export async function getCachedContacts(tenantId: string) {
-  const db = await getDB()
-  return await db.getAllFromIndex('contacts', 'by-tenant', tenantId)
+  return await db.contacts.where('tenant_id').equals(tenantId).toArray()
 }
 
 export async function deleteCachedContact(id: string) {
-  const db = await getDB()
-  await db.delete('contacts', id)
+  await db.contacts.delete(id)
 }
 
 // ==================== PROJECTS ====================
 
-export async function cacheProject(project: RoofingSaaSDB['projects']['value']) {
-  const db = await getDB()
-  await db.put('projects', {
+export async function cacheProject(project: CachedProject) {
+  await db.projects.put({
     ...project,
     cached_at: Date.now(),
     synced: true,
   })
 }
 
-export async function cacheProjects(projects: RoofingSaaSDB['projects']['value'][]) {
-  const db = await getDB()
-  const tx = db.transaction('projects', 'readwrite')
-
-  await Promise.all([
-    ...projects.map(project =>
-      tx.store.put({
-        ...project,
-        cached_at: Date.now(),
-        synced: true,
-      })
-    ),
-    tx.done,
-  ])
+export async function cacheProjects(projects: CachedProject[]) {
+  await db.projects.bulkPut(
+    projects.map(project => ({
+      ...project,
+      cached_at: Date.now(),
+      synced: true,
+    }))
+  )
 }
 
 export async function getCachedProject(id: string) {
-  const db = await getDB()
-  return await db.get('projects', id)
+  return await db.projects.get(id)
 }
 
 export async function getCachedProjects(tenantId: string) {
-  const db = await getDB()
-  return await db.getAllFromIndex('projects', 'by-tenant', tenantId)
+  return await db.projects.where('tenant_id').equals(tenantId).toArray()
 }
 
 export async function getCachedProjectsByContact(contactId: string) {
-  const db = await getDB()
-  return await db.getAllFromIndex('projects', 'by-contact', contactId)
+  return await db.projects.where('contact_id').equals(contactId).toArray()
 }
 
 export async function deleteCachedProject(id: string) {
-  const db = await getDB()
-  await db.delete('projects', id)
+  await db.projects.delete(id)
 }
 
 // ==================== PENDING UPLOADS ====================
 
-export async function addPendingUpload(upload: Omit<RoofingSaaSDB['pending_uploads']['value'], 'id' | 'created_at' | 'retry_count'>) {
-  const db = await getDB()
+export async function addPendingUpload(upload: Omit<PendingUpload, 'id' | 'created_at' | 'retry_count'>) {
   const id = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-  await db.add('pending_uploads', {
+  await db.pending_uploads.add({
     ...upload,
     id,
     created_at: Date.now(),
@@ -254,16 +200,13 @@ export async function addPendingUpload(upload: Omit<RoofingSaaSDB['pending_uploa
 }
 
 export async function getPendingUploads(tenantId: string) {
-  const db = await getDB()
-  return await db.getAllFromIndex('pending_uploads', 'by-tenant', tenantId)
+  return await db.pending_uploads.where('tenant_id').equals(tenantId).toArray()
 }
 
 export async function updatePendingUploadRetry(id: string, error?: string) {
-  const db = await getDB()
-  const upload = await db.get('pending_uploads', id)
-
+  const upload = await db.pending_uploads.get(id)
   if (upload) {
-    await db.put('pending_uploads', {
+    await db.pending_uploads.put({
       ...upload,
       retry_count: upload.retry_count + 1,
       last_error: error,
@@ -272,17 +215,15 @@ export async function updatePendingUploadRetry(id: string, error?: string) {
 }
 
 export async function deletePendingUpload(id: string) {
-  const db = await getDB()
-  await db.delete('pending_uploads', id)
+  await db.pending_uploads.delete(id)
 }
 
 // ==================== PENDING ACTIONS ====================
 
-export async function addPendingAction(action: Omit<RoofingSaaSDB['pending_actions']['value'], 'id' | 'created_at' | 'retry_count'>) {
-  const db = await getDB()
+export async function addPendingAction(action: Omit<PendingAction, 'id' | 'created_at' | 'retry_count'>) {
   const id = `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-  await db.add('pending_actions', {
+  await db.pending_actions.add({
     ...action,
     id,
     created_at: Date.now(),
@@ -293,16 +234,13 @@ export async function addPendingAction(action: Omit<RoofingSaaSDB['pending_actio
 }
 
 export async function getPendingActions(tenantId: string) {
-  const db = await getDB()
-  return await db.getAllFromIndex('pending_actions', 'by-tenant', tenantId)
+  return await db.pending_actions.where('tenant_id').equals(tenantId).toArray()
 }
 
 export async function updatePendingActionRetry(id: string, error?: string) {
-  const db = await getDB()
-  const action = await db.get('pending_actions', id)
-
+  const action = await db.pending_actions.get(id)
   if (action) {
-    await db.put('pending_actions', {
+    await db.pending_actions.put({
       ...action,
       retry_count: action.retry_count + 1,
       last_error: error,
@@ -311,8 +249,7 @@ export async function updatePendingActionRetry(id: string, error?: string) {
 }
 
 export async function deletePendingAction(id: string) {
-  const db = await getDB()
-  await db.delete('pending_actions', id)
+  await db.pending_actions.delete(id)
 }
 
 // ==================== SYNC UTILITIES ====================
@@ -321,11 +258,9 @@ export async function deletePendingAction(id: string) {
  * Clear all cached data (for logout or reset)
  */
 export async function clearAllCache() {
-  const db = await getDB()
-
   await Promise.all([
-    db.clear('contacts'),
-    db.clear('projects'),
+    db.contacts.clear(),
+    db.projects.clear(),
   ])
 }
 
@@ -333,17 +268,12 @@ export async function clearAllCache() {
  * Get all pending items count
  */
 export async function getPendingCount(tenantId: string): Promise<{ uploads: number; actions: number }> {
-  const db = await getDB()
-
   const [uploads, actions] = await Promise.all([
-    db.getAllFromIndex('pending_uploads', 'by-tenant', tenantId),
-    db.getAllFromIndex('pending_actions', 'by-tenant', tenantId),
+    db.pending_uploads.where('tenant_id').equals(tenantId).count(),
+    db.pending_actions.where('tenant_id').equals(tenantId).count(),
   ])
 
-  return {
-    uploads: uploads.length,
-    actions: actions.length,
-  }
+  return { uploads, actions }
 }
 
 /**

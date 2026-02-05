@@ -48,7 +48,7 @@ export async function cacheSignatureDocument(
 
   // Store in IndexedDB
   const db = await getEnhancedDB()
-  await db.put('offline_documents', {
+  await db.offline_documents.put({
     id: documentId,
     name: document.title,
     type: 'signature_document',
@@ -70,7 +70,7 @@ export async function getCachedSignatureDocument(
   documentId: string
 ): Promise<OfflineSignatureDocument | null> {
   const db = await getEnhancedDB()
-  const cached = await db.get('offline_documents', documentId)
+  const cached = await db.offline_documents.get(documentId)
 
   if (!cached) {
     return null
@@ -82,14 +82,14 @@ export async function getCachedSignatureDocument(
     cacheEntry = JSON.parse(cached.blob_data)
   } catch {
     // Invalid cache entry, remove it
-    await db.delete('offline_documents', documentId)
+    await db.offline_documents.delete(documentId)
     return null
   }
 
   // Check if expired
   if (cacheEntry.expires_at < Date.now()) {
     // Cache expired, remove it
-    await db.delete('offline_documents', documentId)
+    await db.offline_documents.delete(documentId)
     return null
   }
 
@@ -143,7 +143,7 @@ export async function clearExpiredDocumentCache(): Promise<number> {
   const now = Date.now()
 
   // Get all cached documents
-  const allDocs = await db.getAll('offline_documents')
+  const allDocs = await db.offline_documents.toArray()
   let cleared = 0
 
   for (const doc of allDocs) {
@@ -155,12 +155,12 @@ export async function clearExpiredDocumentCache(): Promise<number> {
     try {
       const cacheEntry: OfflineSignatureDocument = JSON.parse(doc.blob_data)
       if (cacheEntry.expires_at < now) {
-        await db.delete('offline_documents', doc.id)
+        await db.offline_documents.delete(doc.id)
         cleared++
       }
     } catch {
       // Invalid entry, remove it
-      await db.delete('offline_documents', doc.id)
+      await db.offline_documents.delete(doc.id)
       cleared++
     }
   }
@@ -175,7 +175,7 @@ export async function clearExpiredDocumentCache(): Promise<number> {
  */
 export async function removeCachedDocument(documentId: string): Promise<void> {
   const db = await getEnhancedDB()
-  await db.delete('offline_documents', documentId)
+  await db.offline_documents.delete(documentId)
 }
 
 /**
@@ -185,7 +185,7 @@ export async function removeCachedDocument(documentId: string): Promise<void> {
  */
 export async function getAllCachedDocuments(): Promise<OfflineSignatureDocument[]> {
   const db = await getEnhancedDB()
-  const allDocs = await db.getAll('offline_documents')
+  const allDocs = await db.offline_documents.toArray()
   const now = Date.now()
 
   const validDocs: OfflineSignatureDocument[] = []
@@ -214,7 +214,7 @@ export async function getAllCachedDocuments(): Promise<OfflineSignatureDocument[
  */
 async function enforceMaxCachedDocuments(): Promise<void> {
   const db = await getEnhancedDB()
-  const allDocs = await db.getAll('offline_documents')
+  const allDocs = await db.offline_documents.toArray()
 
   // Filter to signature documents only
   const signatureDocs = allDocs.filter((doc) => doc.type === 'signature_document')
@@ -229,7 +229,7 @@ async function enforceMaxCachedDocuments(): Promise<void> {
   // Remove oldest entries to get under the limit
   const toRemove = signatureDocs.length - SIGNATURE_CACHE_CONFIG.MAX_CACHED_DOCUMENTS
   for (let i = 0; i < toRemove; i++) {
-    await db.delete('offline_documents', signatureDocs[i].id)
+    await db.offline_documents.delete(signatureDocs[i].id)
   }
 }
 
@@ -254,7 +254,7 @@ export async function getCacheStats(): Promise<{
   newest_entry: number | null
 }> {
   const db = await getEnhancedDB()
-  const allDocs = await db.getAll('offline_documents')
+  const allDocs = await db.offline_documents.toArray()
 
   const signatureDocs = allDocs.filter((doc) => doc.type === 'signature_document')
 

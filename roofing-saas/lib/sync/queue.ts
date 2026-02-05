@@ -10,6 +10,8 @@ import {
   deletePendingUpload,
   updatePendingActionRetry,
   updatePendingUploadRetry,
+  type PendingAction,
+  type PendingUpload,
 } from '@/lib/db/indexeddb'
 import { logger } from '@/lib/logger'
 
@@ -111,14 +113,9 @@ export async function syncPendingUploads(tenantId: string): Promise<{ success: n
 /**
  * Execute a pending action
  */
-async function executeAction(action: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
+async function executeAction(action: PendingAction): Promise<{ success: boolean; error?: string }> {
   try {
-    const { action_type, entity_type, entity_id, data } = action as {
-      action_type: string
-      entity_type: string
-      entity_id?: string
-      data: Record<string, unknown>
-    }
+    const { action_type, entity_type, entity_id, data } = action
 
     let url = ''
     let method = ''
@@ -157,7 +154,7 @@ async function executeAction(action: Record<string, unknown>): Promise<{ success
 /**
  * Upload a file to the server
  */
-async function uploadFile(upload: Record<string, unknown>): Promise<{ success: boolean; error?: string }> {
+async function uploadFile(upload: PendingUpload): Promise<{ success: boolean; error?: string }> {
   try {
     const formData = new FormData()
 
@@ -167,13 +164,7 @@ async function uploadFile(upload: Record<string, unknown>): Promise<{ success: b
       contact_id,
       project_id,
       metadata
-    } = upload as {
-      file: Blob
-      file_name: string
-      contact_id?: string
-      project_id?: string
-      metadata?: Record<string, unknown>
-    }
+    } = upload
 
     // Add file
     formData.append('file', file, file_name)

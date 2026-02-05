@@ -49,7 +49,7 @@ export async function queueOfflineSignature(
   }
 
   // Store in offline_forms with form_type = 'signature'
-  await db.put('offline_forms', {
+  await db.offline_forms.put({
     id,
     form_type: 'signature' as const,
     data: fullSubmission as unknown as Record<string, unknown>,
@@ -70,7 +70,7 @@ export async function getPendingSignatures(): Promise<OfflineSignatureSubmission
   const db = await getEnhancedDB()
 
   // Get all unsynced forms with type 'signature'
-  const unsyncedForms = await db.getAllFromIndex('offline_forms', 'by-synced', 0)
+  const unsyncedForms = await db.offline_forms.where('synced').equals(0).toArray()
 
   return unsyncedForms
     .filter((form) => form.form_type === 'signature')
@@ -87,7 +87,7 @@ export async function getSignatureSubmission(
   id: string
 ): Promise<OfflineSignatureSubmission | null> {
   const db = await getEnhancedDB()
-  const form = await db.get('offline_forms', id)
+  const form = await db.offline_forms.get(id)
 
   if (!form || form.form_type !== 'signature') {
     return null
@@ -103,13 +103,13 @@ export async function getSignatureSubmission(
  */
 export async function markSignatureSynced(id: string): Promise<void> {
   const db = await getEnhancedDB()
-  const form = await db.get('offline_forms', id)
+  const form = await db.offline_forms.get(id)
 
   if (form) {
     const submission = form.data as unknown as OfflineSignatureSubmission
     submission.synced = true
 
-    await db.put('offline_forms', {
+    await db.offline_forms.put({
       ...form,
       synced: true,
       data: submission as unknown as Record<string, unknown>,
@@ -125,7 +125,7 @@ export async function markSignatureSynced(id: string): Promise<void> {
  */
 export async function markSignatureFailed(id: string, error: string): Promise<void> {
   const db = await getEnhancedDB()
-  const form = await db.get('offline_forms', id)
+  const form = await db.offline_forms.get(id)
 
   if (form) {
     const submission = form.data as unknown as OfflineSignatureSubmission
@@ -133,7 +133,7 @@ export async function markSignatureFailed(id: string, error: string): Promise<vo
     submission.last_error = error
     submission.last_sync_attempt = Date.now()
 
-    await db.put('offline_forms', {
+    await db.offline_forms.put({
       ...form,
       data: submission as unknown as Record<string, unknown>,
     })
@@ -148,7 +148,7 @@ export async function markSignatureFailed(id: string, error: string): Promise<vo
  */
 export async function removeSignatureFromQueue(id: string): Promise<void> {
   const db = await getEnhancedDB()
-  await db.delete('offline_forms', id)
+  await db.offline_forms.delete(id)
 }
 
 /**
@@ -279,7 +279,7 @@ export async function getFailedSignatures(): Promise<OfflineSignatureSubmission[
  */
 export async function retryFailedSignature(id: string): Promise<void> {
   const db = await getEnhancedDB()
-  const form = await db.get('offline_forms', id)
+  const form = await db.offline_forms.get(id)
 
   if (form && form.form_type === 'signature') {
     const submission = form.data as unknown as OfflineSignatureSubmission
@@ -287,7 +287,7 @@ export async function retryFailedSignature(id: string): Promise<void> {
     submission.last_error = undefined
     submission.last_sync_attempt = undefined
 
-    await db.put('offline_forms', {
+    await db.offline_forms.put({
       ...form,
       data: submission as unknown as Record<string, unknown>,
     })
@@ -300,12 +300,12 @@ export async function retryFailedSignature(id: string): Promise<void> {
  */
 export async function clearSyncedSignatures(): Promise<number> {
   const db = await getEnhancedDB()
-  const allForms = await db.getAll('offline_forms')
+  const allForms = await db.offline_forms.toArray()
 
   let cleared = 0
   for (const form of allForms) {
     if (form.form_type === 'signature' && form.synced) {
-      await db.delete('offline_forms', form.id)
+      await db.offline_forms.delete(form.id)
       cleared++
     }
   }
