@@ -4,7 +4,7 @@
  */
 
 import { ariaFunctionRegistry } from '../function-registry'
-import { makeQuickBooksApiCall, getQuickBooksConnection } from '@/lib/quickbooks/api'
+import { makeQuickBooksApiCall, getQuickBooksConnection, escapeQBQuery } from '@/lib/quickbooks/api'
 import { logger } from '@/lib/logger'
 
 // =============================================================================
@@ -51,14 +51,17 @@ ariaFunctionRegistry.register({
     }
 
     try {
+      // Escape user input to prevent QB query injection
+      const escapedQuery = escapeQBQuery(query)
+
       // Build query based on search type
       let sqlQuery = ''
       if (search_type === 'name' || search_type === 'all') {
-        sqlQuery = `SELECT * FROM Customer WHERE DisplayName LIKE '%${query}%' MAXRESULTS 10`
+        sqlQuery = `SELECT * FROM Customer WHERE DisplayName LIKE '%${escapedQuery}%' MAXRESULTS 10`
       } else if (search_type === 'phone') {
-        sqlQuery = `SELECT * FROM Customer WHERE PrimaryPhone LIKE '%${query}%' MAXRESULTS 10`
+        sqlQuery = `SELECT * FROM Customer WHERE PrimaryPhone LIKE '%${escapedQuery}%' MAXRESULTS 10`
       } else if (search_type === 'email') {
-        sqlQuery = `SELECT * FROM Customer WHERE PrimaryEmailAddr LIKE '%${query}%' MAXRESULTS 10`
+        sqlQuery = `SELECT * FROM Customer WHERE PrimaryEmailAddr LIKE '%${escapedQuery}%' MAXRESULTS 10`
       }
 
       const result = await makeQuickBooksApiCall(
@@ -156,19 +159,20 @@ ariaFunctionRegistry.register({
       const conditions: string[] = []
 
       if (customer_id) {
-        conditions.push(`CustomerRef = '${customer_id}'`)
+        conditions.push(`CustomerRef = '${escapeQBQuery(customer_id)}'`)
       } else if (customer_name) {
         // First look up customer
+        const escapedName = escapeQBQuery(customer_name)
         const customerResult = await makeQuickBooksApiCall(
           context.tenantId,
-          `/query?query=${encodeURIComponent(`SELECT Id FROM Customer WHERE DisplayName LIKE '%${customer_name}%' MAXRESULTS 1`)}`
+          `/query?query=${encodeURIComponent(`SELECT Id FROM Customer WHERE DisplayName LIKE '%${escapedName}%' MAXRESULTS 1`)}`
         ) as { QueryResponse?: { Customer?: Array<{ Id: string }> } }
 
         const customers = customerResult?.QueryResponse?.Customer || []
         if (customers.length === 0) {
           return { success: false, error: `Customer "${customer_name}" not found in QuickBooks` }
         }
-        conditions.push(`CustomerRef = '${customers[0].Id}'`)
+        conditions.push(`CustomerRef = '${escapeQBQuery(customers[0].Id)}'`)
       }
 
       if (status === 'open') {
@@ -283,21 +287,22 @@ ariaFunctionRegistry.register({
       startDate.setDate(startDate.getDate() - days)
       const startDateStr = startDate.toISOString().split('T')[0]
 
-      // Build query
+      // Build query (date strings are safe - generated server-side)
       let sqlQuery = `SELECT * FROM Payment WHERE TxnDate >= '${startDateStr}'`
 
       if (customer_id) {
-        sqlQuery += ` AND CustomerRef = '${customer_id}'`
+        sqlQuery += ` AND CustomerRef = '${escapeQBQuery(customer_id)}'`
       } else if (customer_name) {
         // Look up customer first
+        const escapedName = escapeQBQuery(customer_name)
         const customerResult = await makeQuickBooksApiCall(
           context.tenantId,
-          `/query?query=${encodeURIComponent(`SELECT Id FROM Customer WHERE DisplayName LIKE '%${customer_name}%' MAXRESULTS 1`)}`
+          `/query?query=${encodeURIComponent(`SELECT Id FROM Customer WHERE DisplayName LIKE '%${escapedName}%' MAXRESULTS 1`)}`
         ) as { QueryResponse?: { Customer?: Array<{ Id: string }> } }
 
         const customers = customerResult?.QueryResponse?.Customer || []
         if (customers.length > 0) {
-          sqlQuery += ` AND CustomerRef = '${customers[0].Id}'`
+          sqlQuery += ` AND CustomerRef = '${escapeQBQuery(customers[0].Id)}'`
         }
       }
 
@@ -401,9 +406,9 @@ ariaFunctionRegistry.register({
     try {
       let sqlQuery = ''
       if (customer_id) {
-        sqlQuery = `SELECT * FROM Customer WHERE Id = '${customer_id}'`
+        sqlQuery = `SELECT * FROM Customer WHERE Id = '${escapeQBQuery(customer_id)}'`
       } else {
-        sqlQuery = `SELECT * FROM Customer WHERE DisplayName LIKE '%${searchName}%' MAXRESULTS 1`
+        sqlQuery = `SELECT * FROM Customer WHERE DisplayName LIKE '%${escapeQBQuery(searchName!)}%' MAXRESULTS 1`
       }
 
       const result = await makeQuickBooksApiCall(

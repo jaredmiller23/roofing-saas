@@ -24,32 +24,42 @@ export async function GET(_request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Check if QB is connected
-    const { data: token, error: tokenError } = await supabase
-      .from('quickbooks_tokens')
-      .select('realm_id, company_name, country, expires_at, created_at')
+    // Check if QB is connected (use quickbooks_connections, not quickbooks_tokens)
+    const { data: connection, error: connectionError } = await supabase
+      .from('quickbooks_connections')
+      .select('realm_id, company_name, token_expires_at, is_active, last_sync_at, sync_error, environment, created_at')
       .eq('tenant_id', tenantId)
       .single()
 
-    if (tokenError || !token) {
+    if (connectionError || !connection) {
       return successResponse({
         connected: false,
         message: 'QuickBooks not connected',
       })
     }
 
+    // Check if connection is active
+    if (!connection.is_active) {
+      return successResponse({
+        connected: false,
+        message: connection.sync_error || 'QuickBooks connection is inactive',
+        sync_error: connection.sync_error,
+      })
+    }
+
     // Check if token is expired
-    const expiresAt = new Date(token.expires_at)
+    const expiresAt = new Date(connection.token_expires_at)
     const isExpired = expiresAt <= new Date()
 
     return successResponse({
       connected: true,
-      realm_id: token.realm_id,
-      company_name: token.company_name,
-      country: token.country,
-      expires_at: token.expires_at,
+      realm_id: connection.realm_id,
+      company_name: connection.company_name,
+      expires_at: connection.token_expires_at,
       is_expired: isExpired,
-      connected_at: token.created_at,
+      connected_at: connection.created_at,
+      last_sync_at: connection.last_sync_at,
+      environment: connection.environment,
     })
   } catch (error) {
     logger.error('QuickBooks status error', { error })

@@ -1,15 +1,27 @@
 /**
- * QuickBooks Online API Client
- * Handles OAuth 2.0 authentication and API requests
+ * QuickBooks Online API Client (Unified)
+ *
+ * Single source of truth for all QuickBooks API interactions.
+ * Handles:
+ * - OAuth 2.0 token management (encrypted via Supabase Vault)
+ * - Token refresh with encrypted storage
+ * - Rate limiting (token bucket, 500 req/min)
+ * - Retry with exponential backoff
+ * - Sentry instrumentation
+ *
+ * IMPORTANT: Production table is `quickbooks_connections` (NOT `quickbooks_tokens`).
+ * Column `token_expires_at` (NOT `expires_at`).
  */
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { quickbooksSpan } from '@/lib/instrumentation'
+import { withRetry, RetryableError, quickbooksRateLimiter } from './retry'
 
 // QuickBooks API base URLs
 const QB_OAUTH_URL = 'https://appcenter.intuit.com/connect/oauth2'
 const QB_API_BASE_URL = 'https://quickbooks.api.intuit.com/v3/company'
+const QB_SANDBOX_API_BASE_URL = 'https://sandbox-quickbooks.api.intuit.com/v3/company'
 
 // Token response from QuickBooks
 interface TokenResponse {
@@ -20,11 +32,32 @@ interface TokenResponse {
   x_refresh_token_expires_in: number
 }
 
+// Connection record from quickbooks_connections table
+// Matches the production schema in database.types.ts
+interface QBConnectionRecord {
+  id: string
+  tenant_id: string
+  realm_id: string
+  access_token: string
+  refresh_token: string
+  token_expires_at: string
+  refresh_token_expires_at: string
+  company_name: string | null
+  is_active: boolean | null
+  last_sync_at: string | null
+  sync_error: string | null
+  environment: string | null
+  created_at: string | null
+  created_by: string | null
+  updated_at: string | null
+}
+
 // QB Customer entity
 export interface QBCustomer {
   Id?: string
   SyncToken?: string
   DisplayName: string
+  CompanyName?: string
   PrimaryEmailAddr?: {
     Address: string
   }
@@ -39,6 +72,8 @@ export interface QBCustomer {
   }
   GivenName?: string
   FamilyName?: string
+  Balance?: number
+  Active?: boolean
 }
 
 // QB Invoice entity
@@ -82,6 +117,14 @@ export interface QBPayment {
       TxnType: string
     }>
   }>
+}
+
+// QB Item entity (for configurable ItemRef)
+export interface QBItem {
+  Id: string
+  Name: string
+  Type: string
+  Active: boolean
 }
 
 // QB Company Info entity
@@ -129,6 +172,7 @@ interface QBQueryResponse<T> {
     Customer?: T[]
     Invoice?: T[]
     Payment?: T[]
+    Item?: T[]
   }
 }
 
@@ -139,61 +183,101 @@ interface QBEntityResponse<T> {
 }
 
 /**
+ * Escape user-provided values for QuickBooks query language.
+ * QB uses single-quote delimited strings. Unescaped quotes allow injection.
+ */
+export function escapeQBQuery(value: string): string {
+  // QB query language escapes single quotes by doubling them
+  return value.replace(/'/g, "''")
+}
+
+/**
  * QuickBooks Online API Client
+ *
+ * Wraps all QB API calls with rate limiting, retry, and Sentry instrumentation.
  */
 export class QuickBooksClient {
   private realmId: string
   private accessToken: string
+  private apiBaseUrl: string
 
-  constructor(realmId: string, accessToken: string) {
+  constructor(realmId: string, accessToken: string, environment?: string) {
     this.realmId = realmId
     this.accessToken = accessToken
+    this.apiBaseUrl = environment === 'sandbox' ? QB_SANDBOX_API_BASE_URL : QB_API_BASE_URL
   }
 
   /**
-   * Make authenticated API request
+   * Make authenticated API request with rate limiting, retry, and Sentry span.
    */
   private async request<T>(
     method: string,
     endpoint: string,
     data?: unknown
   ): Promise<T> {
-    return quickbooksSpan(
-      `${method} ${endpoint.split('?')[0]}`,
-      async () => {
-        const url = `${QB_API_BASE_URL}/${this.realmId}${endpoint}`
+    // Rate limit before making request
+    await quickbooksRateLimiter.acquire()
 
-        const options: RequestInit = {
-          method,
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
+    return withRetry(async () => {
+      return quickbooksSpan(
+        `${method} ${endpoint.split('?')[0]}`,
+        async () => {
+          const url = `${this.apiBaseUrl}/${this.realmId}${endpoint}`
+
+          const options: RequestInit = {
+            method,
+            headers: {
+              'Authorization': `Bearer ${this.accessToken}`,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          }
+
+          if (data && (method === 'POST' || method === 'PUT')) {
+            options.body = JSON.stringify(data)
+          }
+
+          logger.debug('QB API Request', { method, endpoint })
+
+          const response = await fetch(url, options)
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            logger.error('QB API Error', { status: response.status, error: errorText })
+
+            // 429 - Rate limit exceeded (retryable)
+            if (response.status === 429) {
+              const retryAfter = parseInt(response.headers.get('Retry-After') || '60')
+              throw new RetryableError('Rate limit exceeded', 429, retryAfter)
+            }
+
+            // 5xx - Server errors (retryable)
+            if (response.status >= 500) {
+              throw new RetryableError(
+                `QuickBooks server error: ${response.status}`,
+                response.status
+              )
+            }
+
+            throw new Error(`QuickBooks API error: ${response.status} - ${errorText}`)
+          }
+
+          return await response.json()
+        },
+        {
+          'quickbooks.method': method,
+          'quickbooks.endpoint': endpoint.split('?')[0],
         }
+      )
+    })
+  }
 
-        if (data && (method === 'POST' || method === 'PUT')) {
-          options.body = JSON.stringify(data)
-        }
-
-        logger.debug('QB API Request', { method, endpoint })
-
-        const response = await fetch(url, options)
-
-        if (!response.ok) {
-          const error = await response.text()
-          logger.error('QB API Error', { status: response.status, error })
-          throw new Error(`QuickBooks API error: ${response.status} - ${error}`)
-        }
-
-        const result = await response.json()
-        return result
-      },
-      {
-        'quickbooks.method': method,
-        'quickbooks.endpoint': endpoint.split('?')[0],
-      }
-    )
+  /**
+   * Execute a QB query (SQL-like syntax).
+   * Callers MUST escape user-provided values with escapeQBQuery().
+   */
+  async query(queryString: string): Promise<unknown> {
+    return this.request('GET', `/query?query=${encodeURIComponent(queryString)}`)
   }
 
   /**
@@ -205,16 +289,16 @@ export class QuickBooksClient {
   }
 
   /**
-   * Get all customers
+   * Get all customers (optionally filtered by display name)
    */
   async getCustomers(query?: string): Promise<QBCustomer[]> {
-    let endpoint = '/query?query=SELECT * FROM Customer'
+    let ql = 'SELECT * FROM Customer'
     if (query) {
-      endpoint += ` WHERE DisplayName LIKE '%${query}%'`
+      ql += ` WHERE DisplayName LIKE '%${escapeQBQuery(query)}%'`
     }
-    endpoint += ' MAXRESULTS 1000'
+    ql += ' MAXRESULTS 1000'
 
-    const result = await this.request<QBQueryResponse<QBCustomer>>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBCustomer>>('GET', `/query?query=${encodeURIComponent(ql)}`)
     return result.QueryResponse?.Customer || []
   }
 
@@ -243,16 +327,16 @@ export class QuickBooksClient {
   }
 
   /**
-   * Get all invoices
+   * Get all invoices (optionally filtered by customer)
    */
   async getInvoices(customerId?: string): Promise<QBInvoice[]> {
-    let endpoint = '/query?query=SELECT * FROM Invoice'
+    let ql = 'SELECT * FROM Invoice'
     if (customerId) {
-      endpoint += ` WHERE CustomerRef = '${customerId}'`
+      ql += ` WHERE CustomerRef = '${escapeQBQuery(customerId)}'`
     }
-    endpoint += ' MAXRESULTS 1000'
+    ql += ' MAXRESULTS 1000'
 
-    const result = await this.request<QBQueryResponse<QBInvoice>>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBInvoice>>('GET', `/query?query=${encodeURIComponent(ql)}`)
     return result.QueryResponse?.Invoice || []
   }
 
@@ -265,16 +349,16 @@ export class QuickBooksClient {
   }
 
   /**
-   * Get payments
+   * Get payments (optionally filtered by customer)
    */
   async getPayments(customerId?: string): Promise<QBPayment[]> {
-    let endpoint = '/query?query=SELECT * FROM Payment'
+    let ql = 'SELECT * FROM Payment'
     if (customerId) {
-      endpoint += ` WHERE CustomerRef = '${customerId}'`
+      ql += ` WHERE CustomerRef = '${escapeQBQuery(customerId)}'`
     }
-    endpoint += ' MAXRESULTS 1000'
+    ql += ' MAXRESULTS 1000'
 
-    const result = await this.request<QBQueryResponse<QBPayment>>('GET', endpoint)
+    const result = await this.request<QBQueryResponse<QBPayment>>('GET', `/query?query=${encodeURIComponent(ql)}`)
     return result.QueryResponse?.Payment || []
   }
 
@@ -285,35 +369,86 @@ export class QuickBooksClient {
     const result = await this.request<QBEntityResponse<QBPayment>>('POST', '/payment', payment)
     return result.Payment!
   }
+
+  /**
+   * Get items (for configurable ItemRef)
+   */
+  async getItems(type?: string): Promise<QBItem[]> {
+    let ql = 'SELECT * FROM Item WHERE Active = true'
+    if (type) {
+      ql += ` AND Type = '${escapeQBQuery(type)}'`
+    }
+    ql += ' MAXRESULTS 100'
+
+    const result = await this.request<QBQueryResponse<QBItem>>('GET', `/query?query=${encodeURIComponent(ql)}`)
+    return result.QueryResponse?.Item || []
+  }
 }
 
 /**
- * Get QuickBooks client for tenant
+ * Get the raw QuickBooks connection record for a tenant.
+ * Returns the connection row (tokens still encrypted).
+ */
+export async function getQuickBooksConnection(tenantId: string): Promise<QBConnectionRecord | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('quickbooks_connections')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  return data as unknown as QBConnectionRecord
+}
+
+/**
+ * Get QuickBooks client for tenant.
+ * Handles token decryption, expiry check, and automatic refresh.
  */
 export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksClient | null> {
   const supabase = await createClient()
 
-  // Get token from database (encrypted)
-  const { data: token, error } = await supabase
-    .from('quickbooks_tokens')
+  // Get connection from database (encrypted tokens)
+  const { data: connection, error } = await supabase
+    .from('quickbooks_connections')
     .select('*')
     .eq('tenant_id', tenantId)
+    .eq('is_active', true)
     .single()
 
-  if (error || !token) {
-    logger.warn('No QuickBooks token found', { tenantId, error })
+  if (error || !connection) {
+    logger.warn('No active QuickBooks connection found', { tenantId, error })
     return null
   }
 
-  // Decrypt tokens using PostgreSQL function
-  const { data: decryptedAccessTokenData, error: accessTokenError } = await supabase
-    .rpc('decrypt_qb_token', { encrypted_data: token.access_token })
+  // Check if refresh token has expired (QB refresh tokens last 100 days)
+  if (connection.refresh_token_expires_at) {
+    const refreshExpires = new Date(connection.refresh_token_expires_at)
+    if (refreshExpires <= new Date()) {
+      logger.warn('QuickBooks refresh token expired - reauthorization required', { tenantId })
+      // Soft-disable connection
+      await supabase
+        .from('quickbooks_connections')
+        .update({ is_active: false, sync_error: 'Refresh token expired - please reconnect' })
+        .eq('tenant_id', tenantId)
+      return null
+    }
+  }
 
-  const { data: decryptedRefreshTokenData, error: refreshTokenError } = await supabase
-    .rpc('decrypt_qb_token', { encrypted_data: token.refresh_token })
+  // Decrypt tokens using Vault functions
+  const { data: rawDecryptedAccessToken, error: accessTokenError } = await supabase
+    .rpc('decrypt_qb_token', { encrypted_data: connection.access_token })
 
-  const decryptedAccessToken = decryptedAccessTokenData as unknown as string | null
-  const decryptedRefreshToken = decryptedRefreshTokenData as unknown as string | null
+  const { data: rawDecryptedRefreshToken, error: refreshTokenError } = await supabase
+    .rpc('decrypt_qb_token', { encrypted_data: connection.refresh_token })
+
+  const decryptedAccessToken = rawDecryptedAccessToken as unknown as string | null
+  const decryptedRefreshToken = rawDecryptedRefreshToken as unknown as string | null
 
   if (accessTokenError || refreshTokenError || !decryptedAccessToken || !decryptedRefreshToken) {
     logger.error('Failed to decrypt QB tokens', {
@@ -324,17 +459,22 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
     return null
   }
 
-  // Check if token is expired
-  const expiresAt = new Date(token.expires_at)
+  // Check if access token is expired
+  const expiresAt = new Date(connection.token_expires_at)
   const now = new Date()
 
   if (expiresAt <= now) {
     // Token expired, need to refresh
-    logger.info('QuickBooks token expired, refreshing', { tenantId })
+    logger.info('QuickBooks access token expired, refreshing', { tenantId })
     const newToken = await refreshAccessToken(decryptedRefreshToken)
 
     if (!newToken) {
       logger.error('Failed to refresh QuickBooks token', { tenantId })
+      // Soft-disable connection
+      await supabase
+        .from('quickbooks_connections')
+        .update({ is_active: false, sync_error: 'Token refresh failed' })
+        .eq('tenant_id', tenantId)
       return null
     }
 
@@ -353,24 +493,83 @@ export async function getQuickBooksClient(tenantId: string): Promise<QuickBooksC
       return null
     }
 
-    // Update token in database with encrypted values
+    // Calculate new expiration times
+    const tokenExpiresAt = new Date(Date.now() + newToken.expires_in * 1000)
+    const refreshTokenExpiresAt = new Date(Date.now() + newToken.x_refresh_token_expires_in * 1000)
+
+    // Update tokens in database
     await supabase
-      .from('quickbooks_tokens')
+      .from('quickbooks_connections')
       .update({
         access_token: encryptedAccessToken,
         refresh_token: encryptedRefreshToken,
-        expires_at: new Date(Date.now() + newToken.expires_in * 1000).toISOString(),
+        token_expires_at: tokenExpiresAt.toISOString(),
+        refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
+        sync_error: null,
       })
       .eq('tenant_id', tenantId)
 
-    return new QuickBooksClient(token.realm_id, newToken.access_token)
+    return new QuickBooksClient(connection.realm_id, newToken.access_token, connection.environment ?? undefined)
   }
 
-  return new QuickBooksClient(token.realm_id, decryptedAccessToken)
+  return new QuickBooksClient(connection.realm_id, decryptedAccessToken, connection.environment ?? undefined)
 }
 
 /**
- * Refresh access token
+ * Get the default Item for invoice line items.
+ * Reads from quickbooks_connections.default_item_id/default_item_name first.
+ * Falls back to querying QB for the first Service item.
+ */
+export async function getDefaultItem(
+  tenantId: string,
+  client: QuickBooksClient
+): Promise<{ value: string; name: string }> {
+  const supabase = await createClient()
+
+  // Check stored default first.
+  // NOTE: default_item_id/default_item_name columns are added by the
+  // 20260204100000_quickbooks_schema_reconciliation migration.
+  // We use a raw select('*') and cast to avoid TS errors if the columns
+  // haven't been added to the generated types yet.
+  const { data: connection } = await supabase
+    .from('quickbooks_connections')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  const connRecord = connection as unknown as { default_item_id?: string; default_item_name?: string } | null
+  if (connRecord?.default_item_id && connRecord?.default_item_name) {
+    return { value: connRecord.default_item_id, name: connRecord.default_item_name }
+  }
+
+  // Query QB for first Service item
+  try {
+    const items = await client.getItems('Service')
+    if (items.length > 0) {
+      const item = items[0]
+
+      // Attempt to cache the default item in the connection record.
+      // The default_item_id/default_item_name columns are added by our migration.
+      // If the migration hasn't run yet, this update silently fails (no harm).
+      const updatePayload = { default_item_id: item.Id, default_item_name: item.Name } as Record<string, string>
+      await supabase
+        .from('quickbooks_connections')
+        .update(updatePayload as never)
+        .eq('tenant_id', tenantId)
+
+      return { value: item.Id, name: item.Name }
+    }
+  } catch (err) {
+    logger.warn('Failed to query QB items for default', { tenantId, error: err })
+  }
+
+  // Final fallback: hardcoded default (should rarely hit this)
+  logger.warn('Using hardcoded default ItemRef - configure default_item_id in quickbooks_connections', { tenantId })
+  return { value: '1', name: 'Services' }
+}
+
+/**
+ * Refresh access token using refresh token
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
   const clientId = process.env.QUICKBOOKS_CLIENT_ID

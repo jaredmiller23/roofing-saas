@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthorizationUrl } from '@/lib/quickbooks/client'
+import { signState } from '@/lib/quickbooks/state'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
@@ -22,12 +23,12 @@ export async function GET(request: NextRequest) {
       throw AuthorizationError('No tenant found')
     }
 
-    // Generate state token for CSRF protection
-    const state = Buffer.from(JSON.stringify({
+    // Generate HMAC-signed state token for CSRF protection
+    const state = signState({
       tenant_id: tenantId,
       user_id: user.id,
       timestamp: Date.now(),
-    })).toString('base64')
+    })
 
     // Get redirect URI (should match QuickBooks app config)
     const redirectUri = `${request.nextUrl.origin}/api/quickbooks/callback`

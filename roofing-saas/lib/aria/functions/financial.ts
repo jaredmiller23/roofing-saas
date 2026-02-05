@@ -11,7 +11,7 @@
  */
 
 import { ariaFunctionRegistry } from '../function-registry'
-import { makeQuickBooksApiCall, getQuickBooksConnection } from '@/lib/quickbooks/api'
+import { makeQuickBooksApiCall, getQuickBooksConnection, escapeQBQuery } from '@/lib/quickbooks/api'
 import { logger } from '@/lib/logger'
 
 // =============================================================================
@@ -54,7 +54,7 @@ ariaFunctionRegistry.register({
     }
 
     try {
-      // Get all open invoices
+      // Get all open invoices (no user input in this query - safe)
       const invoiceResult = await makeQuickBooksApiCall(
         context.tenantId,
         `/query?query=${encodeURIComponent('SELECT * FROM Invoice WHERE Balance > 0 MAXRESULTS 500')}`
@@ -72,7 +72,7 @@ ariaFunctionRegistry.register({
             current: 0,
             aging: { current: 0, days30: 0, days60: 0, days90: 0, over90: 0 },
           },
-          message: '🎉 No outstanding invoices! AR is at $0.',
+          message: 'No outstanding invoices! AR is at $0.',
         }
       }
 
@@ -111,23 +111,23 @@ ariaFunctionRegistry.register({
         return dueDate && dueDate < today
       }).length
 
-      let message = `💰 Accounts Receivable Summary\n\n`
-      message += `📊 Total AR: $${totalAR.toLocaleString()}\n`
-      message += `📋 Open Invoices: ${invoices.length}\n\n`
+      let message = `Accounts Receivable Summary\n\n`
+      message += `Total AR: $${totalAR.toLocaleString()}\n`
+      message += `Open Invoices: ${invoices.length}\n\n`
 
       if (overdueAmount > 0) {
-        message += `⚠️ OVERDUE: $${overdueAmount.toLocaleString()} (${overdueCount} invoices)\n`
-        message += `✅ Current: $${currentAmount.toLocaleString()}\n\n`
-        message += `📅 Aging Breakdown:\n`
-        message += `• Current: $${aging.current.toLocaleString()}\n`
-        message += `• 1-30 days: $${aging.days30.toLocaleString()}\n`
-        message += `• 31-60 days: $${aging.days60.toLocaleString()}\n`
-        message += `• 61-90 days: $${aging.days90.toLocaleString()}\n`
+        message += `OVERDUE: $${overdueAmount.toLocaleString()} (${overdueCount} invoices)\n`
+        message += `Current: $${currentAmount.toLocaleString()}\n\n`
+        message += `Aging Breakdown:\n`
+        message += `- Current: $${aging.current.toLocaleString()}\n`
+        message += `- 1-30 days: $${aging.days30.toLocaleString()}\n`
+        message += `- 31-60 days: $${aging.days60.toLocaleString()}\n`
+        message += `- 61-90 days: $${aging.days90.toLocaleString()}\n`
         if (aging.over90 > 0) {
-          message += `• Over 90 days: $${aging.over90.toLocaleString()} ⚠️\n`
+          message += `- Over 90 days: $${aging.over90.toLocaleString()}\n`
         }
       } else {
-        message += `✅ All invoices are current!`
+        message += `All invoices are current!`
       }
 
       return {
@@ -196,11 +196,12 @@ ariaFunctionRegistry.register({
     }
 
     try {
-      // Calculate the cutoff date
+      // Calculate the cutoff date (server-generated, safe for query)
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - min_days_overdue)
       const cutoffStr = cutoffDate.toISOString().split('T')[0]
 
+      // min_amount and limit are numbers (safe), cutoffStr is server-generated (safe)
       const invoiceResult = await makeQuickBooksApiCall(
         context.tenantId,
         `/query?query=${encodeURIComponent(`SELECT * FROM Invoice WHERE Balance > ${min_amount} AND DueDate < '${cutoffStr}' ORDERBY DueDate ASC MAXRESULTS ${limit}`)}`
@@ -212,7 +213,7 @@ ariaFunctionRegistry.register({
         return {
           success: true,
           data: [],
-          message: `✅ No overdue invoices found (over ${min_days_overdue} days).`,
+          message: `No overdue invoices found (over ${min_days_overdue} days).`,
         }
       }
 
@@ -234,9 +235,9 @@ ariaFunctionRegistry.register({
 
       const totalOverdue = overdueList.reduce((sum, inv) => sum + ((inv.balance as number) || 0), 0)
 
-      let message = `⚠️ Overdue Invoices (${overdueList.length}):\n\n`
+      let message = `Overdue Invoices (${overdueList.length}):\n\n`
       for (const inv of overdueList.slice(0, 10)) {
-        const urgency = inv.daysOverdue > 60 ? '🔴' : inv.daysOverdue > 30 ? '🟡' : '🟠'
+        const urgency = inv.daysOverdue > 60 ? '[CRITICAL]' : inv.daysOverdue > 30 ? '[WARNING]' : '[OVERDUE]'
         message += `${urgency} ${inv.customerName}: $${(inv.balance as number).toLocaleString()} (${inv.daysOverdue} days)\n`
         message += `   Invoice #${inv.docNumber}\n`
       }
@@ -245,7 +246,7 @@ ariaFunctionRegistry.register({
         message += `\n... and ${overdueList.length - 10} more\n`
       }
 
-      message += `\n💰 Total Overdue: $${totalOverdue.toLocaleString()}`
+      message += `\nTotal Overdue: $${totalOverdue.toLocaleString()}`
 
       return {
         success: true,
@@ -321,10 +322,13 @@ ariaFunctionRegistry.register({
     }
 
     try {
+      // Escape user-provided search name
+      const escapedName = escapeQBQuery(searchName)
+
       // Find the customer
       const customerResult = await makeQuickBooksApiCall(
         context.tenantId,
-        `/query?query=${encodeURIComponent(`SELECT * FROM Customer WHERE DisplayName LIKE '%${searchName}%' MAXRESULTS 1`)}`
+        `/query?query=${encodeURIComponent(`SELECT * FROM Customer WHERE DisplayName LIKE '%${escapedName}%' MAXRESULTS 1`)}`
       ) as { QueryResponse?: { Customer?: Array<Record<string, unknown>> } }
 
       const customers = customerResult?.QueryResponse?.Customer || []
@@ -333,12 +337,15 @@ ariaFunctionRegistry.register({
       }
 
       const customer = customers[0]
-      const customerId = customer.Id
+      const customerId = customer.Id as string
+
+      // Escape customerId for subsequent queries
+      const escapedCustomerId = escapeQBQuery(customerId)
 
       // Get all invoices (paid and unpaid)
       const invoiceResult = await makeQuickBooksApiCall(
         context.tenantId,
-        `/query?query=${encodeURIComponent(`SELECT * FROM Invoice WHERE CustomerRef = '${customerId}' ORDERBY TxnDate DESC MAXRESULTS 50`)}`
+        `/query?query=${encodeURIComponent(`SELECT * FROM Invoice WHERE CustomerRef = '${escapedCustomerId}' ORDERBY TxnDate DESC MAXRESULTS 50`)}`
       ) as { QueryResponse?: { Invoice?: Array<Record<string, unknown>> } }
 
       const invoices = invoiceResult?.QueryResponse?.Invoice || []
@@ -346,7 +353,7 @@ ariaFunctionRegistry.register({
       // Get payments
       const paymentResult = await makeQuickBooksApiCall(
         context.tenantId,
-        `/query?query=${encodeURIComponent(`SELECT * FROM Payment WHERE CustomerRef = '${customerId}' ORDERBY TxnDate DESC MAXRESULTS 50`)}`
+        `/query?query=${encodeURIComponent(`SELECT * FROM Payment WHERE CustomerRef = '${escapedCustomerId}' ORDERBY TxnDate DESC MAXRESULTS 50`)}`
       ) as { QueryResponse?: { Payment?: Array<Record<string, unknown>> } }
 
       const payments = paymentResult?.QueryResponse?.Payment || []
@@ -385,19 +392,15 @@ ariaFunctionRegistry.register({
         reliabilityScore = 'poor'
       }
 
-      const reliabilityEmoji = reliabilityScore === 'excellent' ? '🌟' :
-        reliabilityScore === 'good' ? '✅' :
-        reliabilityScore === 'fair' ? '⚠️' : '🔴'
-
-      let message = `${reliabilityEmoji} Payment History: ${customer.DisplayName}\n\n`
-      message += `💳 Reliability: ${reliabilityScore.toUpperCase()}\n`
-      message += `📊 On-time Rate: ${onTimeRate}%\n`
-      message += `⏱️ Avg Days to Pay: ${avgDaysToPay}\n\n`
-      message += `📈 Lifetime:\n`
-      message += `• Total Invoiced: $${totalInvoiced.toLocaleString()}\n`
-      message += `• Total Paid: $${totalPaid.toLocaleString()}\n`
-      message += `• Current Balance: $${currentBalance.toLocaleString()}\n`
-      message += `• Invoices: ${invoices.length} | Payments: ${payments.length}`
+      let message = `Payment History: ${customer.DisplayName}\n\n`
+      message += `Reliability: ${reliabilityScore.toUpperCase()}\n`
+      message += `On-time Rate: ${onTimeRate}%\n`
+      message += `Avg Days to Pay: ${avgDaysToPay}\n\n`
+      message += `Lifetime:\n`
+      message += `- Total Invoiced: $${totalInvoiced.toLocaleString()}\n`
+      message += `- Total Paid: $${totalPaid.toLocaleString()}\n`
+      message += `- Current Balance: $${currentBalance.toLocaleString()}\n`
+      message += `- Invoices: ${invoices.length} | Payments: ${payments.length}`
 
       return {
         success: true,
@@ -475,10 +478,13 @@ ariaFunctionRegistry.register({
     }
 
     try {
+      // Escape user-provided customer name
+      const escapedCustomerName = escapeQBQuery(customer_name)
+
       // Find the customer
       const customerResult = await makeQuickBooksApiCall(
         context.tenantId,
-        `/query?query=${encodeURIComponent(`SELECT * FROM Customer WHERE DisplayName LIKE '%${customer_name}%' MAXRESULTS 1`)}`
+        `/query?query=${encodeURIComponent(`SELECT * FROM Customer WHERE DisplayName LIKE '%${escapedCustomerName}%' MAXRESULTS 1`)}`
       ) as { QueryResponse?: { Customer?: Array<Record<string, unknown>> } }
 
       const customers = customerResult?.QueryResponse?.Customer || []
@@ -487,13 +493,14 @@ ariaFunctionRegistry.register({
       }
 
       const customer = customers[0]
-      const customerId = customer.Id
+      const customerId = customer.Id as string
+      const escapedCustomerId = escapeQBQuery(customerId)
 
-      // Get overdue invoices
+      // Get overdue invoices (today's date is server-generated, safe)
       const today = new Date().toISOString().split('T')[0]
-      let invoiceQuery = `SELECT * FROM Invoice WHERE CustomerRef = '${customerId}' AND Balance > 0 AND DueDate < '${today}'`
+      let invoiceQuery = `SELECT * FROM Invoice WHERE CustomerRef = '${escapedCustomerId}' AND Balance > 0 AND DueDate < '${today}'`
       if (invoice_number) {
-        invoiceQuery += ` AND DocNumber = '${invoice_number}'`
+        invoiceQuery += ` AND DocNumber = '${escapeQBQuery(invoice_number)}'`
       }
       invoiceQuery += ' ORDERBY DueDate ASC MAXRESULTS 1'
 
@@ -564,7 +571,7 @@ ariaFunctionRegistry.register({
           message,
           channel,
         },
-        message: `📝 Payment reminder drafted for ${customer.DisplayName}:\n\n"${message}"\n\n⏳ Queued for approval. Review in ARIA Approvals.`,
+        message: `Payment reminder drafted for ${customer.DisplayName}:\n\n"${message}"\n\nQueued for approval. Review in ARIA Approvals.`,
       }
     } catch (error) {
       logger.error('[Financial] Draft reminder error:', { error })
@@ -715,6 +722,7 @@ ariaFunctionRegistry.register({
     if (qbConnection) {
       try {
         const todayStr = new Date().toISOString().split('T')[0]
+        // No user input in these queries - safe
         const invoiceResult = await makeQuickBooksApiCall(
           context.tenantId,
           `/query?query=${encodeURIComponent('SELECT * FROM Invoice WHERE Balance > 0 MAXRESULTS 200')}`
@@ -742,33 +750,33 @@ ariaFunctionRegistry.register({
     if (include_weather) {
       // Placeholder - would call actual weather API
       briefing.weather = {
-        forecast: 'Partly cloudy, 72°F - Good conditions for outdoor work',
+        forecast: 'Partly cloudy, 72F - Good conditions for outdoor work',
       }
     }
 
     // Build the briefing message
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-    let message = `📋 ARIA Morning Briefing - ${dayName}\n\n`
+    let message = `ARIA Morning Briefing - ${dayName}\n\n`
 
     // Schedule
-    message += `📅 TODAY'S SCHEDULE (${briefing.schedule.length})\n`
+    message += `TODAY'S SCHEDULE (${briefing.schedule.length})\n`
     if (briefing.schedule.length > 0) {
       for (const event of briefing.schedule) {
-        message += `• ${event.time} - ${event.title}`
+        message += `- ${event.time} - ${event.title}`
         if (event.location) message += ` @ ${event.location}`
         message += '\n'
       }
     } else {
-      message += '• No appointments scheduled\n'
+      message += '- No appointments scheduled\n'
     }
 
     // Needs attention
-    message += `\n⚠️ NEEDS ATTENTION\n`
+    message += `\nNEEDS ATTENTION\n`
     let needsAttention = false
 
     if (briefing.overdueFollowUps.length > 0) {
       needsAttention = true
-      message += `• ${briefing.overdueFollowUps.length} estimates pending > 14 days`
+      message += `- ${briefing.overdueFollowUps.length} estimates pending > 14 days`
       const oldest = briefing.overdueFollowUps[0]
       message += ` (oldest: ${oldest.name}, ${oldest.daysOld} days)\n`
     }
@@ -776,32 +784,32 @@ ariaFunctionRegistry.register({
     if (briefing.atRiskCustomers.length > 0) {
       needsAttention = true
       for (const customer of briefing.atRiskCustomers.slice(0, 3)) {
-        message += `• AT-RISK: ${customer.name} - ${customer.reason}\n`
+        message += `- AT-RISK: ${customer.name} - ${customer.reason}\n`
       }
     }
 
     if (briefing.financials && briefing.financials.overdue > 0) {
       needsAttention = true
-      message += `• ${briefing.financials.overdueCount} invoices overdue ($${briefing.financials.overdue.toLocaleString()})\n`
+      message += `- ${briefing.financials.overdueCount} invoices overdue ($${briefing.financials.overdue.toLocaleString()})\n`
     }
 
     if (!needsAttention) {
-      message += '• All clear! 🎉\n'
+      message += '- All clear!\n'
     }
 
     // Financial snapshot
     if (briefing.financials) {
-      message += `\n💰 FINANCIAL SNAPSHOT\n`
-      message += `• AR Balance: $${briefing.financials.totalAR.toLocaleString()}\n`
-      message += `• Overdue: $${briefing.financials.overdue.toLocaleString()} (${briefing.financials.overdueCount} invoices)\n`
+      message += `\nFINANCIAL SNAPSHOT\n`
+      message += `- AR Balance: $${briefing.financials.totalAR.toLocaleString()}\n`
+      message += `- Overdue: $${briefing.financials.overdue.toLocaleString()} (${briefing.financials.overdueCount} invoices)\n`
     }
 
     // Weather
     if (briefing.weather) {
-      message += `\n🌤️ WEATHER\n`
-      message += `• ${briefing.weather.forecast}\n`
+      message += `\nWEATHER\n`
+      message += `- ${briefing.weather.forecast}\n`
       if (briefing.weather.alert) {
-        message += `⚠️ ${briefing.weather.alert}\n`
+        message += `ALERT: ${briefing.weather.alert}\n`
       }
     }
 

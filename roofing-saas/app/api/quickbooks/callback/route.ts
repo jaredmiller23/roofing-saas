@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { exchangeAuthCode } from '@/lib/quickbooks/client'
+import { verifyState } from '@/lib/quickbooks/state'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { ValidationError, AuthenticationError, InternalError } from '@/lib/api/errors'
@@ -31,12 +32,10 @@ export async function GET(request: NextRequest) {
       throw ValidationError('Missing required OAuth parameters')
     }
 
-    // Decode and validate state
-    let stateData: { tenant_id: string; user_id: string; timestamp: number }
-    try {
-      stateData = JSON.parse(Buffer.from(state, 'base64').toString())
-    } catch (_e) {
-      throw ValidationError('Invalid state parameter')
+    // Verify HMAC-signed state token (CSRF protection)
+    const stateData = verifyState(state)
+    if (!stateData) {
+      throw ValidationError('Invalid or tampered state parameter')
     }
 
     // Check state is not too old (5 minutes)
@@ -69,7 +68,6 @@ export async function GET(request: NextRequest) {
     ).then(res => res.json())
 
     const companyName = companyInfo?.CompanyInfo?.CompanyName || 'Unknown'
-    const country = companyInfo?.CompanyInfo?.Country || 'US'
 
     // Encrypt tokens before storing
     const { data: rawEncryptedAccessToken, error: encryptAccessError } = await supabase
@@ -88,20 +86,27 @@ export async function GET(request: NextRequest) {
       throw InternalError('Failed to encrypt QuickBooks tokens')
     }
 
-    // Store encrypted tokens in database
-    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
+    // Calculate expiration times
+    const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000)
+    const refreshTokenExpiresAt = new Date(Date.now() + tokens.x_refresh_token_expires_in * 1000)
 
+    // Determine environment
+    const environment = process.env.QUICKBOOKS_ENVIRONMENT || 'production'
+
+    // Store encrypted tokens in quickbooks_connections table
     const { error: insertError } = await supabase
-      .from('quickbooks_tokens')
+      .from('quickbooks_connections')
       .upsert({
         tenant_id: stateData.tenant_id,
         access_token: encryptedAccessToken,
         refresh_token: encryptedRefreshToken,
         realm_id: realmId,
-        expires_at: expiresAt.toISOString(),
-        token_type: tokens.token_type,
+        token_expires_at: tokenExpiresAt.toISOString(),
+        refresh_token_expires_at: refreshTokenExpiresAt.toISOString(),
         company_name: companyName,
-        country,
+        is_active: true,
+        environment,
+        sync_error: null,
       }, {
         onConflict: 'tenant_id',
       })
@@ -124,7 +129,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('QuickBooks callback error', { error })
     // For OAuth flow, redirect with error rather than returning JSON
-    if (error instanceof Error && (error.message.includes('Missing required') || error.message.includes('Invalid state') || error.message.includes('expired'))) {
+    if (error instanceof Error && (error.message.includes('Missing required') || error.message.includes('Invalid') || error.message.includes('expired'))) {
       return errorResponse(error)
     }
     return NextResponse.redirect(

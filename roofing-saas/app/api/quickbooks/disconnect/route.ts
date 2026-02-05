@@ -24,9 +24,9 @@ export async function POST(_request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Delete QuickBooks tokens (hard delete for security)
+    // Delete QuickBooks connection (hard delete for security - removes encrypted tokens)
     const { error: deleteError } = await supabase
-      .from('quickbooks_tokens')
+      .from('quickbooks_connections')
       .delete()
       .eq('tenant_id', tenantId)
 

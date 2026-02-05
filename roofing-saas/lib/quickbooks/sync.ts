@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { QuickBooksClient, QBCustomer, QBInvoice } from './client'
+import { QuickBooksClient, QBCustomer, QBInvoice, getDefaultItem } from './client'
 import { logger } from '@/lib/logger'
 import type { Json } from '@/lib/types/database.types'
 
@@ -237,6 +237,9 @@ export async function syncProjectToInvoice(
 
     const qbCustomerId = contactMapping?.qb_entity_id || (await syncContactToCustomer(project.contact_id ?? '', tenantId, client)).qbId!
 
+    // Get the default item for invoice line items (configurable, not hardcoded)
+    const defaultItem = await getDefaultItem(tenantId, client)
+
     // Create invoice
     const invoice: QBInvoice = {
       CustomerRef: {
@@ -248,8 +251,8 @@ export async function syncProjectToInvoice(
         Description: project.name || 'Roofing Project',
         SalesItemLineDetail: {
           ItemRef: {
-            value: '1', // Default service item - should be configurable
-            name: 'Services',
+            value: defaultItem.value,
+            name: defaultItem.name,
           },
           Qty: 1,
           UnitPrice: project.estimated_value ?? 0,
