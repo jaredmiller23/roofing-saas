@@ -4,12 +4,59 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-// Mock the indexed-db module before importing the cache
+// In-memory store for testing
+let mockStore: Map<string, Record<string, unknown>> = new Map()
+
+// Helper to add data to mock store
+function addToMockStore(data: Record<string, unknown>) {
+  mockStore.set(data.id as string, data)
+}
+
+// Mock Dexie-style table API
+const mockOfflineDocuments = {
+  put: vi.fn((obj: Record<string, unknown>) => {
+    mockStore.set(obj.id as string, obj)
+    return Promise.resolve()
+  }),
+  get: vi.fn((id: string) => {
+    return Promise.resolve(mockStore.get(id))
+  }),
+  delete: vi.fn((id: string) => {
+    mockStore.delete(id)
+    return Promise.resolve()
+  }),
+  toArray: vi.fn(() => {
+    return Promise.resolve(Array.from(mockStore.values()))
+  }),
+}
+
 const mockDb = {
-  put: vi.fn(),
-  get: vi.fn(),
-  delete: vi.fn(),
-  getAll: vi.fn(),
+  offline_documents: mockOfflineDocuments,
+  // Backwards-compatible aliases for old test patterns
+  put: vi.fn((store: string, obj: Record<string, unknown>) => {
+    if (store === 'offline_documents') {
+      mockStore.set(obj.id as string, obj)
+    }
+    return Promise.resolve()
+  }),
+  get: vi.fn((store: string, id: string) => {
+    if (store === 'offline_documents') {
+      return Promise.resolve(mockStore.get(id))
+    }
+    return Promise.resolve(undefined)
+  }),
+  delete: vi.fn((store: string, id: string) => {
+    if (store === 'offline_documents') {
+      mockStore.delete(id)
+    }
+    return Promise.resolve()
+  }),
+  getAll: vi.fn((store: string) => {
+    if (store === 'offline_documents') {
+      return Promise.resolve(Array.from(mockStore.values()))
+    }
+    return Promise.resolve([])
+  }),
 }
 
 vi.mock('@/lib/offline/indexed-db', () => ({
@@ -34,6 +81,7 @@ import {
 describe('Signature Cache', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockStore.clear()
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2025-01-15T12:00:00Z'))
   })
@@ -58,15 +106,13 @@ describe('Signature Cache', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ document: mockDocument }),
+        json: () => Promise.resolve({ data: mockDocument }),
       })
-      mockDb.put.mockResolvedValueOnce(undefined)
 
       await cacheSignatureDocument('doc-123')
 
       expect(mockFetch).toHaveBeenCalledWith('/api/signature-documents/doc-123/sign')
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_documents',
+      expect(mockOfflineDocuments.put).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'doc-123',
           name: 'Service Agreement',
@@ -112,24 +158,22 @@ describe('Signature Cache', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ document: mockDocument }),
+        json: () => Promise.resolve({ data: mockDocument }),
       })
-      mockDb.put.mockResolvedValueOnce(undefined)
 
       const customTTL = 2 * 60 * 60 * 1000 // 2 hours
 
       await cacheSignatureDocument('doc-123', customTTL)
 
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_documents',
+      expect(mockOfflineDocuments.put).toHaveBeenCalledWith(
         expect.objectContaining({
           blob_data: expect.stringContaining('"expires_at":'),
         })
       )
 
       // Verify the expires_at in the blob_data
-      const call = mockDb.put.mock.calls[0]
-      const blobData = JSON.parse(call[1].blob_data)
+      const call = mockOfflineDocuments.put.mock.calls[0]
+      const blobData = JSON.parse((call[0] as { blob_data: string }).blob_data)
       const expectedExpiry = Date.now() + customTTL
       expect(blobData.expires_at).toBe(expectedExpiry)
     })
@@ -145,7 +189,7 @@ describe('Signature Cache', () => {
         synced: true,
       }
 
-      mockDb.get.mockResolvedValueOnce({
+      addToMockStore({
         id: 'doc-123',
         type: 'signature_document',
         blob_data: JSON.stringify(cachedEntry),
@@ -158,7 +202,7 @@ describe('Signature Cache', () => {
     })
 
     it('should return null when not cached', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      // Empty store - no data added
 
       const result = await getCachedSignatureDocument('doc-123')
 
@@ -174,31 +218,29 @@ describe('Signature Cache', () => {
         synced: true,
       }
 
-      mockDb.get.mockResolvedValueOnce({
+      addToMockStore({
         id: 'doc-123',
         type: 'signature_document',
         blob_data: JSON.stringify(cachedEntry),
       })
-      mockDb.delete.mockResolvedValueOnce(undefined)
 
       const result = await getCachedSignatureDocument('doc-123')
 
       expect(result).toBeNull()
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_documents', 'doc-123')
+      expect(mockOfflineDocuments.delete).toHaveBeenCalledWith('doc-123')
     })
 
     it('should return null and delete on invalid JSON', async () => {
-      mockDb.get.mockResolvedValueOnce({
+      addToMockStore({
         id: 'doc-123',
         type: 'signature_document',
         blob_data: 'invalid json{{{',
       })
-      mockDb.delete.mockResolvedValueOnce(undefined)
 
       const result = await getCachedSignatureDocument('doc-123')
 
       expect(result).toBeNull()
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_documents', 'doc-123')
+      expect(mockOfflineDocuments.delete).toHaveBeenCalledWith('doc-123')
     })
   })
 
@@ -214,7 +256,7 @@ describe('Signature Cache', () => {
       // First call: list pending documents
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ documents: mockDocuments }),
+        json: () => Promise.resolve({ data: mockDocuments }),
       })
 
       // Subsequent calls: fetch each document
@@ -223,13 +265,10 @@ describe('Signature Cache', () => {
           ok: true,
           json: () =>
             Promise.resolve({
-              document: { ...doc, title: `Doc ${doc.id}`, signature_fields: [] },
+              data: { ...doc, title: `Doc ${doc.id}`, signature_fields: [] },
             }),
         })
       }
-
-      mockDb.put.mockResolvedValue(undefined)
-      mockDb.getAll.mockResolvedValue([]) // For enforceMaxCachedDocuments
 
       const cached = await cacheAllPendingDocuments()
 
@@ -253,7 +292,7 @@ describe('Signature Cache', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ documents: mockDocuments }),
+        json: () => Promise.resolve({ data: mockDocuments }),
       })
 
       // First doc succeeds
@@ -261,7 +300,7 @@ describe('Signature Cache', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            document: { id: 'doc-1', title: 'Doc 1', signature_fields: [] },
+            data: { id: 'doc-1', title: 'Doc 1', signature_fields: [] },
           }),
       })
 
@@ -272,9 +311,6 @@ describe('Signature Cache', () => {
         json: () => Promise.resolve({ error: 'Not found' }),
       })
 
-      mockDb.put.mockResolvedValue(undefined)
-      mockDb.getAll.mockResolvedValue([])
-
       const cached = await cacheAllPendingDocuments()
 
       expect(cached).toBe(1)
@@ -284,80 +320,71 @@ describe('Signature Cache', () => {
   describe('clearExpiredDocumentCache()', () => {
     it('should remove expired signature documents', async () => {
       const now = Date.now()
-      const mockDocs = [
-        {
-          id: 'doc-1',
-          type: 'signature_document',
-          blob_data: JSON.stringify({ expires_at: now - 1000 }), // Expired
-        },
-        {
-          id: 'doc-2',
-          type: 'signature_document',
-          blob_data: JSON.stringify({ expires_at: now + 100000 }), // Valid
-        },
-        {
-          id: 'doc-3',
-          type: 'other_document', // Not a signature document
-          blob_data: JSON.stringify({ expires_at: now - 1000 }),
-        },
-        {
-          id: 'doc-4',
-          type: 'signature_document',
-          blob_data: 'invalid json', // Invalid
-        },
-      ]
 
-      mockDb.getAll.mockResolvedValueOnce(mockDocs)
-      mockDb.delete.mockResolvedValue(undefined)
+      addToMockStore({
+        id: 'doc-1',
+        type: 'signature_document',
+        blob_data: JSON.stringify({ expires_at: now - 1000 }), // Expired
+      })
+      addToMockStore({
+        id: 'doc-2',
+        type: 'signature_document',
+        blob_data: JSON.stringify({ expires_at: now + 100000 }), // Valid
+      })
+      addToMockStore({
+        id: 'doc-3',
+        type: 'other_document', // Not a signature document
+        blob_data: JSON.stringify({ expires_at: now - 1000 }),
+      })
+      addToMockStore({
+        id: 'doc-4',
+        type: 'signature_document',
+        blob_data: 'invalid json', // Invalid
+      })
 
       const cleared = await clearExpiredDocumentCache()
 
       expect(cleared).toBe(2) // doc-1 (expired) + doc-4 (invalid)
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_documents', 'doc-1')
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_documents', 'doc-4')
+      expect(mockOfflineDocuments.delete).toHaveBeenCalledWith('doc-1')
+      expect(mockOfflineDocuments.delete).toHaveBeenCalledWith('doc-4')
     })
   })
 
   describe('removeCachedDocument()', () => {
     it('should delete the document from cache', async () => {
-      mockDb.delete.mockResolvedValueOnce(undefined)
-
       await removeCachedDocument('doc-123')
 
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_documents', 'doc-123')
+      expect(mockOfflineDocuments.delete).toHaveBeenCalledWith('doc-123')
     })
   })
 
   describe('getAllCachedDocuments()', () => {
     it('should return only valid, non-expired signature documents', async () => {
       const now = Date.now()
-      const mockDocs = [
-        {
-          id: 'doc-1',
-          type: 'signature_document',
-          blob_data: JSON.stringify({
-            id: 'doc-1',
-            expires_at: now + 100000,
-            document_data: { title: 'Doc 1' },
-          }),
-        },
-        {
-          id: 'doc-2',
-          type: 'signature_document',
-          blob_data: JSON.stringify({
-            id: 'doc-2',
-            expires_at: now - 1000, // Expired
-            document_data: { title: 'Doc 2' },
-          }),
-        },
-        {
-          id: 'doc-3',
-          type: 'other_type',
-          blob_data: '{}',
-        },
-      ]
 
-      mockDb.getAll.mockResolvedValueOnce(mockDocs)
+      addToMockStore({
+        id: 'doc-1',
+        type: 'signature_document',
+        blob_data: JSON.stringify({
+          id: 'doc-1',
+          expires_at: now + 100000,
+          document_data: { title: 'Doc 1' },
+        }),
+      })
+      addToMockStore({
+        id: 'doc-2',
+        type: 'signature_document',
+        blob_data: JSON.stringify({
+          id: 'doc-2',
+          expires_at: now - 1000, // Expired
+          document_data: { title: 'Doc 2' },
+        }),
+      })
+      addToMockStore({
+        id: 'doc-3',
+        type: 'other_type',
+        blob_data: '{}',
+      })
 
       const docs = await getAllCachedDocuments()
 
@@ -376,7 +403,7 @@ describe('Signature Cache', () => {
         synced: true,
       }
 
-      mockDb.get.mockResolvedValueOnce({
+      addToMockStore({
         id: 'doc-123',
         type: 'signature_document',
         blob_data: JSON.stringify(cachedEntry),
@@ -388,7 +415,7 @@ describe('Signature Cache', () => {
     })
 
     it('should return false when not cached', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      // Empty store - no data added
 
       const isCached = await isDocumentCached('doc-123')
 
@@ -399,28 +426,25 @@ describe('Signature Cache', () => {
   describe('getCacheStats()', () => {
     it('should return correct statistics', async () => {
       const now = Date.now()
-      const mockDocs = [
-        {
-          id: 'doc-1',
-          type: 'signature_document',
-          size: 1000,
-          timestamp: now - 5000,
-        },
-        {
-          id: 'doc-2',
-          type: 'signature_document',
-          size: 2000,
-          timestamp: now - 1000,
-        },
-        {
-          id: 'doc-3',
-          type: 'other_type',
-          size: 500,
-          timestamp: now,
-        },
-      ]
 
-      mockDb.getAll.mockResolvedValueOnce(mockDocs)
+      addToMockStore({
+        id: 'doc-1',
+        type: 'signature_document',
+        size: 1000,
+        timestamp: now - 5000,
+      })
+      addToMockStore({
+        id: 'doc-2',
+        type: 'signature_document',
+        size: 2000,
+        timestamp: now - 1000,
+      })
+      addToMockStore({
+        id: 'doc-3',
+        type: 'other_type',
+        size: 500,
+        timestamp: now,
+      })
 
       const stats = await getCacheStats()
 
@@ -431,7 +455,7 @@ describe('Signature Cache', () => {
     })
 
     it('should handle empty cache', async () => {
-      mockDb.getAll.mockResolvedValueOnce([])
+      // Empty store - no data added
 
       const stats = await getCacheStats()
 
