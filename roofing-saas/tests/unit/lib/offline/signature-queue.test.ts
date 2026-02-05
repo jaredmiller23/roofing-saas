@@ -4,13 +4,60 @@
 
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 
-// Mock the indexed-db module before importing the queue
+// In-memory store for testing
+let mockStore: Map<string, Record<string, unknown>> = new Map()
+
+// Helper to add data to mock store
+function addToMockStore(data: Record<string, unknown>) {
+  mockStore.set(data.id as string, data)
+}
+
+// Mock Dexie-style table API
+const mockOfflineForms = {
+  put: vi.fn((obj: Record<string, unknown>) => {
+    mockStore.set(obj.id as string, obj)
+    return Promise.resolve()
+  }),
+  get: vi.fn((id: string) => {
+    return Promise.resolve(mockStore.get(id))
+  }),
+  delete: vi.fn((id: string) => {
+    mockStore.delete(id)
+    return Promise.resolve()
+  }),
+  toArray: vi.fn(() => {
+    return Promise.resolve(Array.from(mockStore.values()))
+  }),
+  where: vi.fn((field: string) => ({
+    equals: (value: unknown) => ({
+      toArray: () => {
+        // Handle synced field specially (stored as boolean but queried as 0/1)
+        const results = Array.from(mockStore.values()).filter((item) => {
+          if (field === 'synced') {
+            return item[field] === (value === 1 ? true : false) || item[field] === value
+          }
+          return item[field] === value
+        })
+        return Promise.resolve(results)
+      },
+    }),
+  })),
+}
+
 const mockDb = {
-  put: vi.fn(),
-  get: vi.fn(),
-  delete: vi.fn(),
-  getAll: vi.fn(),
-  getAllFromIndex: vi.fn(),
+  offline_forms: mockOfflineForms,
+  // Backwards-compatible aliases for old test patterns
+  get: mockOfflineForms.get,
+  put: mockOfflineForms.put,
+  delete: mockOfflineForms.delete,
+  getAll: mockOfflineForms.toArray,
+  getAllFromIndex: vi.fn((_store: string, _index: string, value: unknown) => {
+    // Filter by synced value (used for 'synced' index)
+    const results = Array.from(mockStore.values()).filter(
+      (item) => item.synced === value
+    )
+    return Promise.resolve(results)
+  }),
 }
 
 vi.mock('@/lib/offline/indexed-db', () => ({
@@ -40,6 +87,7 @@ import type { OfflineSignatureInput } from '@/lib/offline/signature-types'
 describe('Signature Queue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockStore.clear()
   })
 
   describe('queueOfflineSignature()', () => {
@@ -55,13 +103,10 @@ describe('Signature Queue', () => {
         captured_at: Date.now(),
       }
 
-      mockDb.put.mockResolvedValueOnce(undefined)
-
       const id = await queueOfflineSignature(submission)
 
       expect(id).toMatch(/^sig_\d+_[a-z0-9]+$/)
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_forms',
+      expect(mockOfflineForms.put).toHaveBeenCalledWith(
         expect.objectContaining({
           form_type: 'signature',
           synced: false,
@@ -78,28 +123,25 @@ describe('Signature Queue', () => {
 
   describe('getPendingSignatures()', () => {
     it('should return only unsynced signature forms', async () => {
-      const mockForms = [
-        {
-          id: 'sig_1',
-          form_type: 'signature',
-          data: { id: 'sig_1', document_id: 'doc-1', synced: false, sync_attempts: 0 },
-          synced: false,
-        },
-        {
-          id: 'form_2',
-          form_type: 'inspection', // Not a signature
-          data: {},
-          synced: false,
-        },
-        {
-          id: 'sig_2',
-          form_type: 'signature',
-          data: { id: 'sig_2', document_id: 'doc-2', synced: false, sync_attempts: 0 },
-          synced: false,
-        },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
+      // Add test data to mock store
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: { id: 'sig_1', document_id: 'doc-1', synced: false, sync_attempts: 0 },
+        synced: false,
+      })
+      addToMockStore({
+        id: 'form_2',
+        form_type: 'inspection', // Not a signature
+        data: {},
+        synced: false,
+      })
+      addToMockStore({
+        id: 'sig_2',
+        form_type: 'signature',
+        data: { id: 'sig_2', document_id: 'doc-2', synced: false, sync_attempts: 0 },
+        synced: false,
+      })
 
       const pending = await getPendingSignatures()
 
@@ -109,7 +151,7 @@ describe('Signature Queue', () => {
     })
 
     it('should return empty array when no pending signatures', async () => {
-      mockDb.getAllFromIndex.mockResolvedValueOnce([])
+      // Empty store - no data added
 
       const pending = await getPendingSignatures()
 
@@ -158,20 +200,17 @@ describe('Signature Queue', () => {
 
   describe('markSignatureSynced()', () => {
     it('should update the form and submission as synced', async () => {
-      const mockForm = {
+      // Add form to mock store
+      addToMockStore({
         id: 'sig_123',
         form_type: 'signature',
         data: { id: 'sig_123', synced: false },
         synced: false,
-      }
-
-      mockDb.get.mockResolvedValueOnce(mockForm)
-      mockDb.put.mockResolvedValueOnce(undefined)
+      })
 
       await markSignatureSynced('sig_123')
 
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_forms',
+      expect(mockOfflineForms.put).toHaveBeenCalledWith(
         expect.objectContaining({
           synced: true,
           data: expect.objectContaining({ synced: true }),
@@ -182,19 +221,16 @@ describe('Signature Queue', () => {
 
   describe('markSignatureFailed()', () => {
     it('should increment retry count and set error', async () => {
-      const mockForm = {
+      // Add form to mock store
+      addToMockStore({
         id: 'sig_123',
         form_type: 'signature',
         data: { id: 'sig_123', sync_attempts: 2, synced: false },
-      }
-
-      mockDb.get.mockResolvedValueOnce(mockForm)
-      mockDb.put.mockResolvedValueOnce(undefined)
+      })
 
       await markSignatureFailed('sig_123', 'Network error')
 
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_forms',
+      expect(mockOfflineForms.put).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             sync_attempts: 3,
@@ -207,11 +243,9 @@ describe('Signature Queue', () => {
 
   describe('removeSignatureFromQueue()', () => {
     it('should delete the form from IndexedDB', async () => {
-      mockDb.delete.mockResolvedValueOnce(undefined)
-
       await removeSignatureFromQueue('sig_123')
 
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_forms', 'sig_123')
+      expect(mockOfflineForms.delete).toHaveBeenCalledWith('sig_123')
     })
   })
 
@@ -226,16 +260,12 @@ describe('Signature Queue', () => {
     })
 
     it('should skip signatures that exceeded max retries', async () => {
-      const mockForms = [
-        {
-          id: 'sig_1',
-          form_type: 'signature',
-          data: { id: 'sig_1', document_id: 'doc-1', sync_attempts: 10, synced: false },
-          synced: false,
-        },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: { id: 'sig_1', document_id: 'doc-1', sync_attempts: 10, synced: false },
+        synced: false,
+      })
 
       const result = await processSignatureQueue()
 
@@ -246,29 +276,23 @@ describe('Signature Queue', () => {
     })
 
     it('should successfully sync valid signatures', async () => {
-      const mockForms = [
-        {
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: {
           id: 'sig_1',
-          form_type: 'signature',
-          data: {
-            id: 'sig_1',
-            document_id: 'doc-1',
-            signer_name: 'John',
-            signer_email: 'john@test.com',
-            signer_type: 'customer',
-            signature_data: 'base64data',
-            signature_method: 'draw',
-            completed_fields: [],
-            sync_attempts: 0,
-            synced: false,
-          },
+          document_id: 'doc-1',
+          signer_name: 'John',
+          signer_email: 'john@test.com',
+          signer_type: 'customer',
+          signature_data: 'base64data',
+          signature_method: 'draw',
+          completed_fields: [],
+          sync_attempts: 0,
           synced: false,
         },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
-      mockDb.get.mockResolvedValue(mockForms[0])
-      mockDb.put.mockResolvedValue(undefined)
+        synced: false,
+      })
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -289,29 +313,23 @@ describe('Signature Queue', () => {
     })
 
     it('should handle 409 conflict as success (already signed)', async () => {
-      const mockForms = [
-        {
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: {
           id: 'sig_1',
-          form_type: 'signature',
-          data: {
-            id: 'sig_1',
-            document_id: 'doc-1',
-            signer_name: 'John',
-            signer_email: 'john@test.com',
-            signer_type: 'customer',
-            signature_data: 'base64data',
-            signature_method: 'draw',
-            completed_fields: [],
-            sync_attempts: 0,
-            synced: false,
-          },
+          document_id: 'doc-1',
+          signer_name: 'John',
+          signer_email: 'john@test.com',
+          signer_type: 'customer',
+          signature_data: 'base64data',
+          signature_method: 'draw',
+          completed_fields: [],
+          sync_attempts: 0,
           synced: false,
         },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
-      mockDb.get.mockResolvedValue(mockForms[0])
-      mockDb.put.mockResolvedValue(undefined)
+        synced: false,
+      })
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -327,29 +345,23 @@ describe('Signature Queue', () => {
     })
 
     it('should handle API errors gracefully', async () => {
-      const mockForms = [
-        {
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: {
           id: 'sig_1',
-          form_type: 'signature',
-          data: {
-            id: 'sig_1',
-            document_id: 'doc-1',
-            signer_name: 'John',
-            signer_email: 'john@test.com',
-            signer_type: 'customer',
-            signature_data: 'base64data',
-            signature_method: 'draw',
-            completed_fields: [],
-            sync_attempts: 0,
-            synced: false,
-          },
+          document_id: 'doc-1',
+          signer_name: 'John',
+          signer_email: 'john@test.com',
+          signer_type: 'customer',
+          signature_data: 'base64data',
+          signature_method: 'draw',
+          completed_fields: [],
+          sync_attempts: 0,
           synced: false,
         },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
-      mockDb.get.mockResolvedValue(mockForms[0])
-      mockDb.put.mockResolvedValue(undefined)
+        synced: false,
+      })
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -368,28 +380,24 @@ describe('Signature Queue', () => {
 
   describe('getPendingSignatureCount()', () => {
     it('should count only signatures below max retries', async () => {
-      const mockForms = [
-        {
-          id: 'sig_1',
-          form_type: 'signature',
-          data: { id: 'sig_1', sync_attempts: 0, synced: false },
-          synced: false,
-        },
-        {
-          id: 'sig_2',
-          form_type: 'signature',
-          data: { id: 'sig_2', sync_attempts: 10, synced: false }, // Exceeded max
-          synced: false,
-        },
-        {
-          id: 'sig_3',
-          form_type: 'signature',
-          data: { id: 'sig_3', sync_attempts: 5, synced: false },
-          synced: false,
-        },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: { id: 'sig_1', sync_attempts: 0, synced: false },
+        synced: false,
+      })
+      addToMockStore({
+        id: 'sig_2',
+        form_type: 'signature',
+        data: { id: 'sig_2', sync_attempts: 10, synced: false }, // Exceeded max
+        synced: false,
+      })
+      addToMockStore({
+        id: 'sig_3',
+        form_type: 'signature',
+        data: { id: 'sig_3', sync_attempts: 5, synced: false },
+        synced: false,
+      })
 
       const count = await getPendingSignatureCount()
 
@@ -399,22 +407,18 @@ describe('Signature Queue', () => {
 
   describe('getFailedSignatures()', () => {
     it('should return only signatures that exceeded max retries', async () => {
-      const mockForms = [
-        {
-          id: 'sig_1',
-          form_type: 'signature',
-          data: { id: 'sig_1', sync_attempts: 0, synced: false },
-          synced: false,
-        },
-        {
-          id: 'sig_2',
-          form_type: 'signature',
-          data: { id: 'sig_2', sync_attempts: 10, synced: false },
-          synced: false,
-        },
-      ]
-
-      mockDb.getAllFromIndex.mockResolvedValueOnce(mockForms)
+      addToMockStore({
+        id: 'sig_1',
+        form_type: 'signature',
+        data: { id: 'sig_1', sync_attempts: 0, synced: false },
+        synced: false,
+      })
+      addToMockStore({
+        id: 'sig_2',
+        form_type: 'signature',
+        data: { id: 'sig_2', sync_attempts: 10, synced: false },
+        synced: false,
+      })
 
       const failed = await getFailedSignatures()
 
@@ -425,7 +429,7 @@ describe('Signature Queue', () => {
 
   describe('retryFailedSignature()', () => {
     it('should reset sync attempts and clear error', async () => {
-      const mockForm = {
+      addToMockStore({
         id: 'sig_123',
         form_type: 'signature',
         data: {
@@ -434,15 +438,11 @@ describe('Signature Queue', () => {
           last_error: 'Network error',
           last_sync_attempt: Date.now(),
         },
-      }
-
-      mockDb.get.mockResolvedValueOnce(mockForm)
-      mockDb.put.mockResolvedValueOnce(undefined)
+      })
 
       await retryFailedSignature('sig_123')
 
-      expect(mockDb.put).toHaveBeenCalledWith(
-        'offline_forms',
+      expect(mockOfflineForms.put).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             sync_attempts: 0,
@@ -456,22 +456,17 @@ describe('Signature Queue', () => {
 
   describe('clearSyncedSignatures()', () => {
     it('should remove only synced signature forms', async () => {
-      const mockForms = [
-        { id: 'sig_1', form_type: 'signature', synced: true },
-        { id: 'sig_2', form_type: 'signature', synced: false },
-        { id: 'form_3', form_type: 'inspection', synced: true },
-        { id: 'sig_4', form_type: 'signature', synced: true },
-      ]
-
-      mockDb.getAll.mockResolvedValueOnce(mockForms)
-      mockDb.delete.mockResolvedValue(undefined)
+      addToMockStore({ id: 'sig_1', form_type: 'signature', synced: true })
+      addToMockStore({ id: 'sig_2', form_type: 'signature', synced: false })
+      addToMockStore({ id: 'form_3', form_type: 'inspection', synced: true })
+      addToMockStore({ id: 'sig_4', form_type: 'signature', synced: true })
 
       const cleared = await clearSyncedSignatures()
 
       expect(cleared).toBe(2)
-      expect(mockDb.delete).toHaveBeenCalledTimes(2)
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_forms', 'sig_1')
-      expect(mockDb.delete).toHaveBeenCalledWith('offline_forms', 'sig_4')
+      expect(mockOfflineForms.delete).toHaveBeenCalledTimes(2)
+      expect(mockOfflineForms.delete).toHaveBeenCalledWith('sig_1')
+      expect(mockOfflineForms.delete).toHaveBeenCalledWith('sig_4')
     })
   })
 })
