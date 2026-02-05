@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useForm, Resolver } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createTaskSchema, type CreateTaskInput } from '@/lib/validations/task'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -42,33 +45,70 @@ interface TaskFormProps {
   task?: Task
 }
 
+// Clean form data before Zod validation
+// Converts NaN from empty number inputs to undefined, empty strings to null for UUID fields
+function cleanFormData(data: Record<string, unknown>): Record<string, unknown> {
+  const cleaned: Record<string, unknown> = { ...data }
+  const uuidFields = ['project_id', 'contact_id', 'assigned_to', 'parent_task_id']
+  for (const key of Object.keys(cleaned)) {
+    const value = cleaned[key]
+    if (typeof value === 'number' && isNaN(value)) {
+      cleaned[key] = undefined
+    }
+    if (uuidFields.includes(key) && value === '') {
+      cleaned[key] = null
+    }
+    // Empty date strings → null
+    if ((key === 'due_date' || key === 'start_date' || key === 'reminder_date') && value === '') {
+      cleaned[key] = null
+    }
+  }
+  return cleaned
+}
+
+const taskResolver: Resolver<CreateTaskInput> = async (values, context, options) => {
+  const cleanedValues = cleanFormData(values) as CreateTaskInput
+  return zodResolver(createTaskSchema)(cleanedValues, context, options)
+}
+
 export function TaskFormEnhanced({ task }: TaskFormProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([])
   const [contacts, setContacts] = useState<Array<{ id: string; first_name: string; last_name: string }>>([])
   const [tasks, setTasks] = useState<Array<{ id: string; title: string }>>([])
   const [tagInput, setTagInput] = useState('')
 
-  const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    priority: task?.priority || 'medium',
-    status: task?.status || 'todo',
-    due_date: task?.due_date || '',
-    start_date: task?.start_date || '',
-    project_id: task?.project_id || '',
-    contact_id: task?.contact_id || '',
-    assigned_to: task?.assigned_to || '',
-    parent_task_id: task?.parent_task_id || '',
-    progress: task?.progress || 0,
-    estimated_hours: task?.estimated_hours || '',
-    actual_hours: task?.actual_hours || '',
-    tags: task?.tags || [],
-    reminder_enabled: task?.reminder_enabled || false,
-    reminder_date: task?.reminder_date || '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue,
+  } = useForm<CreateTaskInput>({
+    resolver: taskResolver,
+    defaultValues: {
+      title: task?.title || '',
+      description: task?.description || '',
+      priority: (task?.priority as CreateTaskInput['priority']) || 'medium',
+      status: (task?.status as CreateTaskInput['status']) || 'todo',
+      due_date: task?.due_date || '',
+      start_date: task?.start_date || '',
+      project_id: task?.project_id || '',
+      contact_id: task?.contact_id || '',
+      assigned_to: task?.assigned_to || '',
+      parent_task_id: task?.parent_task_id || '',
+      progress: task?.progress || 0,
+      estimated_hours: task?.estimated_hours || undefined,
+      actual_hours: task?.actual_hours || undefined,
+      tags: task?.tags || [],
+      reminder_enabled: task?.reminder_enabled || false,
+      reminder_date: task?.reminder_date || '',
+    },
   })
+
+  const tags = watch('tags')
+  const reminderEnabled = watch('reminder_enabled')
 
   const loadData = useCallback(async () => {
     try {
@@ -90,32 +130,30 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
     loadData()
   }, [loadData])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+  const onSubmit = async (data: CreateTaskInput) => {
+    setServerError(null)
 
     try {
       const url = task ? `/api/tasks/${task.id}` : '/api/tasks'
       const method = task ? 'PATCH' : 'POST'
 
       const payload = {
-        title: formData.title,
-        description: formData.description || null,
-        priority: formData.priority,
-        status: formData.status,
-        due_date: formData.due_date || null,
-        start_date: formData.start_date || null,
-        project_id: formData.project_id || null,
-        contact_id: formData.contact_id || null,
-        assigned_to: formData.assigned_to || null,
-        parent_task_id: formData.parent_task_id || null,
-        progress: parseInt(formData.progress.toString()) || 0,
-        estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours.toString()) : null,
-        actual_hours: formData.actual_hours ? parseFloat(formData.actual_hours.toString()) : null,
-        tags: formData.tags,
-        reminder_enabled: formData.reminder_enabled,
-        reminder_date: formData.reminder_date || null,
+        title: data.title,
+        description: data.description || null,
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date || null,
+        start_date: data.start_date || null,
+        project_id: data.project_id || null,
+        contact_id: data.contact_id || null,
+        assigned_to: data.assigned_to || null,
+        parent_task_id: data.parent_task_id || null,
+        progress: data.progress || 0,
+        estimated_hours: data.estimated_hours || null,
+        actual_hours: data.actual_hours || null,
+        tags: data.tags,
+        reminder_enabled: data.reminder_enabled,
+        reminder_date: data.reminder_date || null,
       }
 
       await apiFetch(url, {
@@ -126,28 +164,26 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       router.push('/tasks')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
+      setServerError(err instanceof Error ? err.message : 'An error occurred')
     }
   }
 
   const addTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] })
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setValue('tags', [...tags, tagInput.trim()])
       setTagInput('')
     }
   }
 
   const removeTag = (tagToRemove: string) => {
-    setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) })
+    setValue('tags', tags.filter(tag => tag !== tagToRemove))
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {serverError && (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{serverError}</AlertDescription>
         </Alert>
       )}
 
@@ -164,11 +200,12 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               Title <span className="text-red-500">*</span>
             </label>
             <Input
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              {...register('title')}
               placeholder="Enter task title..."
             />
+            {errors.title && (
+              <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+            )}
           </div>
 
           <div>
@@ -176,11 +213,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               Description
             </label>
             <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              {...register('description')}
               rows={4}
               placeholder="Describe the task..."
             />
+            {errors.description && (
+              <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -189,8 +228,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 Priority
               </label>
               <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                {...register('priority')}
                 className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="low">Low</option>
@@ -204,8 +242,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 Status
               </label>
               <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                {...register('status')}
                 className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="todo">To Do</option>
@@ -224,11 +261,13 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.progress}
-                  onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })}
+                  {...register('progress', { valueAsNumber: true })}
                 />
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </div>
+              {errors.progress && (
+                <p className="text-sm text-red-500 mt-1">{errors.progress.message}</p>
+              )}
             </div>
           </div>
         </div>
@@ -248,8 +287,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             </label>
             <Input
               type="date"
-              value={formData.start_date}
-              onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+              {...register('start_date')}
             />
           </div>
 
@@ -259,8 +297,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             </label>
             <Input
               type="date"
-              value={formData.due_date}
-              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              {...register('due_date')}
             />
           </div>
 
@@ -273,12 +310,14 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 type="number"
                 step="0.5"
                 min="0"
-                value={formData.estimated_hours}
-                onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
+                {...register('estimated_hours', { valueAsNumber: true })}
                 placeholder="0.0"
               />
               <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
+            {errors.estimated_hours && (
+              <p className="text-sm text-red-500 mt-1">{errors.estimated_hours.message}</p>
+            )}
           </div>
 
           <div>
@@ -290,12 +329,14 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 type="number"
                 step="0.5"
                 min="0"
-                value={formData.actual_hours}
-                onChange={(e) => setFormData({ ...formData, actual_hours: e.target.value })}
+                {...register('actual_hours', { valueAsNumber: true })}
                 placeholder="0.0"
               />
               <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
+            {errors.actual_hours && (
+              <p className="text-sm text-red-500 mt-1">{errors.actual_hours.message}</p>
+            )}
           </div>
         </div>
       </div>
@@ -313,8 +354,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               Project
             </label>
             <select
-              value={formData.project_id}
-              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+              {...register('project_id')}
               className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
@@ -331,8 +371,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               Contact
             </label>
             <select
-              value={formData.contact_id}
-              onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
+              {...register('contact_id')}
               className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
@@ -349,8 +388,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               Parent Task (Subtask of)
             </label>
             <select
-              value={formData.parent_task_id}
-              onChange={(e) => setFormData({ ...formData, parent_task_id: e.target.value })}
+              {...register('parent_task_id')}
               className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
@@ -387,9 +425,9 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
                 Add
               </Button>
             </div>
-            {formData.tags.length > 0 && (
+            {tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, idx) => (
+                {tags.map((tag, idx) => (
                   <span
                     key={idx}
                     className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2"
@@ -412,8 +450,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <input
               type="checkbox"
               id="reminder"
-              checked={formData.reminder_enabled}
-              onChange={(e) => setFormData({ ...formData, reminder_enabled: e.target.checked })}
+              {...register('reminder_enabled')}
               className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             />
             <label htmlFor="reminder" className="text-sm font-medium text-muted-foreground">
@@ -422,15 +459,14 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <Bell className="h-4 w-4 text-muted-foreground" />
           </div>
 
-          {formData.reminder_enabled && (
+          {reminderEnabled && (
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Reminder Date
               </label>
               <Input
                 type="datetime-local"
-                value={formData.reminder_date}
-                onChange={(e) => setFormData({ ...formData, reminder_date: e.target.value })}
+                {...register('reminder_date')}
               />
             </div>
           )}
@@ -448,10 +484,10 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
         </Button>
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
           className="bg-primary hover:bg-primary/90"
         >
-          {loading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
+          {isSubmitting ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
         </Button>
       </div>
     </form>

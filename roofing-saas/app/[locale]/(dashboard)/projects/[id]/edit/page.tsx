@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { Link } from '@/lib/i18n/navigation'
+import { useForm, Controller, Resolver } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { projectEditSchema, type ProjectEditInput } from '@/lib/validations/project'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,19 +45,6 @@ interface Project {
   contact_id: string | null
 }
 
-interface FormData {
-  name: string
-  description: string
-  scope_of_work: string
-  type: string
-  estimated_value: string
-  approved_value: string
-  final_value: string
-  estimated_start: string
-  pipeline_stage: PipelineStage
-  lead_source: string
-}
-
 const PROJECT_TYPES = [
   { value: 'roof_replacement', label: 'Roof Replacement' },
   { value: 'roof_repair', label: 'Roof Repair' },
@@ -89,6 +79,32 @@ const PIPELINE_STAGES: { value: PipelineStage; label: string }[] = [
   { value: 'complete', label: STAGE_DISPLAY_NAMES.complete },
 ]
 
+// Clean form data before Zod validation
+function cleanFormData(data: Record<string, unknown>): Record<string, unknown> {
+  const cleaned: Record<string, unknown> = { ...data }
+  const numberFields = ['estimated_value', 'approved_value', 'final_value']
+  const optionalStringFields = ['type', 'lead_source', 'description', 'scope_of_work', 'estimated_start']
+
+  for (const key of Object.keys(cleaned)) {
+    const value = cleaned[key]
+    if (typeof value === 'number' && isNaN(value)) {
+      cleaned[key] = undefined
+    }
+    if (numberFields.includes(key) && value === '') {
+      cleaned[key] = undefined
+    }
+    if (optionalStringFields.includes(key) && value === '') {
+      cleaned[key] = undefined
+    }
+  }
+  return cleaned
+}
+
+const projectEditResolver: Resolver<ProjectEditInput> = async (values, context, options) => {
+  const cleanedValues = cleanFormData(values) as ProjectEditInput
+  return zodResolver(projectEditSchema)(cleanedValues, context, options)
+}
+
 export default function EditProjectPage() {
   const params = useParams()
   const router = useRouter()
@@ -96,18 +112,28 @@ export default function EditProjectPage() {
 
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    scope_of_work: '',
-    type: '',
-    estimated_value: '',
-    approved_value: '',
-    final_value: '',
-    estimated_start: '',
-    pipeline_stage: 'prospect',
-    lead_source: '',
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ProjectEditInput>({
+    resolver: projectEditResolver,
+    defaultValues: {
+      name: '',
+      description: '',
+      scope_of_work: '',
+      type: '',
+      estimated_value: undefined,
+      approved_value: undefined,
+      final_value: undefined,
+      estimated_start: '',
+      pipeline_stage: 'prospect',
+      lead_source: '',
+    },
   })
 
   useEffect(() => {
@@ -122,15 +148,15 @@ export default function EditProjectPage() {
 
       setProject(projectData)
 
-      // Populate form with existing data
-      setFormData({
+      // Populate form with existing data via reset
+      reset({
         name: projectData.name || '',
         description: projectData.description || '',
         scope_of_work: projectData.scope_of_work || '',
         type: projectData.type || '',
-        estimated_value: projectData.estimated_value?.toString() || '',
-        approved_value: projectData.approved_value?.toString() || '',
-        final_value: projectData.final_value?.toString() || '',
+        estimated_value: projectData.estimated_value ?? undefined,
+        approved_value: projectData.approved_value ?? undefined,
+        final_value: projectData.final_value ?? undefined,
         estimated_start: projectData.estimated_start ? projectData.estimated_start.split('T')[0] : '',
         pipeline_stage: projectData.pipeline_stage || 'prospect',
         lead_source: projectData.custom_fields?.lead_source || '',
@@ -143,50 +169,32 @@ export default function EditProjectPage() {
     }
   }
 
-  async function handleSave() {
-    if (!formData.name.trim()) {
-      toast.error('Project name is required')
-      return
-    }
-
+  const onSubmit = async (data: ProjectEditInput) => {
     try {
-      setSaving(true)
-
       const updateData: Record<string, unknown> = {
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        scope_of_work: formData.scope_of_work.trim() || null,
-        type: formData.type || null,
-        pipeline_stage: formData.pipeline_stage,
-        estimated_start: formData.estimated_start || null,
+        name: data.name.trim(),
+        description: data.description?.trim() || null,
+        scope_of_work: data.scope_of_work?.trim() || null,
+        type: data.type || null,
+        pipeline_stage: data.pipeline_stage,
+        estimated_start: data.estimated_start || null,
       }
 
       // Handle numeric fields
-      if (formData.estimated_value) {
-        const estimatedValue = parseFloat(formData.estimated_value)
-        if (!isNaN(estimatedValue)) {
-          updateData.estimated_value = estimatedValue
-        }
+      if (data.estimated_value != null) {
+        updateData.estimated_value = data.estimated_value
       }
-
-      if (formData.approved_value) {
-        const approvedValue = parseFloat(formData.approved_value)
-        if (!isNaN(approvedValue)) {
-          updateData.approved_value = approvedValue
-        }
+      if (data.approved_value != null) {
+        updateData.approved_value = data.approved_value
       }
-
-      if (formData.final_value) {
-        const finalValue = parseFloat(formData.final_value)
-        if (!isNaN(finalValue)) {
-          updateData.final_value = finalValue
-        }
+      if (data.final_value != null) {
+        updateData.final_value = data.final_value
       }
 
       // Handle custom fields
       const customFields = { ...project?.custom_fields }
-      if (formData.lead_source) {
-        customFields.lead_source = formData.lead_source
+      if (data.lead_source) {
+        customFields.lead_source = data.lead_source
       }
       updateData.custom_fields = customFields
 
@@ -200,21 +208,21 @@ export default function EditProjectPage() {
     } catch (error) {
       console.error('Failed to update project:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to update project')
-    } finally {
-      setSaving(false)
     }
   }
 
-  const formatCurrency = (value: string) => {
-    if (!value) return ''
-    const numValue = parseFloat(value)
-    if (isNaN(numValue)) return ''
+  const estimatedValue = watch('estimated_value')
+  const approvedValue = watch('approved_value')
+  const finalValue = watch('final_value')
+
+  const formatCurrency = (value: number | undefined | null) => {
+    if (value == null) return ''
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(numValue)
+    }).format(value)
   }
 
   if (loading) {
@@ -264,8 +272,8 @@ export default function EditProjectPage() {
               <Link href={`/projects/${projectId}`}>
                 <Button variant="outline">Cancel</Button>
               </Link>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? (
+              <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
+                {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
@@ -282,7 +290,7 @@ export default function EditProjectPage() {
         </div>
 
         {/* Form */}
-        <div className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -297,30 +305,37 @@ export default function EditProjectPage() {
                   <Label htmlFor="name">Project Name *</Label>
                   <Input
                     id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    {...register('name')}
                     placeholder="Enter project name"
-                    required
                   />
+                  {errors.name && (
+                    <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="type">Project Type</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select project type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Type Selected</SelectItem>
-                      {PROJECT_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || ''}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select project type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No Type Selected</SelectItem>
+                          {PROJECT_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
 
@@ -328,22 +343,26 @@ export default function EditProjectPage() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  {...register('description')}
                   placeholder="Describe the project..."
                   rows={3}
                 />
+                {errors.description && (
+                  <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
+                )}
               </div>
 
               <div>
                 <Label htmlFor="scope_of_work">Scope of Work</Label>
                 <Textarea
                   id="scope_of_work"
-                  value={formData.scope_of_work}
-                  onChange={(e) => setFormData(prev => ({ ...prev, scope_of_work: e.target.value }))}
+                  {...register('scope_of_work')}
                   placeholder="Define the scope of work..."
                   rows={4}
                 />
+                {errors.scope_of_work && (
+                  <p className="text-sm text-red-500 mt-1">{errors.scope_of_work.message}</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -360,40 +379,52 @@ export default function EditProjectPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="pipeline_stage">Pipeline Stage</Label>
-                  <Select
-                    value={formData.pipeline_stage}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, pipeline_stage: value as PipelineStage }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PIPELINE_STAGES.map((stage) => (
-                        <SelectItem key={stage.value} value={stage.value}>
-                          {stage.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="pipeline_stage"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PIPELINE_STAGES.map((stage) => (
+                            <SelectItem key={stage.value} value={stage.value}>
+                              {stage.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="lead_source">Lead Source</Label>
-                  <Select
-                    value={formData.lead_source}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, lead_source: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select lead source" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Source Selected</SelectItem>
-                      {LEAD_SOURCES.map((source) => (
-                        <SelectItem key={source.value} value={source.value}>
-                          {source.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="lead_source"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || ''}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select lead source" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No Source Selected</SelectItem>
+                          {LEAD_SOURCES.map((source) => (
+                            <SelectItem key={source.value} value={source.value}>
+                              {source.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -416,14 +447,16 @@ export default function EditProjectPage() {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.estimated_value}
-                    onChange={(e) => setFormData(prev => ({ ...prev, estimated_value: e.target.value }))}
+                    {...register('estimated_value', { valueAsNumber: true })}
                     placeholder="0.00"
                   />
-                  {formData.estimated_value && (
+                  {estimatedValue != null && !isNaN(estimatedValue) && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatCurrency(formData.estimated_value)}
+                      {formatCurrency(estimatedValue)}
                     </p>
+                  )}
+                  {errors.estimated_value && (
+                    <p className="text-sm text-red-500 mt-1">{errors.estimated_value.message}</p>
                   )}
                 </div>
                 <div>
@@ -433,14 +466,16 @@ export default function EditProjectPage() {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.approved_value}
-                    onChange={(e) => setFormData(prev => ({ ...prev, approved_value: e.target.value }))}
+                    {...register('approved_value', { valueAsNumber: true })}
                     placeholder="0.00"
                   />
-                  {formData.approved_value && (
+                  {approvedValue != null && !isNaN(approvedValue) && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatCurrency(formData.approved_value)}
+                      {formatCurrency(approvedValue)}
                     </p>
+                  )}
+                  {errors.approved_value && (
+                    <p className="text-sm text-red-500 mt-1">{errors.approved_value.message}</p>
                   )}
                 </div>
                 <div>
@@ -450,14 +485,16 @@ export default function EditProjectPage() {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.final_value}
-                    onChange={(e) => setFormData(prev => ({ ...prev, final_value: e.target.value }))}
+                    {...register('final_value', { valueAsNumber: true })}
                     placeholder="0.00"
                   />
-                  {formData.final_value && (
+                  {finalValue != null && !isNaN(finalValue) && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatCurrency(formData.final_value)}
+                      {formatCurrency(finalValue)}
                     </p>
+                  )}
+                  {errors.final_value && (
+                    <p className="text-sm text-red-500 mt-1">{errors.final_value.message}</p>
                   )}
                 </div>
               </div>
@@ -479,14 +516,13 @@ export default function EditProjectPage() {
                   <Input
                     id="estimated_start"
                     type="date"
-                    value={formData.estimated_start}
-                    onChange={(e) => setFormData(prev => ({ ...prev, estimated_start: e.target.value }))}
+                    {...register('estimated_start')}
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </form>
       </div>
     </div>
   )

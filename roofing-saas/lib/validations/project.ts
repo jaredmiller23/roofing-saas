@@ -92,7 +92,22 @@ export const projectFiltersSchema = z.object({
   sort_order: z.enum(['asc', 'desc']).optional(),
 })
 
+// Edit form schema (subset of fields exposed in the project edit UI)
+export const projectEditSchema = z.object({
+  name: z.string().min(1, 'Project name is required').max(200),
+  description: z.string().max(5000).optional(),
+  scope_of_work: z.string().max(10000).optional(),
+  type: z.string().max(100).optional(),
+  estimated_value: z.number().min(0).optional().nullable(),
+  approved_value: z.number().min(0).optional().nullable(),
+  final_value: z.number().min(0).optional().nullable(),
+  estimated_start: z.string().optional().nullable(),
+  pipeline_stage: pipelineStageEnum,
+  lead_source: z.string().max(100).optional(),
+})
+
 // Type exports
 export type CreateProjectInput = z.infer<typeof createProjectSchema>
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>
 export type ProjectFilters = z.infer<typeof projectFiltersSchema>
+export type ProjectEditInput = z.infer<typeof projectEditSchema>
