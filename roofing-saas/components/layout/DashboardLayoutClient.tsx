@@ -8,6 +8,7 @@ import { TrialBannerWrapper } from '@/components/layout/TrialBannerWrapper'
 import { UIModeProvider } from '@/lib/ui-mode/context'
 import { UIPreferencesProvider } from '@/lib/ui-preferences/context'
 import { AdaptiveLayout } from '@/components/layout/AdaptiveLayout'
+import { ErrorBufferProvider } from '@/lib/aria/error-buffer'
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode
@@ -17,21 +18,23 @@ interface DashboardLayoutClientProps {
 
 export function DashboardLayoutClient({ children, userRole, userEmail }: DashboardLayoutClientProps) {
   return (
-    <UIModeProvider>
-      <UIPreferencesProvider>
-        <AIAssistantProvider>
-          <ImpersonationBanner />
-          <TrialBannerWrapper />
-          <AdaptiveLayout
-            userEmail={userEmail || ''}
-            userRole={userRole || 'user'}
-          >
-            {children}
-          </AdaptiveLayout>
-          <GlobalSearch />
-          <AIAssistantBar />
-        </AIAssistantProvider>
-      </UIPreferencesProvider>
-    </UIModeProvider>
+    <ErrorBufferProvider>
+      <UIModeProvider>
+        <UIPreferencesProvider>
+          <AIAssistantProvider>
+            <ImpersonationBanner />
+            <TrialBannerWrapper />
+            <AdaptiveLayout
+              userEmail={userEmail || ''}
+              userRole={userRole || 'user'}
+            >
+              {children}
+            </AdaptiveLayout>
+            <GlobalSearch />
+            <AIAssistantBar />
+          </AIAssistantProvider>
+        </UIPreferencesProvider>
+      </UIModeProvider>
+    </ErrorBufferProvider>
   )
 }

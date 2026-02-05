@@ -29,6 +29,8 @@ export type ARIAFunctionCategory =
   | 'insurance'     // Claims intelligence, adjusters, carriers
   | 'analytics'     // Business intelligence, coaching, performance
   | 'team'          // Crew management, dispatch, performance
+  | 'platform'      // Self-awareness: error diagnosis, schema knowledge, data queries
+  | 'repair'        // Self-healing: fix fields, stage transitions, data repair
 
 export type ARIARiskLevel = 'low' | 'medium' | 'high'
 
@@ -91,6 +93,9 @@ export interface ARIAContext {
 
   // Authorization
   requiresConfirmation?: boolean
+
+  // Error Awareness (ARIA 2.0 - Self-Awareness)
+  recentErrors?: ARIACapturedError[]
 }
 
 // =============================================================================
@@ -123,6 +128,43 @@ export interface ARIAMessage {
   body: string
   sent_at: string
   status?: string
+}
+
+// =============================================================================
+// Error Awareness Types (ARIA 2.0 - Self-Awareness)
+// =============================================================================
+
+/**
+ * Captured API error for ARIA context
+ * Used to give ARIA visibility into recent errors the user encountered
+ */
+export interface ARIACapturedError {
+  /** API endpoint that failed */
+  url: string
+  /** HTTP method */
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  /** HTTP status code */
+  statusCode: number
+  /** Error code from API (e.g., 'VALIDATION_ERROR', 'NOT_FOUND') */
+  code: string
+  /** Human-readable error message */
+  message: string
+  /** When the error occurred */
+  timestamp: string
+  /** Page URL where the error happened */
+  page: string
+  /** Sanitized request body (sensitive fields removed) */
+  requestBody?: Record<string, unknown>
+}
+
+/**
+ * Error context passed to ARIA chat API
+ */
+export interface ARIAErrorContext {
+  /** Recent errors from the error buffer */
+  recentErrors: ARIACapturedError[]
+  /** Current page the user is on */
+  currentPage: string
 }
 
 // =============================================================================

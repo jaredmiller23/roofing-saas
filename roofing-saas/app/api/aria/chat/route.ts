@@ -26,6 +26,7 @@ import { createConversation, saveMessage, updateConversationTitle, generateTitle
 import { incrementAiUsage, calculateChatCostCents } from '@/lib/billing/ai-usage'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
+import type { ARIAErrorContext } from '@/lib/aria/types'
 
 interface ChatRequest {
   message: string
@@ -35,6 +36,8 @@ interface ChatRequest {
     contact_id?: string
     project_id?: string
   }
+  /** ARIA 2.0: Error context for self-awareness */
+  errorContext?: ARIAErrorContext
 }
 
 export async function POST(request: NextRequest) {
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: ChatRequest = await request.json()
-    const { message, conversation_id, history, context } = body
+    const { message, conversation_id, history, context, errorContext } = body
 
     if (!message?.trim()) {
       throw ValidationError('message is required')
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Build ARIA context
+    // Build ARIA context with error awareness (ARIA 2.0)
     const supabase = await createClient()
     const ariaContext = await buildARIAContext({
       tenantId,
@@ -105,6 +108,8 @@ export async function POST(request: NextRequest) {
       channel: 'chat',
       entityType: context?.contact_id ? 'contact' : context?.project_id ? 'project' : undefined,
       entityId: context?.contact_id || context?.project_id,
+      // ARIA 2.0: Pass recent errors so ARIA knows what went wrong
+      recentErrors: errorContext?.recentErrors,
     })
 
     // Get system prompt and tools

@@ -5,14 +5,20 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import type { ARIAContext, ARIAActivity, ARIATask, ARIAMessage, SupportedLanguage } from './types'
+import type { ARIAContext, ARIAActivity, ARIATask, ARIAMessage, SupportedLanguage, ARIACapturedError } from './types'
 import { locales } from '@/lib/i18n/config'
+
+// ARIA 2.0: Extended context input with error awareness
+interface BuildContextInput extends Partial<ARIAContext> {
+  recentErrors?: ARIACapturedError[]
+}
 
 /**
  * Build enriched ARIA context from base context
+ * ARIA 2.0: Now accepts recentErrors for self-awareness
  */
 export async function buildARIAContext(
-  baseContext: Partial<ARIAContext>
+  baseContext: BuildContextInput
 ): Promise<ARIAContext> {
   if (!baseContext.tenantId || !baseContext.userId) {
     throw new Error('tenantId and userId are required')
@@ -31,6 +37,8 @@ export async function buildARIAContext(
     entityId: baseContext.entityId,
     sessionId: baseContext.sessionId,
     callSid: baseContext.callSid,
+    // ARIA 2.0: Error awareness
+    recentErrors: baseContext.recentErrors,
   }
 
   // Enrich with entity data if available
@@ -507,6 +515,20 @@ export function getContextSummary(context: ARIAContext): string {
     parts.push('This is an outbound phone call.')
   } else if (context.channel === 'sms') {
     parts.push('This is an SMS conversation.')
+  }
+
+  // ARIA 2.0: Error Awareness
+  // Show recent errors so ARIA knows what went wrong
+  if (context.recentErrors && context.recentErrors.length > 0) {
+    parts.push('\n⚠️ RECENT ERRORS ENCOUNTERED BY USER:')
+    parts.push('The user recently hit these errors in the app. You can help diagnose what went wrong.')
+    for (const error of context.recentErrors.slice(0, 5)) {
+      const timeAgo = formatTimeAgo(error.timestamp)
+      parts.push(`\n- ${timeAgo} on ${error.page}:`)
+      parts.push(`  ${error.method} ${error.url} → ${error.statusCode}`)
+      parts.push(`  Error: [${error.code}] ${error.message}`)
+    }
+    parts.push('\nIf the user asks about an error or something not working, reference this context.')
   }
 
   return parts.join('\n')

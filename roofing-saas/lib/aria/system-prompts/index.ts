@@ -12,6 +12,7 @@ import {
   CHANNEL_VOICE_OUTBOUND_EN,
   CHANNEL_SMS_EN,
   AUTHORIZATION_RULES_EN,
+  ERROR_AWARENESS_EN,
 } from './en'
 
 import {
@@ -36,6 +37,7 @@ interface PromptSet {
   voiceOutbound: string
   sms: string
   authorization: string
+  errorAwareness: string
 }
 
 const PROMPTS: Record<SupportedLanguage, PromptSet> = {
@@ -45,6 +47,7 @@ const PROMPTS: Record<SupportedLanguage, PromptSet> = {
     voiceOutbound: CHANNEL_VOICE_OUTBOUND_EN,
     sms: CHANNEL_SMS_EN,
     authorization: AUTHORIZATION_RULES_EN,
+    errorAwareness: ERROR_AWARENESS_EN,
   },
   es: {
     base: BASE_PROMPT_ES,
@@ -52,6 +55,7 @@ const PROMPTS: Record<SupportedLanguage, PromptSet> = {
     voiceOutbound: CHANNEL_VOICE_OUTBOUND_ES,
     sms: CHANNEL_SMS_ES,
     authorization: AUTHORIZATION_RULES_ES,
+    errorAwareness: ERROR_AWARENESS_EN, // Use English for now, translate later
   },
   fr: {
     base: BASE_PROMPT_FR,
@@ -59,6 +63,7 @@ const PROMPTS: Record<SupportedLanguage, PromptSet> = {
     voiceOutbound: CHANNEL_VOICE_OUTBOUND_FR,
     sms: CHANNEL_SMS_FR,
     authorization: AUTHORIZATION_RULES_FR,
+    errorAwareness: ERROR_AWARENESS_EN, // Use English for now, translate later
   },
 }
 
@@ -85,6 +90,12 @@ export function getLocalizedSystemPrompt(
 
   // Add authorization rules
   prompt += `\n\n${promptSet.authorization}`
+
+  // ARIA 2.0: Add error awareness section (for chat channel only)
+  // Voice channels don't benefit from error diagnosis UX
+  if (channel === 'chat') {
+    prompt += `\n\n${promptSet.errorAwareness}`
+  }
 
   return prompt
 }

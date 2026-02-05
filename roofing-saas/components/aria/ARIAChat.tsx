@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { X, Send, Loader2, Bot, User, Wrench, History, Plus } from 'lucide-react'
+import { X, Send, Loader2, Bot, User, Wrench, History, Plus, AlertCircle } from 'lucide-react'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 import { apiFetch } from '@/lib/api/client'
+import { useErrorBuffer } from '@/lib/aria/error-buffer'
 
 interface ARIAChatProps {
   isOpen: boolean
@@ -42,6 +43,9 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // ARIA 2.0: Error awareness via error buffer
+  const { errors: recentErrors, getErrorContext } = useErrorBuffer()
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -151,6 +155,9 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
     }])
 
     try {
+      // Get error context for ARIA 2.0 self-awareness
+      const errorContext = getErrorContext()
+
       const response = await fetch('/api/aria/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,6 +165,8 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
           message: trimmed,
           conversation_id: activeConversationId || undefined,
           history: buildHistory(),
+          // ARIA 2.0: Pass error context so ARIA knows what went wrong
+          errorContext: errorContext.recentErrors.length > 0 ? errorContext : undefined,
         }),
       })
 
@@ -245,7 +254,7 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
     } finally {
       setIsStreaming(false)
     }
-  }, [input, isStreaming, buildHistory, activeConversationId, fetchConversations])
+  }, [input, isStreaming, buildHistory, activeConversationId, fetchConversations, getErrorContext])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -364,6 +373,21 @@ export function ARIAChat({ isOpen, onClose }: ARIAChatProps) {
               <p className="text-xs text-muted-foreground mt-1 max-w-[250px]">
                 Ask about contacts, projects, schedule appointments, or get business insights.
               </p>
+
+              {/* ARIA 2.0: Show indicator when there are recent errors */}
+              {recentErrors.length > 0 && (
+                <div className="mt-4 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg max-w-[280px]">
+                  <div className="flex items-center gap-2 text-orange-400 mb-1">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-xs font-medium">
+                      I noticed {recentErrors.length === 1 ? 'an error' : `${recentErrors.length} errors`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ask me what went wrong and I can help diagnose the issue.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             messages.map((msg) => (
