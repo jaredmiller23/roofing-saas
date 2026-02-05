@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { withAuthParams, type AuthContext } from '@/lib/auth/with-auth'
 import {
-  validateCompleteTransition,
+  validateCompleteTransitionAsync,
   getStatusForPipelineStage,
+  requiresPerfectPacketValidation,
 } from '@/lib/pipeline/validation'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { handleStageChange } from '@/lib/campaigns/trigger-handler'
@@ -176,14 +177,40 @@ export const PATCH = withAuthParams(async (
             approved_value: body.approved_value ?? existingProject.approved_value,
           }
 
-          // Validate the transition
-          const validation = validateCompleteTransition(currentStage, newStage, projectForValidation)
+          // Validate the transition (includes Perfect Packet validation for won -> production)
+          const validation = await validateCompleteTransitionAsync(
+            currentStage,
+            newStage,
+            projectForValidation,
+            id,
+            supabase,
+            { skipPerfectPacket: body.skipPerfectPacket === true }
+          )
+
           if (!validation.valid) {
-            throw ValidationError(validation.error || 'Invalid stage transition', {
-              code: 'INVALID_STAGE_TRANSITION',
+            // Include Perfect Packet details in error response if applicable
+            const errorDetails: Record<string, unknown> = {
+              code: requiresPerfectPacketValidation(currentStage, newStage)
+                ? 'PERFECT_PACKET_INCOMPLETE'
+                : 'INVALID_STAGE_TRANSITION',
               current_stage: currentStage,
               requested_stage: newStage,
-            })
+            }
+
+            if (validation.perfectPacketResult) {
+              errorDetails.perfectPacket = {
+                missing: validation.perfectPacketResult.missing.map(r => ({
+                  category: r.category,
+                  label: r.label,
+                })),
+                present: validation.perfectPacketResult.present.map(r => ({
+                  category: r.category,
+                  label: r.label,
+                })),
+              }
+            }
+
+            throw ValidationError(validation.error || 'Invalid stage transition', errorDetails)
           }
 
           // Auto-sync status based on pipeline stage

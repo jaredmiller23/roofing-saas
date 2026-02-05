@@ -1,9 +1,18 @@
 /**
  * Pipeline Stage Validation
  * Handles stage transition rules and validation for the sales pipeline
+ *
+ * Includes Perfect Packet validation — ASR's requirement that 4 items must be
+ * present before a project can advance to production:
+ * 1. Photos of home/damage
+ * 2. Measurement report
+ * 3. Insurance estimate
+ * 4. Job submission form
  */
 
 import type { PipelineStage } from '@/lib/types/api'
+import type { RoofingFileCategory } from '@/lib/types/file'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Ordered pipeline stages for progression validation
@@ -181,6 +190,8 @@ export function canStartProduction(pipelineStage: PipelineStage): boolean {
 
 /**
  * Validate complete stage transition including requirements
+ * Note: This is synchronous validation for field requirements only.
+ * For Perfect Packet validation (which requires DB queries), use validateCompleteTransitionAsync
  */
 export function validateCompleteTransition(
   currentStage: PipelineStage,
@@ -208,6 +219,200 @@ export function validateCompleteTransition(
     return {
       valid: false,
       error: formatMissingFieldsError(requirements.missingFields),
+    }
+  }
+
+  return { valid: true }
+}
+
+// =====================================================
+// PERFECT PACKET VALIDATION
+// ASR Workflow: Nothing proceeds past "Contract Signed" (won)
+// to production without a complete packet
+// =====================================================
+
+/**
+ * Perfect Packet Requirements
+ * These are the 4 required document categories for a project to enter production
+ */
+export interface PerfectPacketRequirement {
+  category: RoofingFileCategory
+  label: string
+  description: string
+}
+
+export const PERFECT_PACKET_REQUIREMENTS: PerfectPacketRequirement[] = [
+  {
+    category: 'photos-damage',
+    label: 'Photos of Home/Damage',
+    description: 'Documentation photos showing damage or property condition',
+  },
+  {
+    category: 'measurements',
+    label: 'Measurement Report',
+    description: 'Roof measurements (EagleView, Hover, manual, etc.)',
+  },
+  {
+    category: 'insurance-estimate',
+    label: 'Insurance Estimate',
+    description: 'Insurance company scope or estimate document',
+  },
+  {
+    category: 'job-submission',
+    label: 'Job Submission Form',
+    description: 'Completed job submission form for production',
+  },
+]
+
+/**
+ * Result of Perfect Packet validation
+ */
+export interface PerfectPacketValidationResult {
+  isComplete: boolean
+  missing: PerfectPacketRequirement[]
+  present: PerfectPacketRequirement[]
+  /** File counts by category */
+  fileCounts: Record<string, number>
+}
+
+/**
+ * Validate Perfect Packet completeness for a project
+ * Checks that all 4 required document categories have at least one file
+ *
+ * @param projectId - The project to validate
+ * @param supabase - Authenticated Supabase client
+ * @returns Validation result with missing/present items
+ */
+export async function validatePerfectPacket(
+  projectId: string,
+  supabase: SupabaseClient
+): Promise<PerfectPacketValidationResult> {
+  // Query project_files for this project, grouped by category
+  const { data: files, error } = await supabase
+    .from('project_files')
+    .select('file_category')
+    .eq('project_id', projectId)
+    .eq('is_deleted', false)
+    .in('file_category', PERFECT_PACKET_REQUIREMENTS.map(r => r.category))
+
+  if (error) {
+    // Log but don't throw — return as if nothing present
+    console.error('[validatePerfectPacket] Query error:', error)
+    return {
+      isComplete: false,
+      missing: [...PERFECT_PACKET_REQUIREMENTS],
+      present: [],
+      fileCounts: {},
+    }
+  }
+
+  // Count files per category
+  const fileCounts: Record<string, number> = {}
+  for (const file of files || []) {
+    const category = file.file_category as string
+    fileCounts[category] = (fileCounts[category] || 0) + 1
+  }
+
+  // Check which requirements are met
+  const missing: PerfectPacketRequirement[] = []
+  const present: PerfectPacketRequirement[] = []
+
+  for (const requirement of PERFECT_PACKET_REQUIREMENTS) {
+    if ((fileCounts[requirement.category] || 0) > 0) {
+      present.push(requirement)
+    } else {
+      missing.push(requirement)
+    }
+  }
+
+  return {
+    isComplete: missing.length === 0,
+    missing,
+    present,
+    fileCounts,
+  }
+}
+
+/**
+ * Format Perfect Packet validation error for user display
+ */
+export function formatPerfectPacketError(
+  result: PerfectPacketValidationResult
+): string {
+  if (result.isComplete) {
+    return ''
+  }
+
+  const missingItems = result.missing.map(r => r.label).join(', ')
+  return `Perfect Packet incomplete. Missing: ${missingItems}. All 4 items are required before starting production.`
+}
+
+/**
+ * Check if a stage transition requires Perfect Packet validation
+ */
+export function requiresPerfectPacketValidation(
+  currentStage: PipelineStage,
+  newStage: PipelineStage
+): boolean {
+  // Perfect Packet is required when moving to production from won
+  return currentStage === 'won' && newStage === 'production'
+}
+
+/**
+ * Complete stage transition validation including async Perfect Packet check
+ * Use this when you have access to a Supabase client
+ *
+ * @param currentStage - Current pipeline stage
+ * @param newStage - Target pipeline stage
+ * @param project - Project data with required fields
+ * @param projectId - Project ID for file queries
+ * @param supabase - Authenticated Supabase client
+ * @param options - Optional validation options
+ * @returns Validation result
+ */
+export async function validateCompleteTransitionAsync(
+  currentStage: PipelineStage,
+  newStage: PipelineStage,
+  project: {
+    estimated_value?: number | null
+    approved_value?: number | null
+    [key: string]: unknown
+  },
+  projectId: string,
+  supabase: SupabaseClient,
+  options?: {
+    /** Skip Perfect Packet validation (admin override) */
+    skipPerfectPacket?: boolean
+  }
+): Promise<{
+  valid: boolean
+  error?: string
+  perfectPacketResult?: PerfectPacketValidationResult
+}> {
+  // First run synchronous validation
+  const syncResult = validateCompleteTransition(currentStage, newStage, project)
+  if (!syncResult.valid) {
+    return syncResult
+  }
+
+  // Check if Perfect Packet validation is needed
+  if (
+    requiresPerfectPacketValidation(currentStage, newStage) &&
+    !options?.skipPerfectPacket
+  ) {
+    const packetResult = await validatePerfectPacket(projectId, supabase)
+
+    if (!packetResult.isComplete) {
+      return {
+        valid: false,
+        error: formatPerfectPacketError(packetResult),
+        perfectPacketResult: packetResult,
+      }
+    }
+
+    return {
+      valid: true,
+      perfectPacketResult: packetResult,
     }
   }
 

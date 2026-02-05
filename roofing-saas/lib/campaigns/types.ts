@@ -35,6 +35,7 @@ export type StepType =
   | 'webhook' // Call external webhook
   | 'conditional' // Branch based on conditions
   | 'exit_campaign' // Exit enrollment
+  | 'change_stage' // Change project pipeline stage
 
 export type EnrollmentStatus =
   | 'active' // Currently in campaign
@@ -177,6 +178,11 @@ export interface ExitCampaignStepConfig {
   task_config?: CreateTaskStepConfig
 }
 
+export interface ChangeStageStepConfig {
+  target_stage: import('@/lib/types/api').PipelineStage
+  validate_transition?: boolean // default true - validate stage transition is allowed
+}
+
 export type StepConfig =
   | SendEmailStepConfig
   | SendSmsStepConfig
@@ -188,6 +194,7 @@ export type StepConfig =
   | WebhookStepConfig
   | ConditionalStepConfig
   | ExitCampaignStepConfig
+  | ChangeStageStepConfig
 
 // Conditions
 export interface ConditionRule {

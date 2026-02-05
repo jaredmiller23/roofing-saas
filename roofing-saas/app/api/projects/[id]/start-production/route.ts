@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { canStartProduction, getStatusForPipelineStage } from '@/lib/pipeline/validation'
+import {
+  canStartProduction,
+  getStatusForPipelineStage,
+  validatePerfectPacket,
+  formatPerfectPacketError,
+} from '@/lib/pipeline/validation'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -40,6 +45,7 @@ export async function POST(
       job_type?: string
       scheduled_date?: string
       notes?: string
+      skipPerfectPacket?: boolean  // Admin override to bypass Perfect Packet validation
     } = {}
 
     try {
@@ -90,6 +96,30 @@ export async function POST(
         `Cannot start production. Project must be in 'Won' stage. Current stage: ${currentStage}`,
         { code: 'INVALID_STATE', current_stage: currentStage }
       )
+    }
+
+    // Validate Perfect Packet (unless admin override)
+    if (!jobDetails.skipPerfectPacket) {
+      const packetValidation = await validatePerfectPacket(projectId, supabase)
+
+      if (!packetValidation.isComplete) {
+        throw ValidationError(
+          formatPerfectPacketError(packetValidation),
+          {
+            code: 'PERFECT_PACKET_INCOMPLETE',
+            perfectPacket: {
+              missing: packetValidation.missing.map(r => ({
+                category: r.category,
+                label: r.label,
+              })),
+              present: packetValidation.present.map(r => ({
+                category: r.category,
+                label: r.label,
+              })),
+            },
+          }
+        )
+      }
     }
 
     // Generate job number (YY-####)

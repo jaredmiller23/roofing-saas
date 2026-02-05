@@ -25,8 +25,11 @@ export type RoofingFileCategory =
   | 'permits-inspections'
   | 'invoices-estimates'
   | 'insurance-documents'
+  | 'insurance-estimate'    // Insurance company's estimate/scope
   | 'warranty-documents'
   | 'material-specs'
+  | 'measurements'          // Measurement reports (EagleView, hover, etc.)
+  | 'job-submission'        // Job submission form for production
   | 'other'
 
 // File status for versioning
@@ -256,6 +259,14 @@ export const ROOFING_FILE_CATEGORIES: FileCategoryConfig[] = [
     suggested_types: ['insurance', 'document']
   },
   {
+    value: 'insurance-estimate',
+    label: 'Insurance Estimate',
+    description: 'Insurance company scope/estimate document',
+    icon: 'FileSpreadsheet',
+    color: 'amber',
+    suggested_types: ['estimate', 'document']
+  },
+  {
     value: 'warranty-documents',
     label: 'Warranty Documents',
     description: 'Product warranties, service guarantees',
@@ -270,6 +281,22 @@ export const ROOFING_FILE_CATEGORIES: FileCategoryConfig[] = [
     icon: 'Layers',
     color: 'slate',
     suggested_types: ['specification', 'document']
+  },
+  {
+    value: 'measurements',
+    label: 'Measurement Report',
+    description: 'Roof measurements (EagleView, Hover, etc.)',
+    icon: 'Ruler',
+    color: 'teal',
+    suggested_types: ['document', 'specification']
+  },
+  {
+    value: 'job-submission',
+    label: 'Job Submission Form',
+    description: 'Production job submission documentation',
+    icon: 'ClipboardList',
+    color: 'violet',
+    suggested_types: ['document']
   },
   {
     value: 'other',

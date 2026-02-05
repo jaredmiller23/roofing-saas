@@ -24,8 +24,11 @@ import type {
   WebhookStepConfig,
   ConditionalStepConfig,
   ExitCampaignStepConfig,
+  ChangeStageStepConfig,
   ExecutionResult,
 } from './types'
+import { isValidStageTransition, getTransitionError } from '@/lib/pipeline/validation'
+import type { PipelineStage } from '@/lib/types/api'
 
 // ============================================================================
 // EXECUTION ENGINE
@@ -208,6 +211,12 @@ export async function executeStep(
         result = await executeExitCampaign(
           context,
           step.step_config as ExitCampaignStepConfig
+        )
+        break
+      case 'change_stage':
+        result = await executeChangeStage(
+          context,
+          step.step_config as ChangeStageStepConfig
         )
         break
       default:
@@ -760,6 +769,101 @@ async function executeExitCampaign(
   return {
     exited: true,
     reason: config.exit_reason,
+  }
+}
+
+/**
+ * Change the pipeline stage of a project
+ * This step allows campaigns to automatically move projects through the pipeline
+ */
+async function executeChangeStage(
+  context: StepExecutionContext,
+  config: ChangeStageStepConfig
+): Promise<ExecutionResult> {
+  const supabase = await createClient()
+
+  // Find the most recent active project for this contact
+  // Since enrollments don't have a direct project_id, we look up through the contact
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select('id, pipeline_stage, tenant_id, contact_id')
+    .eq('contact_id', context.contact.id)
+    .eq('tenant_id', context.enrollment.tenant_id)
+    .not('pipeline_stage', 'in', '("complete","lost")') // Exclude terminal stages
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  if (projectsError) {
+    throw new Error(`Failed to find project: ${projectsError.message}`)
+  }
+
+  const project = projects?.[0]
+
+  if (!project) {
+    throw new Error(`Cannot change stage: No active project found for contact ${context.contact.id}`)
+  }
+
+  const projectId = project.id
+  const currentStage = project.pipeline_stage as PipelineStage
+  const targetStage = config.target_stage
+
+  // Validate transition if enabled (default: true)
+  if (config.validate_transition !== false) {
+    const isValid = isValidStageTransition(currentStage, targetStage)
+    if (!isValid) {
+      const errorMessage = getTransitionError(currentStage, targetStage)
+      throw new Error(`Invalid stage transition: ${errorMessage}`)
+    }
+  }
+
+  // Update project stage
+  const { error: updateError } = await supabase
+    .from('projects')
+    .update({
+      pipeline_stage: targetStage,
+      stage_changed_at: new Date().toISOString(),
+    })
+    .eq('id', projectId)
+
+  if (updateError) {
+    throw new Error(`Failed to update project stage: ${updateError.message}`)
+  }
+
+  logger.info('[Campaign] Changed project pipeline stage', {
+    projectId,
+    fromStage: currentStage,
+    toStage: targetStage,
+    enrollmentId: context.enrollment.id,
+  })
+
+  // Trigger downstream stage change handlers
+  // This allows chained automations - when a campaign moves a project to a new stage,
+  // other campaigns listening for that stage change will be triggered
+  try {
+    const { handleStageChange } = await import('./trigger-handler')
+    await handleStageChange({
+      tenantId: project.tenant_id,
+      projectId: projectId,
+      contactId: context.contact.id,
+      fromStage: currentStage,
+      toStage: targetStage,
+      changedBy: 'campaign_automation',
+      changedAt: new Date().toISOString(),
+    })
+  } catch (triggerError) {
+    // Log but don't fail the step if trigger handling fails
+    logger.error('[Campaign] Failed to trigger downstream stage change handlers', {
+      error: triggerError instanceof Error ? triggerError.message : String(triggerError),
+      projectId,
+      targetStage,
+    })
+  }
+
+  return {
+    success: true,
+    project_id: projectId,
+    previous_stage: currentStage,
+    new_stage: targetStage,
   }
 }
 
