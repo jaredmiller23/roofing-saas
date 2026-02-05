@@ -8366,6 +8366,50 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_emails: {
+        Row: {
+          clicked_at: string | null
+          created_at: string
+          email_key: string
+          id: string
+          opened_at: string | null
+          recipient_email: string
+          resend_id: string | null
+          sent_at: string
+          tenant_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          created_at?: string
+          email_key: string
+          id?: string
+          opened_at?: string | null
+          recipient_email: string
+          resend_id?: string | null
+          sent_at?: string
+          tenant_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          created_at?: string
+          email_key?: string
+          id?: string
+          opened_at?: string | null
+          recipient_email?: string
+          resend_id?: string | null
+          sent_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       territories: {
         Row: {
           assigned_to: string | null

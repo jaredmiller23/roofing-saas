@@ -8,6 +8,7 @@
 import { NextRequest } from 'next/server';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { createTrialSubscription } from '@/lib/billing/subscription';
+import { sendTrialWelcomeEmail } from '@/lib/trial-nurture/engine';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
@@ -122,6 +123,11 @@ export async function POST(_request: NextRequest) {
       tenantId: newTenant.id,
       subscriptionId: subscription.id,
     });
+
+    // Send welcome email (fire-and-forget, don't block signup)
+    sendTrialWelcomeEmail(newTenant.id).catch((err) =>
+      logger.error('Failed to send welcome email', { tenantId: newTenant.id, error: err })
+    );
 
     return successResponse({
       tenantId: newTenant.id,
