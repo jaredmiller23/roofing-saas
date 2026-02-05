@@ -150,8 +150,20 @@ export const PATCH = withAuthParams(async (
         // Extract existing project values from beforeValues
         const existingProject = beforeValues
 
-        // Prepare update data
-        const updateData: Record<string, unknown> = { ...body }
+        // Field allowlisting — only permit known mutable fields
+        const ALLOWED_FIELDS = [
+          'name', 'description', 'scope_of_work', 'status', 'pipeline_stage', 'type', 'priority',
+          'estimated_value', 'approved_value', 'final_value', 'profit_margin',
+          'estimated_start', 'actual_start', 'actual_completion', 'estimated_close_date',
+          'custom_fields', 'lead_source', 'lead_score',
+          'contact_id', 'adjuster_contact_id',
+        ]
+        const updateData: Record<string, unknown> = {}
+        for (const key of ALLOWED_FIELDS) {
+          if (key in body) {
+            updateData[key] = body[key]
+          }
+        }
 
         // Pipeline stage transition validation
         if (body.pipeline_stage && body.pipeline_stage !== existingProject.pipeline_stage) {
@@ -177,6 +189,7 @@ export const PATCH = withAuthParams(async (
           // Auto-sync status based on pipeline stage
           const autoStatus = getStatusForPipelineStage(newStage)
           updateData.status = autoStatus
+          updateData.stage_changed_at = new Date().toISOString()
         }
 
         // Update the project with provided fields (use updateData which may include auto-synced status)

@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from '@/lib/i18n/navigation'
+import { Link, useRouter } from '@/lib/i18n/navigation'
 import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink, Mic } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'

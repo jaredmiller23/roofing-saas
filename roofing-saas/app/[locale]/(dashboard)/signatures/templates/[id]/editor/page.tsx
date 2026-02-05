@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter, Link } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
 import { DocumentEditor } from '@/components/signatures'
 import type { SignatureFieldPlacement } from '@/components/signatures'
 import { Alert, AlertDescription } from '@/components/ui/alert'

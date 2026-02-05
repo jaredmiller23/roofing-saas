@@ -2,9 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter, Link } from '@/lib/i18n/navigation'
 import { useSearchParams, usePathname } from 'next/navigation'
-import Link from 'next/link'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
 import { apiFetchPaginated } from '@/lib/api/client'

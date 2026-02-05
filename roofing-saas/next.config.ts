@@ -91,7 +91,7 @@ const nextConfig: NextConfig = {
         key: 'Permissions-Policy',
         value: [
           'accelerometer=()',
-          'camera=()',
+          'camera=(self)', // Allow camera for field photo capture
           'geolocation=(self)', // Allow geolocation for maps and field tracking
           'gyroscope=()',
           'magnetometer=()',

@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       type: 'sms',
       direction: 'inbound',
       content: body,
-      metadata: {
+      outcome_details: {
         twilio_sid: messageSid,
         from,
         to,

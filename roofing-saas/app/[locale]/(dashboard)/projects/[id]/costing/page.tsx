@@ -1,7 +1,7 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, Users, Clock, Package } from 'lucide-react'
 import { AddExpenseButton } from './add-expense-button'
 import { ExpensesList } from './expenses-list'

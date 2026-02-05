@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter, Link } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
 import { TerritoryMap } from '@/components/territories/TerritoryMapWrapper'
 import { HousePinDropper } from '@/components/territories/HousePinDropper'
 import { Button } from '@/components/ui/button'

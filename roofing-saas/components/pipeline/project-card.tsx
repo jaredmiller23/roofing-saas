@@ -67,14 +67,9 @@ export function ProjectCard({ project, isDragging = false, onMoveProject }: Proj
 
     try {
       setMarkingLost(true)
-      await apiFetch(`/api/projects/${project.id}`, {
-        method: 'PATCH',
-        body: { pipeline_stage: 'lost' },
-      })
-
-      // Use the callback to update parent state immediately
+      // Delegate to parent — moveProject handles API call, optimistic update, and rollback
       if (onMoveProject) {
-        onMoveProject(project.id, 'lost')
+        await onMoveProject(project.id, 'lost')
       }
     } catch (error) {
       console.error('Error marking as lost:', error)
@@ -92,14 +87,9 @@ export function ProjectCard({ project, isDragging = false, onMoveProject }: Proj
 
     try {
       setReactivating(true)
-      await apiFetch(`/api/projects/${project.id}`, {
-        method: 'PATCH',
-        body: { pipeline_stage: 'prospect' },
-      })
-
-      // Use the callback to update parent state immediately
+      // Delegate to parent — moveProject handles API call, optimistic update, and rollback
       if (onMoveProject) {
-        onMoveProject(project.id, 'prospect')
+        await onMoveProject(project.id, 'prospect')
       }
     } catch (error) {
       console.error('Error reactivating:', error)

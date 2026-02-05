@@ -95,11 +95,11 @@ export async function POST(request: NextRequest) {
     const { error: activityError } = await supabase.from('activities').insert({
       tenant_id: tenantId,
       contact_id: contactId || null,
-      user_id: user.id,
+      created_by: user.id,
       type: 'call',
       direction: 'outbound',
       content: message || 'Outbound call',
-      metadata: {
+      outcome_details: {
         call_sid: callResponse.sid,
         to: callResponse.to,
         from: callResponse.from,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Contact, getCombinedTypeLabel } from '@/lib/types/contact'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { useRouter } from '@/lib/i18n/navigation'
 import { usePathname } from 'next/navigation'
 import { Phone, MessageSquare, Mail, Building2, RefreshCw } from 'lucide-react'

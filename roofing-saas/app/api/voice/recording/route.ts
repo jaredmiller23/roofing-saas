@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
 import { verifyTwilioSignature, parseTwilioFormData } from '@/lib/webhooks/security'
@@ -22,7 +22,7 @@ async function triggerWhisperTranscription(
     // Get transcription and summary
     const { transcription, summary } = await transcribeAndSummarize(recordingUrl)
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Update activity with transcription data
     const { error: activityError } = await supabase
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Twilio signature verified successfully')
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Find the activity for this call
     const { data: activity } = await supabase

@@ -153,11 +153,11 @@ export async function POST(request: NextRequest) {
         const { error: activityError } = await supabase.from('activities').insert({
           tenant_id: tenantId,
           contact_id: contactId || contact?.id || null,
-          user_id: user.id,
+          created_by: user.id,
           type: 'sms',
           direction: 'outbound',
           content: finalBody,
-          metadata: {
+          outcome_details: {
             twilio_sid: smsResponse.sid,
             to: smsResponse.to,
             from: smsResponse.from,

@@ -22,7 +22,7 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthConte
 
     // Parse query parameters with validation
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50'))) // Max 100 per page
+    const limit = Math.min(1000, Math.max(1, parseInt(searchParams.get('limit') || '50'))) // Max 1000 per request (Kanban needs all projects)
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
     const pipeline = searchParams.get('pipeline') || ''

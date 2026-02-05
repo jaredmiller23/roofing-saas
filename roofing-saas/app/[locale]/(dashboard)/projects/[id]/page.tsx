@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send } from 'lucide-react'
+import { Link } from '@/lib/i18n/navigation'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
+import { CreateQuoteOptionDialog } from '@/components/estimates/CreateQuoteOptionDialog'
+import { SendEstimateDialog } from '@/components/estimates/SendEstimateDialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -95,7 +97,9 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [startingProduction, setStartingProduction] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
   const [loadingQuoteOptions, setLoadingQuoteOptions] = useState(false)
+  const [showSendEstimate, setShowSendEstimate] = useState(false)
   const [currentUser, setCurrentUser] = useState<{
     id: string
     email?: string
@@ -254,6 +258,27 @@ export default function ProjectDetailPage() {
     }
   }
 
+  async function handleReactivate() {
+    if (!project || reactivating) return
+
+    if (!confirm('Reactivate this project and move it back to Prospect?')) return
+
+    try {
+      setReactivating(true)
+      await apiFetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        body: { pipeline_stage: 'prospect' },
+      })
+      toast.success('Project reactivated')
+      await fetchProjectData()
+    } catch (error) {
+      console.error('Error reactivating project:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to reactivate project')
+    } finally {
+      setReactivating(false)
+    }
+  }
+
   const getStatusBadge = (status: string | null | undefined) => {
     if (!status) {
       return (
@@ -388,6 +413,27 @@ export default function ProjectDetailPage() {
                 contactEmail={contact?.email || undefined}
                 onSuccess={fetchProjectData}
               />
+              {project.pipeline_stage === 'lost' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleReactivate}
+                  disabled={reactivating}
+                >
+                  {reactivating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
+                      Reactivating...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="h-4 w-4" />
+                      Reactivate
+                    </>
+                  )}
+                </Button>
+              )}
               <Link href={`/projects/${projectId}/edit`}>
                 <Button size="sm">Edit Project</Button>
               </Link>
@@ -640,7 +686,7 @@ export default function ProjectDetailPage() {
                 </div>
                 <div className="flex gap-2">
                   {quoteOptions.length > 0 && (
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => setShowSendEstimate(true)}>
                       <Send className="h-4 w-4 mr-2" />
                       Send Proposal
                     </Button>
@@ -711,10 +757,10 @@ export default function ProjectDetailPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                       Create pricing options to provide your customer with choices
                     </p>
-                    <Button disabled>
-                      <Calculator className="h-4 w-4 mr-2" />
-                      Create Quote Options
-                    </Button>
+                    <CreateQuoteOptionDialog
+                      projectId={projectId}
+                      onSuccess={() => fetchQuoteOptions()}
+                    />
                   </CardContent>
                 </Card>
               )}
@@ -903,6 +949,15 @@ export default function ProjectDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {project && (
+        <SendEstimateDialog
+          projectId={project.id}
+          projectName={project.name}
+          open={showSendEstimate}
+          onOpenChange={setShowSendEstimate}
+        />
+      )}
     </div>
   )
 }

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useRouter } from '@/lib/i18n/navigation'
-import Link from 'next/link'
+import { useRouter, Link } from '@/lib/i18n/navigation'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

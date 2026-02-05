@@ -78,6 +78,22 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
+    // Field allowlisting — only permit known mutable fields
+    const ALLOWED_FIELDS = [
+      'title', 'description', 'status', 'priority',
+      'due_date', 'start_date', 'completed_at',
+      'assigned_to', 'project_id', 'contact_id', 'parent_task_id',
+      'estimated_hours', 'actual_hours', 'progress',
+      'tags', 'notes',
+    ]
+    const updateData: Record<string, unknown> = {}
+    for (const key of ALLOWED_FIELDS) {
+      if (key in body) {
+        updateData[key] = body[key]
+      }
+    }
+    updateData.updated_at = new Date().toISOString()
+
     const supabase = await createClient()
 
     // Get current task to track changes
@@ -91,7 +107,7 @@ export async function PATCH(
     // Update task
     const { data: task, error } = await supabase
       .from('tasks')
-      .update(body)
+      .update(updateData)
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .select()

@@ -60,10 +60,13 @@ export const PATCH = withAuthParams(async (
     const body = await request.json()
 
     // Validate input
-    const validatedData = updateContactSchema.parse({ ...body, id })
+    const parsed = updateContactSchema.safeParse({ ...body, id })
+    if (!parsed.success) {
+      throw ValidationError(parsed.error.issues.map((e: { message: string }) => e.message).join(', '))
+    }
 
     // Remove id from update data
-    const { id: _, ...updateData } = validatedData
+    const { id: _, ...updateData } = parsed.data
 
     // Update contact with audit logging
     const contact = await auditedUpdate(
@@ -142,11 +145,6 @@ export const PATCH = withAuthParams(async (
     return successResponse(contact)
   } catch (error) {
     logger.error('Error in PATCH /api/contacts/:id', { error })
-
-    if (error instanceof Error && error.message.includes('validation')) {
-      return errorResponse(ValidationError('Invalid input data'))
-    }
-
     return errorResponse(error instanceof Error ? error : InternalError())
   }
 })

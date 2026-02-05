@@ -7,7 +7,7 @@
  * TCPA compliance is critical - these alerts explain why calls are blocked.
  */
 
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {

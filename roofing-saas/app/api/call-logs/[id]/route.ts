@@ -72,14 +72,27 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
+
+    // Field allowlisting — only permit known mutable fields
+    const ALLOWED_FIELDS = [
+      'phone_number', 'direction', 'duration_seconds', 'outcome', 'disposition',
+      'notes', 'contact_id', 'project_id',
+      'recording_url', 'transcription', 'ai_summary',
+      'sentiment', 'key_points', 'follow_up_required', 'follow_up_date',
+    ]
+    const updateData: Record<string, unknown> = {}
+    for (const key of ALLOWED_FIELDS) {
+      if (key in body) {
+        updateData[key] = body[key]
+      }
+    }
+    updateData.updated_at = new Date().toISOString()
+
     const supabase = await createClient()
 
     const { data, error } = await supabase
       .from('call_logs')
-      .update({
-        ...body,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)

@@ -9,7 +9,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/lib/i18n/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { apiFetch, ApiClientError } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'

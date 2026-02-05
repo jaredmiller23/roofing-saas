@@ -158,8 +158,8 @@ export function PipelineBoard() {
 
   async function fetchProjects() {
     try {
-      // Fetch all projects for pipeline view (increased limit to 2000)
-      const { data: projectList } = await apiFetchPaginated<Project[]>('/api/projects?limit=2000')
+      // Fetch all projects for pipeline view
+      const { data: projectList } = await apiFetchPaginated<Project[]>('/api/projects?limit=1000')
       setProjects(projectList)
     } catch (error) {
       console.error('Failed to fetch projects:', error)

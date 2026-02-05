@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter, Link } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { WorkflowBuilder } from '@/components/automation/WorkflowBuilder'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Play, Pause, Trash2, Copy, Activity, Clock } from 'lucide-react'
-import Link from 'next/link'
 import { apiFetch } from '@/lib/api/client'
 import type { Workflow, WorkflowExecution } from '@/lib/automation/workflow-types'
 
