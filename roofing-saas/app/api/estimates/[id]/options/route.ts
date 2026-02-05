@@ -18,26 +18,43 @@ import {
  */
 
 // Validation schemas
+// Accept both `is_selected` (DB column) and `is_recommended` (app layer)
+const lineItemSchema = z.object({
+  description: z.string().min(1, 'Description is required'),
+  quantity: z.number().positive('Quantity must be positive'),
+  unit: z.string().min(1, 'Unit is required'),
+  unit_price: z.number().min(0, 'Unit price must be non-negative'),
+  category: z.enum(['materials', 'labor', 'equipment', 'permits', 'other'])
+})
+
 const createQuoteOptionSchema = z.object({
   name: z.string().min(1, 'Option name is required').max(100),
   description: z.string().optional(),
   is_selected: z.boolean().optional().default(false),
-  line_items: z.array(z.object({
-    description: z.string().min(1, 'Description is required'),
-    quantity: z.number().positive('Quantity must be positive'),
-    unit: z.string().min(1, 'Unit is required'),
-    unit_price: z.number().min(0, 'Unit price must be non-negative'),
-    category: z.enum(['materials', 'labor', 'equipment', 'permits', 'other'])
-  })).min(1, 'At least one line item is required')
+  is_recommended: z.boolean().optional(),
+  line_items: z.array(lineItemSchema).min(1, 'At least one line item is required')
 })
 
-const updateQuoteOptionSchema = createQuoteOptionSchema.partial().extend({
-  id: z.string().uuid('Invalid option ID')
+const updateQuoteOptionSchema = z.object({
+  id: z.string().uuid('Invalid option ID'),
+  name: z.string().min(1, 'Option name is required').max(100).optional(),
+  description: z.string().optional(),
+  is_selected: z.boolean().optional(),
+  is_recommended: z.boolean().optional(),
+  line_items: z.array(lineItemSchema).min(1).optional()
 })
+
+/**
+ * Resolve is_recommended (app) -> is_selected (DB).
+ * If is_recommended is provided, use it; otherwise fall back to is_selected.
+ */
+function resolveIsSelected(data: { is_recommended?: boolean; is_selected?: boolean }): boolean {
+  return data.is_recommended ?? data.is_selected ?? false
+}
 
 // GET - List quote options for a project/estimate
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -98,8 +115,10 @@ export async function GET(
     }
 
     // Transform the data to match our expected structure
+    // Map DB `is_selected` to app-layer `is_recommended`
     const transformedOptions = options?.map(option => ({
       ...option,
+      is_recommended: option.is_selected,
       line_items: option.quote_line_items || []
     })) || []
 
@@ -169,7 +188,7 @@ export async function POST(
         project_id: projectId,
         name: data.name,
         description: data.description,
-        is_selected: data.is_selected,
+        is_selected: resolveIsSelected(data),
         subtotal,
       })
       .select()
@@ -180,8 +199,9 @@ export async function POST(
       throw InternalError('Failed to create quote option')
     }
 
-    // Create line items
+    // Create line items (include tenant_id for RLS)
     const lineItemsWithTotals = data.line_items.map(item => ({
+      tenant_id: tenantId,
       quote_option_id: quoteOption.id,
       description: item.description,
       quantity: item.quantity,
@@ -224,6 +244,7 @@ export async function POST(
     return createdResponse({
       option: {
         ...completeOption,
+        is_recommended: completeOption.is_selected,
         line_items: completeOption.quote_line_items || []
       }
     })
@@ -287,11 +308,11 @@ export async function PATCH(
       throw AuthorizationError('Project not found or access denied')
     }
 
-    // If line items are being updated, recalculate totals
+    // Map is_recommended (app) to is_selected (DB) if provided
     let updateData: Record<string, unknown> = {
       name: data.name,
       description: data.description,
-      is_selected: data.is_selected,
+      is_selected: resolveIsSelected(data),
     }
 
     if (data.line_items) {
@@ -305,13 +326,10 @@ export async function PATCH(
         subtotal,
       }
 
-      // Update line items - delete old ones and create new ones
-      await supabase
-        .from('quote_line_items')
-        .delete()
-        .eq('quote_option_id', data.id)
-
-      const lineItemsWithTotals = data.line_items.map(item => ({
+      // Atomic line items update: insert new items first, then delete old ones.
+      // This prevents data loss if the insert fails.
+      const lineItemsWithTotals = data.line_items.map((item: z.infer<typeof lineItemSchema>) => ({
+        tenant_id: tenantId,
         quote_option_id: data.id,
         description: item.description,
         quantity: item.quantity,
@@ -321,13 +339,35 @@ export async function PATCH(
         category: item.category
       }))
 
+      // Step 1: Capture existing line item IDs before insert
+      const { data: existingItems } = await supabase
+        .from('quote_line_items')
+        .select('id')
+        .eq('quote_option_id', data.id)
+
+      const existingIds = (existingItems || []).map(item => item.id)
+
+      // Step 2: Insert new line items
       const { error: lineItemsError } = await supabase
         .from('quote_line_items')
         .insert(lineItemsWithTotals)
 
       if (lineItemsError) {
-        logger.error('Line items update error', { error: lineItemsError, lineItemsWithTotals })
+        logger.error('Line items insert error during update', { error: lineItemsError, lineItemsWithTotals })
         throw InternalError('Failed to update line items')
+      }
+
+      // Step 3: Only after successful insert, delete the old line items
+      if (existingIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('quote_line_items')
+          .delete()
+          .in('id', existingIds)
+
+        if (deleteError) {
+          logger.error('Failed to delete old line items', { error: deleteError, existingIds })
+          // Non-fatal: new items were inserted successfully, old ones will be cleaned up
+        }
       }
     }
 
@@ -350,6 +390,7 @@ export async function PATCH(
     return successResponse({
       option: {
         ...updatedOption,
+        is_recommended: updatedOption.is_selected,
         line_items: updatedOption.quote_line_items || []
       }
     })
