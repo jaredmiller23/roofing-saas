@@ -1,9 +1,9 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, isAdmin, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   FilterConfig,
@@ -81,18 +81,18 @@ export async function POST(request: NextRequest) {
       throw AuthenticationError()
     }
 
-    const supabase = await createClient()
-
-    // Check if user is admin
-    const { data: tenantUser } = await supabase
-      .from('tenant_users')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenantUser || tenantUser.role !== 'admin') {
+    // Check if user is admin (includes owner role)
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User not associated with any tenant')
+    }
+
+    const supabase = await createClient()
 
     const body: CreateFilterConfigRequest = await request.json()
 
@@ -107,22 +107,11 @@ export async function POST(request: NextRequest) {
       throw ValidationError('Missing required fields')
     }
 
-    // Get tenant_id
-    const { data: tenant } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenant) {
-      throw NotFoundError('Tenant not found')
-    }
-
     // Insert filter config
     const { data, error } = await supabase
       .from('filter_configs')
       .insert({
-        tenant_id: tenant.tenant_id,
+        tenant_id: tenantId,
         entity_type: body.entity_type,
         field_name: body.field_name,
         field_label: body.field_label,

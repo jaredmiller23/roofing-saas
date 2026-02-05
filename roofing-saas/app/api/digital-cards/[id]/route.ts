@@ -9,7 +9,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser, isAdmin } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -97,10 +97,10 @@ export async function PATCH(
 
     const supabase = await createClient()
 
-    // Get user's tenant and role
+    // Get user's tenant
     const { data: tenantUser, error: tenantError } = await supabase
       .from('tenant_users')
-      .select('role, tenant_id')
+      .select('tenant_id')
       .eq('user_id', user.id)
       .single()
 
@@ -120,11 +120,11 @@ export async function PATCH(
       throw NotFoundError('Card not found')
     }
 
-    // Check permissions: own card or admin
+    // Check permissions: own card or admin (includes owner role)
     const isOwnCard = existingCard.user_id === user.id
-    const isAdmin = tenantUser.role === 'admin'
+    const userIsAdmin = await isAdmin(user.id)
 
-    if (!isOwnCard && !isAdmin) {
+    if (!isOwnCard && !userIsAdmin) {
       throw AuthorizationError('You can only update your own card')
     }
 
@@ -211,15 +211,21 @@ export async function DELETE(
 
     const supabase = await createClient()
 
-    // Check if user is admin
+    // Check if user is admin (includes owner role)
+    const userIsAdmin = await isAdmin(user.id)
+    if (!userIsAdmin) {
+      throw AuthorizationError('Admin access required')
+    }
+
+    // Get user's tenant for scoped deletion
     const { data: tenantUser, error: tenantError } = await supabase
       .from('tenant_users')
-      .select('role, tenant_id')
+      .select('tenant_id')
       .eq('user_id', user.id)
       .single()
 
-    if (tenantError || !tenantUser || tenantUser.role !== 'admin') {
-      throw AuthorizationError('Admin access required')
+    if (tenantError || !tenantUser) {
+      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Delete the card
