@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { reverseGeocode } from '@/lib/geocoding'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 
 type Disposition = 'not_home' | 'interested' | 'not_interested' | 'appointment_set' | 'callback_later'
 
@@ -45,7 +46,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
     setGettingLocation(true)
 
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser')
+      toast.error('Geolocation is not supported by your browser')
       setGettingLocation(false)
       return
     }
@@ -62,7 +63,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
       },
       (error) => {
         console.error('Error getting location:', error)
-        alert('Unable to get location. Please enable location services.')
+        toast.error('Unable to get location. Please enable location services.')
         setGettingLocation(false)
       },
       {
@@ -84,12 +85,12 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
 
   const handleSubmit = async () => {
     if (!latitude || !longitude) {
-      alert('Location is required. Please enable location services.')
+      toast.error('Location is required. Please enable location services.')
       return
     }
 
     if (!disposition) {
-      alert('Please select a disposition.')
+      toast.warning('Please select a disposition.')
       return
     }
 
@@ -126,7 +127,7 @@ export function KnockLogger({ onSuccess }: KnockLoggerProps) {
       }
     } catch (error) {
       console.error('Error submitting knock:', error)
-      alert('Failed to log knock. Please try again.')
+      toast.error('Failed to log knock. Please try again.')
     } finally {
       setSubmitting(false)
     }

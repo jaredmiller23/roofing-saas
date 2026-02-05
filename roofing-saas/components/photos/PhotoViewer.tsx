@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import { toast } from 'sonner'
 
 interface Photo {
   id: string
@@ -151,7 +152,7 @@ export function PhotoViewer({ photos, initialIndex = 0, onClose, onDelete }: Pho
       }
     } catch (err) {
       console.error('Photo delete error:', err)
-      alert(err instanceof Error ? err.message : 'Failed to delete photo')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete photo')
     }
   }
 

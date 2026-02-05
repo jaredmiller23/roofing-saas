@@ -11,6 +11,7 @@ import { CallComplianceCheck } from './CallComplianceCheck'
 import type { Contact } from '@/lib/types/contact'
 import { getCombinedTypeLabel, formatStage } from '@/lib/types/contact'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 
 interface ContactCardProps {
   contact: Contact
@@ -52,7 +53,7 @@ export function ContactCard({
       window.location.reload()
     } catch (error) {
       console.error('Failed to add to Internal DNC:', error)
-      alert('Failed to add to Internal DNC. Please try again.')
+      toast.error('Failed to add to Internal DNC. Please try again.')
     } finally {
       setAddingToDNC(false)
     }

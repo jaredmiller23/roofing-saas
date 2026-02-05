@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, X, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import type { ImpersonationStatusResponse } from '@/lib/impersonation/types'
 import { IMPERSONATION_WARNING_MINUTES } from '@/lib/impersonation/types'
 
@@ -74,7 +75,7 @@ export function ImpersonationBanner() {
       window.location.reload()
     } catch (error) {
       console.error('Error exiting impersonation:', error)
-      alert('Failed to exit impersonation. Please try again.')
+      toast.error('Failed to exit impersonation. Please try again.')
       setIsExiting(false)
     }
   }

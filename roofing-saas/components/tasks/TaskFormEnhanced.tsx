@@ -152,7 +152,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       )}
 
       {/* Basic Information */}
-      <div className="bg-card shadow-sm rounded-lg border border p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <CheckCircle className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Basic Information</h2>
@@ -191,7 +191,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -206,7 +206,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -235,7 +235,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Dates & Time */}
-      <div className="bg-card shadow-sm rounded-lg border border p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Dates & Time Tracking</h2>
@@ -301,7 +301,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Assignments & Relations */}
-      <div className="bg-card shadow-sm rounded-lg border border p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <User className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Assignments & Relations</h2>
@@ -315,7 +315,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.project_id}
               onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {projects.map((project) => (
@@ -333,7 +333,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.contact_id}
               onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {contacts.map((contact) => (
@@ -351,7 +351,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
             <select
               value={formData.parent_task_id}
               onChange={(e) => setFormData({ ...formData, parent_task_id: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">None</option>
               {tasks.map((t) => (
@@ -365,7 +365,7 @@ export function TaskFormEnhanced({ task }: TaskFormProps) {
       </div>
 
       {/* Tags & Reminders */}
-      <div className="bg-card shadow-sm rounded-lg border border p-6">
+      <div className="bg-card shadow-sm rounded-lg border border-border p-6">
         <div className="flex items-center gap-2 mb-6">
           <Tag className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold text-foreground">Tags & Reminders</h2>

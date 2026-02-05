@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Send } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 
 interface MessageInputProps {
   contactId: string
@@ -38,7 +39,7 @@ export function MessageInput({ contactId, contactPhone, onSent }: MessageInputPr
       onSent?.()
     } catch (error) {
       logger.error('Failed to send message', { error })
-      alert(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
     } finally {
       setIsSending(false)
     }

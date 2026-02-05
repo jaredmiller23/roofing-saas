@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link, useRouter } from '@/lib/i18n/navigation'
 import { Phone, PhoneIncoming, PhoneOutgoing, ExternalLink, Mic } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface CallLog {
@@ -69,7 +70,7 @@ export function CallLogsTable({ params }: CallLogsTableProps) {
       await apiFetch<void>(`/api/call-logs/${id}`, { method: 'DELETE' })
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete call log')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete call log')
     }
   }
 

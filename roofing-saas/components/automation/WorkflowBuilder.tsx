@@ -28,6 +28,7 @@ import type {
   TriggerType,
   ActionType
 } from '@/lib/automation/workflow-types'
+import { toast } from 'sonner'
 import { TriggerNode } from './TriggerNode'
 import { ActionNode } from './ActionNode'
 import { WorkflowCanvas } from './WorkflowCanvas'
@@ -191,7 +192,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
 
   const handleSave = async () => {
     if (!name.trim() || !trigger) {
-      alert('Please provide a workflow name and trigger')
+      toast.warning('Please provide a workflow name and trigger')
       return
     }
 
@@ -213,7 +214,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
       await onSave(workflowData)
     } catch (error) {
       console.error('Failed to save workflow:', error)
-      alert('Failed to save workflow')
+      toast.error('Failed to save workflow')
     } finally {
       setIsSaving(false)
     }
@@ -221,7 +222,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
 
   const handleTest = async () => {
     if (!workflow?.id || !trigger) {
-      alert('Please save the workflow first')
+      toast.warning('Please save the workflow first')
       return
     }
 
@@ -239,7 +240,7 @@ export function WorkflowBuilder({ workflow, onSave, onTest }: WorkflowBuilderPro
       await onTest?.(testWorkflow)
     } catch (error) {
       console.error('Failed to test workflow:', error)
-      alert('Failed to test workflow')
+      toast.error('Failed to test workflow')
     } finally {
       setIsTesting(false)
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link, useRouter } from '@/lib/i18n/navigation'
 import { CalendarDays, Clock, MapPin, ExternalLink, User } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Event {
@@ -96,7 +97,7 @@ export function EventsTable({ params }: EventsTableProps) {
       await apiFetch<void>(`/api/events/${id}`, { method: 'DELETE' })
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete event')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete event')
     }
   }
 

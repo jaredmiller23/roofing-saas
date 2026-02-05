@@ -9,6 +9,7 @@ import { Phone, MessageSquare, Mail, Building2, RefreshCw } from 'lucide-react'
 import { DNCBadge } from './DNCBadge'
 import { Button } from '@/components/ui/button'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { toast } from 'sonner'
 
 interface ContactsTableProps {
   params: { [key: string]: string | string[] | undefined }
@@ -116,7 +117,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
       setContacts(contacts.filter((c) => c.id !== id))
       setTotal(total - 1)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete contact')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete contact')
     }
   }
 
@@ -166,11 +167,12 @@ export function ContactsTable({ params }: ContactsTableProps) {
 
       await Promise.all(updates)
 
-      // Refresh the list
-      window.location.reload()
+      // Refresh the list by re-fetching
+      setSelectedContacts(new Set())
+      await fetchContacts()
     } catch (error) {
       console.error('Bulk action failed:', error)
-      alert('Failed to apply bulk action')
+      toast.error('Failed to apply bulk action')
     } finally {
       setBulkActionLoading(false)
     }

@@ -86,7 +86,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               <select
                 value={formData.direction}
                 onChange={(e) => setFormData({ ...formData, direction: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="inbound">Inbound</option>
                 <option value="outbound">Outbound</option>
@@ -102,7 +102,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
                 required
                 value={formData.phone_number}
                 onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="+1234567890"
               />
             </div>
@@ -117,7 +117,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
                 type="number"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="0"
               />
             </div>
@@ -129,7 +129,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               <select
                 value={formData.outcome}
                 onChange={(e) => setFormData({ ...formData, outcome: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="answered">Answered</option>
                 <option value="voicemail">Voicemail</option>
@@ -148,7 +148,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               type="text"
               value={formData.disposition}
               onChange={(e) => setFormData({ ...formData, disposition: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="e.g., qualified, callback, appointment_set"
             />
           </div>
@@ -161,7 +161,7 @@ export function CallLogForm({ call }: CallLogFormProps) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Call notes..."
             />
           </div>

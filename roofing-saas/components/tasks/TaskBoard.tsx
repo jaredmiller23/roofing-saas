@@ -161,7 +161,7 @@ export function TaskBoard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-card rounded-lg shadow-sm border border p-4 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -179,7 +179,7 @@ export function TaskBoard() {
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 bg-card text-foreground border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="all">All Priority</option>
                 <option value="low">Low</option>
@@ -228,7 +228,7 @@ export function TaskBoard() {
                     key={task.id}
                     draggable
                     onDragStart={() => handleDragStart(task)}
-                    className="bg-card rounded-lg border border p-4 cursor-move hover:shadow-md transition-shadow"
+                    className="bg-card rounded-lg border border-border p-4 cursor-move hover:shadow-md transition-shadow"
                   >
                     {/* Task Header */}
                     <div className="flex items-start justify-between mb-2">

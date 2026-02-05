@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
   X
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { ProjectFile, BulkFileOperation, RoofingFileCategory, FileType, FILE_TYPE_LABELS } from '@/lib/types/file'
 import { FileCategories } from './FileCategories'
 
@@ -78,7 +79,7 @@ export function BulkFileActions({
       onSelectionChange([])
     } catch (error) {
       console.error('Bulk action failed:', error)
-      alert('Operation failed. Please try again.')
+      toast.error('Operation failed. Please try again.')
     } finally {
       setProcessing(false)
     }

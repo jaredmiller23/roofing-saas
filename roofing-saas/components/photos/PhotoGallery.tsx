@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { toast } from 'sonner'
 import { getPhotoTypeLabel, getDamageCauseLabel } from '@/lib/types/photo-labels'
 import type { PhotoType, DamageCause } from '@/lib/types/photo-labels'
 
@@ -111,7 +112,7 @@ export function PhotoGallery({
         console.error('Photo delete error:', err)
         // Extract error message properly
         const errorMessage = err instanceof Error ? err.message : 'Failed to delete photo'
-        alert(errorMessage)
+        toast.error(errorMessage)
       }
     },
     [onPhotoDelete]

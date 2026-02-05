@@ -30,12 +30,12 @@ export function ConversationItem({ conversation, isActive, onClick }: Conversati
       className={`
         w-full flex items-start gap-3 p-4 hover:bg-accent transition-colors text-left
         ${isActive ? 'bg-accent' : ''}
-        ${hasUnread ? 'bg-blue-500/10' : ''}
+        ${hasUnread ? 'bg-primary/10' : ''}
         border-b border-border
       `}
     >
       <Avatar className="mt-1">
-        <AvatarFallback className={hasUnread ? 'bg-blue-600 text-white' : ''}>
+        <AvatarFallback className={hasUnread ? 'bg-primary text-primary-foreground' : ''}>
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -67,7 +67,7 @@ export function ConversationItem({ conversation, isActive, onClick }: Conversati
           </div>
 
           {hasUnread && (
-            <Badge variant="default" className="bg-primary text-white shrink-0">
+            <Badge variant="default" className="bg-primary text-primary-foreground shrink-0">
               {conversation.unread_count}
             </Badge>
           )}

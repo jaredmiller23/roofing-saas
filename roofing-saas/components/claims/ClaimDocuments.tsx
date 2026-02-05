@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -145,7 +146,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
       setShowUploadDialog(false)
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Failed to upload documents. Please try again.')
+      toast.error('Failed to upload documents. Please try again.')
     } finally {
       setUploading(false)
       setUploadProgress(0)
@@ -164,7 +165,7 @@ export function ClaimDocuments({ claimId, documents, onDocumentsChange }: ClaimD
       setDeleteConfirmId(null)
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Failed to delete document. Please try again.')
+      toast.error('Failed to delete document. Please try again.')
     } finally {
       setDeleting(false)
     }

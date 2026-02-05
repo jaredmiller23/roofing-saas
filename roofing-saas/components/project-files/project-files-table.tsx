@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Link } from '@/lib/i18n/navigation'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import {
   FileText,
   ExternalLink,
@@ -110,7 +111,7 @@ export function ProjectFilesTable({ params }: ProjectFilesTableProps) {
 
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete file')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete file')
     }
   }
 

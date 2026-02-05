@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Save, X, RefreshCw } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import type {
   FilterConfig,
   SavedFilter,
@@ -173,7 +174,7 @@ export function FilterBar({ entity_type, onFiltersChange, onError }: FilterBarPr
       setIsSaveDialogOpen(false)
     } catch (error) {
       console.error('Error saving filter:', error)
-      alert(error instanceof Error ? error.message : 'Failed to save filter')
+      toast.error(error instanceof Error ? error.message : 'Failed to save filter')
     }
   }
 

@@ -18,6 +18,7 @@ import {
   Instagram,
   Twitter,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { PublicCardData, ContactFormData } from '@/lib/digital-cards/types'
 import { parseServices } from '@/lib/digital-cards/types'
 
@@ -91,11 +92,11 @@ export function PublicCardView({ card }: PublicCardViewProps) {
         setSubmitted(true)
         setFormData({ name: '', email: '', phone: '', company: '', message: '' })
       } else {
-        alert('Failed to send message. Please try again.')
+        toast.error('Failed to send message. Please try again.')
       }
     } catch (error) {
       console.error('Error submitting contact form:', error)
-      alert('Failed to send message. Please try again.')
+      toast.error('Failed to send message. Please try again.')
     } finally {
       setSubmitting(false)
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link, useRouter } from '@/lib/i18n/navigation'
 import { Briefcase, Calendar, ExternalLink } from 'lucide-react'
 import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Job {
@@ -73,7 +74,7 @@ export function JobsTable({ params }: JobsTableProps) {
       setTotal(prev => prev - 1)
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete job')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete job')
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -57,7 +58,7 @@ export function KpisTab() {
 
   const deleteKpi = async (kpiId: string, isSystem: boolean) => {
     if (isSystem) {
-      alert('System KPIs cannot be deleted. You can only deactivate them.')
+      toast.warning('System KPIs cannot be deleted. You can only deactivate them.')
       return
     }
 

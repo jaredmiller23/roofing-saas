@@ -15,6 +15,7 @@ import {
   Upload,
   Edit3
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { FileVersion, VersionChangeType, ProjectFile } from '@/lib/types/file'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -72,7 +73,7 @@ export function FileVersionHistory({
         await fetchVersions() // Refresh versions
       }
     } catch (_err) {
-      alert('Failed to restore version')
+      toast.error('Failed to restore version')
     }
   }
 
@@ -88,7 +89,7 @@ export function FileVersionHistory({
         await fetchVersions() // Refresh versions
       }
     } catch (_err) {
-      alert('Failed to upload new version')
+      toast.error('Failed to upload new version')
     }
   }
 

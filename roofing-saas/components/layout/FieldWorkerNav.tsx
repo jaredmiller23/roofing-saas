@@ -26,6 +26,7 @@ import {
   Users,
 } from 'lucide-react'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { signOut } from '@/app/[locale]/(dashboard)/actions'
 import {
   Sheet,
@@ -127,7 +128,7 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
       window.location.reload()
     } catch (error) {
       console.error('Error starting impersonation:', error)
-      alert('Failed to start impersonation. Please try again.')
+      toast.error('Failed to start impersonation. Please try again.')
     }
   }
 

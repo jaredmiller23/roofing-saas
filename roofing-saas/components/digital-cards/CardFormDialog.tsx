@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { toast } from 'sonner'
 import type { DigitalBusinessCard } from '@/lib/digital-cards/types'
 import { DEFAULT_BRAND_COLORS, generateSlugFromName } from '@/lib/digital-cards/types'
 
@@ -186,11 +187,11 @@ export function CardFormDialog({
         form.reset()
       } else {
         const error = await res.json()
-        alert(`Error: ${error.error}`)
+        toast.error(`Error: ${error.error}`)
       }
     } catch (error) {
       console.error('Error saving card:', error)
-      alert('Failed to save card')
+      toast.error('Failed to save card')
     } finally {
       setSubmitting(false)
     }

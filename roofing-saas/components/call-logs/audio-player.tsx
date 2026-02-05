@@ -19,6 +19,7 @@ import {
   VolumeX,
   Download,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface AudioPlayerProps {
   /**
@@ -144,7 +145,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading recording:', error)
-      alert('Failed to download recording. Please try again.')
+      toast.error('Failed to download recording. Please try again.')
     }
   }
 
@@ -225,7 +226,7 @@ export function AudioPlayer({ recordingUrl, duration, className = '' }: AudioPla
             <button
               onClick={togglePlayPause}
               disabled={isLoading}
-              className="p-3 rounded-full bg-primary hover:bg-primary/90 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-0.5" />}
