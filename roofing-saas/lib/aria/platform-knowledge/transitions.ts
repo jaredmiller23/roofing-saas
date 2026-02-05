@@ -15,6 +15,7 @@ import {
   validateCompleteTransition,
   formatMissingFieldsError,
   getTransitionError,
+  getStatusForPipelineStage,
 } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 
@@ -30,6 +31,7 @@ export {
   validateCompleteTransition,
   formatMissingFieldsError,
   getTransitionError,
+  getStatusForPipelineStage,
 }
 
 // =============================================================================

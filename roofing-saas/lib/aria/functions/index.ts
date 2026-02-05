@@ -48,5 +48,9 @@ import './team'
 // Diagnostic functions for error diagnosis, schema knowledge, data queries
 import './platform'
 
+// Guided Repair (ARIA 2.0 - Phase 3)
+// Containment-gated repair functions with audit logging
+import './repair'
+
 // Re-export the registry
 export { ariaFunctionRegistry } from '../function-registry'
