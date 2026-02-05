@@ -103,7 +103,7 @@ export function FieldWorkerNav({ userEmail, userRole = 'user' }: FieldWorkerNavP
     }
   }, [isDrawerOpen])
 
-  const isActive = (href: string) => pathname === href
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const isAdmin = userRole === 'admin'
 
   // Calculate stagger delay for nav items

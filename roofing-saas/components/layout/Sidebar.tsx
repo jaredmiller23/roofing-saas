@@ -110,7 +110,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
   const pathname = usePathname()
   const { features, isLoading: featuresLoading } = useFeatureAccess()
 
-  const isActive = (href: string) => pathname === href
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
   const isAdmin = userRole === 'admin'
 
   /**
