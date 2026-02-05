@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from '@pdfme/pdf-lib'
+import { formatCurrency } from '@/lib/types/quote-option'
 
 export interface EstimatePDFData {
   companyName: string
@@ -491,11 +492,3 @@ function drawFooter(
   })
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
-}

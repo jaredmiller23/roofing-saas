@@ -70,12 +70,17 @@ export async function GET(
       .eq('id', proposal.project_id)
       .single()
 
-    // Fetch company settings for branding
+    // Fetch company settings for branding and terms
     const { data: settings } = await supabase
       .from('tenant_settings')
-      .select('company_name, company_tagline')
+      .select('company_name, company_tagline, custom_settings')
       .eq('tenant_id', proposal.tenant_id)
       .single()
+
+    // Extract estimate terms from custom settings or use default
+    const customSettings = settings?.custom_settings as Record<string, string> | null
+    const estimateTerms = customSettings?.estimate_terms ||
+      'This estimate is valid for 30 days from the date of issue. All work includes a manufacturer warranty on materials and a workmanship warranty. Payment terms: 50% deposit upon acceptance, balance due upon completion. Any changes to the scope of work may result in additional charges. Permits and inspections are included where required by local code.'
 
     // Fetch quote options with line items
     const { data: options, error: optionsError } = await supabase
@@ -152,6 +157,7 @@ export async function GET(
         tagline: settings?.company_tagline || null,
       },
       options: transformedOptions,
+      terms: estimateTerms,
     })
   } catch (error) {
     logger.error('Error in GET /api/estimates/[id]/view', { error })

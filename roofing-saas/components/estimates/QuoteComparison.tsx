@@ -11,6 +11,7 @@ import {
   formatCurrency,
   LINE_ITEM_CATEGORIES
 } from '@/lib/types/quote-option'
+import { EstimatePreviewDialog } from './EstimatePreviewDialog'
 
 interface QuoteComparisonProps {
   options: QuoteOption[]
@@ -40,16 +41,27 @@ export function QuoteComparison({
   const [termsEditing, setTermsEditing] = useState(false)
   const [termsDraft, setTermsDraft] = useState('')
   const [termsSaving, setTermsSaving] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [companyName, setCompanyName] = useState('')
+  const [companyTagline, setCompanyTagline] = useState<string | null>(null)
 
   const loadTerms = useCallback(async () => {
     try {
-      const res = await fetch('/api/tenant-settings/estimate-terms')
-      if (res.ok) {
-        const data = await res.json()
+      const [termsRes, settingsRes] = await Promise.all([
+        fetch('/api/tenant-settings/estimate-terms'),
+        fetch('/api/settings'),
+      ])
+      if (termsRes.ok) {
+        const data = await termsRes.json()
         setTerms(data.data?.terms || '')
       }
+      if (settingsRes.ok) {
+        const data = await settingsRes.json()
+        setCompanyName(data.data?.company_name || '')
+        setCompanyTagline(data.data?.company_tagline || null)
+      }
     } catch {
-      // Use empty string, fallback handled by API
+      // Fallback handled by defaults
     }
   }, [])
 
@@ -166,12 +178,18 @@ export function QuoteComparison({
           {/* Actions */}
           {mode !== 'sent' && (
             <div className="flex gap-2">
+              {mode !== 'selection' && (
+                <Button variant="outline" onClick={() => setPreviewOpen(true)}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview Estimate
+                </Button>
+              )}
               {projectId && mode !== 'selection' && (
                 <Button variant="outline" onClick={handlePreviewPdf} disabled={previewLoading}>
                   {previewLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Download className="h-4 w-4 mr-2" />
                   )}
                   Preview PDF
                 </Button>
@@ -338,6 +356,15 @@ export function QuoteComparison({
           </CardContent>
         </Card>
       )}
+      <EstimatePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        options={options}
+        projectName={projectName}
+        companyName={companyName || 'Your Company'}
+        companyTagline={companyTagline}
+        terms={terms}
+      />
     </div>
   )
 }

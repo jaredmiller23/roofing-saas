@@ -817,3 +817,44 @@ body.ig-nav-active [data-ai-assistant-bar] {
 body.ig-nav-active main {
   padding-bottom: 0 !important;
 }
+
+/* ========================================
+   PRINT STYLES
+   Clean, paper-friendly output for estimates
+   ======================================== */
+@media print {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --border: #d1d5db;
+    --muted: #f3f4f6;
+    --muted-foreground: #4b5563;
+    --primary: #FF8243;
+    --primary-foreground: #ffffff;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure cards have visible borders on paper */
+  .bg-card {
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+  }
+
+  /* Avoid page breaks inside cards */
+  .bg-card,
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+}

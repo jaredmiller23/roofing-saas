@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
 import { sendEmail, createEmailHTML } from '@/lib/resend/email'
-import { generateProposalNumber } from '@/lib/types/quote-option'
+import { generateProposalNumber, formatCurrency } from '@/lib/types/quote-option'
 
 /**
  * POST /api/estimates/[id]/send
@@ -120,12 +120,7 @@ export async function POST(
     const optionsList = options
       .map((opt) => {
         const subtotal = typeof opt.subtotal === 'number' ? opt.subtotal : 0
-        const formatted = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(subtotal)
+        const formatted = formatCurrency(subtotal)
         return `<li><strong>${opt.name}</strong> - ${formatted}</li>`
       })
       .join('')

@@ -6,6 +6,7 @@ import { FileText, Clock, AlertCircle, Star, Check, ArrowRight } from 'lucide-re
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { formatCurrency } from '@/lib/types/quote-option'
 
 interface LineItem {
   id: string
@@ -47,6 +48,7 @@ interface EstimateViewData {
   project: { id: string; name: string } | null
   company: { name: string; tagline: string | null }
   options: QuoteOption[]
+  terms?: string
   expired?: boolean
 }
 
@@ -56,15 +58,6 @@ const LINE_ITEM_CATEGORIES: Record<string, { label: string; icon: string }> = {
   equipment: { label: 'Equipment', icon: '🚚' },
   permits: { label: 'Permits', icon: '📋' },
   other: { label: 'Other', icon: '📦' },
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
 }
 
 export default function EstimateViewPage() {
@@ -226,7 +219,7 @@ export default function EstimateViewPage() {
         )}
 
         {/* View Toggle */}
-        <div className="flex justify-end">
+        <div className="flex justify-end no-print">
           <div className="flex bg-card p-1 rounded-lg border border-border">
             <button
               onClick={() => setViewMode('summary')}
@@ -267,6 +260,16 @@ export default function EstimateViewPage() {
             />
           ))}
         </div>
+
+        {/* Terms & Conditions */}
+        {data.terms && (
+          <Card className="bg-card border-border">
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Terms &amp; Conditions</h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{data.terms}</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground pt-8 pb-4">
