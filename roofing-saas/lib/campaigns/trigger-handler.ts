@@ -301,6 +301,7 @@ async function exitEnrollmentsForStageExit(
       )
     `)
     .eq('contact_id', contactId)
+    .eq('tenant_id', event.tenantId)
     .eq('status', 'active')
 
   if (fetchError) {
@@ -366,27 +367,28 @@ async function exitEnrollmentsForStageExit(
     return
   }
 
-  // Exit the matching enrollments
+  // Exit the matching enrollments (batch update for efficiency)
   const exitReason: ExitReason = 'stage_changed'
   const exitedAt = new Date().toISOString()
+  const enrollmentIds = enrollmentsToExit.map(e => e.id)
 
-  for (const enrollment of enrollmentsToExit) {
-    const { error: updateError } = await supabase
-      .from('campaign_enrollments')
-      .update({
-        status: 'exited',
-        exit_reason: exitReason,
-        exited_at: exitedAt,
-      })
-      .eq('id', enrollment.id)
+  const { error: updateError } = await supabase
+    .from('campaign_enrollments')
+    .update({
+      status: 'exited' as const,
+      exit_reason: exitReason,
+      exited_at: exitedAt,
+    })
+    .in('id', enrollmentIds)
 
-    if (updateError) {
-      logger.error('[Campaign] Failed to exit enrollment', {
-        error: updateError.message,
-        enrollmentId: enrollment.id,
-        campaignName: enrollment.campaignName,
-      })
-    } else {
+  if (updateError) {
+    logger.error('[Campaign] Failed to batch update enrollments', {
+      error: updateError.message,
+      enrollmentIds,
+    })
+  } else {
+    // Log each exited enrollment for audit trail
+    for (const enrollment of enrollmentsToExit) {
       logger.info('[Campaign] Enrollment auto-exited due to stage change', {
         enrollmentId: enrollment.id,
         campaignName: enrollment.campaignName,

@@ -181,6 +181,7 @@ export interface ExitCampaignStepConfig {
 export interface ChangeStageStepConfig {
   target_stage: import('@/lib/types/api').PipelineStage
   validate_transition?: boolean // default true - validate stage transition is allowed
+  skip_perfect_packet?: boolean // default false - skip Perfect Packet validation for won→production
 }
 
 export type StepConfig =

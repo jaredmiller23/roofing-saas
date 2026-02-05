@@ -27,7 +27,7 @@ import type {
   ChangeStageStepConfig,
   ExecutionResult,
 } from './types'
-import { isValidStageTransition, getTransitionError } from '@/lib/pipeline/validation'
+import { isValidStageTransition, getTransitionError, validatePerfectPacket } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 
 // ============================================================================
@@ -807,12 +807,39 @@ async function executeChangeStage(
   const currentStage = project.pipeline_stage as PipelineStage
   const targetStage = config.target_stage
 
+  // Early return if already at target stage (prevents loops and unnecessary updates)
+  if (currentStage === targetStage) {
+    logger.info('[Campaign] Stage change skipped - already at target stage', {
+      projectId,
+      currentStage,
+      targetStage,
+    })
+    return {
+      success: true,
+      project_id: projectId,
+      previous_stage: currentStage,
+      new_stage: targetStage,
+      no_change: true,
+    }
+  }
+
   // Validate transition if enabled (default: true)
   if (config.validate_transition !== false) {
     const isValid = isValidStageTransition(currentStage, targetStage)
     if (!isValid) {
       const errorMessage = getTransitionError(currentStage, targetStage)
       throw new Error(`Invalid stage transition: ${errorMessage}`)
+    }
+  }
+
+  // Perfect Packet validation for won → production transitions
+  if (currentStage === 'won' && targetStage === 'production') {
+    // Check if config allows bypassing Perfect Packet
+    if (config.skip_perfect_packet !== true) {
+      const packetValidation = await validatePerfectPacket(projectId, supabase)
+      if (!packetValidation.isComplete) {
+        throw new Error(`Perfect Packet incomplete. Missing: ${packetValidation.missing.map(m => m.label).join(', ')}`)
+      }
     }
   }
 
