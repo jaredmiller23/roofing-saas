@@ -460,7 +460,7 @@ export function PipelineBoard() {
                 <button
                   key={filterId}
                   onClick={() => handleQuickFilter(filterId)}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                  className={`px-4 py-2 min-h-[44px] text-sm font-medium rounded-full transition-colors inline-flex items-center ${
                     quickFilter === filterId
                       ? 'bg-primary text-white shadow-sm'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -485,7 +485,7 @@ export function PipelineBoard() {
               <button
                 key={stage.id}
                 onClick={() => toggleStage(stage.id)}
-                className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 min-h-[44px] text-xs rounded-md transition-colors inline-flex items-center ${
                   selectedStages.includes(stage.id)
                     ? `${stage.color} text-white`
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -502,7 +502,7 @@ export function PipelineBoard() {
                   setSelectedStages(stages.map(s => s.id))
                   setQuickFilter('all')
                 }}
-                className="px-2 py-1 text-xs text-primary hover:text-primary font-medium underline ml-1"
+                className="px-2 py-1 min-h-[44px] text-xs text-primary hover:text-primary font-medium underline ml-1 inline-flex items-center"
               >
                 Reset
               </button>

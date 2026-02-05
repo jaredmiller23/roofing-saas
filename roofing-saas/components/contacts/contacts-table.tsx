@@ -293,13 +293,15 @@ export function ContactsTable({ params }: ContactsTableProps) {
         <table className="min-w-full divide-y divide-border">
           <thead className="bg-muted">
             <tr>
-              <th className="px-6 py-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={contacts.length > 0 && selectedContacts.size === contacts.length}
-                  onChange={toggleSelectAll}
-                  className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
-                />
+              <th className="px-4 py-3 text-left">
+                <label className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={contacts.length > 0 && selectedContacts.size === contacts.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
+                  />
+                </label>
               </th>
               <SortableHeader field="name">Name</SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -316,13 +318,15 @@ export function ContactsTable({ params }: ContactsTableProps) {
           <tbody className="bg-card divide-y divide-border">
             {contacts.map((contact) => (
               <tr key={contact.id} className={`hover:bg-accent ${selectedContacts.has(contact.id) ? 'bg-primary/10' : ''}`}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectedContacts.has(contact.id)}
-                    onChange={() => toggleSelectContact(contact.id)}
-                    className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
-                  />
+                <td className="px-4 py-2 whitespace-nowrap">
+                  <label className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.has(contact.id)}
+                      onChange={() => toggleSelectContact(contact.id)}
+                      className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
+                    />
+                  </label>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
@@ -367,7 +371,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {(contact.phone || contact.mobile_phone) && (
                       <a
                         href={`tel:${contact.phone || contact.mobile_phone}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-11 h-11 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-md transition-colors"
                         title="Call"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -377,7 +381,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {(contact.phone || contact.mobile_phone) && (
                       <a
                         href={`sms:${contact.phone || contact.mobile_phone}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-11 h-11 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
                         title="Text"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -387,7 +391,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
                     {contact.email && (
                       <a
                         href={`mailto:${contact.email}`}
-                        className="inline-flex items-center justify-center w-8 h-8 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-md transition-colors"
+                        className="inline-flex items-center justify-center w-11 h-11 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-md transition-colors"
                         title="Email"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -429,11 +433,11 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`${pathname}?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={page <= 1}
-            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
+            className="min-h-[44px] px-4 py-2 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10 inline-flex items-center"
           >
             Previous
           </button>
-          <span className="px-3 py-1 text-sm text-muted-foreground">
+          <span className="px-3 py-2 text-sm text-muted-foreground inline-flex items-center">
             Page {page}
           </span>
           <button
@@ -442,7 +446,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
               router.push(`${pathname}?${new URLSearchParams({ ...params as Record<string, string>, page: newPage.toString() }).toString()}`)
             }}
             disabled={contacts.length < 20}
-            className="px-3 py-1 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10"
+            className="min-h-[44px] px-4 py-2 border border-input rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/10 inline-flex items-center"
           >
             Next
           </button>
