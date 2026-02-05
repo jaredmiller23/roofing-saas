@@ -14,6 +14,7 @@ import {
   reactivateSubscription,
 } from '@/lib/billing/subscription';
 import { getUsageStats, getAllFeatureAccess } from '@/lib/billing/feature-gates';
+import { getGracePeriodStatus } from '@/lib/billing/grace-period';
 import {
   AuthenticationError,
   AuthorizationError,
@@ -50,6 +51,9 @@ export async function GET(_request: NextRequest) {
     // Get feature access
     const features = await getAllFeatureAccess(tenantId);
 
+    // Get grace period status
+    const gracePeriod = await getGracePeriodStatus(tenantId);
+
     return successResponse({
       subscription: subscription
         ? {
@@ -66,6 +70,12 @@ export async function GET(_request: NextRequest) {
             currentPeriodEnd: subscription.current_period_end,
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             canceledAt: subscription.canceled_at,
+            gracePeriod: gracePeriod.isInGracePeriod
+              ? {
+                  endsAt: gracePeriod.gracePeriodEndsAt?.toISOString() ?? null,
+                  daysRemaining: gracePeriod.daysRemaining,
+                }
+              : null,
           }
         : null,
       plan: subscription?.plan

@@ -12,16 +12,23 @@ import { Link } from '@/lib/i18n/navigation';
 import { X, Clock, CreditCard, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+interface GracePeriodInfo {
+  endsAt: string | null;
+  daysRemaining: number | null;
+}
+
 interface TrialBannerProps {
   status: 'trialing' | 'active' | 'past_due' | 'canceled' | string;
   daysRemaining: number | null;
   cancelAtPeriodEnd?: boolean;
+  gracePeriod?: GracePeriodInfo | null;
 }
 
 export function TrialBanner({
   status,
   daysRemaining,
   cancelAtPeriodEnd,
+  gracePeriod,
 }: TrialBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
@@ -77,6 +84,44 @@ export function TrialBanner({
         textColor: 'text-primary',
         message: `You're on a free trial. ${daysRemaining} days remaining.`,
         actionText: 'View Plans',
+        urgent: false,
+      };
+    }
+
+    // Grace period: trial ended but user has X days to upgrade
+    if (gracePeriod && gracePeriod.daysRemaining !== null) {
+      const days = gracePeriod.daysRemaining;
+
+      if (days <= 2) {
+        return {
+          icon: AlertTriangle,
+          bgColor: 'bg-destructive/10 border-destructive/20',
+          textColor: 'text-destructive',
+          message: days <= 0
+            ? 'Your grace period has expired. Upgrade now to restore Professional features.'
+            : `Your access expires in ${days} day${days === 1 ? '' : 's'}. Upgrade to keep your features.`,
+          actionText: 'Upgrade Now',
+          urgent: true,
+        };
+      }
+
+      if (days <= 5) {
+        return {
+          icon: AlertTriangle,
+          bgColor: 'bg-orange-500/10 border-orange-500/20',
+          textColor: 'text-orange-500',
+          message: `You have ${days} days left to upgrade before losing Professional features.`,
+          actionText: 'Upgrade Now',
+          urgent: true,
+        };
+      }
+
+      return {
+        icon: Clock,
+        bgColor: 'bg-yellow-500/10 border-yellow-500/20',
+        textColor: 'text-yellow-500',
+        message: `Your trial has ended. You have ${days} days to upgrade before features are restricted.`,
+        actionText: 'Upgrade Now',
         urgent: false,
       };
     }

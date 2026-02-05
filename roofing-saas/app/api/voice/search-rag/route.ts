@@ -1,4 +1,5 @@
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
     }
+
+    await requireFeature(tenantId, 'aiKnowledgeBase')
 
     const body = await request.json().catch(() => ({}))
     const { query, threshold = 0.7, limit = 3 } = body

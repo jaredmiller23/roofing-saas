@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { requireFeature } from '@/lib/billing/feature-gates';
 import { googlePlacesClient } from '@/lib/address-extraction/google-places-client';
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
 import { logger } from '@/lib/logger';
@@ -87,6 +88,8 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('User not associated with a tenant');
     }
+
+    await requireFeature(tenantId, 'stormData');
 
     // Parse request body
     const body: ExtractAddressesRequest = await request.json();

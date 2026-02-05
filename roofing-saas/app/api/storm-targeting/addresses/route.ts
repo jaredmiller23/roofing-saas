@@ -8,6 +8,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { requireFeature } from '@/lib/billing/feature-gates';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
@@ -25,6 +26,8 @@ export async function GET(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('User not associated with a tenant');
     }
+
+    await requireFeature(tenantId, 'stormData');
 
     const { searchParams } = new URL(request.url);
     const areaId = searchParams.get('areaId');

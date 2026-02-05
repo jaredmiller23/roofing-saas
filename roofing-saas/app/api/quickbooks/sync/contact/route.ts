@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import { getQuickBooksClient } from '@/lib/quickbooks/client'
 import { syncContactToCustomer, bulkSyncContacts } from '@/lib/quickbooks/sync'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -22,6 +23,8 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('No tenant found')
     }
+
+    await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Get QB client
     const qbClient = await getQuickBooksClient(tenantId)

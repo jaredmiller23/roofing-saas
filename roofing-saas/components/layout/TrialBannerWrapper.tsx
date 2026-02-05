@@ -15,6 +15,7 @@ interface SubscriptionData {
     status: string;
     trialDaysRemaining: number | null;
     cancelAtPeriodEnd: boolean;
+    gracePeriod?: { endsAt: string | null; daysRemaining: number | null } | null;
   } | null;
 }
 
@@ -43,7 +44,7 @@ export function TrialBannerWrapper() {
     return null;
   }
 
-  const { status, trialDaysRemaining, cancelAtPeriodEnd } = data.subscription;
+  const { status, trialDaysRemaining, cancelAtPeriodEnd, gracePeriod } = data.subscription;
 
   return (
     <div className="mx-4 mt-4">
@@ -51,6 +52,7 @@ export function TrialBannerWrapper() {
         status={status}
         daysRemaining={trialDaysRemaining}
         cancelAtPeriodEnd={cancelAtPeriodEnd}
+        gracePeriod={gracePeriod}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getOAuthClient } from '@/lib/quickbooks/oauth-client'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('No tenant found')
     }
+
+    await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Get current connection from database (use quickbooks_connections)
     const supabase = await createClient()

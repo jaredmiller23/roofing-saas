@@ -10,9 +10,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getUserTenantId } from '@/lib/auth/session';
+import { requireFeature } from '@/lib/billing/feature-gates';
 import { createEnrichmentQueue } from '@/lib/enrichment/enrichment-queue';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   BatchEnrichmentRequest,
@@ -38,6 +40,13 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       throw AuthenticationError();
     }
+
+    const tenantId = await getUserTenantId(user.id);
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant');
+    }
+
+    await requireFeature(tenantId, 'stormData');
 
     // Parse request body
     const body = await request.json();

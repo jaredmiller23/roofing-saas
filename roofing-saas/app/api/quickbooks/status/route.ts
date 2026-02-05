@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -21,6 +22,8 @@ export async function GET(_request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('No tenant found')
     }
+
+    await requireFeature(tenantId, 'quickbooksIntegration')
 
     const supabase = await createClient()
 

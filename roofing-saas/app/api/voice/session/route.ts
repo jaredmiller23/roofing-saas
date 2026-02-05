@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { NextRequest } from 'next/server'
 import {
   AuthenticationError,
@@ -33,6 +34,8 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
     }
+
+    await requireFeature(tenantId, 'aiVoiceAssistant')
 
     // Apply rate limiting by user ID
     const rateLimitResult = await applyRateLimit(

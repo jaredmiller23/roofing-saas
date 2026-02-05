@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthorizationUrl } from '@/lib/quickbooks/client'
 import { signState } from '@/lib/quickbooks/state'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('No tenant found')
     }
+
+    await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Generate HMAC-signed state token for CSRF protection
     const state = signState({

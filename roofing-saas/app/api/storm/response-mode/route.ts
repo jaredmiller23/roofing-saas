@@ -8,8 +8,10 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import type { StormResponseConfig, ResponseMode } from '@/lib/storm/storm-types'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function GET(_request: NextRequest) {
@@ -21,6 +23,13 @@ export async function GET(_request: NextRequest) {
     if (authError || !user) {
       throw AuthenticationError()
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    await requireFeature(tenantId, 'stormData')
 
     // Fetch current response mode configuration
     const { data: config, error: fetchError } = await supabase
@@ -84,6 +93,13 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       throw AuthenticationError()
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    await requireFeature(tenantId, 'stormData')
 
     // Parse request body
     const body = await request.json()
@@ -176,6 +192,13 @@ export async function DELETE(_request: NextRequest) {
     if (authError || !user) {
       throw AuthenticationError()
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    await requireFeature(tenantId, 'stormData')
 
     // Reset to normal mode
     const { error: updateError } = await supabase

@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import type { StormAlert } from '@/lib/storm/storm-types'
 
 export async function GET(_request: NextRequest) {
@@ -26,6 +27,8 @@ export async function GET(_request: NextRequest) {
     if (!tenantId) {
       throw AuthorizationError('User is not associated with a tenant')
     }
+
+    await requireFeature(tenantId, 'stormData')
 
     // Fetch active alerts (not dismissed and not expired) for this tenant
     const { data: alerts, error: alertsError } = await supabase

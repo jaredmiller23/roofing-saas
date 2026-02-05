@@ -7,6 +7,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { requireFeature } from '@/lib/billing/feature-gates';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
@@ -24,6 +25,8 @@ export async function GET() {
     if (!tenantId) {
       throw AuthorizationError('User not associated with a tenant');
     }
+
+    await requireFeature(tenantId, 'stormData');
 
     // Get all targeting areas for this tenant
     const { data: areas, error } = await supabase

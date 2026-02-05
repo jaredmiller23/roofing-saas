@@ -12,8 +12,10 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getUserTenantId } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   type StormEventData,
@@ -39,6 +41,13 @@ export async function GET(request: NextRequest) {
     if (!user) {
       throw AuthenticationError()
     }
+
+    const tenantId = await getUserTenantId(user.id)
+    if (!tenantId) {
+      throw AuthorizationError('User is not associated with a tenant')
+    }
+
+    await requireFeature(tenantId, 'stormData')
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
