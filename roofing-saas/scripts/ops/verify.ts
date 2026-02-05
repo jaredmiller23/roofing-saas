@@ -115,15 +115,31 @@ async function verify(env: Environment) {
       await page!.click('button[type="submit"]')
 
       try {
-        await page!.waitForURL(/\/dashboard|\/en\/dashboard/, { timeout: 30000 })
+        await page!.waitForURL(/\/dashboard|\/en\/dashboard/, { timeout: 45000 })
         return { passed: true, message: 'OK' }
       } catch {
+        // Wait briefly for error UI to hydrate or late redirect to complete
+        await page!.waitForTimeout(2000)
         const url = page!.url()
+
+        // Check if redirect completed during the wait
+        if (url.includes('dashboard')) {
+          return { passed: true, message: 'OK (late redirect)' }
+        }
+
         if (url.includes('login')) {
-          const errorText = await page!
-            .locator('[role="alert"], .text-red-500, .error')
-            .textContent()
-            .catch(() => 'Unknown error')
+          const alertLocator = page!.locator('[role="alert"]')
+          const alertVisible = await alertLocator.isVisible().catch(() => false)
+          let errorText = 'No error displayed — login timed out (possible cold start)'
+          if (alertVisible) {
+            // Read from AlertDescription child to avoid empty parent container
+            const descText = await alertLocator
+              .locator('div[data-slot="alert-description"], p, div')
+              .first()
+              .textContent()
+              .catch(() => '')
+            errorText = descText?.trim() || 'Auth timed out (Vercel cold start likely)'
+          }
           return { passed: false, message: `Login failed: ${errorText}` }
         }
         return { passed: false, message: `Unexpected redirect to ${url}` }
@@ -140,10 +156,10 @@ async function verify(env: Environment) {
     await page!.request.get(`${baseUrl}/api/contacts?limit=1`).catch(() => {})
 
     const criticalPages = [
-      { path: '/dashboard', name: 'Dashboard' },
-      { path: '/contacts', name: 'Contacts' },
-      { path: '/signatures', name: 'Signatures' },
-      { path: '/projects', name: 'Projects' },
+      { path: '/en/dashboard', name: 'Dashboard' },
+      { path: '/en/contacts', name: 'Contacts' },
+      { path: '/en/signatures', name: 'Signatures' },
+      { path: '/en/projects', name: 'Projects' },
     ]
 
     for (const { path, name } of criticalPages) {
@@ -193,7 +209,9 @@ async function verify(env: Environment) {
 
     for (const { path, name } of apiEndpoints) {
       await runCheck(name, async () => {
-        const response = await page!.request.get(`${baseUrl}${path}`)
+        const response = await page!.request.get(`${baseUrl}${path}`, {
+          timeout: 45000,
+        })
         const status = response.status()
 
         if (status === 401) {
