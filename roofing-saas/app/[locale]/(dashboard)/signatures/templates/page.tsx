@@ -33,6 +33,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -84,6 +94,9 @@ export default function SignatureTemplatesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
+  // Delete confirmation state
+  const [deleteTarget, setDeleteTarget] = useState<SignatureTemplate | null>(null)
+
   // Preview modal state
   const [previewTemplate, setPreviewTemplate] = useState<SignatureTemplate | null>(null)
   const [previewNumPages, setPreviewNumPages] = useState(0)
@@ -126,19 +139,18 @@ export default function SignatureTemplatesPage() {
     }
   }
 
-  const handleDelete = async (template: SignatureTemplate) => {
-    if (!confirm(`Are you sure you want to delete "${template.name}"?`)) {
-      return
-    }
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
 
     try {
-      await apiFetch(`/api/signature-templates/${template.id}`, {
+      await apiFetch(`/api/signature-templates/${deleteTarget.id}`, {
         method: 'DELETE',
       })
-
+      setDeleteTarget(null)
       loadTemplates()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete template')
+      setDeleteTarget(null)
     }
   }
 
@@ -410,7 +422,7 @@ export default function SignatureTemplatesPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(template)}
+                      onClick={() => setDeleteTarget(template)}
                       title="Delete"
                       className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
                     >
@@ -610,6 +622,27 @@ export default function SignatureTemplatesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{deleteTarget?.name}&rdquo;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

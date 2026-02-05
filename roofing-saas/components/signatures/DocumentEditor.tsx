@@ -104,7 +104,9 @@ export function DocumentEditor({
     const fieldType = e.dataTransfer.getData('fieldType') as FieldType
     if (!fieldType || !canvasRef.current) return
 
-    const rect = canvasRef.current.getBoundingClientRect()
+    // Use the actual PDF page element rect when available, not the wrapper div
+    const pageEl = canvasRef.current.querySelector('.react-pdf__Page')
+    const rect = (pageEl || canvasRef.current).getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
 

@@ -43,22 +43,31 @@ export function PlacedField({
   const config = getFieldConfig(field.type)
   const Icon = config?.icon
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const getPointerCoords = (e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
+    if ('touches' in e) {
+      const touch = e.touches[0] || (e as TouchEvent).changedTouches?.[0]
+      return touch ? { clientX: touch.clientX, clientY: touch.clientY } : { clientX: 0, clientY: 0 }
+    }
+    return { clientX: (e as MouseEvent).clientX, clientY: (e as MouseEvent).clientY }
+  }
+
+  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
     if ((e.target as HTMLElement).closest('.resize-handle')) return
 
     e.preventDefault()
     e.stopPropagation()
     onSelect()
     setIsDragging(true)
-    dragStartRef.current = { x: e.clientX, y: e.clientY }
+    const coords = getPointerCoords(e)
+    dragStartRef.current = { x: coords.clientX, y: coords.clientY }
     fieldStartRef.current = { x: field.x, y: field.y, width: field.width, height: field.height }
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
       if (!containerRef.current) return
-
+      const moveCoords = getPointerCoords(moveEvent)
       const containerRect = containerRef.current.getBoundingClientRect()
-      const deltaX = ((moveEvent.clientX - dragStartRef.current.x) / containerRect.width) * 100
-      const deltaY = ((moveEvent.clientY - dragStartRef.current.y) / containerRect.height) * 100
+      const deltaX = ((moveCoords.clientX - dragStartRef.current.x) / containerRect.width) * 100
+      const deltaY = ((moveCoords.clientY - dragStartRef.current.y) / containerRect.height) * 100
 
       const newX = Math.max(0, Math.min(100 - (field.width / containerRect.width * 100), fieldStartRef.current.x + deltaX))
       const newY = Math.max(0, Math.min(100 - (field.height / containerRect.height * 100), fieldStartRef.current.y + deltaY))
@@ -66,27 +75,33 @@ export function PlacedField({
       onUpdate({ x: newX, y: newY })
     }
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsDragging(false)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleEnd)
+      window.removeEventListener('touchmove', handleMove)
+      window.removeEventListener('touchend', handleEnd)
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleEnd)
+    window.addEventListener('touchmove', handleMove, { passive: false })
+    window.addEventListener('touchend', handleEnd)
   }
 
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
+  const handleResizePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
     e.stopPropagation()
     onSelect()
     setIsResizing(true)
-    dragStartRef.current = { x: e.clientX, y: e.clientY }
+    const coords = getPointerCoords(e)
+    dragStartRef.current = { x: coords.clientX, y: coords.clientY }
     fieldStartRef.current = { x: field.x, y: field.y, width: field.width, height: field.height }
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const deltaX = moveEvent.clientX - dragStartRef.current.x
-      const deltaY = moveEvent.clientY - dragStartRef.current.y
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const moveCoords = getPointerCoords(moveEvent)
+      const deltaX = moveCoords.clientX - dragStartRef.current.x
+      const deltaY = moveCoords.clientY - dragStartRef.current.y
 
       const newWidth = Math.max(40, fieldStartRef.current.width + deltaX)
       const newHeight = Math.max(20, fieldStartRef.current.height + deltaY)
@@ -94,14 +109,18 @@ export function PlacedField({
       onUpdate({ width: newWidth, height: newHeight })
     }
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsResizing(false)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleEnd)
+      window.removeEventListener('touchmove', handleMove)
+      window.removeEventListener('touchend', handleEnd)
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleEnd)
+    window.addEventListener('touchmove', handleMove, { passive: false })
+    window.addEventListener('touchend', handleEnd)
   }
 
   const assigneeColor = {
@@ -122,8 +141,10 @@ export function PlacedField({
         top: `${field.y}%`,
         width: field.width,
         height: field.height,
+        touchAction: 'none',
       }}
-      onMouseDown={handleMouseDown}
+      onMouseDown={handlePointerDown}
+      onTouchStart={handlePointerDown}
       onClick={(e) => {
         e.stopPropagation()
         onSelect()
@@ -162,8 +183,9 @@ export function PlacedField({
           {/* Resize Handle */}
           <div
             className="resize-handle absolute -bottom-1 -right-1 w-3 h-3 bg-primary
-                       rounded-sm cursor-se-resize shadow-sm"
-            onMouseDown={handleResizeMouseDown}
+                       rounded-sm cursor-se-resize shadow-sm touch-none"
+            onMouseDown={handleResizePointerDown}
+            onTouchStart={handleResizePointerDown}
           />
         </>
       )}
