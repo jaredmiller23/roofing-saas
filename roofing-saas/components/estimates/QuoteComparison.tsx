@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, Check, ArrowRight, Download, Send } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Star, Check, ArrowRight, Download, Send, Eye, Pencil, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import {
   QuoteOption,
   formatCurrency,
@@ -13,6 +14,7 @@ import {
 
 interface QuoteComparisonProps {
   options: QuoteOption[]
+  projectId?: string
   selectedOptionId?: string
   onSelectOption?: (optionId: string) => void
   onSendProposal?: (optionIds: string[]) => void
@@ -23,6 +25,7 @@ interface QuoteComparisonProps {
 
 export function QuoteComparison({
   options,
+  projectId,
   selectedOptionId,
   onSelectOption,
   onSendProposal,
@@ -31,6 +34,71 @@ export function QuoteComparison({
   projectName = 'Project'
 }: QuoteComparisonProps) {
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [termsExpanded, setTermsExpanded] = useState(false)
+  const [terms, setTerms] = useState('')
+  const [termsEditing, setTermsEditing] = useState(false)
+  const [termsDraft, setTermsDraft] = useState('')
+  const [termsSaving, setTermsSaving] = useState(false)
+
+  const loadTerms = useCallback(async () => {
+    try {
+      const res = await fetch('/api/tenant-settings/estimate-terms')
+      if (res.ok) {
+        const data = await res.json()
+        setTerms(data.data?.terms || '')
+      }
+    } catch {
+      // Use empty string, fallback handled by API
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mode !== 'selection' && mode !== 'sent') {
+      loadTerms()
+    }
+  }, [mode, loadTerms])
+
+  const handleSaveTerms = async () => {
+    setTermsSaving(true)
+    try {
+      const res = await fetch('/api/tenant-settings/estimate-terms', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ terms: termsDraft }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setTerms(data.data?.terms || termsDraft)
+        setTermsEditing(false)
+      }
+    } catch {
+      // Silent fail — terms still editable
+    } finally {
+      setTermsSaving(false)
+    }
+  }
+
+  const handlePreviewPdf = async () => {
+    if (!projectId || previewLoading) return
+    setPreviewLoading(true)
+    try {
+      const res = await fetch(`/api/estimates/${projectId}/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ option_ids: options.map(o => o.id) }),
+      })
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        window.open(url, '_blank')
+      }
+    } catch {
+      // Silent fail
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
 
   // Sort options by total amount
   const sortedOptions = [...options].sort((a, b) => a.total_amount - b.total_amount)
@@ -98,6 +166,16 @@ export function QuoteComparison({
           {/* Actions */}
           {mode !== 'sent' && (
             <div className="flex gap-2">
+              {projectId && mode !== 'selection' && (
+                <Button variant="outline" onClick={handlePreviewPdf} disabled={previewLoading}>
+                  {previewLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-2" />
+                  )}
+                  Preview PDF
+                </Button>
+              )}
               <Button variant="outline" onClick={handleDownloadAll}>
                 <Download className="h-4 w-4 mr-2" />
                 Download All
@@ -189,6 +267,76 @@ export function QuoteComparison({
       {/* Feature Comparison Table (for detailed view) */}
       {viewMode === 'detailed' && options.length > 1 && (
         <FeatureComparisonTable options={sortedOptions} />
+      )}
+
+      {/* Terms & Conditions (contractor view only) */}
+      {mode !== 'selection' && mode !== 'sent' && terms && (
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <button
+              onClick={() => setTermsExpanded(!termsExpanded)}
+              className="flex items-center justify-between w-full text-left"
+            >
+              <span className="text-sm font-semibold text-foreground">Terms &amp; Conditions</span>
+              {termsExpanded ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+            {termsExpanded && (
+              <div className="mt-3">
+                {termsEditing ? (
+                  <div className="space-y-3">
+                    <Textarea
+                      value={termsDraft}
+                      onChange={(e) => setTermsDraft(e.target.value)}
+                      rows={6}
+                      className="text-sm"
+                      placeholder="Enter your estimate terms and conditions..."
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTermsEditing(false)}
+                        disabled={termsSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveTerms}
+                        disabled={termsSaving}
+                      >
+                        {termsSaving ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : null}
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2">
+                    <p className="text-sm text-muted-foreground flex-1 whitespace-pre-wrap">{terms}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setTermsDraft(terms)
+                        setTermsEditing(true)
+                      }}
+                      title="Edit terms"
+                      className="shrink-0"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   )

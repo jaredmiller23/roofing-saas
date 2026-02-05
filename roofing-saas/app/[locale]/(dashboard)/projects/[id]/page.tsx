@@ -711,6 +711,7 @@ export default function ProjectDetailPage() {
               ) : quoteOptions.length > 0 ? (
                 <QuoteComparison
                   options={quoteOptions}
+                  projectId={project?.id}
                   projectName={project?.name || 'Project'}
                   mode="comparison"
                   onSendProposal={async (optionIds) => {

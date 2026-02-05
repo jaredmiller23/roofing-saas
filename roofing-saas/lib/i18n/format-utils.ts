@@ -14,6 +14,7 @@ export function formatCurrency(
   return new Intl.NumberFormat(localeString, {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
   }).format(amount);
 }
 

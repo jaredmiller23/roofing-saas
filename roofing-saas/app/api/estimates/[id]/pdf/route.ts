@@ -142,10 +142,10 @@ export async function POST(
       }>
     }>
 
-    // Fetch company settings
+    // Fetch company settings (including custom_settings for estimate terms)
     const { data: settings } = await supabase
       .from('tenant_settings')
-      .select('company_name, company_tagline')
+      .select('company_name, company_tagline, custom_settings')
       .eq('tenant_id', tenantId)
       .single()
 
@@ -200,7 +200,8 @@ export async function POST(
         day: 'numeric',
       }),
       options: pdfOptions,
-      terms: 'This estimate is valid for 30 days from the date of issue. All work includes a manufacturer warranty on materials and a workmanship warranty. Payment terms: 50% deposit upon acceptance, balance due upon completion. Any changes to the scope of work may result in additional charges. Permits and inspections are included where required by local code.',
+      terms: (settings?.custom_settings as Record<string, string> | null)?.estimate_terms ||
+        'This estimate is valid for 30 days from the date of issue. All work includes a manufacturer warranty on materials and a workmanship warranty. Payment terms: 50% deposit upon acceptance, balance due upon completion. Any changes to the scope of work may result in additional charges. Permits and inspections are included where required by local code.',
     }
 
     // Generate PDF
