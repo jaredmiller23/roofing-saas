@@ -19,7 +19,7 @@ import {
 import { errorResponse } from '@/lib/api/response'
 import { buildARIAContext, ariaFunctionRegistry, executeARIAFunction } from '@/lib/aria'
 import { getARIASystemPrompt } from '@/lib/aria/orchestrator'
-import { openai, getOpenAIModel } from '@/lib/ai/openai-client'
+import { getOpenAIClient, getOpenAIModel } from '@/lib/ai/openai-client'
 import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-limit'
 import { canUseFeature } from '@/lib/billing/feature-gates'
 import { createConversation, saveMessage, updateConversationTitle, generateTitle } from '@/lib/aria/persistence'
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
           while (continueLoop) {
             continueLoop = false
 
-            const completion = await openai.chat.completions.create({
+            const completion = await getOpenAIClient().chat.completions.create({
               model: getOpenAIModel(),
               messages: conversationMessages,
               tools: tools.length > 0 ? tools : undefined,

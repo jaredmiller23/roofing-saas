@@ -9,7 +9,7 @@ import { buildARIAContext, findContactByPhone } from './context-builder'
 import { getARIASystemPrompt } from './orchestrator'
 import { ariaFunctionRegistry } from './function-registry'
 import type { ARIAContext } from './types'
-import { openai, getOpenAIModel } from '@/lib/ai/openai-client'
+import { getOpenAIClient, getOpenAIModel } from '@/lib/ai/openai-client'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
 import { detectLanguage, resolveLanguage, translateResponse, updateContactLanguage } from './language'
@@ -72,7 +72,7 @@ interface IntentClassification {
  */
 async function classifyMessageIntentML(message: string): Promise<IntentClassification> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini', // Fast and cheap for classification
       messages: [
         {
@@ -356,7 +356,7 @@ ${shouldAutoSend ? 'This is a simple message - response can be sent automaticall
     const tools = ariaFunctionRegistry.getChatCompletionTools() as ChatCompletionTool[]
 
     // Generate response with OpenAI
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: getOpenAIModel(),
       messages,
       tools: tools.length > 0 ? tools : undefined,
@@ -422,7 +422,7 @@ ${shouldAutoSend ? 'This is a simple message - response can be sent automaticall
       }
 
       // Get final response after tool execution
-      const finalCompletion = await openai.chat.completions.create({
+      const finalCompletion = await getOpenAIClient().chat.completions.create({
         model: getOpenAIModel(),
         messages: currentMessages,
         temperature: 0.7,

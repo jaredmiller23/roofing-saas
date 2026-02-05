@@ -174,10 +174,25 @@ export class GooglePlacesClient {
 // EXPORTS
 // =====================================================
 
+// Lazy-loaded singleton to avoid build-time initialization
+// (Vercel static builds don't have env vars available)
+let _googlePlacesClient: GooglePlacesClient | null = null;
+
 /**
- * Singleton instance
+ * Get the Google Places client instance (lazy-loaded)
  */
-export const googlePlacesClient = new GooglePlacesClient();
+export function getGooglePlacesClient(): GooglePlacesClient {
+  if (!_googlePlacesClient) {
+    _googlePlacesClient = new GooglePlacesClient();
+  }
+  return _googlePlacesClient;
+}
+
+// Deprecated: Use getGooglePlacesClient() instead
+// Export kept for backwards compatibility with existing imports
+export const googlePlacesClient = {
+  extractAddresses: (polygon: Polygon) => getGooglePlacesClient().extractAddresses(polygon),
+};
 
 /**
  * Convenience function for extracting addresses
@@ -185,5 +200,5 @@ export const googlePlacesClient = new GooglePlacesClient();
 export async function extractAddressesWithGooglePlaces(
   polygon: Polygon
 ): Promise<AddressExtractionResult> {
-  return googlePlacesClient.extractAddresses(polygon);
+  return getGooglePlacesClient().extractAddresses(polygon);
 }

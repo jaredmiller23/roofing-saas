@@ -11,7 +11,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 import { ariaFunctionRegistry, buildARIAContext, getARIASystemPrompt, executeARIAFunction } from '@/lib/aria'
 import type { ARIAContext } from '@/lib/aria'
 // Resilient OpenAI client with rate limit handling
-import { openai, createChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
+import { getOpenAIClient, createChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
 
 /**
  * POST /api/ai/messages
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     const tools = ariaFunctionRegistry.getChatCompletionTools()
 
     // Call OpenAI Chat Completions API with resilient client (handles rate limits)
-    const completion = await createChatCompletion(openai, {
+    const completion = await createChatCompletion(getOpenAIClient(), {
       messages,
       tools: tools.length > 0 ? tools : undefined,
       temperature: 0.7,
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       }
 
       // If we have a function result, make a second call to get a natural language response
-      const followUpCompletion = await createChatCompletion(openai, {
+      const followUpCompletion = await createChatCompletion(getOpenAIClient(), {
         messages: [
           ...messages,
           {

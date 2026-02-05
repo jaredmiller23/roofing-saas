@@ -6,14 +6,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { detectLanguage, translateResponse, resolveLanguage, updateContactLanguage } from '@/lib/aria/language'
 
 // Mock OpenAI client
-vi.mock('@/lib/ai/openai-client', () => ({
-  openai: {
-    chat: {
-      completions: {
-        create: vi.fn(),
-      },
+const mockOpenAIClient = {
+  chat: {
+    completions: {
+      create: vi.fn(),
     },
   },
+}
+
+vi.mock('@/lib/ai/openai-client', () => ({
+  getOpenAIClient: () => mockOpenAIClient,
 }))
 
 // Mock logger
@@ -26,9 +28,7 @@ vi.mock('@/lib/logger', () => ({
   },
 }))
 
-import { openai } from '@/lib/ai/openai-client'
-
-const mockCreate = vi.mocked(openai.chat.completions.create)
+const mockCreate = vi.mocked(mockOpenAIClient.chat.completions.create)
 
 describe('Language Service', () => {
   beforeEach(() => {

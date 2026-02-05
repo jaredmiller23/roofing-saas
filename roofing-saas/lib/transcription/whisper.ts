@@ -13,7 +13,7 @@
 
 import OpenAI from 'openai'
 import { logger } from '@/lib/logger'
-import { openai, createChatCompletion } from '@/lib/ai/openai-client'
+import { getOpenAIClient, createChatCompletion } from '@/lib/ai/openai-client'
 import { openaiSpan, twilioSpan } from '@/lib/instrumentation'
 
 // Retry configuration
@@ -110,7 +110,7 @@ export async function transcribeAudio(recordingUrl: string): Promise<Transcripti
     try {
       const transcription = await openaiSpan(
         'transcription',
-        async () => openai.audio.transcriptions.create({
+        async () => getOpenAIClient().audio.transcriptions.create({
           file: audioFile,
           model: 'whisper-1',
           response_format: 'verbose_json',
@@ -173,7 +173,7 @@ export async function generateCallSummary(transcription: string): Promise<CallSu
   logger.info('Generating call summary', { transcriptionLength: transcription.length })
 
   try {
-    const completion = await createChatCompletion(openai, {
+    const completion = await createChatCompletion(getOpenAIClient(), {
       messages: [
         {
           role: 'system',

@@ -9,7 +9,7 @@ import type { ARIAContext } from '@/lib/aria'
 import { ariaFunctionRegistry } from '@/lib/aria/function-registry'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
 // Resilient OpenAI client with rate limit handling
-import { openai, createStreamingChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
+import { getOpenAIClient, createStreamingChatCompletion, getOpenAIModel } from '@/lib/ai/openai-client'
 
 /**
  * POST /api/ai/chat/stream
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
           // Loop to handle multiple rounds of tool calls
           while (continueLoop) {
             // Use resilient client with rate limit handling
-            const stream = await createStreamingChatCompletion(openai, {
+            const stream = await createStreamingChatCompletion(getOpenAIClient(), {
               messages: currentMessages,
               tools: tools.length > 0 ? tools : undefined,
               tool_choice: tools.length > 0 ? 'auto' : undefined,

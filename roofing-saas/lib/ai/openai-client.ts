@@ -190,5 +190,20 @@ export function createOpenAIClient(): OpenAI {
   })
 }
 
-// Export a default client instance for convenience
-export const openai = createOpenAIClient()
+// Lazy-loaded singleton to avoid build-time initialization
+// (Vercel static builds don't have env vars available)
+let _openaiClient: OpenAI | null = null
+
+/**
+ * Get the OpenAI client instance (lazy-loaded)
+ * Use this instead of importing `openai` directly
+ */
+export function getOpenAIClient(): OpenAI {
+  if (!_openaiClient) {
+    _openaiClient = createOpenAIClient()
+  }
+  return _openaiClient
+}
+
+// Note: The module-level singleton was removed to fix Vercel build failures.
+// Use getOpenAIClient() for lazy initialization.

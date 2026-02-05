@@ -9,7 +9,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { SupportedLanguage } from './types'
 import { locales } from '@/lib/i18n/config'
-import { openai } from '@/lib/ai/openai-client'
+import { getOpenAIClient } from '@/lib/ai/openai-client'
 import { logger } from '@/lib/logger'
 
 // =============================================================================
@@ -32,7 +32,7 @@ export async function detectLanguage(text: string): Promise<LanguageDetectionRes
   }
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -107,7 +107,7 @@ export async function translateResponse(
   }
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
