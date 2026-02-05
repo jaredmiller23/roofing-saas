@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roofing SaaS - Schema Poster</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>const SCHEMA_DATA = {
+  "generated": "2026-02-04T12:32:55.682Z",
+  "stats": {
+    "tables": 156,
+    "relationships": 143,
+    "domains": 24
+  },
+  "domainStats": {
+    "Security": {
+      "tables": 1,
+      "connections": 0
+    },
+    "Gamification": {
+      "tables": 19,
+      "connections": 6
+    },
+    "Activities": {
+      "tables": 3,
+      "connections": 10
+    },
+    "Insurance & Claims": {
+      "tables": 13,
+      "connections": 4
+    },
+    "Settings & Admin": {
+      "tables": 13,
+      "connections": 11
+    },
+    "Voice & AI": {
+      "tables": 8,
+      "connections": 21
+    },
+    "AR Assessment": {
+      "tables": 3,
+      "connections": 5
+    },
+    "Automations": {
+      "tables": 5,
+      "connections": 0
+    },
+    "Knowledge Base": {
+      "tables": 8,
+      "connections": 4
+    },
+    "Storm Ops": {
+      "tables": 7,
+      "connections": 14
+    },
+    "Digital Cards": {
+      "tables": 2,
+      "connections": 0
+    },
+    "Communication": {
+      "tables": 8,
+      "connections": 13
+    },
+    "Campaigns": {
+      "tables": 6,
+      "connections": 24
+    },
+    "Financial": {
+      "tables": 11,
+      "connections": 19
+    },
+    "Contacts": {
+      "tables": 1,
+      "connections": 16
+    },
+    "Crew & Costs": {
+      "tables": 4,
+      "connections": 11
+    },
+    "Other": {
+      "tables": 4,
+      "connections": 1
+    },
+    "Compliance": {
+      "tables": 3,
+      "connections": 3
+    },
+    "Documents": {
+      "tables": 6,
+      "connections": 1
+    },
+    "Integrations": {
+      "tables": 5,
+      "connections": 4
+    },
+    "Field Ops": {
+      "tables": 5,
+      "connections": 6
+    },
+    "Projects": {
+      "tables": 7,
+      "connections": 31
+    },
+    "Core & Auth": {
+      "tables": 10,
+      "connections": 70
+    },
+    "Tasks": {
+      "tables": 4,
+      "connections": 12
+    }
+  },
+  "nodes": [
+    {
+      "id": "_encryption_keys",
+      "domain": "Security",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "achievement_configs",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "achievements",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 1
+    },
+    {
+      "id": "activities",
+      "domain": "Activities",
+      "connections": 0,
+      "apiRoutes": 33
+    },
+    {
+      "id": "adjuster_patterns",
+      "domain": "Insurance & Claims",
+      "connections": 1,
+      "apiRoutes": 8
+    },
+    {
+      "id": "admin_alerts",
+      "domain": "Settings & Admin",
+      "connections": 1,
+      "apiRoutes": 5
+    },
+    {
+      "id": "ai_conversations",
+      "domain": "Voice & AI",
+      "connections": 2,
+      "apiRoutes": 10
+    },
+    {
+      "id": "ai_messages",
+      "domain": "Voice & AI",
+      "connections": 1,
+      "apiRoutes": 7
+    },
+    {
+      "id": "ar_damage_markers",
+      "domain": "AR Assessment",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "ar_measurements",
+      "domain": "AR Assessment",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "ar_sessions",
+      "domain": "AR Assessment",
+      "connections": 3,
+      "apiRoutes": 0
+    },
+    {
+      "id": "aria_conversations",
+      "domain": "Voice & AI",
+      "connections": 4,
+      "apiRoutes": 0
+    },
+    {
+      "id": "aria_function_logs",
+      "domain": "Voice & AI",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "audit_log",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "automations",
+      "domain": "Automations",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "building_codes",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "bulk_import_jobs",
+      "domain": "Storm Ops",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "business_card_interactions",
+      "domain": "Digital Cards",
+      "connections": 0,
+      "apiRoutes": 3
+    },
+    {
+      "id": "call_compliance_log",
+      "domain": "Communication",
+      "connections": 3,
+      "apiRoutes": 2
+    },
+    {
+      "id": "call_logs",
+      "domain": "Communication",
+      "connections": 4,
+      "apiRoutes": 12
+    },
+    {
+      "id": "call_opt_out_queue",
+      "domain": "Communication",
+      "connections": 2,
+      "apiRoutes": 2
+    },
+    {
+      "id": "callback_requests",
+      "domain": "Voice & AI",
+      "connections": 3,
+      "apiRoutes": 0
+    },
+    {
+      "id": "campaign_analytics",
+      "domain": "Campaigns",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "campaign_enrollments",
+      "domain": "Campaigns",
+      "connections": 5,
+      "apiRoutes": 5
+    },
+    {
+      "id": "campaign_step_executions",
+      "domain": "Campaigns",
+      "connections": 2,
+      "apiRoutes": 2
+    },
+    {
+      "id": "campaign_steps",
+      "domain": "Campaigns",
+      "connections": 9,
+      "apiRoutes": 8
+    },
+    {
+      "id": "campaign_triggers",
+      "domain": "Campaigns",
+      "connections": 1,
+      "apiRoutes": 7
+    },
+    {
+      "id": "campaigns",
+      "domain": "Campaigns",
+      "connections": 5,
+      "apiRoutes": 19
+    },
+    {
+      "id": "carrier_patterns",
+      "domain": "Insurance & Claims",
+      "connections": 1,
+      "apiRoutes": 6
+    },
+    {
+      "id": "carrier_standards",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "challenge_configs",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "challenge_progress",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "challenges",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "claim_communications",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 3
+    },
+    {
+      "id": "claim_documents",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "claim_outcomes",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "claim_supplements",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "claim_weather_data",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "claims",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 17
+    },
+    {
+      "id": "commission_plans",
+      "domain": "Financial",
+      "connections": 4,
+      "apiRoutes": 0
+    },
+    {
+      "id": "commission_records",
+      "domain": "Financial",
+      "connections": 6,
+      "apiRoutes": 0
+    },
+    {
+      "id": "commission_rules",
+      "domain": "Financial",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "commission_summary_by_user",
+      "domain": "Financial",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "commissions",
+      "domain": "Financial",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "contacts",
+      "domain": "Contacts",
+      "connections": 16,
+      "apiRoutes": 42
+    },
+    {
+      "id": "court_cases",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "crew_members",
+      "domain": "Crew & Costs",
+      "connections": 2,
+      "apiRoutes": 4
+    },
+    {
+      "id": "dashboards",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "digital_business_cards",
+      "domain": "Digital Cards",
+      "connections": 0,
+      "apiRoutes": 12
+    },
+    {
+      "id": "discontinued_shingles",
+      "domain": "Other",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "dnc_imports",
+      "domain": "Compliance",
+      "connections": 1,
+      "apiRoutes": 2
+    },
+    {
+      "id": "dnc_registry",
+      "domain": "Compliance",
+      "connections": 1,
+      "apiRoutes": 3
+    },
+    {
+      "id": "dnc_sync_jobs",
+      "domain": "Compliance",
+      "connections": 1,
+      "apiRoutes": 1
+    },
+    {
+      "id": "document_templates",
+      "domain": "Documents",
+      "connections": 1,
+      "apiRoutes": 6
+    },
+    {
+      "id": "documents",
+      "domain": "Documents",
+      "connections": 0,
+      "apiRoutes": 5
+    },
+    {
+      "id": "email_drafts",
+      "domain": "Communication",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "email_templates",
+      "domain": "Communication",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "events",
+      "domain": "Activities",
+      "connections": 6,
+      "apiRoutes": 5
+    },
+    {
+      "id": "extracted_addresses",
+      "domain": "Storm Ops",
+      "connections": 3,
+      "apiRoutes": 7
+    },
+    {
+      "id": "filter_configs",
+      "domain": "Settings & Admin",
+      "connections": 2,
+      "apiRoutes": 4
+    },
+    {
+      "id": "filter_usage_logs",
+      "domain": "Settings & Admin",
+      "connections": 3,
+      "apiRoutes": 0
+    },
+    {
+      "id": "financial_configs",
+      "domain": "Financial",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "gamification_activities",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "gamification_scores",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "google_calendar_tokens",
+      "domain": "Integrations",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "high_priority_pins",
+      "domain": "Field Ops",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "impersonation_logs",
+      "domain": "Settings & Admin",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "industry_organizations",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "industry_standards",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "insurance_carriers",
+      "domain": "Insurance & Claims",
+      "connections": 1,
+      "apiRoutes": 5
+    },
+    {
+      "id": "insurance_personnel",
+      "domain": "Insurance & Claims",
+      "connections": 1,
+      "apiRoutes": 15
+    },
+    {
+      "id": "invoices",
+      "domain": "Financial",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "job_expenses",
+      "domain": "Crew & Costs",
+      "connections": 3,
+      "apiRoutes": 7
+    },
+    {
+      "id": "jobs",
+      "domain": "Projects",
+      "connections": 4,
+      "apiRoutes": 10
+    },
+    {
+      "id": "knocks",
+      "domain": "Field Ops",
+      "connections": 3,
+      "apiRoutes": 12
+    },
+    {
+      "id": "knowledge_search_queries",
+      "domain": "Knowledge Base",
+      "connections": 2,
+      "apiRoutes": 7
+    },
+    {
+      "id": "kpi_definitions",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 7
+    },
+    {
+      "id": "kpi_snapshots",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "kpi_values",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "lead_scoring_configs",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "leaderboard",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "login_activity",
+      "domain": "Core & Auth",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "manufacturer_directory",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "manufacturer_specs",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "material_purchases",
+      "domain": "Crew & Costs",
+      "connections": 3,
+      "apiRoutes": 4
+    },
+    {
+      "id": "n8n_chat_histories",
+      "domain": "Other",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "packets",
+      "domain": "Documents",
+      "connections": 0,
+      "apiRoutes": 2
+    },
+    {
+      "id": "photos",
+      "domain": "Other",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "pins_pending_sync",
+      "domain": "Field Ops",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "pipeline_metrics",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "pipeline_stages",
+      "domain": "Settings & Admin",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "point_rule_configs",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "point_rules",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "policy_provisions",
+      "domain": "Insurance & Claims",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "project_files",
+      "domain": "Projects",
+      "connections": 2,
+      "apiRoutes": 35
+    },
+    {
+      "id": "project_profit_loss",
+      "domain": "Projects",
+      "connections": 0,
+      "apiRoutes": 3
+    },
+    {
+      "id": "projects",
+      "domain": "Projects",
+      "connections": 17,
+      "apiRoutes": 38
+    },
+    {
+      "id": "property_enrichment_cache",
+      "domain": "Storm Ops",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "query_history",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 5
+    },
+    {
+      "id": "quickbooks_connections",
+      "domain": "Integrations",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "quickbooks_mappings",
+      "domain": "Integrations",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "quickbooks_sync_logs",
+      "domain": "Integrations",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "quickbooks_tokens",
+      "domain": "Integrations",
+      "connections": 1,
+      "apiRoutes": 6
+    },
+    {
+      "id": "quote_line_items",
+      "domain": "Projects",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "quote_options",
+      "domain": "Projects",
+      "connections": 4,
+      "apiRoutes": 9
+    },
+    {
+      "id": "quote_proposals",
+      "domain": "Projects",
+      "connections": 3,
+      "apiRoutes": 0
+    },
+    {
+      "id": "recording_consent_states",
+      "domain": "Communication",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "rep_locations",
+      "domain": "Field Ops",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "report_schedules",
+      "domain": "Settings & Admin",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "revenue_forecast",
+      "domain": "Financial",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "reward_claims",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "reward_configs",
+      "domain": "Gamification",
+      "connections": 1,
+      "apiRoutes": 6
+    },
+    {
+      "id": "roofing_knowledge",
+      "domain": "Knowledge Base",
+      "connections": 2,
+      "apiRoutes": 7
+    },
+    {
+      "id": "saved_filters",
+      "domain": "Settings & Admin",
+      "connections": 2,
+      "apiRoutes": 8
+    },
+    {
+      "id": "shingle_products",
+      "domain": "Knowledge Base",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "signature_documents",
+      "domain": "Documents",
+      "connections": 0,
+      "apiRoutes": 22
+    },
+    {
+      "id": "signatures",
+      "domain": "Documents",
+      "connections": 0,
+      "apiRoutes": 6
+    },
+    {
+      "id": "sms_approval_queue",
+      "domain": "Communication",
+      "connections": 2,
+      "apiRoutes": 4
+    },
+    {
+      "id": "sms_templates",
+      "domain": "Communication",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "status_substatus_configs",
+      "domain": "Settings & Admin",
+      "connections": 1,
+      "apiRoutes": 7
+    },
+    {
+      "id": "storm_alerts",
+      "domain": "Storm Ops",
+      "connections": 1,
+      "apiRoutes": 4
+    },
+    {
+      "id": "storm_events",
+      "domain": "Storm Ops",
+      "connections": 3,
+      "apiRoutes": 3
+    },
+    {
+      "id": "storm_response_mode",
+      "domain": "Storm Ops",
+      "connections": 1,
+      "apiRoutes": 5
+    },
+    {
+      "id": "storm_targeting_areas",
+      "domain": "Storm Ops",
+      "connections": 3,
+      "apiRoutes": 4
+    },
+    {
+      "id": "subscription_events",
+      "domain": "Financial",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "subscriptions",
+      "domain": "Financial",
+      "connections": 3,
+      "apiRoutes": 3
+    },
+    {
+      "id": "surveys",
+      "domain": "Activities",
+      "connections": 4,
+      "apiRoutes": 5
+    },
+    {
+      "id": "task_activity",
+      "domain": "Tasks",
+      "connections": 1,
+      "apiRoutes": 2
+    },
+    {
+      "id": "task_attachments",
+      "domain": "Tasks",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "task_comments",
+      "domain": "Tasks",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "tasks",
+      "domain": "Tasks",
+      "connections": 9,
+      "apiRoutes": 6
+    },
+    {
+      "id": "templates",
+      "domain": "Documents",
+      "connections": 0,
+      "apiRoutes": 4
+    },
+    {
+      "id": "tenant_settings",
+      "domain": "Core & Auth",
+      "connections": 1,
+      "apiRoutes": 6
+    },
+    {
+      "id": "tenant_users",
+      "domain": "Core & Auth",
+      "connections": 0,
+      "apiRoutes": 36
+    },
+    {
+      "id": "tenants",
+      "domain": "Core & Auth",
+      "connections": 61,
+      "apiRoutes": 7
+    },
+    {
+      "id": "territories",
+      "domain": "Field Ops",
+      "connections": 2,
+      "apiRoutes": 9
+    },
+    {
+      "id": "timesheets",
+      "domain": "Crew & Costs",
+      "connections": 3,
+      "apiRoutes": 4
+    },
+    {
+      "id": "user_achievements",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 1
+    },
+    {
+      "id": "user_challenges",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "user_commission_assignments",
+      "domain": "Financial",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "user_notification_preferences",
+      "domain": "Core & Auth",
+      "connections": 1,
+      "apiRoutes": 2
+    },
+    {
+      "id": "user_points",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "user_role_assignments",
+      "domain": "Core & Auth",
+      "connections": 2,
+      "apiRoutes": 4
+    },
+    {
+      "id": "user_roles",
+      "domain": "Core & Auth",
+      "connections": 2,
+      "apiRoutes": 6
+    },
+    {
+      "id": "user_sessions",
+      "domain": "Core & Auth",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "user_streaks",
+      "domain": "Gamification",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "user_ui_preferences",
+      "domain": "Core & Auth",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "users",
+      "domain": "Core & Auth",
+      "connections": 0,
+      "apiRoutes": 9
+    },
+    {
+      "id": "voice_function_calls",
+      "domain": "Voice & AI",
+      "connections": 2,
+      "apiRoutes": 0
+    },
+    {
+      "id": "voice_sessions",
+      "domain": "Voice & AI",
+      "connections": 4,
+      "apiRoutes": 3
+    },
+    {
+      "id": "voicemail_messages",
+      "domain": "Voice & AI",
+      "connections": 3,
+      "apiRoutes": 2
+    },
+    {
+      "id": "win_loss_reasons",
+      "domain": "Other",
+      "connections": 1,
+      "apiRoutes": 0
+    },
+    {
+      "id": "workflow_executions",
+      "domain": "Automations",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "workflow_step_executions",
+      "domain": "Automations",
+      "connections": 0,
+      "apiRoutes": 0
+    },
+    {
+      "id": "workflow_steps",
+      "domain": "Automations",
+      "connections": 0,
+      "apiRoutes": 1
+    },
+    {
+      "id": "workflows",
+      "domain": "Automations",
+      "connections": 0,
+      "apiRoutes": 6
+    }
+  ],
+  "links": [
+    {
+      "source": "voice_sessions",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "voice_sessions",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "voice_sessions",
+      "target": "projects",
+      "column": "contact"
+    },
+    {
+      "source": "voice_function_calls",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "voice_function_calls",
+      "target": "voice_sessions",
+      "column": "session_id"
+    },
+    {
+      "source": "tasks",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "tasks",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "tasks",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "project_files",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "project_files",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "call_logs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "call_logs",
+      "target": "contacts",
+      "column": "relationships"
+    },
+    {
+      "source": "call_logs",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "rep_locations",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "knocks",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "knocks",
+      "target": "contacts",
+      "column": "creation"
+    },
+    {
+      "source": "knocks",
+      "target": "territories",
+      "column": "tracking"
+    },
+    {
+      "source": "territories",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "jobs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "jobs",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "events",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "events",
+      "target": "contacts",
+      "column": "Relationships"
+    },
+    {
+      "source": "events",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "events",
+      "target": "jobs",
+      "column": "job_id"
+    },
+    {
+      "source": "events",
+      "target": "events",
+      "column": "format"
+    },
+    {
+      "source": "surveys",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "surveys",
+      "target": "projects",
+      "column": "relationships"
+    },
+    {
+      "source": "surveys",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "surveys",
+      "target": "jobs",
+      "column": "job_id"
+    },
+    {
+      "source": "tasks",
+      "target": "projects",
+      "column": "Relationships"
+    },
+    {
+      "source": "tasks",
+      "target": "tasks",
+      "column": "parent_task_id"
+    },
+    {
+      "source": "task_comments",
+      "target": "tasks",
+      "column": "task_id"
+    },
+    {
+      "source": "task_attachments",
+      "target": "tasks",
+      "column": "task_id"
+    },
+    {
+      "source": "task_activity",
+      "target": "tasks",
+      "column": "task_id"
+    },
+    {
+      "source": "tenant_settings",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "pipeline_stages",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "win_loss_reasons",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "email_templates",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "sms_templates",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_roles",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_role_assignments",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_role_assignments",
+      "target": "user_roles",
+      "column": "role_id"
+    },
+    {
+      "source": "quickbooks_tokens",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "quickbooks_sync_logs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "quickbooks_mappings",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "job_expenses",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "job_expenses",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "job_expenses",
+      "target": "contacts",
+      "column": "vendor_id"
+    },
+    {
+      "source": "crew_members",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "timesheets",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "timesheets",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "timesheets",
+      "target": "crew_members",
+      "column": "crew_member_id"
+    },
+    {
+      "source": "material_purchases",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "material_purchases",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "material_purchases",
+      "target": "contacts",
+      "column": "supplier_id"
+    },
+    {
+      "source": "roofing_knowledge",
+      "target": "tenants",
+      "column": "support"
+    },
+    {
+      "source": "knowledge_search_queries",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "knowledge_search_queries",
+      "target": "roofing_knowledge",
+      "column": "top_result_id"
+    },
+    {
+      "source": "commission_plans",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "commission_records",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "commission_records",
+      "target": "commission_plans",
+      "column": "commission_plan_id"
+    },
+    {
+      "source": "commission_records",
+      "target": "projects",
+      "column": "for"
+    },
+    {
+      "source": "commission_records",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "user_commission_assignments",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_commission_assignments",
+      "target": "commission_plans",
+      "column": "commission_plan_id"
+    },
+    {
+      "source": "storm_targeting_areas",
+      "target": "storm_events",
+      "column": "Association"
+    },
+    {
+      "source": "bulk_import_jobs",
+      "target": "storm_targeting_areas",
+      "column": "Association"
+    },
+    {
+      "source": "extracted_addresses",
+      "target": "storm_targeting_areas",
+      "column": "Association"
+    },
+    {
+      "source": "extracted_addresses",
+      "target": "bulk_import_jobs",
+      "column": "bulk_import_job_id"
+    },
+    {
+      "source": "extracted_addresses",
+      "target": "property_enrichment_cache",
+      "column": "enrichment_cache_id"
+    },
+    {
+      "source": "campaigns",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "campaign_triggers",
+      "target": "campaigns",
+      "column": "campaign_id"
+    },
+    {
+      "source": "campaign_steps",
+      "target": "campaigns",
+      "column": "campaign_id"
+    },
+    {
+      "source": "campaign_steps",
+      "target": "campaign_steps",
+      "column": "parent_step_id"
+    },
+    {
+      "source": "campaign_steps",
+      "target": "campaign_steps",
+      "column": "type"
+    },
+    {
+      "source": "campaign_steps",
+      "target": "campaign_steps",
+      "column": "false_path_step_id"
+    },
+    {
+      "source": "campaign_enrollments",
+      "target": "campaigns",
+      "column": "campaign_id"
+    },
+    {
+      "source": "campaign_enrollments",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "campaign_enrollments",
+      "target": "contacts",
+      "column": "enrolled"
+    },
+    {
+      "source": "campaign_enrollments",
+      "target": "campaign_steps",
+      "column": "current_step_id"
+    },
+    {
+      "source": "campaign_step_executions",
+      "target": "campaign_enrollments",
+      "column": "enrollment_id"
+    },
+    {
+      "source": "campaign_step_executions",
+      "target": "campaign_steps",
+      "column": "step_id"
+    },
+    {
+      "source": "campaign_analytics",
+      "target": "campaigns",
+      "column": "campaign_id"
+    },
+    {
+      "source": "campaign_analytics",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "impersonation_logs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "ai_conversations",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "ai_messages",
+      "target": "ai_conversations",
+      "column": "conversation_id"
+    },
+    {
+      "source": "filter_configs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "saved_filters",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "filter_usage_logs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "filter_usage_logs",
+      "target": "filter_configs",
+      "column": "details"
+    },
+    {
+      "source": "filter_usage_logs",
+      "target": "saved_filters",
+      "column": "saved_filter_id"
+    },
+    {
+      "source": "status_substatus_configs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "challenge_progress",
+      "target": "challenge_configs",
+      "column": "challenge_id"
+    },
+    {
+      "source": "reward_claims",
+      "target": "reward_configs",
+      "column": "reward_id"
+    },
+    {
+      "source": "kpi_values",
+      "target": "kpi_definitions",
+      "column": "kpi_id"
+    },
+    {
+      "source": "callback_requests",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "callback_requests",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "voicemail_messages",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "voicemail_messages",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "voicemail_messages",
+      "target": "callback_requests",
+      "column": "callback_request_id"
+    },
+    {
+      "source": "aria_conversations",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "aria_conversations",
+      "target": "contacts",
+      "column": "internal"
+    },
+    {
+      "source": "aria_conversations",
+      "target": "projects",
+      "column": "Context"
+    },
+    {
+      "source": "aria_function_logs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "aria_function_logs",
+      "target": "aria_conversations",
+      "column": "Context"
+    },
+    {
+      "source": "user_notification_preferences",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_sessions",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "login_activity",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "dnc_registry",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "dnc_imports",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "call_compliance_log",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "call_compliance_log",
+      "target": "call_logs",
+      "column": "records"
+    },
+    {
+      "source": "call_compliance_log",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "quote_options",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "quote_options",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "quote_line_items",
+      "target": "quote_options",
+      "column": "quote_option_id"
+    },
+    {
+      "source": "quote_proposals",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "quote_proposals",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "quote_proposals",
+      "target": "quote_options",
+      "column": "selected_option_id"
+    },
+    {
+      "source": "storm_alerts",
+      "target": "storm_events",
+      "column": "Association"
+    },
+    {
+      "source": "storm_response_mode",
+      "target": "storm_events",
+      "column": "storm_event_id"
+    },
+    {
+      "source": "ar_sessions",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "ar_measurements",
+      "target": "ar_sessions",
+      "column": "session_id"
+    },
+    {
+      "source": "ar_damage_markers",
+      "target": "ar_sessions",
+      "column": "session_id"
+    },
+    {
+      "source": "commission_records",
+      "target": "commission_plans",
+      "column": "plan_id"
+    },
+    {
+      "source": "commission_records",
+      "target": "projects",
+      "column": "project_id"
+    },
+    {
+      "source": "document_templates",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "user_ui_preferences",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "call_opt_out_queue",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "call_opt_out_queue",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "dnc_sync_jobs",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "admin_alerts",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "adjuster_patterns",
+      "target": "insurance_personnel",
+      "column": "adjuster_id"
+    },
+    {
+      "source": "carrier_patterns",
+      "target": "insurance_carriers",
+      "column": "carrier_id"
+    },
+    {
+      "source": "subscriptions",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "subscription_events",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "subscription_events",
+      "target": "subscriptions",
+      "column": "subscription_id"
+    },
+    {
+      "source": "invoices",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "invoices",
+      "target": "subscriptions",
+      "column": "subscription_id"
+    },
+    {
+      "source": "sms_approval_queue",
+      "target": "tenants",
+      "column": "tenant_id"
+    },
+    {
+      "source": "sms_approval_queue",
+      "target": "contacts",
+      "column": "contact_id"
+    },
+    {
+      "source": "google_calendar_tokens",
+      "target": "tenants",
+      "column": "tenant_id"
+    }
+  ]
+};</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @media print {
+    body { background: #0a0e17 !important; }
+    #controls { display: none !important; }
+  }
+  body {
+    background: #0a0e17;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  #controls {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+  }
+  button {
+    background: rgba(45,51,64,0.9);
+    border: 1px solid #404854;
+    color: #e0e0e0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  button:hover { border-color: #FF8243; }
+  #poster {
+    width: 3000px;
+    padding: 60px;
+  }
+  .poster-title {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .poster-title h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #FF8243;
+    letter-spacing: -1px;
+  }
+  .poster-title .sub {
+    font-size: 16px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+  .poster-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin: 24px 0 48px;
+  }
+  .poster-stat {
+    text-align: center;
+  }
+  .poster-stat-val {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .poster-stat-lbl {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .domain-section {
+    display: inline-block;
+    vertical-align: top;
+    width: 340px;
+    margin: 8px;
+    background: rgba(30,35,50,0.6);
+    border: 1px solid #2d3340;
+    border-radius: 12px;
+    padding: 16px;
+    break-inside: avoid;
+  }
+  .domain-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2d3340;
+  }
+  .ds-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .ds-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .ds-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .ds-table {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 12px;
+  }
+  .ds-table-name {
+    color: #d1d5db;
+    flex: 1;
+  }
+  .ds-table-conn {
+    font-size: 10px;
+    color: #6b7280;
+    min-width: 24px;
+    text-align: right;
+  }
+  .ds-table-bar {
+    width: 60px;
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .ds-table-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .relationship-section {
+    margin-top: 48px;
+    text-align: center;
+  }
+  .relationship-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+  .domains-container {
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="controls">
+  <button onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<div id="poster">
+  <div class="poster-title">
+    <h1>ROOFING SAAS - DATABASE ARCHITECTURE</h1>
+    <div class="sub">Appalachian Storm Restoration - JobClarity Platform - Complete Schema Map</div>
+  </div>
+
+  <div class="poster-stats" id="poster-stats"></div>
+
+  <div class="domains-container" id="domains-container"></div>
+
+  <div class="relationship-section">
+    <h2>Relationship Network</h2>
+    <svg id="network-svg"></svg>
+  </div>
+</div>
+
+<script>
+const DOMAIN_COLORS = {
+  'Core & Auth': '#FF8243',
+  'Contacts': '#60A5FA',
+  'Projects': '#34D399',
+  'Tasks': '#2DD4BF',
+  'Activities': '#FB923C',
+  'Communication': '#F97316',
+  'Campaigns': '#A78BFA',
+  'Automations': '#818CF8',
+  'Insurance & Claims': '#F472B6',
+  'Storm Ops': '#EF4444',
+  'Field Ops': '#22C55E',
+  'Voice & AI': '#06B6D4',
+  'Financial': '#10B981',
+  'Crew & Costs': '#84CC16',
+  'Gamification': '#FBBF24',
+  'Documents': '#D97706',
+  'Knowledge Base': '#A3E635',
+  'Digital Cards': '#E879F9',
+  'Integrations': '#6366F1',
+  'AR Assessment': '#C084FC',
+  'Compliance': '#FB7185',
+  'Settings & Admin': '#94A3B8',
+  'Security': '#F87171',
+  'Other': '#6B7280',
+};
+
+async function init() {
+  const data = SCHEMA_DATA;
+
+  const maxConn = Math.max(...data.nodes.map(n => n.connections), 1);
+
+  // Stats
+  const statsEl = document.getElementById('poster-stats');
+  [
+    { v: data.stats.tables, l: 'Tables' },
+    { v: data.stats.relationships, l: 'Relationships' },
+    { v: data.stats.domains, l: 'Domains' },
+    { v: '254', l: 'API Endpoints' },
+    { v: '109', l: 'Pages' },
+  ].forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'poster-stat';
+    const val = document.createElement('div');
+    val.className = 'poster-stat-val';
+    val.textContent = s.v;
+    div.appendChild(val);
+    const lbl = document.createElement('div');
+    lbl.className = 'poster-stat-lbl';
+    lbl.textContent = s.l;
+    div.appendChild(lbl);
+    statsEl.appendChild(div);
+  });
+
+  // Group by domain
+  const domains = {};
+  data.nodes.forEach(n => {
+    if (!domains[n.domain]) domains[n.domain] = [];
+    domains[n.domain].push(n);
+  });
+
+  const container = document.getElementById('domains-container');
+  Object.entries(domains)
+    .sort((a, b) => b[1].length - a[1].length)
+    .forEach(([domain, tables]) => {
+      const color = DOMAIN_COLORS[domain] || '#6B7280';
+      const section = document.createElement('div');
+      section.className = 'domain-section';
+
+      const header = document.createElement('div');
+      header.className = 'domain-section-header';
+
+      const dot = document.createElement('div');
+      dot.className = 'ds-dot';
+      dot.style.background = color;
+      header.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'ds-name';
+      name.textContent = domain;
+      header.appendChild(name);
+
+      const count = document.createElement('span');
+      count.className = 'ds-count';
+      count.textContent = tables.length + ' tables';
+      header.appendChild(count);
+
+      section.appendChild(header);
+
+      tables.sort((a, b) => b.connections - a.connections).forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'ds-table';
+
+        const tableName = document.createElement('span');
+        tableName.className = 'ds-table-name';
+        tableName.textContent = t.id;
+        row.appendChild(tableName);
+
+        const bar = document.createElement('div');
+        bar.className = 'ds-table-bar';
+        const fill = document.createElement('div');
+        fill.className = 'ds-table-bar-fill';
+        fill.style.width = (t.connections / maxConn * 100) + '%';
+        fill.style.background = color;
+        bar.appendChild(fill);
+        row.appendChild(bar);
+
+        const conn = document.createElement('span');
+        conn.className = 'ds-table-conn';
+        conn.textContent = t.connections > 0 ? t.connections : '';
+        row.appendChild(conn);
+
+        section.appendChild(row);
+      });
+
+      container.appendChild(section);
+    });
+
+  // Static network visualization (clustered by domain)
+  buildStaticNetwork(data, domains);
+}
+
+function buildStaticNetwork(data, domains) {
+  const width = 2880;
+  const height = 1600;
+  const svg = d3.select('#network-svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  const nodes = data.nodes.map(d => ({ ...d }));
+  const links = data.links.map(d => ({ ...d }));
+
+  // Pre-position nodes in domain clusters
+  const domainKeys = Object.keys(domains).sort((a, b) => domains[b].length - domains[a].length);
+  const cols = 6;
+  const cellW = width / cols;
+  const cellH = 250;
+
+  const domainCenters = {};
+  domainKeys.forEach((d, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    domainCenters[d] = {
+      x: cellW * (col + 0.5),
+      y: cellH * (row + 0.5) + 40
+    };
+  });
+
+  nodes.forEach(n => {
+    const center = domainCenters[n.domain] || { x: width / 2, y: height / 2 };
+    n.x = center.x + (Math.random() - 0.5) * cellW * 0.6;
+    n.y = center.y + (Math.random() - 0.5) * cellH * 0.6;
+  });
+
+  const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(40).strength(0.3))
+    .force('charge', d3.forceManyBody().strength(-40))
+    .force('collision', d3.forceCollide().radius(d => Math.max(3, 3 + d.connections) + 2))
+    .force('x', d3.forceX(d => (domainCenters[d.domain] || { x: width / 2 }).x).strength(0.4))
+    .force('y', d3.forceY(d => (domainCenters[d.domain] || { y: height / 2 }).y).strength(0.4))
+    .stop();
+
+  // Run simulation to completion
+  for (let i = 0; i < 300; i++) simulation.tick();
+
+  // Draw domain backgrounds
+  domainKeys.forEach(d => {
+    const domainNodes = nodes.filter(n => n.domain === d);
+    if (domainNodes.length === 0) return;
+    const cx = d3.mean(domainNodes, n => n.x);
+    const cy = d3.mean(domainNodes, n => n.y);
+    const maxR = Math.max(
+      40,
+      d3.max(domainNodes, n => Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2)) + 30
+    );
+    const color = DOMAIN_COLORS[d] || '#6B7280';
+    svg.append('circle')
+      .attr('cx', cx)
+      .attr('cy', cy)
+      .attr('r', maxR)
+      .attr('fill', color)
+      .attr('fill-opacity', 0.04)
+      .attr('stroke', color)
+      .attr('stroke-opacity', 0.15)
+      .attr('stroke-width', 1);
+
+    svg.append('text')
+      .attr('x', cx)
+      .attr('y', cy - maxR - 6)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 11)
+      .attr('fill', color)
+      .attr('font-weight', '600')
+      .text(d);
+  });
+
+  // Draw links
+  links.forEach(l => {
+    svg.append('line')
+      .attr('x1', l.source.x)
+      .attr('y1', l.source.y)
+      .attr('x2', l.target.x)
+      .attr('y2', l.target.y)
+      .attr('stroke', '#1e293b')
+      .attr('stroke-width', 0.6)
+      .attr('stroke-opacity', 0.5);
+  });
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const r = Math.max(3, Math.min(14, 3 + n.connections));
+    const color = DOMAIN_COLORS[n.domain] || '#6B7280';
+    svg.append('circle')
+      .attr('cx', n.x)
+      .attr('cy', n.y)
+      .attr('r', r)
+      .attr('fill', color)
+      .attr('stroke', 'rgba(255,255,255,0.08)')
+      .attr('stroke-width', 0.5);
+
+    if (n.connections >= 8) {
+      svg.append('text')
+        .attr('x', n.x)
+        .attr('y', n.y + r + 10)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 8)
+        .attr('fill', 'rgba(255,255,255,0.5)')
+        .text(n.id.replace(/_/g, ' '));
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
