@@ -18,6 +18,7 @@ import { PageSkeleton, CardSkeleton } from '@/components/ui/skeletons'
 import { STAGE_DISPLAY_NAMES } from '@/lib/pipeline/validation'
 import type { PipelineStage } from '@/lib/types/api'
 import type { QuoteOption } from '@/lib/types/quote-option'
+import { ProjectSubstatusManager } from '@/components/pipeline/ProjectSubstatusManager'
 import { PresenceIndicator } from '@/components/collaboration/PresenceIndicator'
 import { ProjectFilesTable } from '@/components/project-files/project-files-table'
 import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
@@ -30,6 +31,7 @@ interface Project {
   name: string
   project_number: string | null
   status: string
+  substatus: string | null
   pipeline_stage: PipelineStage
   type: string | null
   estimated_value: number | null
@@ -601,6 +603,16 @@ export default function ProjectDetailPage() {
                       }`}>
                         {STAGE_DISPLAY_NAMES[project.pipeline_stage] || project.pipeline_stage}
                       </div>
+                    </div>
+
+                    {/* Substatus */}
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground mb-2 block">Substatus</label>
+                      <ProjectSubstatusManager
+                        projectId={project.id}
+                        status={project.status}
+                        currentSubstatus={project.substatus || null}
+                      />
                     </div>
 
                     {/* Stage-specific actions/info */}

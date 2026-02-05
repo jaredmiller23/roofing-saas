@@ -168,6 +168,7 @@ export interface Project {
   name: string
   description?: string
   status: string // 'estimate' | 'proposal' | 'approved' | 'in_progress' | 'completed' | 'cancelled'
+  substatus?: string | null
 
   // New unified pipeline fields (Phase 2)
   pipeline_stage: PipelineStage

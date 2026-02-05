@@ -177,7 +177,10 @@ export function PipelineBoard() {
       const updatedProject = payload.new as Project
       const oldProject = payload.old as Project
 
-      if (updatedProject.pipeline_stage !== oldProject.pipeline_stage) {
+      if (
+        updatedProject.pipeline_stage !== oldProject.pipeline_stage ||
+        updatedProject.substatus !== oldProject.substatus
+      ) {
         const projectId = updatedProject.id
         const now = Date.now()
         const recentUpdate = recentUpdatesRef.current.get(projectId)
@@ -198,19 +201,22 @@ export function PipelineBoard() {
           return prev
         })
 
-        const projectName = updatedProject.name || 'Unnamed Project'
-        const fromStage = STAGE_DISPLAY_NAMES[oldProject.pipeline_stage] || oldProject.pipeline_stage
-        const toStage = STAGE_DISPLAY_NAMES[updatedProject.pipeline_stage] || updatedProject.pipeline_stage
+        // Only show toast for stage changes (not substatus updates)
+        if (updatedProject.pipeline_stage !== oldProject.pipeline_stage) {
+          const projectName = updatedProject.name || 'Unnamed Project'
+          const fromStage = STAGE_DISPLAY_NAMES[oldProject.pipeline_stage] || oldProject.pipeline_stage
+          const toStage = STAGE_DISPLAY_NAMES[updatedProject.pipeline_stage] || updatedProject.pipeline_stage
 
-        toast.custom((t) => (
-          <RealtimeToast
-            type="data-updated"
-            title="Project moved"
-            description={`${projectName} moved from ${fromStage} to ${toStage}`}
-            duration={4000}
-            onDismiss={() => toast.dismiss(t)}
-          />
-        ))
+          toast.custom((t) => (
+            <RealtimeToast
+              type="data-updated"
+              title="Project moved"
+              description={`${projectName} moved from ${fromStage} to ${toStage}`}
+              duration={4000}
+              onDismiss={() => toast.dismiss(t)}
+            />
+          ))
+        }
       }
     },
     onError: (error) => {
@@ -291,6 +297,14 @@ export function PipelineBoard() {
       )
     }
   }
+
+  // Handle substatus change from card
+  const handleSubstatusChange = useCallback((projectId: string, newSubstatus: string) => {
+    recentUpdatesRef.current.set(projectId, Date.now())
+    setProjects(prev => prev.map(p =>
+      p.id === projectId ? { ...p, substatus: newSubstatus } : p
+    ))
+  }, [])
 
   // Handle drag-and-drop between columns
   const handleDragEnd = useCallback((result: DropResult) => {
@@ -540,6 +554,7 @@ export function PipelineBoard() {
                   stage={stage}
                   projects={stageProjects || []}
                   onMoveProject={moveProject}
+                  onSubstatusChange={handleSubstatusChange}
                   isDragDisabled={false}
                 />
 

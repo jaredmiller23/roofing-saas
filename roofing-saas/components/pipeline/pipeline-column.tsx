@@ -12,10 +12,11 @@ interface PipelineColumnProps {
   }
   projects: Project[]
   onMoveProject?: (projectId: string, newStage: PipelineStage) => void
+  onSubstatusChange?: (projectId: string, newSubstatus: string) => void
   isDragDisabled?: boolean
 }
 
-export function PipelineColumn({ stage, projects, onMoveProject, isDragDisabled = false }: PipelineColumnProps) {
+export function PipelineColumn({ stage, projects, onMoveProject, onSubstatusChange, isDragDisabled = false }: PipelineColumnProps) {
   return (
     <div className="flex-shrink-0 w-80 flex flex-col">
       {/* Column Header */}
@@ -59,6 +60,7 @@ export function PipelineColumn({ stage, projects, onMoveProject, isDragDisabled 
                     <ProjectCard
                       project={project}
                       onMoveProject={onMoveProject}
+                      onSubstatusChange={onSubstatusChange}
                       isDragging={dragSnapshot.isDragging}
                     />
                   </div>

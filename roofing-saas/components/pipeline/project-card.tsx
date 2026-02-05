@@ -7,11 +7,13 @@ import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, 
 import { useRouter } from '@/lib/i18n/navigation'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
+import { ProjectSubstatusManager } from './ProjectSubstatusManager'
 
 interface ProjectCardProps {
   project: Project
   isDragging?: boolean
   onMoveProject?: (projectId: string, newStage: PipelineStage) => void
+  onSubstatusChange?: (projectId: string, newSubstatus: string) => void
 }
 
 // Active sales stages where Mark Lost button should appear
@@ -20,7 +22,7 @@ const ACTIVE_SALES_STAGES: PipelineStage[] = ['prospect', 'qualified', 'quote_se
 // Define stage order for navigation
 const STAGE_ORDER: PipelineStage[] = ['prospect', 'qualified', 'quote_sent', 'negotiation', 'won', 'production', 'complete', 'lost']
 
-export function ProjectCard({ project, isDragging = false, onMoveProject }: ProjectCardProps) {
+export function ProjectCard({ project, isDragging = false, onMoveProject, onSubstatusChange }: ProjectCardProps) {
   const router = useRouter()
   const [startingProduction, setStartingProduction] = useState(false)
   const [markingLost, setMarkingLost] = useState(false)
@@ -287,6 +289,17 @@ export function ProjectCard({ project, isDragging = false, onMoveProject }: Proj
             <span className="font-medium capitalize">{project.lead_source}</span>
           </div>
         )}
+      </div>
+
+      {/* Substatus Selector */}
+      <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+        <ProjectSubstatusManager
+          projectId={project.id}
+          status={project.status}
+          currentSubstatus={project.substatus || null}
+          onSubstatusUpdated={(newSubstatus) => onSubstatusChange?.(project.id, newSubstatus)}
+          className="w-full"
+        />
       </div>
 
       {/* Priority + Days in Stage + Last Updated */}

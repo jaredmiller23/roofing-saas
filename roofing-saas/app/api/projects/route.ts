@@ -38,6 +38,7 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthConte
         project_number,
         contact_id,
         status,
+        substatus,
         type,
         estimated_value,
         approved_value,

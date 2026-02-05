@@ -152,7 +152,7 @@ export const PATCH = withAuthParams(async (
 
         // Field allowlisting — only permit known mutable fields
         const ALLOWED_FIELDS = [
-          'name', 'description', 'scope_of_work', 'status', 'pipeline_stage', 'type', 'priority',
+          'name', 'description', 'scope_of_work', 'status', 'substatus', 'pipeline_stage', 'type', 'priority',
           'estimated_value', 'approved_value', 'final_value', 'profit_margin',
           'estimated_start', 'actual_start', 'actual_completion', 'estimated_close_date',
           'custom_fields', 'lead_source', 'lead_score',
@@ -207,6 +207,7 @@ export const PATCH = withAuthParams(async (
             project_number,
             contact_id,
             status,
+            substatus,
             type,
             estimated_value,
             approved_value,
