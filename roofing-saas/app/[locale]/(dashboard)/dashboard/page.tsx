@@ -191,7 +191,7 @@ export default function DashboardPage() {
   // Full page error state
   if (error && !data) {
     return (
-      <div className="p-4 pt-16 lg:p-8 lg:pt-8">
+      <div className="px-4 sm:px-6 py-4 pt-16 lg:px-8 lg:py-8 lg:pt-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center justify-center py-24">
             <div className="text-muted-foreground mb-4 text-center">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
   // Field worker view - simplified, mobile-optimized
   if (isFieldMode) {
     return (
-      <div className="p-4 pt-16 lg:p-8 lg:pt-8">
+      <div className="px-4 sm:px-6 py-4 pt-16 lg:px-8 lg:py-8 lg:pt-8">
         <div className="max-w-lg mx-auto space-y-4">
           {/* Priority: Weather safety check */}
           <WeatherWidget />
@@ -262,7 +262,7 @@ export default function DashboardPage() {
 
   // Manager/Owner view - full dashboard
   return (
-    <div className="p-4 pt-16 lg:p-8 lg:pt-8">
+    <div className="px-4 sm:px-6 py-4 pt-16 lg:px-8 lg:py-8 lg:pt-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header with Scope Filter */}
         <div className="flex items-center justify-between">

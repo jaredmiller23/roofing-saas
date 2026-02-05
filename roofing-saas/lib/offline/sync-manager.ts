@@ -36,6 +36,9 @@ class SyncManager {
   private eventListeners: Map<OfflineEventType, Function[]> = new Map();
   private syncInterval: NodeJS.Timeout | null = null;
   private retryTimeout: NodeJS.Timeout | null = null;
+  private handleOnline: (() => void) | null = null;
+  private handleOffline: (() => void) | null = null;
+  private handleVisibilityChange: (() => void) | null = null;
 
   constructor() {
     this.syncStatus = {
@@ -500,22 +503,22 @@ class SyncManager {
     this.isOnline = navigator.onLine;
     this.syncStatus.is_online = this.isOnline;
 
-    const handleOnline = async () => {
+    this.handleOnline = async () => {
       this.isOnline = true;
       this.syncStatus.is_online = true;
       this.emitEvent('network_changed', { online: true });
-      
+
       logger.info('Network online - starting sync');
       await this.scheduleSync();
     };
 
-    const handleOffline = () => {
+    this.handleOffline = () => {
       this.isOnline = false;
       this.syncStatus.is_online = false;
       this.emitEvent('network_changed', { online: false });
-      
+
       logger.info('Network offline');
-      
+
       // Cancel any pending sync operations
       if (this.retryTimeout) {
         clearTimeout(this.retryTimeout);
@@ -523,15 +526,15 @@ class SyncManager {
       }
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Also listen for page visibility changes
-    document.addEventListener('visibilitychange', () => {
+    this.handleVisibilityChange = () => {
       if (!document.hidden && this.isOnline) {
         this.scheduleSync();
       }
-    });
+    };
+
+    window.addEventListener('online', this.handleOnline);
+    window.addEventListener('offline', this.handleOffline);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   /**
@@ -573,12 +576,25 @@ class SyncManager {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
-    
+
     if (this.retryTimeout) {
       clearTimeout(this.retryTimeout);
       this.retryTimeout = null;
     }
-    
+
+    // Remove network and visibility event listeners
+    if (typeof window !== 'undefined') {
+      if (this.handleOnline) {
+        window.removeEventListener('online', this.handleOnline);
+      }
+      if (this.handleOffline) {
+        window.removeEventListener('offline', this.handleOffline);
+      }
+      if (this.handleVisibilityChange) {
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+      }
+    }
+
     this.eventListeners.clear();
   }
 }
@@ -590,9 +606,10 @@ export const syncManager = new SyncManager();
 export const initializeSyncManager = () => syncManager.initialize();
 export const syncNow = (options?: SyncOptions) => syncManager.syncNow(options);
 export const getSyncStatus = () => syncManager.getSyncStatus();
-export const addSyncEventListener = (eventType: OfflineEventType, handler: Function) => 
+export const destroySyncManager = () => syncManager.destroy();
+export const addSyncEventListener = (eventType: OfflineEventType, handler: Function) =>
   syncManager.addEventListener(eventType, handler);
-export const removeSyncEventListener = (eventType: OfflineEventType, handler: Function) => 
+export const removeSyncEventListener = (eventType: OfflineEventType, handler: Function) =>
   syncManager.removeEventListener(eventType, handler);
-export const refreshCache = (tables: string[], maxAge?: number) => 
+export const refreshCache = (tables: string[], maxAge?: number) =>
   syncManager.refreshCache(tables, maxAge);

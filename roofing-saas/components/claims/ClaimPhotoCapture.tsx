@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { compressImage } from '@/lib/storage/photos'
 import { addPhotoToQueue } from '@/lib/services/photo-queue'
@@ -344,6 +344,17 @@ export function ClaimPhotoCapture({
       stream.getTracks().forEach(track => track.stop())
       videoRef.current.srcObject = null
       setIsCameraActive(false)
+    }
+  }, [])
+
+  // Cleanup camera stream on unmount to prevent hardware resource leak
+  useEffect(() => {
+    const video = videoRef.current
+    return () => {
+      if (video && video.srcObject) {
+        const stream = video.srcObject as MediaStream
+        stream.getTracks().forEach(track => track.stop())
+      }
     }
   }, [])
 

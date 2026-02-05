@@ -49,7 +49,8 @@ export function MobileFileUpload({
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [_stream, setStream] = useState<MediaStream | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
 
   // Upload options
@@ -68,8 +69,9 @@ export function MobileFileUpload({
       initializeCamera()
     }
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
+      // Use ref for cleanup to avoid stale state capture
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,8 +79,8 @@ export function MobileFileUpload({
 
   const initializeCamera = async () => {
     try {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
       }
 
       const constraints = {
@@ -91,6 +93,7 @@ export function MobileFileUpload({
 
       const newStream = await navigator.mediaDevices.getUserMedia(constraints)
       setStream(newStream)
+      streamRef.current = newStream
 
       if (videoRef.current) {
         videoRef.current.srcObject = newStream
