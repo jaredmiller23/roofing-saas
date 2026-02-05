@@ -199,11 +199,8 @@ export default function ProjectDetailPage() {
   async function fetchQuoteOptions() {
     try {
       setLoadingQuoteOptions(true)
-      const quoteRes = await fetch(`/api/estimates/${projectId}/options`)
-      if (quoteRes.ok) {
-        const quoteData = await quoteRes.json()
-        setQuoteOptions(quoteData.data?.options || [])
-      }
+      const quoteData = await apiFetch<{ options: QuoteOption[] }>(`/api/estimates/${projectId}/options`)
+      setQuoteOptions(quoteData?.options || [])
     } catch (error) {
       console.error('Failed to fetch quote options:', error)
     } finally {
@@ -218,7 +215,7 @@ export default function ProjectDetailPage() {
   }
 
   const formatCurrency = (value: number | null | undefined) => {
-    if (!value) return '—'
+    if (value == null) return '—'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

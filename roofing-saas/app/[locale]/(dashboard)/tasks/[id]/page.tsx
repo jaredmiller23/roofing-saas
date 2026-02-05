@@ -2,6 +2,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Link } from '@/lib/i18n/navigation'
+import { TaskStatusActions } from '@/components/tasks/TaskStatusActions'
 import { CheckCircle, Clock } from 'lucide-react'
 
 /**
@@ -33,6 +34,24 @@ export default async function TaskDetailPage({
     .eq('tenant_id', tenantId)
     .eq('is_deleted', false)
     .single()
+
+  // Resolve assigned_to user name
+  let assigneeName: string | null = null
+  if (task?.assigned_to) {
+    const { data: assigneeData } = await supabase
+      .from('users')
+      .select('email, raw_user_meta_data')
+      .eq('id', task.assigned_to)
+      .single()
+
+    if (assigneeData) {
+      const metadata = assigneeData.raw_user_meta_data as {
+        full_name?: string
+        name?: string
+      } | null
+      assigneeName = metadata?.full_name || metadata?.name || assigneeData.email || null
+    }
+  }
 
   if (error || !task) {
     return (
@@ -132,6 +151,11 @@ export default async function TaskDetailPage({
           </div>
         </div>
 
+        {/* Quick Status Actions */}
+        <div className="mb-6">
+          <TaskStatusActions taskId={task.id} currentStatus={task.status} />
+        </div>
+
         {/* Task Details */}
         <div className="bg-card rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
@@ -141,6 +165,10 @@ export default async function TaskDetailPage({
               <p className="mt-1 text-foreground">
                 {task.due_date ? new Date(task.due_date).toLocaleDateString() : '-'}
               </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground">Assigned To</label>
+              <p className="mt-1 text-foreground">{assigneeName || '-'}</p>
             </div>
             {task.completed_at && (
               <div>

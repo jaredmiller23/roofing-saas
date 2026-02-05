@@ -1,10 +1,8 @@
-/* eslint-disable */
 'use client'
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Project, PipelineStage } from '@/lib/types/api'
 import { PipelineColumn } from './pipeline-column'
-import { ProjectCard } from './project-card'
 import { Search, Filter, AlertCircle, X } from 'lucide-react'
 import {
   isValidStageTransition,
@@ -96,7 +94,7 @@ export function PipelineBoard() {
   const [selectedStages, setSelectedStages] = useState<PipelineStage[]>(VALID_STAGE_IDS)
   const [validationError, setValidationError] = useState<ValidationError | null>(null)
   const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [_currentUserId, setCurrentUserId] = useState<string | null>(null)
   const locallyDraggingRef = useRef<Set<string>>(new Set())
   const recentUpdatesRef = useRef<Map<string, number>>(new Map())
 
@@ -173,6 +171,7 @@ export function PipelineBoard() {
     channelName: 'pipeline-board-projects',
     table: 'projects',
     event: 'UPDATE',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onPayload: (payload: any) => {
       const updatedProject = payload.new as Project
       const oldProject = payload.old as Project
@@ -316,6 +315,7 @@ export function PipelineBoard() {
     const newStage = destination.droppableId as PipelineStage
     locallyDraggingRef.current.add(draggableId)
     moveProject(draggableId, newStage)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects])
 
   // Filter projects based on search and selected stages

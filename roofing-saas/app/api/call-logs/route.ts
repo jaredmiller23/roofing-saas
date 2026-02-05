@@ -46,7 +46,11 @@ export async function GET(request: NextRequest) {
     if (projectId) query = query.eq('project_id', projectId)
     if (userId) query = query.eq('user_id', userId)
     if (search) {
-      query = query.or(`phone_number.ilike.%${search}%,notes.ilike.%${search}%`)
+      // Escape special PostgREST filter characters and SQL wildcards
+      const sanitized = search
+        .replace(/[%_\\]/g, '\\$&')
+        .replace(/[(),."']/g, '')
+      query = query.or(`phone_number.ilike.%${sanitized}%,notes.ilike.%${sanitized}%`)
     }
 
     query = query

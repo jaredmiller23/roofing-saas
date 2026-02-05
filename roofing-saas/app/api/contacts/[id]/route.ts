@@ -77,7 +77,7 @@ export const PATCH = withAuthParams(async (
 
         const { data, error } = await supabase
           .from('contacts')
-          .update(updateData as Database['public']['Tables']['contacts']['Update'])
+          .update({ ...updateData, updated_at: new Date().toISOString() } as Database['public']['Tables']['contacts']['Update'])
           .eq('id', id)
           .eq('tenant_id', tenantId)
           .eq('is_deleted', false)

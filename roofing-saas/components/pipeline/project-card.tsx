@@ -6,6 +6,7 @@ import { Link } from '@/lib/i18n/navigation'
 import { Phone, MessageSquare, Mail, DollarSign, TrendingUp, Clock, User, Play, X, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { apiFetch } from '@/lib/api/client'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ProjectSubstatusManager } from './ProjectSubstatusManager'
 
@@ -50,7 +51,7 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, onSubs
       }
     } catch (error) {
       console.error('Error starting production:', error)
-      alert(error instanceof Error ? error.message : 'Failed to start production. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to start production. Please try again.')
     } finally {
       setStartingProduction(false)
     }
@@ -75,7 +76,7 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, onSubs
       }
     } catch (error) {
       console.error('Error marking as lost:', error)
-      alert(error instanceof Error ? error.message : 'Failed to mark as lost. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to mark as lost. Please try again.')
     } finally {
       setMarkingLost(false)
     }
@@ -95,7 +96,7 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, onSubs
       }
     } catch (error) {
       console.error('Error reactivating:', error)
-      alert(error instanceof Error ? error.message : 'Failed to reactivate. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to reactivate. Please try again.')
     } finally {
       setReactivating(false)
     }
@@ -125,7 +126,7 @@ export function ProjectCard({ project, isDragging = false, onMoveProject, onSubs
   }
 
   const formatCurrency = (value?: number | null) => {
-    if (!value) return null
+    if (value == null) return null
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

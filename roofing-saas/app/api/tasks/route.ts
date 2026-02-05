@@ -38,7 +38,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || undefined
     const projectId = searchParams.get('project_id') || undefined
     const contactId = searchParams.get('contact_id') || undefined
-    const sortBy = searchParams.get('sort_by') || 'created_at'
+    const VALID_SORT_FIELDS = ['created_at', 'due_date', 'priority', 'status', 'title'] as const
+    const sortByParam = searchParams.get('sort_by') || 'created_at'
+    const sortBy = VALID_SORT_FIELDS.includes(sortByParam as typeof VALID_SORT_FIELDS[number])
+      ? sortByParam
+      : 'created_at'
     const sortOrder = (searchParams.get('sort_order') || 'desc') as 'asc' | 'desc'
 
     const supabase = await createClient()

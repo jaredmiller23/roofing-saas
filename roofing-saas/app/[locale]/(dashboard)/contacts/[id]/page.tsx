@@ -6,6 +6,7 @@ import { PhotoManager } from '@/components/photos'
 import { ContactSubstatusManager } from '@/components/contacts/ContactSubstatusManager'
 import { ContactActivityTimeline } from '@/components/contacts/ContactActivityTimeline'
 import { CreateProjectDialog } from '@/components/contacts/CreateProjectDialog'
+import { DeleteContactButton } from '@/components/contacts/DeleteContactButton'
 import { Lightbulb, ArrowRight } from 'lucide-react'
 
 /**
@@ -77,7 +78,7 @@ export default async function ContactDetailPage({
             <h1 className="text-3xl font-bold text-foreground">
               {contact.first_name} {contact.last_name}
             </h1>
-            <div className="flex gap-2 mt-2 items-center">
+            <div className="flex gap-2 mt-2 items-center flex-wrap">
               <span className="px-3 py-1 bg-primary/20 text-primary text-sm font-semibold rounded-full capitalize">
                 {contact.type}
               </span>
@@ -89,6 +90,31 @@ export default async function ContactDetailPage({
                 stage={contact.stage ?? 'new'}
                 currentSubstatus={contact.substatus}
               />
+              {contact.lead_score != null && (
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full">
+                  Lead Score: {contact.lead_score}
+                </span>
+              )}
+              {contact.call_consent && (
+                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                  contact.call_consent === 'granted'
+                    ? 'bg-green-500/20 text-green-400'
+                    : contact.call_consent === 'denied'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'bg-muted text-muted-foreground'
+                }`}>
+                  Call Consent: {contact.call_consent}
+                </span>
+              )}
+              {contact.sms_opt_in != null && (
+                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                  contact.sms_opt_in
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-red-500/20 text-red-400'
+                }`}>
+                  SMS: {contact.sms_opt_in ? 'Opted In' : 'Opted Out'}
+                </span>
+              )}
             </div>
           </div>
 
@@ -103,6 +129,7 @@ export default async function ContactDetailPage({
             >
               Edit
             </Link>
+            <DeleteContactButton contactId={contact.id} />
             <Link
               href="/contacts"
               className="px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted/50"
@@ -111,6 +138,20 @@ export default async function ContactDetailPage({
             </Link>
           </div>
         </div>
+
+        {/* Tags */}
+        {contact.tags && contact.tags.length > 0 && (
+          <div className="flex gap-2 flex-wrap mb-6">
+            {contact.tags.map((tag: string) => (
+              <span
+                key={tag}
+                className="px-3 py-1 bg-secondary/20 text-secondary-foreground text-sm rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Workflow Guidance Banner - Shows when no projects exist */}
         {!hasProjects && (
@@ -187,6 +228,14 @@ export default async function ContactDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Notes */}
+        {contact.notes && (
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">Notes</h2>
+            <p className="text-foreground whitespace-pre-wrap">{contact.notes}</p>
+          </div>
+        )}
 
         {/* Address */}
         {(contact.address_street || contact.address_city) && (
