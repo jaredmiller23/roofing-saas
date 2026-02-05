@@ -106,13 +106,16 @@ async function verify(env: Environment) {
       }
     })
 
+    // Warm up serverless functions before login attempt to avoid cold start timeouts
+    await page!.request.get(`${baseUrl}/api/contacts?limit=1`).catch(() => {})
+
     await runCheck('Login with test account', async () => {
       await page!.fill('input[type="email"]', testAccount.email)
       await page!.fill('input[type="password"]', testAccount.password)
       await page!.click('button[type="submit"]')
 
       try {
-        await page!.waitForURL(/\/dashboard|\/en\/dashboard/, { timeout: 15000 })
+        await page!.waitForURL(/\/dashboard|\/en\/dashboard/, { timeout: 30000 })
         return { passed: true, message: 'OK' }
       } catch {
         const url = page!.url()
@@ -123,7 +126,7 @@ async function verify(env: Environment) {
             .catch(() => 'Unknown error')
           return { passed: false, message: `Login failed: ${errorText}` }
         }
-        return { passed: true, message: `Redirected to ${url}` }
+        return { passed: false, message: `Unexpected redirect to ${url}` }
       }
     })
 
