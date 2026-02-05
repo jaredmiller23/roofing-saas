@@ -176,7 +176,7 @@ describe('Signature Queue', () => {
     })
 
     it('should return null when not found', async () => {
-      mockDb.get.mockResolvedValueOnce(null)
+      mockDb.get.mockResolvedValueOnce(undefined)
 
       const submission = await getSignatureSubmission('nonexistent')
 

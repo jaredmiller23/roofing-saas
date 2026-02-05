@@ -44,6 +44,7 @@ export interface QuoteProposal {
   viewed_at?: string
   responded_at?: string
   selected_option_id?: string
+  decline_reason?: string
   valid_until?: string
   created_at: string
   updated_at: string

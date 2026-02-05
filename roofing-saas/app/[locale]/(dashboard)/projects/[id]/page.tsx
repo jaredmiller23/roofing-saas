@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { Link } from '@/lib/i18n/navigation'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, RotateCcw } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, RotateCcw, ExternalLink, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
@@ -86,6 +86,25 @@ interface Activity {
   created_by: string
 }
 
+interface ProposalInfo {
+  id: string
+  proposal_number: string
+  title: string
+  status: string
+  sent_at: string | null
+  viewed_at: string | null
+  responded_at: string | null
+  selected_option_id: string | null
+  decline_reason: string | null
+  created_at: string
+  selected_option: {
+    id: string
+    name: string
+    total_amount: number | null
+    subtotal: number | null
+  } | null
+}
+
 export default function ProjectDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -102,6 +121,8 @@ export default function ProjectDetailPage() {
   const [reactivating, setReactivating] = useState(false)
   const [loadingQuoteOptions, setLoadingQuoteOptions] = useState(false)
   const [showSendEstimate, setShowSendEstimate] = useState(false)
+  const [proposals, setProposals] = useState<ProposalInfo[]>([])
+  const [loadingProposals, setLoadingProposals] = useState(false)
   const [currentUser, setCurrentUser] = useState<{
     id: string
     email?: string
@@ -169,9 +190,9 @@ export default function ProjectDetailPage() {
         }
       }
 
-      // Fetch quote options if this is an estimate/quote project
+      // Fetch quote options and proposals if this is an estimate/quote project
       if (projectObj && isEstimateProject(projectObj)) {
-        await fetchQuoteOptions()
+        await Promise.all([fetchQuoteOptions(), fetchProposals()])
       }
 
       // Fetch jobs for this project
@@ -205,6 +226,18 @@ export default function ProjectDetailPage() {
       console.error('Failed to fetch quote options:', error)
     } finally {
       setLoadingQuoteOptions(false)
+    }
+  }
+
+  async function fetchProposals() {
+    try {
+      setLoadingProposals(true)
+      const data = await apiFetch<{ proposals: ProposalInfo[] }>(`/api/estimates/${projectId}/proposals`)
+      setProposals(data?.proposals || [])
+    } catch (error) {
+      console.error('Failed to fetch proposals:', error)
+    } finally {
+      setLoadingProposals(false)
     }
   }
 
@@ -703,6 +736,15 @@ export default function ProjectDetailPage() {
                 </div>
               </div>
 
+              {/* Proposal Status Cards */}
+              {!loadingProposals && proposals.length > 0 && (
+                <div className="space-y-4">
+                  {proposals.map((proposal) => (
+                    <ProposalStatusCard key={proposal.id} proposal={proposal} />
+                  ))}
+                </div>
+              )}
+
               {loadingQuoteOptions ? (
                 <div className="space-y-4">
                   <CardSkeleton lines={4} />
@@ -969,5 +1011,138 @@ export default function ProjectDetailPage() {
         />
       )}
     </div>
+  )
+}
+
+function ProposalStatusCard({ proposal }: { proposal: ProposalInfo }) {
+  const fmtMoney = (value: number | null | undefined) => {
+    if (value == null) return '—'
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const steps = [
+    { label: 'Created', date: proposal.created_at, active: true, declined: false },
+    { label: 'Sent', date: proposal.sent_at, active: !!proposal.sent_at, declined: false },
+    { label: 'Viewed', date: proposal.viewed_at, active: !!proposal.viewed_at, declined: false },
+    {
+      label: proposal.status === 'rejected' ? 'Declined' : 'Accepted',
+      date: proposal.responded_at,
+      active: ['accepted', 'rejected'].includes(proposal.status),
+      declined: proposal.status === 'rejected',
+    },
+  ]
+
+  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/view/estimate/${proposal.id}`
+
+  return (
+    <Card className={
+      proposal.status === 'accepted' ? 'border-green-500/30 bg-green-500/5' :
+      proposal.status === 'rejected' ? 'border-red-500/30 bg-red-500/5' :
+      ''
+    }>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base">Proposal #{proposal.proposal_number}</CardTitle>
+          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+            proposal.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
+            proposal.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+            proposal.status === 'viewed' ? 'bg-yellow-500/20 text-yellow-400' :
+            proposal.status === 'sent' ? 'bg-blue-500/20 text-blue-400' :
+            'bg-muted text-muted-foreground'
+          }`}>
+            {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Timeline */}
+        <div className="flex items-start gap-1">
+          {steps.map((step, i) => (
+            <div key={step.label} className="flex items-start flex-1">
+              <div className="flex flex-col items-center min-w-0">
+                <div className={`h-3 w-3 rounded-full shrink-0 ${
+                  step.active
+                    ? step.declined
+                      ? 'bg-red-500'
+                      : 'bg-primary'
+                    : 'bg-muted'
+                }`} />
+                <span className="text-[10px] text-muted-foreground mt-1 whitespace-nowrap">
+                  {step.label}
+                </span>
+                {step.date && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(step.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                )}
+              </div>
+              {i < steps.length - 1 && (
+                <div className={`flex-1 h-0.5 mt-1.5 mx-1 ${
+                  steps[i + 1].active ? 'bg-primary' : 'bg-muted'
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Accepted details */}
+        {proposal.status === 'accepted' && proposal.selected_option && (
+          <div className="bg-green-500/10 rounded-lg p-3 flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+            <div className="text-sm">
+              <span className="text-foreground font-medium">
+                Customer accepted: {proposal.selected_option.name}
+              </span>
+              <span className="text-muted-foreground"> — </span>
+              <span className="text-foreground font-medium">
+                {fmtMoney(proposal.selected_option.total_amount ?? proposal.selected_option.subtotal)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Declined details */}
+        {proposal.status === 'rejected' && (
+          <div className="bg-red-500/10 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-sm">
+              <XCircle className="h-5 w-5 text-red-500 shrink-0" />
+              <span className="text-foreground font-medium">Customer declined this proposal</span>
+            </div>
+            {proposal.decline_reason && (
+              <p className="text-sm text-muted-foreground mt-2 ml-7">
+                Reason: &ldquo;{proposal.decline_reason}&rdquo;
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ExternalLink className="h-3 w-3" />
+              View Public Link
+            </Button>
+          </a>
+          {['sent', 'viewed'].includes(proposal.status) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(publicUrl)
+                toast.success('Public link copied to clipboard')
+              }}
+            >
+              Copy Link
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

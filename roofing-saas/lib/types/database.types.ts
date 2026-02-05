@@ -6680,6 +6680,7 @@ export type Database = {
       quote_proposals: {
         Row: {
           created_at: string
+          decline_reason: string | null
           description: string | null
           id: string
           project_id: string
@@ -6696,6 +6697,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          decline_reason?: string | null
           description?: string | null
           id?: string
           project_id: string
@@ -6712,6 +6714,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          decline_reason?: string | null
           description?: string | null
           id?: string
           project_id?: string

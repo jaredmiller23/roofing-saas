@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { FileText, Clock, AlertCircle, Star, Check, ArrowRight } from 'lucide-react'
+import { FileText, Clock, AlertCircle, Star, Check, ArrowRight, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/types/quote-option'
 
 interface LineItem {
@@ -69,6 +70,16 @@ export default function EstimateViewPage() {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary')
 
+  // Acceptance flow state
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false)
+  const [declineReason, setDeclineReason] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [responseStatus, setResponseStatus] = useState<'accepted' | 'declined' | null>(null)
+  const [acceptedOptionName, setAcceptedOptionName] = useState<string | null>(null)
+  const [acceptedOptionAmount, setAcceptedOptionAmount] = useState<number | null>(null)
+
   const fetchEstimate = useCallback(async () => {
     try {
       setLoading(true)
@@ -82,6 +93,23 @@ export default function EstimateViewPage() {
       }
 
       setData(result.data)
+
+      // Set initial state based on existing proposal status
+      const proposal = result.data?.proposal
+      if (proposal?.status === 'accepted') {
+        setResponseStatus('accepted')
+        setSelectedOptionId(proposal.selected_option_id)
+        // Find the accepted option name
+        const acceptedOption = result.data?.options?.find(
+          (o: QuoteOption) => o.id === proposal.selected_option_id
+        )
+        if (acceptedOption) {
+          setAcceptedOptionName(acceptedOption.name)
+          setAcceptedOptionAmount(acceptedOption.total_amount || acceptedOption.subtotal)
+        }
+      } else if (proposal?.status === 'rejected') {
+        setResponseStatus('declined')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load estimate')
     } finally {
@@ -92,6 +120,59 @@ export default function EstimateViewPage() {
   useEffect(() => {
     fetchEstimate()
   }, [fetchEstimate])
+
+  const isActionable = data?.proposal && ['sent', 'viewed'].includes(data.proposal.status) && !responseStatus
+
+  const handleAccept = async () => {
+    if (!selectedOptionId) return
+    setSubmitting(true)
+
+    try {
+      const res = await fetch(`/api/estimates/${proposalId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selected_option_id: selectedOptionId }),
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error?.message || 'Failed to accept estimate')
+      }
+
+      setResponseStatus('accepted')
+      setAcceptedOptionName(result.data?.selected_option?.name || null)
+      setAcceptedOptionAmount(result.data?.selected_option?.amount || null)
+      setShowConfirmation(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to accept estimate')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDecline = async () => {
+    setSubmitting(true)
+
+    try {
+      const res = await fetch(`/api/estimates/${proposalId}/decline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: declineReason || undefined }),
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error?.message || 'Failed to decline estimate')
+      }
+
+      setResponseStatus('declined')
+      setShowDeclineDialog(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to decline estimate')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -141,6 +222,7 @@ export default function EstimateViewPage() {
   const recommendedOption = options.find(opt => opt.is_recommended)
   const lowestTotal = Math.min(...sortedOptions.map(opt => opt.total_amount || opt.subtotal))
   const highestTotal = Math.max(...sortedOptions.map(opt => opt.total_amount || opt.subtotal))
+  const selectedOption = options.find(opt => opt.id === selectedOptionId)
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,6 +262,44 @@ export default function EstimateViewPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-6">
+        {/* Response Status Banner */}
+        {responseStatus === 'accepted' && (
+          <Card className="bg-green-500/10 border-green-500/30">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <CheckCircle2 className="h-10 w-10 text-green-500 shrink-0" />
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Estimate Accepted</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Thank you! You selected <strong className="text-foreground">{acceptedOptionName}</strong>
+                    {acceptedOptionAmount != null && (
+                      <> for <strong className="text-foreground">{formatCurrency(acceptedOptionAmount)}</strong></>
+                    )}.
+                    {company.name} will be in touch to schedule your project.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {responseStatus === 'declined' && (
+          <Card className="bg-muted border-border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <XCircle className="h-10 w-10 text-muted-foreground shrink-0" />
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Estimate Declined</h2>
+                  <p className="text-muted-foreground mt-1">
+                    We understand. If you change your mind or would like to discuss other options,
+                    please contact {company.name}.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Price Range Summary */}
         {options.length > 1 && (
           <Card className="bg-card border-border">
@@ -216,6 +336,13 @@ export default function EstimateViewPage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Selection prompt */}
+        {isActionable && (
+          <p className="text-center text-muted-foreground text-sm">
+            Select an option below, then accept or decline this estimate.
+          </p>
         )}
 
         {/* View Toggle */}
@@ -256,10 +383,153 @@ export default function EstimateViewPage() {
               option={option}
               rank={index + 1}
               viewMode={viewMode}
-              isSelected={proposal.selected_option_id === option.id}
+              isSelected={selectedOptionId === option.id || (responseStatus === 'accepted' && proposal.selected_option_id === option.id)}
+              isActionable={!!isActionable}
+              onSelect={() => {
+                if (isActionable) {
+                  setSelectedOptionId(option.id)
+                }
+              }}
             />
           ))}
         </div>
+
+        {/* Accept / Decline Actions */}
+        {isActionable && (
+          <Card className="bg-card border-border no-print">
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button
+                  size="lg"
+                  disabled={!selectedOptionId}
+                  onClick={() => setShowConfirmation(true)}
+                  className="w-full sm:w-auto"
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  Accept Estimate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShowDeclineDialog(true)}
+                  className="w-full sm:w-auto"
+                >
+                  Decline
+                </Button>
+              </div>
+              {!selectedOptionId && (
+                <p className="text-center text-sm text-muted-foreground mt-3">
+                  Please select an option above to accept
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Confirmation Dialog */}
+        {showConfirmation && selectedOption && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <Card className="bg-card max-w-md w-full shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-foreground">Confirm Acceptance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-muted rounded-lg p-4 text-center">
+                  <p className="text-sm text-muted-foreground">Selected option</p>
+                  <p className="text-lg font-bold text-foreground">{selectedOption.name}</p>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {formatCurrency(selectedOption.total_amount || selectedOption.subtotal)}
+                  </p>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  By accepting, you agree to the terms and conditions outlined in this estimate.
+                  {company.name} will contact you to schedule the work.
+                </p>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowConfirmation(false)}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleAccept}
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Accepting...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Confirm
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Decline Dialog */}
+        {showDeclineDialog && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <Card className="bg-card max-w-md w-full shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-foreground">Decline Estimate</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  We&apos;d appreciate knowing why so we can better serve you in the future. This is completely optional.
+                </p>
+
+                <textarea
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                  placeholder="e.g., Price too high, going with another contractor, project postponed..."
+                  className="w-full h-24 px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowDeclineDialog(false)
+                      setDeclineReason('')
+                    }}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex-1"
+                    onClick={handleDecline}
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Declining...
+                      </>
+                    ) : (
+                      'Confirm Decline'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Terms & Conditions */}
         {data.terms && (
@@ -292,24 +562,45 @@ interface OptionCardProps {
   rank: number
   viewMode: 'summary' | 'detailed'
   isSelected: boolean
+  isActionable: boolean
+  onSelect: () => void
 }
 
-function OptionCard({ option, rank, viewMode, isSelected }: OptionCardProps) {
+function OptionCard({ option, rank, viewMode, isSelected, isActionable, onSelect }: OptionCardProps) {
   const isRecommended = option.is_recommended
   const totalAmount = option.total_amount || option.subtotal
 
   const getCardBorder = () => {
+    if (isSelected) return 'border-primary ring-2 ring-primary/30'
     if (isRecommended) return 'border-yellow-400 ring-2 ring-yellow-200'
     if (rank === 1) return 'border-green-400'
     return 'border-border'
   }
 
   return (
-    <Card className={`bg-card relative transition-all duration-200 hover:shadow-lg ${getCardBorder()}`}>
+    <Card
+      className={`bg-card relative transition-all duration-200 ${getCardBorder()} ${
+        isActionable ? 'cursor-pointer hover:shadow-lg' : 'hover:shadow-lg'
+      }`}
+      onClick={onSelect}
+    >
+      {/* Selection indicator */}
+      {isActionable && (
+        <div className="absolute top-4 right-4">
+          <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+            isSelected
+              ? 'border-primary bg-primary'
+              : 'border-muted-foreground'
+          }`}>
+            {isSelected && <Check className="h-4 w-4 text-white" />}
+          </div>
+        </div>
+      )}
+
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
+          <div className={isActionable ? 'pr-8' : ''}>
+            <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-xl text-foreground">{option.name}</CardTitle>
               {isRecommended && (
                 <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">
@@ -322,7 +613,7 @@ function OptionCard({ option, rank, viewMode, isSelected }: OptionCardProps) {
                   Most Economical
                 </Badge>
               )}
-              {isSelected && (
+              {isSelected && !isActionable && (
                 <Badge className="bg-primary/10 text-primary border-primary">
                   <Check className="h-3 w-3 mr-1" />
                   Selected
