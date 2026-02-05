@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useUIMode } from '@/hooks/useUIMode'
 import { RefreshCw, ChevronDown } from 'lucide-react'
+import { SetupChecklist } from '@/components/onboarding/SetupChecklist'
 
 // Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
@@ -106,6 +107,16 @@ interface ConsolidatedDashboardData {
     weekly_points: number
     monthly_points: number
   }
+  todaysJobs?: Array<{
+    id: string
+    projectId: string
+    projectName: string
+    address: string
+    city?: string
+    scheduledTime: string
+    status: 'scheduled' | 'in_progress' | 'completed'
+    contactPhone?: string
+  }>
   meta: {
     latencyMs: number
     tier: string
@@ -217,8 +228,8 @@ export default function DashboardPage() {
           <WeatherWidget />
 
           {/* Priority: What to do now */}
-          {/* TODO: Integrate todaysJobs from API when available */}
           <TodaysWork
+            jobs={data?.todaysJobs}
             isLoading={isLoading}
           />
 
@@ -264,6 +275,9 @@ export default function DashboardPage() {
   return (
     <div className="px-4 sm:px-6 py-4 pt-16 lg:px-8 lg:py-8 lg:pt-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Setup checklist for new tenants */}
+        <SetupChecklist />
+
         {/* Header with Scope Filter */}
         <div className="flex items-center justify-between">
           <div>

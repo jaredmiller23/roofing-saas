@@ -13,7 +13,6 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
 
   // Extract locale from the URL path (e.g., '/en/auth/callback' -> 'en')
   const pathParts = requestUrl.pathname.split('/')
@@ -48,10 +47,9 @@ export async function GET(request: Request) {
         console.error('Trial setup error:', setupError);
       }
 
-      // Successful verification - redirect to dashboard or specified page
-      // Ensure next path has locale prefix to prevent redirect loops
-      const nextPath = next.startsWith('/') ? next : `/${next}`
-      return NextResponse.redirect(new URL(`/${locale}${nextPath}`, requestUrl.origin))
+      // Successful verification - redirect to onboarding for new users
+      // The onboarding layout will redirect to dashboard if already completed
+      return NextResponse.redirect(new URL(`/${locale}/onboarding`, requestUrl.origin))
     }
   }
 

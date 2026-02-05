@@ -246,7 +246,7 @@ export function formatPrice(cents: number, interval?: 'month' | 'year'): string 
 
 export const TRIAL_CONFIG = {
   /** Duration of free trial in days */
-  durationDays: 30,
+  durationDays: 14,
 
   /** Plan tier available during trial */
   trialPlanTier: 'professional' as PlanTier,

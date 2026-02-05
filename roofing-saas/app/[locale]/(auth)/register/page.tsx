@@ -12,8 +12,9 @@ export default function RegisterPage() {
   const locale = params.locale as string || 'en'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [fullName, setFullName] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [phone, setPhone] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -23,13 +24,6 @@ export default function RegisterPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
-    // Validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      setLoading(false)
-      return
-    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters')
@@ -44,6 +38,8 @@ export default function RegisterPage() {
         options: {
           data: {
             full_name: fullName,
+            company_name: companyName,
+            phone: phone || undefined,
           },
           emailRedirectTo: `${getAppBaseUrl()}/${locale}/auth/callback`,
         },
@@ -57,7 +53,6 @@ export default function RegisterPage() {
 
       if (data.user) {
         setSuccess(true)
-        // Note: User needs to verify email before they can login
       }
     } catch {
       setError('An unexpected error occurred')
@@ -97,12 +92,12 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-foreground">
-            Create your account
+            Start your free trial
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
+            14 days free, no credit card required.{' '}
             <Link href={`/${locale}/login`} className="font-medium text-primary hover:text-primary/80">
-              Sign in
+              Already have an account?
             </Link>
           </p>
         </div>
@@ -132,6 +127,22 @@ export default function RegisterPage() {
             </div>
 
             <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-muted-foreground">
+                Company Name
+              </label>
+              <input
+                id="companyName"
+                name="companyName"
+                type="text"
+                required
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-card"
+                placeholder="Acme Roofing"
+              />
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-muted-foreground">
                 Email address
               </label>
@@ -145,6 +156,21 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-card"
                 placeholder="you@example.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground">
+                Phone <span className="text-muted-foreground/60">(optional)</span>
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-card"
+                placeholder="(555) 123-4567"
               />
             </div>
 
@@ -164,23 +190,6 @@ export default function RegisterPage() {
                 placeholder="Minimum 8 characters"
               />
             </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-muted-foreground">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-card"
-                placeholder="Re-enter password"
-              />
-            </div>
           </div>
 
           <div>
@@ -189,9 +198,16 @@ export default function RegisterPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating account...' : 'Start Free Trial'}
             </button>
           </div>
+
+          <p className="text-xs text-center text-muted-foreground">
+            By signing up, you agree to our{' '}
+            <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+          </p>
         </form>
       </div>
     </div>

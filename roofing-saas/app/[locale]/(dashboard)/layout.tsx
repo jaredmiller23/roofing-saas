@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, getUserContext } from '@/lib/auth/session'
 import { getMFARedirectPath } from '@/lib/auth/mfa-enforcement'
+import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient'
 import { CommandPaletteProvider } from '@/components/command-palette/CommandPaletteProvider'
@@ -36,6 +37,20 @@ export default async function DashboardLayout({
     getUserContext(user.id),
     getMFARedirectPath().catch(() => null) // MFA check failure should not block
   ])
+
+  // Redirect owners who haven't completed onboarding
+  if (ctx?.tenantId && ctx.role === 'owner') {
+    const supabase = await createClient()
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('onboarding_completed')
+      .eq('id', ctx.tenantId)
+      .single()
+
+    if (tenant && !tenant.onboarding_completed) {
+      redirect(`/${locale}/onboarding`)
+    }
+  }
 
   const userRole = ctx?.role || 'user'
   const userEmail = user.email || ''
