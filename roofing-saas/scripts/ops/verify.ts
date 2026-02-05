@@ -132,6 +132,10 @@ async function verify(env: Environment) {
     // ==========================================================================
     console.log('\n3. Critical Pages')
 
+    // Warm-up: ping an API endpoint to wake Vercel serverless functions
+    // This prevents the first page check from absorbing cold start latency
+    await page!.request.get(`${baseUrl}/api/contacts?limit=1`).catch(() => {})
+
     const criticalPages = [
       { path: '/dashboard', name: 'Dashboard' },
       { path: '/contacts', name: 'Contacts' },
@@ -141,8 +145,17 @@ async function verify(env: Environment) {
 
     for (const { path, name } of criticalPages) {
       await runCheck(`${name} page loads`, async () => {
-        await page!.goto(`${baseUrl}${path}`, { timeout: 30000 })
-        await page!.waitForLoadState('networkidle', { timeout: 30000 })
+        // Use domcontentloaded instead of networkidle — SPA pages have
+        // continuous background requests (weather, data refresh) that
+        // prevent networkidle from ever settling
+        await page!.goto(`${baseUrl}${path}`, {
+          timeout: 45000,
+          waitUntil: 'domcontentloaded',
+        })
+
+        // Wait for meaningful content to appear (not just blank page)
+        // Give the page time to hydrate and render initial content
+        await page!.waitForLoadState('load', { timeout: 30000 })
 
         // Check for error indicators
         const pageText = await page!.textContent('body')

@@ -8308,6 +8308,8 @@ export type Database = {
           is_active: boolean | null
           logo_url: string | null
           name: string
+          onboarding_completed: boolean | null
+          phone: string | null
           primary_color: string | null
           secondary_color: string | null
           settings: Json | null
@@ -8328,6 +8330,8 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name: string
+          onboarding_completed?: boolean | null
+          phone?: string | null
           primary_color?: string | null
           secondary_color?: string | null
           settings?: Json | null
@@ -8348,6 +8352,8 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
+          onboarding_completed?: boolean | null
+          phone?: string | null
           primary_color?: string | null
           secondary_color?: string | null
           settings?: Json | null
@@ -9452,6 +9458,10 @@ export type Database = {
         Returns: unknown
       }
       get_crew_member_jobs: {
+        Args: Record<string, unknown>
+        Returns: unknown
+      }
+      get_dashboard_all: {
         Args: Record<string, unknown>
         Returns: unknown
       }
