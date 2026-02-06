@@ -47,8 +47,9 @@ export async function GET(request: NextRequest) {
     const tags = tagsParam ? tagsParam.split(',').map(t => t.trim()) : null
 
     // Build query with left join to tasks for related task title
+    // Note: Cast to any until types are regenerated after migration runs
     let query = supabase
-      .from('decisions')
+      .from('decisions' as any)
       .select(`
         id,
         tenant_id,
@@ -173,8 +174,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // Note: Cast to any until types are regenerated after migration runs
     const { data: decision, error: insertError } = await supabase
-      .from('decisions')
+      .from('decisions' as any)
       .insert({
         tenant_id: tenantId,
         meeting_date,
