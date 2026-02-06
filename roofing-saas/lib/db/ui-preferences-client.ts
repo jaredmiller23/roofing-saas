@@ -18,9 +18,9 @@ export async function getUserUIPreferences(userId: string, tenantId: string): Pr
     .select('*')
     .eq('user_id', userId)
     .eq('tenant_id', tenantId)
-    .single()
+    .maybeSingle()
 
-  if (error && error.code !== 'PGRST116') {
+  if (error) {
     throw new Error(`Failed to fetch UI preferences: ${error.message}`)
   }
 
