@@ -10,6 +10,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { SupportedLanguage } from './types'
 import { locales } from '@/lib/i18n/config'
 import { getOpenAIClient } from '@/lib/ai/openai-client'
+import { getAnthropicClient } from '@/lib/ai/anthropic-client'
+import { getProviderForTask } from '@/lib/ai/provider'
 import { logger } from '@/lib/logger'
 
 // =============================================================================
@@ -21,23 +23,7 @@ export interface LanguageDetectionResult {
   confidence: number
 }
 
-/**
- * Detect the language of inbound text using gpt-4o-mini.
- * Returns detected language and confidence score.
- */
-export async function detectLanguage(text: string): Promise<LanguageDetectionResult> {
-  // Short-circuit: if text is very short or obviously English, skip API call
-  if (text.length < 3) {
-    return { language: 'en', confidence: 0.5 }
-  }
-
-  try {
-    const response = await getOpenAIClient().chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a language detector. Identify the language of the user's text.
+const LANG_DETECT_PROMPT = `You are a language detector. Identify the language of the user's text.
 Only return one of these supported languages: en (English), es (Spanish), fr (French).
 If the language is not one of these three, return "en" as default.
 
@@ -45,28 +31,59 @@ Respond in JSON format:
 {
   "language": "en" | "es" | "fr",
   "confidence": number (0-1)
-}`,
-        },
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
-      temperature: 0,
-      max_tokens: 50,
-      response_format: { type: 'json_object' },
-    })
+}`
 
-    const content = response.choices[0]?.message?.content
+/**
+ * Detect the language of inbound text.
+ * Uses Claude Haiku 4.5 (default) or OpenAI gpt-4o-mini (fallback).
+ */
+export async function detectLanguage(text: string): Promise<LanguageDetectionResult> {
+  if (text.length < 3) {
+    return { language: 'en', confidence: 0.5 }
+  }
+
+  const providerConfig = getProviderForTask('language_detection')
+
+  try {
+    let content: string | null = null
+
+    if (providerConfig.provider === 'anthropic') {
+      const client = getAnthropicClient()
+      const response = await client.messages.create({
+        model: providerConfig.model,
+        max_tokens: 100,
+        system: LANG_DETECT_PROMPT,
+        messages: [{ role: 'user', content: text }],
+      })
+
+      const textBlock = response.content.find(b => b.type === 'text')
+      content = textBlock && 'text' in textBlock ? textBlock.text : null
+    } else {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: providerConfig.model,
+        messages: [
+          { role: 'system', content: LANG_DETECT_PROMPT },
+          { role: 'user', content: text },
+        ],
+        temperature: 0,
+        max_tokens: 50,
+        response_format: { type: 'json_object' },
+      })
+
+      content = response.choices[0]?.message?.content ?? null
+    }
+
     if (content) {
-      const result = JSON.parse(content) as { language: string; confidence: number }
-      const lang = result.language as SupportedLanguage
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const result = JSON.parse(jsonMatch[0]) as { language: string; confidence: number }
+        const lang = result.language as SupportedLanguage
 
-      // Validate the language is one we support
-      if (locales.includes(lang)) {
-        return {
-          language: lang,
-          confidence: typeof result.confidence === 'number' ? result.confidence : 0.8,
+        if (locales.includes(lang)) {
+          return {
+            language: lang,
+            confidence: typeof result.confidence === 'number' ? result.confidence : 0.8,
+          }
         }
       }
     }
@@ -82,7 +99,8 @@ Respond in JSON format:
 // =============================================================================
 
 /**
- * Translate ARIA's response to the target language using gpt-4o-mini.
+ * Translate ARIA's response to the target language.
+ * Uses Claude Haiku 4.5 (default) or OpenAI gpt-4o-mini.
  * No-op for English — returns input unchanged.
  */
 export async function translateResponse(
@@ -90,15 +108,8 @@ export async function translateResponse(
   targetLanguage: SupportedLanguage,
   context?: string
 ): Promise<string> {
-  // No translation needed for English
-  if (targetLanguage === 'en') {
-    return text
-  }
-
-  // Don't translate empty strings
-  if (!text.trim()) {
-    return text
-  }
+  if (targetLanguage === 'en') return text
+  if (!text.trim()) return text
 
   const languageNames: Record<SupportedLanguage, string> = {
     en: 'English',
@@ -106,13 +117,7 @@ export async function translateResponse(
     fr: 'French',
   }
 
-  try {
-    const response = await getOpenAIClient().chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a professional translator for a roofing business. Translate the following text from English to ${languageNames[targetLanguage]}.
+  const systemPrompt = `You are a professional translator for a roofing business. Translate the following text from English to ${languageNames[targetLanguage]}.
 
 Rules:
 - Maintain the same tone (warm, professional, helpful)
@@ -122,29 +127,43 @@ Rules:
 - If the text contains technical roofing terms, use the appropriate ${languageNames[targetLanguage]} equivalent
 ${context ? `\nContext: ${context}` : ''}
 
-Return ONLY the translated text, nothing else.`,
-        },
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 500,
-    })
+Return ONLY the translated text, nothing else.`
 
-    const translated = response.choices[0]?.message?.content?.trim()
-    if (translated) {
-      return translated
+  const providerConfig = getProviderForTask('language_detection')
+
+  try {
+    let translated: string | null = null
+
+    if (providerConfig.provider === 'anthropic') {
+      const client = getAnthropicClient()
+      const response = await client.messages.create({
+        model: providerConfig.model,
+        max_tokens: 500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }],
+      })
+
+      const textBlock = response.content.find(b => b.type === 'text')
+      translated = textBlock && 'text' in textBlock ? textBlock.text.trim() : null
+    } else {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: providerConfig.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text },
+        ],
+        temperature: 0.3,
+        max_tokens: 500,
+      })
+
+      translated = response.choices[0]?.message?.content?.trim() ?? null
     }
+
+    if (translated) return translated
   } catch (error) {
-    logger.error('Translation failed, returning original text', {
-      error,
-      targetLanguage,
-    })
+    logger.error('Translation failed, returning original text', { error, targetLanguage })
   }
 
-  // Fallback: return original text if translation fails
   return text
 }
 

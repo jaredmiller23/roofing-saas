@@ -4,11 +4,13 @@
  */
 
 import type { VoiceFunction } from '@/lib/voice/providers/types'
+import type Anthropic from '@anthropic-ai/sdk'
 import type {
   ARIAFunction,
   ARIAFunctionCategory,
   ARIAFunctionRegistry,
 } from './types'
+import { toAnthropicTools, withCaching } from '@/lib/ai/provider'
 import { sendEmail } from '@/lib/resend/email'
 import { notifyTeamMember } from './notify'
 import { logger } from '@/lib/logger'
@@ -71,6 +73,15 @@ class FunctionRegistry implements ARIAFunctionRegistry {
         parameters: fn.voiceDefinition.parameters,
       },
     }))
+  }
+
+  /**
+   * Get Anthropic (Claude) tool format with prompt caching.
+   * Tool definitions are static across requests, so caching saves ~90% on input tokens.
+   */
+  getAnthropicTools(): Anthropic.Tool[] {
+    const voiceFunctions = this.getVoiceFunctions()
+    return withCaching(toAnthropicTools(voiceFunctions))
   }
 }
 

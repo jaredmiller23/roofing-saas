@@ -10,6 +10,8 @@ import { getARIASystemPrompt } from './orchestrator'
 import { ariaFunctionRegistry } from './function-registry'
 import type { ARIAContext } from './types'
 import { getOpenAIClient, getOpenAIModel } from '@/lib/ai/openai-client'
+import { getAnthropicClient } from '@/lib/ai/anthropic-client'
+import { getProviderForTask } from '@/lib/ai/provider'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import type { FunctionCallParameters } from '@/lib/voice/providers/types'
 import { detectLanguage, resolveLanguage, translateResponse, updateContactLanguage } from './language'
@@ -66,18 +68,7 @@ interface IntentClassification {
   reasoning?: string
 }
 
-/**
- * ML-based intent classification using OpenAI
- * Falls back to regex if ML fails
- */
-async function classifyMessageIntentML(message: string): Promise<IntentClassification> {
-  try {
-    const response = await getOpenAIClient().chat.completions.create({
-      model: 'gpt-4o-mini', // Fast and cheap for classification
-      messages: [
-        {
-          role: 'system',
-          content: `You are an intent classifier for a roofing business SMS system.
+const CLASSIFICATION_PROMPT = `You are an intent classifier for a roofing business SMS system.
 Classify the customer message into one of these categories:
 - greeting: Simple hello/hi messages
 - confirmation: Yes/OK/sounds good responses
@@ -101,30 +92,69 @@ Respond in JSON format:
   "confidence": number (0-1),
   "reasoning": "brief explanation"
 }`
-        },
-        {
-          role: 'user',
-          content: `Classify: "${message}"`
-        }
-      ],
-      temperature: 0.1,
-      max_tokens: 150,
-      response_format: { type: 'json_object' }
-    })
 
-    const content = response.choices[0]?.message?.content
+/**
+ * ML-based intent classification
+ * Uses Claude Haiku 4.5 (default) or OpenAI gpt-4o-mini (fallback)
+ * Falls back to regex if ML fails
+ */
+async function classifyMessageIntentML(message: string): Promise<IntentClassification> {
+  const providerConfig = getProviderForTask('sms_classification')
+
+  try {
+    let content: string | null = null
+
+    if (providerConfig.provider === 'anthropic') {
+      const client = getAnthropicClient()
+      const response = await client.messages.create({
+        model: providerConfig.model,
+        max_tokens: 200,
+        system: CLASSIFICATION_PROMPT,
+        messages: [
+          { role: 'user', content: `Classify: "${message}"` },
+        ],
+      })
+
+      const textBlock = response.content.find(b => b.type === 'text')
+      content = textBlock && 'text' in textBlock ? textBlock.text : null
+    } else {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: providerConfig.model,
+        messages: [
+          { role: 'system', content: CLASSIFICATION_PROMPT },
+          { role: 'user', content: `Classify: "${message}"` },
+        ],
+        temperature: 0.1,
+        max_tokens: 150,
+        response_format: { type: 'json_object' },
+      })
+
+      content = response.choices[0]?.message?.content ?? null
+    }
+
     if (content) {
-      const result = JSON.parse(content) as IntentClassification
-      logger.debug('ML intent classification result', { message: message.slice(0, 50), result })
-      return {
-        category: result.category || 'conversation',
-        shouldAutoSend: result.shouldAutoSend !== false,
-        confidence: typeof result.confidence === 'number' ? result.confidence : 0.8,
-        reasoning: result.reasoning,
+      // Extract JSON from response (Claude may wrap in markdown code blocks)
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const result = JSON.parse(jsonMatch[0]) as IntentClassification
+        logger.debug('ML intent classification result', {
+          message: message.slice(0, 50),
+          result,
+          provider: providerConfig.provider,
+        })
+        return {
+          category: result.category || 'conversation',
+          shouldAutoSend: result.shouldAutoSend !== false,
+          confidence: typeof result.confidence === 'number' ? result.confidence : 0.8,
+          reasoning: result.reasoning,
+        }
       }
     }
   } catch (error) {
-    logger.warn('ML intent classification failed, using regex fallback', { error })
+    logger.warn('ML intent classification failed, using regex fallback', {
+      error,
+      provider: providerConfig.provider,
+    })
   }
 
   // Fallback to regex-based classification
@@ -343,93 +373,155 @@ Message category: ${category} (confidence: ${(confidence * 100).toFixed(0)}%)
 ${shouldAutoSend ? 'This is a simple message - response can be sent automatically.' : 'This message requires human review before sending.'}
 `
 
-    // Build messages for OpenAI
-    const messages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
-      {
-        role: 'user',
-        content: `Customer SMS from ${contact?.first_name || 'unknown contact'}: "${body}"`
-      },
-    ]
+    const userMessage = `Customer SMS from ${contact?.first_name || 'unknown contact'}: "${body}"`
+    const chatProvider = getProviderForTask('aria_chat')
 
-    // Get ARIA tools
-    const tools = ariaFunctionRegistry.getChatCompletionTools() as ChatCompletionTool[]
+    let responseContent = ''
 
-    // Generate response with OpenAI
-    const completion = await getOpenAIClient().chat.completions.create({
-      model: getOpenAIModel(),
-      messages,
-      tools: tools.length > 0 ? tools : undefined,
-      tool_choice: tools.length > 0 ? 'auto' : undefined,
-      temperature: 0.7,
-      max_tokens: 300,
-    })
+    if (chatProvider.provider === 'anthropic') {
+      // Generate response with Claude
+      const client = getAnthropicClient()
+      const tools = ariaFunctionRegistry.getAnthropicTools()
 
-    let responseContent = completion.choices[0]?.message?.content || ''
-    const toolCalls = completion.choices[0]?.message?.tool_calls
+      const anthropicMessages: Array<{ role: 'user' | 'assistant'; content: string | Array<Record<string, unknown>> }> = [
+        { role: 'user', content: userMessage },
+      ]
 
-    // Handle tool calls if any
-    if (toolCalls && toolCalls.length > 0) {
-      const currentMessages = [...messages]
+      // Multi-turn tool execution loop
+      let continueLoop = true
+      while (continueLoop) {
+        continueLoop = false
 
-      // Add assistant message with tool calls
-      currentMessages.push({
-        role: 'assistant',
-        content: responseContent || null,
-        tool_calls: toolCalls,
-      })
-
-      // Execute each tool
-      for (const toolCall of toolCalls) {
-        // Skip non-function tool calls
-        if (toolCall.type !== 'function') {
-          continue
-        }
-
-        let args: FunctionCallParameters = {}
-        try {
-          args = JSON.parse(toolCall.function.arguments || '{}')
-        } catch {
-          args = {}
-        }
-
-        logger.info('ARIA SMS executing tool', {
-          tool: toolCall.function.name,
-          args
+        const response = await client.messages.create({
+          model: chatProvider.model,
+          max_tokens: 300,
+          system: systemPrompt,
+          tools,
+          messages: anthropicMessages as Parameters<typeof client.messages.create>[0]['messages'],
         })
 
-        const ariaFunction = ariaFunctionRegistry.get(toolCall.function.name)
-        let toolResult: { success: boolean; data?: unknown; error?: string }
+        // Extract text and tool_use blocks
+        let text = ''
+        const toolUseBlocks: Array<{ id: string; name: string; input: Record<string, unknown> }> = []
 
-        if (ariaFunction) {
-          try {
-            toolResult = await ariaFunction.execute(args, ariaContext)
-          } catch (error) {
-            toolResult = {
-              success: false,
-              error: error instanceof Error ? error.message : 'Tool failed',
-            }
+        for (const block of response.content) {
+          if (block.type === 'text') {
+            text += block.text
+          } else if (block.type === 'tool_use') {
+            toolUseBlocks.push({
+              id: block.id,
+              name: block.name,
+              input: block.input as Record<string, unknown>,
+            })
           }
-        } else {
-          toolResult = { success: false, error: 'Unknown function' }
         }
 
-        currentMessages.push({
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: JSON.stringify(toolResult),
-        })
-      }
+        if (toolUseBlocks.length > 0) {
+          // Add assistant response to messages
+          const assistantContent: Array<Record<string, unknown>> = []
+          if (text) assistantContent.push({ type: 'text', text })
+          for (const tu of toolUseBlocks) {
+            assistantContent.push({ type: 'tool_use', id: tu.id, name: tu.name, input: tu.input })
+          }
+          anthropicMessages.push({ role: 'assistant', content: assistantContent })
 
-      // Get final response after tool execution
-      const finalCompletion = await getOpenAIClient().chat.completions.create({
+          // Execute tools and add results
+          const toolResults: Array<Record<string, unknown>> = []
+          for (const tu of toolUseBlocks) {
+            const args = tu.input as FunctionCallParameters
+            logger.info('ARIA SMS executing tool', { tool: tu.name, args })
+
+            const ariaFunction = ariaFunctionRegistry.get(tu.name)
+            let toolResult: { success: boolean; data?: unknown; error?: string }
+
+            if (ariaFunction) {
+              try {
+                toolResult = await ariaFunction.execute(args, ariaContext)
+              } catch (error) {
+                toolResult = { success: false, error: error instanceof Error ? error.message : 'Tool failed' }
+              }
+            } else {
+              toolResult = { success: false, error: 'Unknown function' }
+            }
+
+            toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(toolResult) })
+          }
+
+          anthropicMessages.push({ role: 'user', content: toolResults })
+          continueLoop = true
+        } else {
+          responseContent = text
+        }
+      }
+    } else {
+      // Generate response with OpenAI (original implementation)
+      const messages: ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ]
+      const tools = ariaFunctionRegistry.getChatCompletionTools() as ChatCompletionTool[]
+
+      const completion = await getOpenAIClient().chat.completions.create({
         model: getOpenAIModel(),
-        messages: currentMessages,
+        messages,
+        tools: tools.length > 0 ? tools : undefined,
+        tool_choice: tools.length > 0 ? 'auto' : undefined,
         temperature: 0.7,
         max_tokens: 300,
       })
 
-      responseContent = finalCompletion.choices[0]?.message?.content || responseContent
+      responseContent = completion.choices[0]?.message?.content || ''
+      const toolCalls = completion.choices[0]?.message?.tool_calls
+
+      if (toolCalls && toolCalls.length > 0) {
+        const currentMessages = [...messages]
+        currentMessages.push({
+          role: 'assistant',
+          content: responseContent || null,
+          tool_calls: toolCalls,
+        })
+
+        for (const toolCall of toolCalls) {
+          if (toolCall.type !== 'function') continue
+
+          let args: FunctionCallParameters = {}
+          try {
+            args = JSON.parse(toolCall.function.arguments || '{}')
+          } catch {
+            args = {}
+          }
+
+          logger.info('ARIA SMS executing tool', { tool: toolCall.function.name, args })
+
+          const ariaFunction = ariaFunctionRegistry.get(toolCall.function.name)
+          let toolResult: { success: boolean; data?: unknown; error?: string }
+
+          if (ariaFunction) {
+            try {
+              toolResult = await ariaFunction.execute(args, ariaContext)
+            } catch (error) {
+              toolResult = { success: false, error: error instanceof Error ? error.message : 'Tool failed' }
+            }
+          } else {
+            toolResult = { success: false, error: 'Unknown function' }
+          }
+
+          currentMessages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(toolResult),
+          })
+        }
+
+        const finalCompletion = await getOpenAIClient().chat.completions.create({
+          model: getOpenAIModel(),
+          messages: currentMessages,
+          temperature: 0.7,
+          max_tokens: 300,
+        })
+
+        responseContent = finalCompletion.choices[0]?.message?.content || responseContent
+      }
     }
 
     // Clean up response for SMS
