@@ -46,17 +46,18 @@ export async function GET() {
       })
     }
 
-    // Check if token is still valid (not expired)
+    // A token record exists — user is connected even if the access token is expired,
+    // because getGoogleCalendarClient() transparently refreshes using the refresh token.
+    // Only report disconnected when no token record exists at all.
     const expiresAt = new Date(token.expires_at)
     const isExpired = expiresAt <= new Date()
 
     return successResponse({
-      connected: !isExpired,
+      connected: true,
       googleEmail: token.google_email,
       googleName: token.google_name,
       expiresAt: token.expires_at,
       connectedAt: token.created_at,
-      // If expired, the client should attempt to use the API which will refresh
       needsRefresh: isExpired,
     })
   } catch (error) {

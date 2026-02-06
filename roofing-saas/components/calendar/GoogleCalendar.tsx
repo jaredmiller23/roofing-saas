@@ -69,6 +69,7 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
   const [newDescription, setNewDescription] = useState('')
   const [newLocation, setNewLocation] = useState('')
   const [newAllDay, setNewAllDay] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   // Helper: convert Date to datetime-local format (YYYY-MM-DDTHH:mm)
   const toDateTimeLocal = (d: Date): string => {
@@ -97,6 +98,7 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     setNewDescription('')
     setNewLocation('')
     setNewAllDay(false)
+    setCreateError(null)
     setShowCreateDialog(true)
   }
 
@@ -104,25 +106,38 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
     if (!newTitle.trim() || !newStart || !newEnd) return
 
     setIsCreating(true)
+    setCreateError(null)
     try {
-      const startISO = new Date(newStart).toISOString()
-      const endISO = new Date(newEnd).toISOString()
+      // For all-day events, send raw YYYY-MM-DD dates (not UTC-converted ISO strings)
+      // This prevents timezone offset causing wrong-day bugs in non-US timezones
+      const body: Record<string, unknown> = {
+        summary: newTitle.trim(),
+        allDay: newAllDay,
+        description: newDescription.trim() || undefined,
+        location: newLocation.trim() || undefined,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }
+
+      if (newAllDay) {
+        // Send raw date strings for all-day events
+        body.start = newStart.split('T')[0]
+        body.end = newEnd.split('T')[0]
+      } else {
+        // For timed events, send UTC ISO strings (Z suffix makes timezone unambiguous)
+        body.start = new Date(newStart).toISOString()
+        body.end = new Date(newEnd).toISOString()
+      }
+
       await apiFetch('/api/calendar/google/events', {
         method: 'POST',
-        body: {
-          summary: newTitle.trim(),
-          start: startISO,
-          end: endISO,
-          allDay: newAllDay,
-          description: newDescription.trim() || undefined,
-          location: newLocation.trim() || undefined,
-        },
+        body,
       })
       setShowCreateDialog(false)
+      setCreateError(null)
       await fetchEvents()
     } catch (err) {
       console.error('Error creating Google Calendar event:', err)
-      setError('Failed to create event. Please try again.')
+      setCreateError('Failed to create event. Please try again.')
     } finally {
       setIsCreating(false)
     }
@@ -164,12 +179,21 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
 
       const calendarEvents: CalendarEvent[] = data.events.map((event) => {
         const isAllDay = !event.start.dateTime
-        const startDate = event.start.dateTime
-          ? new Date(event.start.dateTime)
-          : new Date(event.start.date + 'T00:00:00')
-        const endDate = event.end.dateTime
-          ? new Date(event.end.dateTime)
-          : new Date(event.end.date + 'T23:59:59')
+        let startDate: Date
+        let endDate: Date
+
+        if (isAllDay) {
+          // Google all-day events use EXCLUSIVE end dates:
+          // An event on Feb 6 has end.date = '2026-02-07'
+          // Subtract 1 day from end to get the inclusive last day for display
+          startDate = new Date(event.start.date + 'T00:00:00')
+          const exclusiveEnd = new Date(event.end.date + 'T00:00:00')
+          exclusiveEnd.setDate(exclusiveEnd.getDate() - 1)
+          endDate = new Date(exclusiveEnd.getFullYear(), exclusiveEnd.getMonth(), exclusiveEnd.getDate(), 23, 59, 59)
+        } else {
+          startDate = new Date(event.start.dateTime!)
+          endDate = new Date(event.end.dateTime!)
+        }
 
         return {
           id: event.id || `google-${Date.now()}-${Math.random()}`,
@@ -448,6 +472,12 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
             <DialogTitle>New Google Calendar Event</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {createError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{createError}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="event-title">Event Title *</Label>
               <Input

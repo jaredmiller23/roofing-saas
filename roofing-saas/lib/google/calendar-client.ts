@@ -501,10 +501,10 @@ export function getAuthorizationUrl(redirectUri: string, state: string): string 
     throw new Error('Google Client ID not configured')
   }
 
+  // 'calendar' scope includes full read/write for events (calendar.events is redundant)
+  // 'tasks' scope removed — Tasks API not currently used in the calendar UI
   const scopes = [
     'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/calendar.events',
-    'https://www.googleapis.com/auth/tasks',
     'https://www.googleapis.com/auth/userinfo.email',
   ]
 

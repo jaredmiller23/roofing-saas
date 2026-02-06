@@ -149,16 +149,35 @@ export async function POST(request: NextRequest) {
 
     // Build the Google Calendar event object
     const isAllDay = body.allDay === true
+    const timeZone = body.timeZone || 'America/New_York'
+
+    let startField: GoogleCalendarEvent['start']
+    let endField: GoogleCalendarEvent['end']
+
+    if (isAllDay) {
+      // All-day events: client sends raw YYYY-MM-DD dates
+      // Google Calendar uses EXCLUSIVE end dates: an event on Feb 6
+      // needs end.date = '2026-02-07' (the day AFTER the last day)
+      const startDate = body.start.split('T')[0]
+      const endDateRaw = body.end.split('T')[0]
+      const endExclusive = new Date(endDateRaw + 'T12:00:00') // noon to avoid DST edge cases
+      endExclusive.setDate(endExclusive.getDate() + 1)
+      const endDate = endExclusive.toISOString().split('T')[0]
+
+      startField = { date: startDate }
+      endField = { date: endDate }
+    } else {
+      // Timed events: client sends UTC ISO strings with Z suffix
+      startField = { dateTime: body.start, timeZone }
+      endField = { dateTime: body.end, timeZone }
+    }
+
     const event: GoogleCalendarEvent = {
       summary: body.summary,
       description: body.description || undefined,
       location: body.location || undefined,
-      start: isAllDay
-        ? { date: body.start.split('T')[0] }
-        : { dateTime: body.start, timeZone: body.timeZone || 'America/New_York' },
-      end: isAllDay
-        ? { date: body.end.split('T')[0] }
-        : { dateTime: body.end, timeZone: body.timeZone || 'America/New_York' },
+      start: startField,
+      end: endField,
     }
 
     // Add attendees if provided

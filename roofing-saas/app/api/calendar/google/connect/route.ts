@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createHmac } from 'crypto'
 import { getAuthorizationUrl } from '@/lib/google/calendar-client'
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
@@ -49,13 +50,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Generate state token for CSRF protection (matches QuickBooks pattern)
-    const state = Buffer.from(JSON.stringify({
+    // Generate HMAC-signed state token for CSRF protection
+    // State data is base64-encoded JSON; HMAC prevents tampering with tenant_id/return_to
+    const statePayload = JSON.stringify({
       tenant_id: tenantId,
       user_id: user.id,
       timestamp: Date.now(),
       return_to: returnTo,
-    })).toString('base64')
+    })
+    const stateData = Buffer.from(statePayload).toString('base64')
+    const hmac = createHmac('sha256', process.env.GOOGLE_CLIENT_SECRET || '')
+      .update(stateData)
+      .digest('hex')
+    const state = `${stateData}.${hmac}`
 
     // Get redirect URI
     const redirectUri = `${request.nextUrl.origin}/api/calendar/google/callback`

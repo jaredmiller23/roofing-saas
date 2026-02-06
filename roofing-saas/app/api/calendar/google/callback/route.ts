@@ -4,6 +4,7 @@
  */
 
 import { NextRequest } from 'next/server'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { exchangeAuthCode, getGoogleUserInfo } from '@/lib/google/calendar-client'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
@@ -17,14 +18,36 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state')
     const error = searchParams.get('error')
 
-    // Parse state first to get return URL (state is passed even on error)
+    // Parse and verify HMAC-signed state token
+    // Format: base64payload.hmachex
     // Default includes locale prefix to avoid i18n redirect stripping params
     let returnTo = '/en/events'
     let stateData: { tenant_id: string; user_id: string; timestamp: number; return_to?: string } | null = null
 
     if (state) {
       try {
-        stateData = JSON.parse(Buffer.from(state, 'base64').toString())
+        const dotIndex = state.lastIndexOf('.')
+        if (dotIndex > 0) {
+          // New signed format: base64data.hmac
+          const statePayload = state.substring(0, dotIndex)
+          const providedHmac = state.substring(dotIndex + 1)
+          const expectedHmac = createHmac('sha256', process.env.GOOGLE_CLIENT_SECRET || '')
+            .update(statePayload)
+            .digest('hex')
+
+          // Timing-safe comparison to prevent timing attacks
+          const hmacValid = providedHmac.length === expectedHmac.length &&
+            timingSafeEqual(Buffer.from(providedHmac), Buffer.from(expectedHmac))
+
+          if (!hmacValid) {
+            logger.warn('Google OAuth state HMAC verification failed')
+            throw new Error('Invalid state signature')
+          }
+          stateData = JSON.parse(Buffer.from(statePayload, 'base64').toString())
+        } else {
+          // Legacy unsigned format (for in-flight OAuth flows during deployment)
+          stateData = JSON.parse(Buffer.from(state, 'base64').toString())
+        }
         if (stateData?.return_to) {
           returnTo = stateData.return_to
         }
