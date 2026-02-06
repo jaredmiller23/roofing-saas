@@ -18,8 +18,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   getFieldMetrics,
@@ -34,20 +33,10 @@ import {
 } from '@/lib/dashboard/queries'
 import { type MetricsTier } from '@/lib/dashboard/metrics-types'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Parse query params
@@ -237,4 +226,4 @@ export async function GET(request: NextRequest) {
     console.error('Dashboard consolidated error:', error, `(${duration}ms)`)
     return errorResponse(error as Error)
   }
-}
+})

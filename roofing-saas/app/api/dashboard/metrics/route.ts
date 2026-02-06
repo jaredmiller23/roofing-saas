@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   getFieldMetrics,
@@ -28,20 +27,10 @@ import {
  * - mode: 'field' | 'manager' | 'full' (default: 'full')
  * - scope: 'company' | 'team' | 'personal' (default: 'company')
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Parse query params
@@ -99,4 +88,4 @@ export async function GET(request: NextRequest) {
     console.error('Dashboard metrics error:', error)
     return errorResponse(error as Error)
   }
-}
+})

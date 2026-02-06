@@ -7,7 +7,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import {
   getSubscriptionWithPlan,
   cancelSubscription,
@@ -16,8 +16,6 @@ import {
 import { getUsageStats, getAllFeatureAccess } from '@/lib/billing/feature-gates';
 import { getGracePeriodStatus } from '@/lib/billing/grace-period';
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   InternalError,
 } from '@/lib/api/errors';
@@ -28,20 +26,8 @@ import { logger } from '@/lib/logger';
  * GET /api/billing/subscription
  * Get current subscription status with plan details and usage
  */
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request: NextRequest, { tenantId }) => {
   try {
-    // Authenticate
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    // Get tenant
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant');
-    }
-
     // Get subscription with plan details
     const subscription = await getSubscriptionWithPlan(tenantId);
 
@@ -93,26 +79,14 @@ export async function GET(_request: NextRequest) {
     logger.error('Error fetching subscription', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});
 
 /**
  * POST /api/billing/subscription
  * Cancel or reactivate subscription
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    // Authenticate
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    // Get tenant
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant');
-    }
-
     // Parse body
     const body = await request.json();
     const { action } = body;
@@ -146,4 +120,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error updating subscription', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

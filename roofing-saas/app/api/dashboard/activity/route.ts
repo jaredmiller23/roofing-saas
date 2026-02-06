@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface ActivityItem {
@@ -19,18 +18,8 @@ interface ActivityItem {
   }
 }
 
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const activities: ActivityItem[] = []
 
@@ -206,4 +195,4 @@ export async function GET() {
     console.error('Error fetching activity feed:', error)
     return errorResponse(error as Error)
   }
-}
+})
