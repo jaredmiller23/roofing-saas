@@ -4690,6 +4690,7 @@ export type Database = {
           id: string
           invoice_number: string | null
           is_approved: boolean | null
+          is_deleted: boolean
           notes: string | null
           paid_date: string | null
           project_id: string
@@ -4714,6 +4715,7 @@ export type Database = {
           id?: string
           invoice_number?: string | null
           is_approved?: boolean | null
+          is_deleted?: boolean
           notes?: string | null
           paid_date?: string | null
           project_id: string
@@ -4738,6 +4740,7 @@ export type Database = {
           id?: string
           invoice_number?: string | null
           is_approved?: boolean | null
+          is_deleted?: boolean
           notes?: string | null
           paid_date?: string | null
           project_id?: string
@@ -5439,6 +5442,7 @@ export type Database = {
           delivery_date: string | null
           id: string
           invoice_number: string | null
+          is_deleted: boolean
           material_name: string
           material_type: string | null
           notes: string | null
@@ -5465,6 +5469,7 @@ export type Database = {
           delivery_date?: string | null
           id?: string
           invoice_number?: string | null
+          is_deleted?: boolean
           material_name: string
           material_type?: string | null
           notes?: string | null
@@ -5491,6 +5496,7 @@ export type Database = {
           delivery_date?: string | null
           id?: string
           invoice_number?: string | null
+          is_deleted?: boolean
           material_name?: string
           material_type?: string | null
           notes?: string | null
@@ -6587,6 +6593,7 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
+          is_deleted: boolean
           quantity: number | null
           quote_option_id: string | null
           sort_order: number | null
@@ -6601,6 +6608,7 @@ export type Database = {
           created_at?: string | null
           description: string
           id?: string
+          is_deleted?: boolean
           quantity?: number | null
           quote_option_id?: string | null
           sort_order?: number | null
@@ -6615,6 +6623,7 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          is_deleted?: boolean
           quantity?: number | null
           quote_option_id?: string | null
           sort_order?: number | null
@@ -6632,6 +6641,7 @@ export type Database = {
           description: string | null
           display_order: number | null
           id: string
+          is_deleted: boolean
           is_selected: boolean | null
           name: string
           profit_margin: number | null
@@ -6648,6 +6658,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           id?: string
+          is_deleted?: boolean
           is_selected?: boolean | null
           name: string
           profit_margin?: number | null
@@ -6664,6 +6675,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           id?: string
+          is_deleted?: boolean
           is_selected?: boolean | null
           name?: string
           profit_margin?: number | null
@@ -8468,6 +8480,7 @@ export type Database = {
           end_time: string | null
           hourly_rate: number
           id: string
+          is_deleted: boolean
           overtime_hours: number | null
           overtime_rate: number | null
           project_id: string
@@ -8490,6 +8503,7 @@ export type Database = {
           end_time?: string | null
           hourly_rate: number
           id?: string
+          is_deleted?: boolean
           overtime_hours?: number | null
           overtime_rate?: number | null
           project_id: string
@@ -8512,6 +8526,7 @@ export type Database = {
           end_time?: string | null
           hourly_rate?: number
           id?: string
+          is_deleted?: boolean
           overtime_hours?: number | null
           overtime_rate?: number | null
           project_id?: string

@@ -24,6 +24,7 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
       .from('job_expenses')
       .select('*')
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .order('expense_date', { ascending: false })
 
     if (projectId) {
@@ -184,7 +185,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
 
     const { error } = await supabase
       .from('job_expenses')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 
@@ -193,7 +194,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
       throw InternalError('Failed to delete expense')
     }
 
-    logger.info('Job expense deleted', { expenseId: id, tenantId })
+    logger.info('Job expense soft-deleted', { expenseId: id, tenantId })
 
     return successResponse(null)
   } catch (error) {

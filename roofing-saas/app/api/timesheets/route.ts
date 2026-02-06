@@ -29,6 +29,7 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
         project:projects(id, name, project_number)
       `)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .order('work_date', { ascending: false })
 
     if (projectId) {
@@ -194,7 +195,7 @@ export const PATCH = withAuth(async (request: NextRequest, { userId, tenantId })
       const laborCost = (timesheet.regular_hours * timesheet.hourly_rate) +
         ((timesheet.overtime_hours || 0) * (timesheet.overtime_rate || timesheet.hourly_rate * 1.5))
 
-      // Check if expense already exists
+      // Check if expense already exists (exclude soft-deleted)
       const { data: existingExpense } = await supabase
         .from('job_expenses')
         .select('id')
@@ -202,6 +203,7 @@ export const PATCH = withAuth(async (request: NextRequest, { userId, tenantId })
         .eq('expense_type', 'labor')
         .eq('expense_date', timesheet.work_date)
         .eq('amount', laborCost)
+        .eq('is_deleted', false)
         .single()
 
       if (!existingExpense) {
@@ -246,7 +248,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
 
     const { error } = await supabase
       .from('timesheets')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 
@@ -255,7 +257,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
       throw InternalError('Failed to delete timesheet')
     }
 
-    logger.info('Timesheet deleted', { timesheetId: id, tenantId })
+    logger.info('Timesheet soft-deleted', { timesheetId: id, tenantId })
 
     return successResponse(null)
   } catch (error) {

@@ -75,6 +75,7 @@ export const GET = withAuthParams(async (
     }
 
     // Get quote options for this project
+    // Cast needed: generated types don't declare the quote_options → quote_line_items FK relationship
     const { data: options, error } = await supabase
       .from('quote_options')
       .select(`
@@ -97,7 +98,27 @@ export const GET = withAuthParams(async (
         )
       `)
       .eq('project_id', projectId)
-      .order('created_at', { ascending: true })
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: true }) as unknown as { data: Array<{
+        id: string
+        project_id: string | null
+        name: string
+        description: string | null
+        is_selected: boolean | null
+        subtotal: number | null
+        created_at: string | null
+        updated_at: string | null
+        quote_line_items: Array<{
+          id: string
+          description: string
+          quantity: number | null
+          unit: string | null
+          unit_price: number | null
+          total_price: number | null
+          category: string | null
+          is_deleted?: boolean
+        }>
+      }> | null; error: { message: string } | null }
 
     if (error) {
       logger.error('Quote options fetch error', { error, projectId })
@@ -106,10 +127,13 @@ export const GET = withAuthParams(async (
 
     // Transform the data to match our expected structure
     // Map DB `is_selected` to app-layer `is_recommended`
+    // Filter out soft-deleted line items
     const transformedOptions = options?.map(option => ({
       ...option,
       is_recommended: option.is_selected,
-      line_items: option.quote_line_items || []
+      line_items: (option.quote_line_items || []).filter(
+        (li: Record<string, unknown>) => !li.is_deleted
+      )
     })) || []
 
     return successResponse({
@@ -197,10 +221,10 @@ export const POST = withAuthParams(async (
 
     if (lineItemsError) {
       logger.error('Line items creation error', { error: lineItemsError, lineItemsWithTotals })
-      // Try to clean up the quote option if line items failed
+      // Mark the quote option as deleted if line items failed
       await supabase
         .from('quote_options')
-        .delete()
+        .update({ is_deleted: true })
         .eq('id', quoteOption.id)
 
       throw InternalError('Failed to create line items')
@@ -309,11 +333,12 @@ export const PATCH = withAuthParams(async (
         category: item.category
       }))
 
-      // Step 1: Capture existing line item IDs before insert
+      // Step 1: Capture existing (non-deleted) line item IDs before insert
       const { data: existingItems } = await supabase
         .from('quote_line_items')
         .select('id')
         .eq('quote_option_id', data.id)
+        .eq('is_deleted', false)
 
       const existingIds = (existingItems || []).map(item => item.id)
 
@@ -327,15 +352,15 @@ export const PATCH = withAuthParams(async (
         throw InternalError('Failed to update line items')
       }
 
-      // Step 3: Only after successful insert, delete the old line items
+      // Step 3: Only after successful insert, soft-delete the old line items
       if (existingIds.length > 0) {
         const { error: deleteError } = await supabase
           .from('quote_line_items')
-          .delete()
+          .update({ is_deleted: true })
           .in('id', existingIds)
 
         if (deleteError) {
-          logger.error('Failed to delete old line items', { error: deleteError, existingIds })
+          logger.error('Failed to soft-delete old line items', { error: deleteError, existingIds })
           // Non-fatal: new items were inserted successfully, old ones will be cleaned up
         }
       }
@@ -407,16 +432,16 @@ export const DELETE = withAuthParams(async (
       throw NotFoundError('Quote option')
     }
 
-    // Delete line items first (due to foreign key constraint)
+    // Soft-delete line items first
     await supabase
       .from('quote_line_items')
-      .delete()
+      .update({ is_deleted: true })
       .eq('quote_option_id', optionId)
 
-    // Delete the quote option
+    // Soft-delete the quote option
     const { error: deleteError } = await supabase
       .from('quote_options')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', optionId)
 
     if (deleteError) {

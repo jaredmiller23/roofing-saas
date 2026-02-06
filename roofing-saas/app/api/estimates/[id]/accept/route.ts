@@ -68,6 +68,7 @@ export async function POST(
       .select('id, name, total_amount, subtotal')
       .eq('id', selected_option_id)
       .eq('project_id', proposal.project_id)
+      .eq('is_deleted', false)
       .single()
 
     if (optionError || !option) {

@@ -62,6 +62,7 @@ export const POST = withAuthParams(async (
       .from('quote_options')
       .select('id, name, subtotal')
       .eq('project_id', projectId)
+      .eq('is_deleted', false)
       .order('created_at', { ascending: true })
 
     if (optionsError || !options || options.length === 0) {

@@ -97,6 +97,7 @@ export const POST = withAuthParams(async (
         )
       `)
       .eq('project_id', projectId)
+      .eq('is_deleted', false)
       .order('created_at', { ascending: true })
 
     if (optionIds && optionIds.length > 0) {

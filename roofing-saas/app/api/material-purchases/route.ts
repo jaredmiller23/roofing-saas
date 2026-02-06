@@ -24,6 +24,7 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
         supplier_contact:contacts(id, first_name, last_name, company)
       `)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .order('purchase_date', { ascending: false })
 
     if (projectId) {
@@ -160,7 +161,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
 
     const { error } = await supabase
       .from('material_purchases')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 
@@ -169,7 +170,7 @@ export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
       throw InternalError('Failed to delete material purchase')
     }
 
-    logger.info('Material purchase deleted', { purchaseId: id, tenantId })
+    logger.info('Material purchase soft-deleted', { purchaseId: id, tenantId })
 
     return successResponse({ deleted: true })
   } catch (error) {

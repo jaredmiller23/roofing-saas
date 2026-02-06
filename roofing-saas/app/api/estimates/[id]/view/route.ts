@@ -106,6 +106,7 @@ export async function GET(
         )
       `)
       .eq('project_id', proposal.project_id)
+      .eq('is_deleted', false)
       .order('display_order', { ascending: true })
 
     if (optionsError) {
