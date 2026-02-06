@@ -747,7 +747,7 @@ export default function SignDocumentPage() {
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+          <h1 data-testid="sign-success-title" className="text-xl md:text-2xl font-bold text-foreground mb-2">
             Document Signed Successfully!
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -780,7 +780,7 @@ export default function SignDocumentPage() {
               <Ban className="h-8 w-8 text-red-600" />
             </div>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+          <h1 data-testid="decline-success-title" className="text-xl md:text-2xl font-bold text-foreground mb-2">
             Document Declined
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -853,9 +853,9 @@ export default function SignDocumentPage() {
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className={`max-w-md w-full ${containerStyles[status]} border rounded-lg p-6 md:p-8 text-center`}>
+        <div data-testid={`status-${status}`} className={`max-w-md w-full ${containerStyles[status]} border rounded-lg p-6 md:p-8 text-center`}>
           <StatusIcon className={`h-12 w-12 ${iconStyles[status]} mx-auto mb-4`} />
-          <h1 className={`text-xl md:text-2xl font-bold ${titleStyles[status]} mb-2`}>
+          <h1 data-testid="status-title" className={`text-xl md:text-2xl font-bold ${titleStyles[status]} mb-2`}>
             {config.title}
           </h1>
           <p className={textStyles[status]}>
@@ -943,6 +943,7 @@ export default function SignDocumentPage() {
               <Label htmlFor="signer-name" className="text-sm">Full Name *</Label>
               <Input
                 id="signer-name"
+                data-testid="signer-name-input"
                 type="text"
                 placeholder="John Doe"
                 value={signerName}
@@ -955,6 +956,7 @@ export default function SignDocumentPage() {
               <Label htmlFor="signer-email" className="text-sm">Email Address *</Label>
               <Input
                 id="signer-email"
+                data-testid="signer-email-input"
                 type="email"
                 placeholder="john@example.com"
                 value={signerEmail}
@@ -967,6 +969,7 @@ export default function SignDocumentPage() {
               <Label htmlFor="signer-type" className="text-sm">Signing As *</Label>
               <select
                 id="signer-type"
+                data-testid="signer-type-select"
                 value={signerType}
                 onChange={(e) => setSignerType(e.target.value as 'customer' | 'company')}
                 className="w-full px-3 py-2 border border-border rounded-md bg-background focus:ring-2 focus:ring-primary focus:border-primary min-h-[44px] text-base"
@@ -1199,6 +1202,7 @@ export default function SignDocumentPage() {
             <Button
               variant="outline"
               onClick={handleDeclineClick}
+              data-testid="decline-button"
               className="sm:w-auto text-red-600 border-red-500/40 hover:bg-red-500/10 hover:text-red-700 min-h-[48px] md:min-h-[44px]"
             >
               <Ban className="h-4 w-4 mr-2" />
@@ -1207,6 +1211,7 @@ export default function SignDocumentPage() {
             <Button
               onClick={handleFinalSubmit}
               disabled={!signerName || !signerEmail || (hasFields && completedRequiredFields.length < requiredFields.length)}
+              data-testid="submit-signature-button"
               className="flex-1 bg-primary hover:bg-primary/90 min-h-[48px] md:min-h-[44px] text-base"
               size="lg"
             >
@@ -1242,6 +1247,7 @@ export default function SignDocumentPage() {
             </Label>
             <Textarea
               id="decline-reason"
+              data-testid="decline-reason-input"
               placeholder="Please explain why you are declining this document..."
               value={declineReason}
               onChange={(e) => setDeclineReason(e.target.value)}
@@ -1261,6 +1267,7 @@ export default function SignDocumentPage() {
               variant="destructive"
               onClick={handleDeclineConfirm}
               disabled={!declineReason.trim() || isSubmittingDecline}
+              data-testid="confirm-decline-button"
             >
               {isSubmittingDecline ? 'Declining...' : 'Confirm Decline'}
             </Button>

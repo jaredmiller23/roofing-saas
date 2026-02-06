@@ -54,8 +54,19 @@ export async function POST(
       throw ValidationError('Recipient email is required')
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(recipient_email)) {
+      throw ValidationError('Invalid recipient email address format')
+    }
+
     if (!recipient_name) {
       throw ValidationError('Recipient name is required')
+    }
+
+    // Validate expiration_days
+    if (typeof expiration_days !== 'number' || expiration_days < 1 || expiration_days > 365 || !Number.isInteger(expiration_days)) {
+      throw ValidationError('Expiration days must be a whole number between 1 and 365')
     }
 
     logger.apiRequest('POST', `/api/signature-documents/${id}/send`, {
@@ -92,6 +103,14 @@ export async function POST(
     // Check if document is in valid state to send
     if (document.status === 'signed') {
       throw ValidationError('Document is already signed')
+    }
+
+    if (document.status === 'expired') {
+      throw ValidationError('Document has expired. Create a new document to send.')
+    }
+
+    if (document.status === 'declined') {
+      throw ValidationError('Document was declined. Create a new document to send.')
     }
 
     if (document.status === 'sent') {

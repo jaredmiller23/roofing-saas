@@ -70,11 +70,12 @@ export async function POST(
 
       const supabase = await createAdminClient()
 
-      // Get document
+      // Get document (exclude soft-deleted)
       const { data: document, error: fetchError } = await supabase
         .from('signature_documents')
         .select('*, contact:contacts(email, first_name, last_name), created_by')
         .eq('id', id)
+        .eq('is_deleted', false)
         .single()
 
       if (fetchError || !document) {
@@ -189,6 +190,12 @@ export async function POST(
       throw ValidationError('Signer email is required')
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(signer_email)) {
+      throw ValidationError('Invalid email address format')
+    }
+
     if (!signer_type) {
       throw ValidationError('Signer type is required')
     }
@@ -217,11 +224,12 @@ export async function POST(
 
     const supabase = await createAdminClient()
 
-    // Get document
+    // Get document (exclude soft-deleted)
     const { data: document, error: fetchError } = await supabase
       .from('signature_documents')
       .select('*')
       .eq('id', id)
+      .eq('is_deleted', false)
       .single()
 
     if (fetchError || !document) {
@@ -642,6 +650,7 @@ export async function GET(
         signatures(signer_type)
       `)
       .eq('id', id)
+      .eq('is_deleted', false)
       .single()
 
     if (error || !document) {
