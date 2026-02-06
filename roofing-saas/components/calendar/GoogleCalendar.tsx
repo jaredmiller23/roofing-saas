@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Calendar, Loader2, AlertCircle, RefreshCw, Clock, MapPin } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { apiFetch } from '@/lib/api/client'
 import { StandardCalendar } from './StandardCalendar'
 
@@ -59,24 +60,65 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [googleEmail, setGoogleEmail] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
-  const [createSlot, setCreateSlot] = useState<{ start: Date; end: Date } | null>(null)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
-  const newEventTitleRef = useRef<HTMLInputElement>(null)
+  // Create event form state
+  const [newTitle, setNewTitle] = useState('')
+  const [newStart, setNewStart] = useState('')
+  const [newEnd, setNewEnd] = useState('')
+  const [newDescription, setNewDescription] = useState('')
+  const [newLocation, setNewLocation] = useState('')
+  const [newAllDay, setNewAllDay] = useState(false)
+
+  // Helper: convert Date to datetime-local format (YYYY-MM-DDTHH:mm)
+  const toDateTimeLocal = (d: Date): string => {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
+  const openCreateDialog = (slot: { start: Date; end: Date }) => {
+    // Default to sensible times: if slot is midnight (month view click), use 9:00-10:00
+    let start = slot.start
+    let end = slot.end
+    if (start.getHours() === 0 && start.getMinutes() === 0 &&
+        (end.getHours() === 0 || end.getDate() !== start.getDate())) {
+      start = new Date(start)
+      start.setHours(9, 0, 0)
+      end = new Date(start)
+      end.setHours(10, 0, 0)
+    }
+    setNewTitle('')
+    setNewStart(toDateTimeLocal(start))
+    setNewEnd(toDateTimeLocal(end))
+    setNewDescription('')
+    setNewLocation('')
+    setNewAllDay(false)
+    setShowCreateDialog(true)
+  }
 
   const handleCreateGoogleEvent = async () => {
-    if (!createSlot || !newEventTitleRef.current?.value.trim()) return
+    if (!newTitle.trim() || !newStart || !newEnd) return
 
     setIsCreating(true)
     try {
+      const startISO = new Date(newStart).toISOString()
+      const endISO = new Date(newEnd).toISOString()
       await apiFetch('/api/calendar/google/events', {
         method: 'POST',
         body: {
-          summary: newEventTitleRef.current.value.trim(),
-          start: createSlot.start.toISOString(),
-          end: createSlot.end.toISOString(),
+          summary: newTitle.trim(),
+          start: startISO,
+          end: endISO,
+          allDay: newAllDay,
+          description: newDescription.trim() || undefined,
+          location: newLocation.trim() || undefined,
         },
       })
-      setCreateSlot(null)
+      setShowCreateDialog(false)
       await fetchEvents()
     } catch (err) {
       console.error('Error creating Google Calendar event:', err)
@@ -366,7 +408,7 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
         <StandardCalendar
           events={events}
           onEventClick={(event) => setSelectedEvent(event)}
-          onSlotSelect={(slot) => setCreateSlot(slot)}
+          onSlotSelect={(slot) => openCreateDialog(slot)}
           onRangeChange={fetchEvents}
         />
       </div>
@@ -400,34 +442,104 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
       </Dialog>
 
       {/* Create event dialog */}
-      <Dialog open={!!createSlot} onOpenChange={(open) => !open && setCreateSlot(null)}>
-        <DialogContent>
+      <Dialog open={showCreateDialog} onOpenChange={(open) => !open && setShowCreateDialog(false)}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>New Google Calendar Event</DialogTitle>
           </DialogHeader>
-          {createSlot && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {createSlot.start.toLocaleString()} &mdash; {createSlot.end.toLocaleString()}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="event-title">Event Title</Label>
-                <Input
-                  id="event-title"
-                  ref={newEventTitleRef}
-                  placeholder="Enter event title"
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateGoogleEvent()}
-                  autoFocus
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="event-title">Event Title *</Label>
+              <Input
+                id="event-title"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="e.g. Roof inspection at 123 Main St"
+                autoFocus
+              />
             </div>
-          )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="event-allday"
+                checked={newAllDay}
+                onChange={(e) => setNewAllDay(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <Label htmlFor="event-allday" className="text-sm font-normal cursor-pointer">
+                All-day event
+              </Label>
+            </div>
+
+            {newAllDay ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm">Start Date</Label>
+                  <Input
+                    type="date"
+                    value={newStart.split('T')[0]}
+                    onChange={(e) => setNewStart(`${e.target.value}T00:00`)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">End Date</Label>
+                  <Input
+                    type="date"
+                    value={newEnd.split('T')[0]}
+                    onChange={(e) => setNewEnd(`${e.target.value}T23:59`)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm">Start</Label>
+                  <DateTimePicker
+                    value={newStart}
+                    onChange={setNewStart}
+                    placeholder="Start date & time"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">End</Label>
+                  <DateTimePicker
+                    value={newEnd}
+                    onChange={setNewEnd}
+                    placeholder="End date & time"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="event-location">Location</Label>
+              <Input
+                id="event-location"
+                value={newLocation}
+                onChange={(e) => setNewLocation(e.target.value)}
+                placeholder="e.g. 123 Main St, Nashville, TN"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-description">Description</Label>
+              <textarea
+                id="event-description"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder="Notes, details, or instructions..."
+                rows={3}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateSlot(null)}>Cancel</Button>
-            <Button onClick={handleCreateGoogleEvent} disabled={isCreating}>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+            <Button
+              onClick={handleCreateGoogleEvent}
+              disabled={isCreating || !newTitle.trim()}
+            >
               {isCreating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
