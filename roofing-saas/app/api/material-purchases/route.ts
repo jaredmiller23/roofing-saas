@@ -137,10 +137,23 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = await createClient()
     const body = await request.json()
-    const { id, ...updates } = body
+    const { id } = body
 
     if (!id) {
       throw ValidationError('Missing purchase id')
+    }
+
+    // Whitelist updatable fields — prevent mass assignment
+    const allowedFields = [
+      'project_id', 'material_name', 'material_type', 'supplier', 'supplier_id',
+      'quantity', 'unit', 'unit_cost', 'purchase_order_number', 'invoice_number',
+      'delivery_date', 'purchase_date', 'notes',
+    ] as const
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field]
+      }
     }
 
     const { data: purchase, error } = await supabase

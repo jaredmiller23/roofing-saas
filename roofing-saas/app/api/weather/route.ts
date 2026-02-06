@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
@@ -251,7 +252,7 @@ function getMockWeatherData(): WeatherData {
   }
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat') || String(DEFAULT_LAT))
   const lng = parseFloat(searchParams.get('lng') || String(DEFAULT_LNG))
@@ -282,4 +283,4 @@ export async function GET(request: NextRequest) {
   }
 
   return successResponse(data)
-}
+})

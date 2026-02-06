@@ -181,14 +181,27 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, ...updates } = body
+    const { id } = body
 
     if (!id) {
       throw ValidationError('Missing timesheet id')
     }
 
-    // If approving, set approved fields
-    if (updates.status === 'approved' && !updates.approved_by) {
+    // Whitelist updatable fields — prevent mass assignment
+    const allowedFields = [
+      'project_id', 'crew_member_id', 'work_date', 'start_time', 'end_time',
+      'regular_hours', 'overtime_hours', 'hourly_rate', 'overtime_rate',
+      'work_description', 'task_completed', 'status',
+    ] as const
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field]
+      }
+    }
+
+    // If approving, set approved fields from session (not client)
+    if (updates.status === 'approved') {
       updates.approved_by = user.id
       updates.approved_at = new Date().toISOString()
     }

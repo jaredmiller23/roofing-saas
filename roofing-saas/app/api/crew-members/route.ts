@@ -136,10 +136,23 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = await createClient()
     const body = await request.json()
-    const { id, ...updates } = body
+    const { id } = body
 
     if (!id) {
       throw ValidationError('Missing crew member id')
+    }
+
+    // Whitelist updatable fields — prevent mass assignment
+    const allowedFields = [
+      'user_id', 'first_name', 'last_name', 'employee_number', 'email',
+      'phone', 'role', 'hourly_rate', 'overtime_rate', 'hire_date',
+      'termination_date', 'notes', 'is_active',
+    ] as const
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field]
+      }
     }
 
     const { data: crewMember, error } = await supabase

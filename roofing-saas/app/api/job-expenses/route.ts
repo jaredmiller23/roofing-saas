@@ -154,10 +154,29 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, ...updates } = body
+    const { id } = body
 
     if (!id) {
       throw ValidationError('Missing expense id')
+    }
+
+    // Whitelist updatable fields — prevent mass assignment
+    const allowedFields = [
+      'project_id', 'expense_type', 'category', 'description', 'amount',
+      'quantity', 'unit_price', 'vendor_name', 'vendor_id', 'invoice_number',
+      'receipt_url', 'notes', 'expense_date', 'paid_date', 'is_approved',
+    ] as const
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field]
+      }
+    }
+
+    // Set approval metadata from session if approving
+    if (body.is_approved === true) {
+      updates.approved_by = user.id
+      updates.approved_at = new Date().toISOString()
     }
 
     const { data: expense, error } = await supabase

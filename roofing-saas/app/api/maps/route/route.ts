@@ -4,6 +4,7 @@
  */
 
 import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
   planCanvassingRoute,
   optimizeRouteNearestNeighbor,
@@ -14,7 +15,7 @@ import { logger } from '@/lib/logger'
 import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json()
     const { start, waypoints, return_to_start, action } = body
@@ -62,9 +63,9 @@ export async function POST(request: NextRequest) {
     logger.error('Route optimization API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams
     const action = searchParams.get('action')
@@ -95,4 +96,4 @@ export async function GET(request: NextRequest) {
     logger.error('Route API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

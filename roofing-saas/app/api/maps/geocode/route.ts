@@ -4,12 +4,13 @@
  */
 
 import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { geocodeAddress, reverseGeocode, validateAddress, batchGeocode } from '@/lib/maps/geocoding'
 import { logger } from '@/lib/logger'
 import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams
     const address = searchParams.get('address')
@@ -69,4 +70,4 @@ export async function GET(request: NextRequest) {
     logger.error('Geocoding API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
