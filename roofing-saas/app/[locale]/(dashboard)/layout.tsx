@@ -77,7 +77,7 @@ export default async function DashboardLayout({
         />
 
         {/* Main Content - with left padding for sidebar and bottom padding for AI assistant */}
-        <main className="lg:ml-64 min-h-screen pb-20">
+        <main className="lg:ml-64 min-h-screen pb-6">
           <DashboardLayoutClient
             userRole={userRole}
             userEmail={userEmail}

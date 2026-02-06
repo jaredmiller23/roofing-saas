@@ -1,8 +1,6 @@
 'use client'
 
 import { GlobalSearch } from '@/components/search/GlobalSearch'
-import { AIAssistantProvider } from '@/lib/ai-assistant/context'
-import { AIAssistantBar } from '@/components/ai-assistant/AIAssistantBar'
 import { ImpersonationBanner } from '@/components/impersonation'
 import { TrialBannerWrapper } from '@/components/layout/TrialBannerWrapper'
 import { UIModeProvider } from '@/lib/ui-mode/context'
@@ -21,18 +19,15 @@ export function DashboardLayoutClient({ children, userRole, userEmail }: Dashboa
     <ErrorBufferProvider>
       <UIModeProvider>
         <UIPreferencesProvider>
-          <AIAssistantProvider>
-            <ImpersonationBanner />
-            <TrialBannerWrapper />
-            <AdaptiveLayout
-              userEmail={userEmail || ''}
-              userRole={userRole || 'user'}
-            >
-              {children}
-            </AdaptiveLayout>
-            <GlobalSearch />
-            <AIAssistantBar />
-          </AIAssistantProvider>
+          <ImpersonationBanner />
+          <TrialBannerWrapper />
+          <AdaptiveLayout
+            userEmail={userEmail || ''}
+            userRole={userRole || 'user'}
+          >
+            {children}
+          </AdaptiveLayout>
+          <GlobalSearch />
         </UIPreferencesProvider>
       </UIModeProvider>
     </ErrorBufferProvider>

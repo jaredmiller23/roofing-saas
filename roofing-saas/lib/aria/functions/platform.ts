@@ -29,6 +29,12 @@ import {
   describeCurrentPage,
   searchRoutes,
 } from '../platform-knowledge/routes'
+import {
+  findUIComponent,
+  getARIASelfModel,
+  checkConflicts,
+  ALL_UI_COMPONENTS,
+} from '../platform-knowledge/ui-components'
 import type { PipelineStage } from '@/lib/types/api'
 
 // =============================================================================
@@ -572,6 +578,97 @@ ariaFunctionRegistry.register({
         values: enumDef.values,
       },
       message: `${enum_name} has ${enumDef.values.length} valid values`,
+    }
+  },
+})
+
+// =============================================================================
+// diagnose_ui_issue - Analyze a visual or layout issue
+// =============================================================================
+
+ariaFunctionRegistry.register({
+  name: 'diagnose_ui_issue',
+  category: 'platform',
+  description: 'Diagnose a visual or layout issue in the app interface by matching against known UI components',
+  riskLevel: 'low',
+  enabledByDefault: true,
+  voiceDefinition: {
+    type: 'function',
+    name: 'diagnose_ui_issue',
+    description: 'Analyze a visual/layout issue (overlapping elements, misplaced buttons, UI glitches)',
+    parameters: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'What the user sees (e.g., "orange and grey circles overlapping at the bottom")',
+        },
+        page: {
+          type: 'string',
+          description: 'The page where the issue appears (e.g., "dashboard", "contacts", "projects")',
+        },
+        element_description: {
+          type: 'string',
+          description: 'Specific description of the problematic element (color, shape, icon, location)',
+        },
+      },
+      required: ['description'],
+    },
+  },
+  execute: async (args, context) => {
+    const { description, page, element_description } = args as {
+      description: string
+      page?: string
+      element_description?: string
+    }
+
+    logger.info('ARIA diagnose_ui_issue', { description, page, element_description, userId: context.userId })
+
+    // Search for matching components by keywords from the user's description
+    const searchTerms = [description, page, element_description].filter(Boolean).join(' ')
+    const matchingComponents = findUIComponent(searchTerms)
+
+    // Get ARIA's self-model for reference
+    const selfModel = getARIASelfModel()
+
+    // Check for known conflicts between all components
+    const knownConflicts: string[] = []
+    for (let i = 0; i < ALL_UI_COMPONENTS.length; i++) {
+      for (let j = i + 1; j < ALL_UI_COMPONENTS.length; j++) {
+        const conflicts = checkConflicts(ALL_UI_COMPONENTS[i].name, ALL_UI_COMPONENTS[j].name)
+        knownConflicts.push(...conflicts)
+      }
+    }
+
+    // Collect troubleshooting tips from matched components
+    const tips: string[] = []
+    for (const comp of matchingComponents) {
+      tips.push(...comp.troubleshooting)
+    }
+
+    return {
+      success: true,
+      data: {
+        matching_components: matchingComponents.map(c => ({
+          name: c.name,
+          label: c.label,
+          appearance: c.appearance,
+          positioning: c.positioning,
+          states: c.states,
+        })),
+        aria_self_model: selfModel.map(c => ({
+          name: c.name,
+          label: c.label,
+          appearance: c.appearance,
+          positioning: c.positioning,
+        })),
+        known_conflicts: knownConflicts,
+        troubleshooting: tips,
+        current_page: context.page || page,
+      },
+      message: matchingComponents.length > 0
+        ? `Found ${matchingComponents.length} potentially related UI component(s). ${tips[0] || ''}`
+        : 'Could not match the description to a known UI component. This may need developer attention — consider creating a task with a screenshot.',
     }
   },
 })
