@@ -8,7 +8,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import type { StageChangeTriggerConfig, TriggerType, ExitReason } from './types'
+import type { StageChangeTriggerConfig, ExitReason } from './types'
 
 interface StageChangeEvent {
   tenantId: string
@@ -39,48 +39,97 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
       await exitEnrollmentsForStageExit(supabase, event)
     }
 
-    // Find active campaigns with stage_change triggers that match
-    const { data: campaigns, error } = await supabase
-      .from('campaigns')
+    // Find active campaigns with stage_change triggers
+    // NOTE: We query campaign_triggers table (not campaigns) because:
+    // - 'stage_change' is a TriggerType, not a CampaignType
+    // - CampaignTypes are: drip, event, reengagement, retention, nurture
+    // - TriggerTypes are: stage_change, time_based, event, manual
+    const { data: triggers, error } = await supabase
+      .from('campaign_triggers')
       .select(`
         id,
-        name,
-        campaign_type,
-        enrollment_type,
-        campaign_steps (
+        trigger_type,
+        trigger_config,
+        campaigns!inner (
           id,
-          step_order
+          name,
+          tenant_id,
+          status,
+          campaign_steps (
+            id,
+            step_order
+          )
         )
       `)
-      .eq('tenant_id', event.tenantId)
-      .eq('status', 'active')
-      .eq('campaign_type', 'stage_change' as TriggerType)
+      .eq('trigger_type', 'stage_change')
+      .eq('is_active', true)
 
     if (error) {
-      logger.error('[Campaign] Error fetching campaigns', { error: error.message })
+      logger.error('[Campaign] Error fetching campaign triggers', { error: error.message })
       return
     }
 
-    if (!campaigns || campaigns.length === 0) {
-      logger.info('[Campaign] No active stage_change campaigns found')
+    if (!triggers || triggers.length === 0) {
+      logger.info('[Campaign] No active stage_change triggers found')
       return
     }
 
-    // Check each campaign's trigger config
-    for (const campaign of campaigns) {
-      const config = campaign.enrollment_type as unknown as StageChangeTriggerConfig
+    // Filter triggers for matching tenant and active campaigns
+    const matchingTriggers = triggers.filter((trigger) => {
+      const campaign = trigger.campaigns as unknown as {
+        id: string
+        name: string
+        tenant_id: string
+        status: string
+        campaign_steps: Array<{ id: string; step_order: number }> | null
+      }
 
-      // Check if trigger matches
-      if (!matchesStageTrigger(config, event)) {
-        continue
+      // Must be same tenant
+      if (campaign.tenant_id !== event.tenantId) {
+        return false
+      }
+
+      // Campaign must be active
+      if (campaign.status !== 'active') {
+        return false
+      }
+
+      // Check if trigger config matches the stage change
+      const config = trigger.trigger_config as unknown as StageChangeTriggerConfig
+      return matchesStageTrigger(config, event)
+    })
+
+    if (matchingTriggers.length === 0) {
+      logger.info('[Campaign] No triggers match this stage change', {
+        fromStage: event.fromStage,
+        toStage: event.toStage,
+        triggersChecked: triggers.length,
+      })
+      return
+    }
+
+    // Enroll contact into each matching campaign
+    for (const trigger of matchingTriggers) {
+      const campaign = trigger.campaigns as unknown as {
+        id: string
+        name: string
+        tenant_id: string
+        status: string
+        campaign_steps: Array<{ id: string; step_order: number }> | null
       }
 
       logger.info('[Campaign] Trigger matched, enrolling contact', {
+        triggerId: trigger.id,
         campaignId: campaign.id,
         campaignName: campaign.name,
         contactId: event.contactId,
         projectId: event.projectId,
       })
+
+      // Get the first step (sorted by step_order)
+      const steps = campaign.campaign_steps || []
+      const sortedSteps = [...steps].sort((a, b) => a.step_order - b.step_order)
+      const firstStepId = sortedSteps[0]?.id
 
       // Enroll the contact (or project's contact) into the campaign
       await enrollInCampaign({
@@ -96,7 +145,7 @@ export async function handleStageChange(event: StageChangeEvent): Promise<void> 
           project_id: event.projectId,
           triggered_at: event.changedAt,
         },
-        firstStepId: (campaign.campaign_steps as unknown as Array<{ id: string; step_order: number }> | null)?.[0]?.id,
+        firstStepId,
       })
     }
   } catch (error) {
