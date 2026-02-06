@@ -1,23 +1,16 @@
 'use client'
 
-import { Link } from '@/lib/i18n/navigation'
-
-interface Project {
-  project_id: string | null
-  project_name: string | null
-  gross_profit?: number | null
-  profit_margin_percent?: number | null
-  revenue?: number | null
-}
+import type { ProjectPLData } from './job-profitability-sheet'
 
 interface TopPerformersTableProps {
   title: string
-  projects: Project[]
+  projects: ProjectPLData[]
   metricKey: 'gross_profit' | 'profit_margin_percent'
   metricLabel: string
+  onProjectClick?: (project: ProjectPLData) => void
 }
 
-export function TopPerformersTable({ title, projects, metricKey, metricLabel }: TopPerformersTableProps) {
+export function TopPerformersTable({ title, projects, metricKey, metricLabel, onProjectClick }: TopPerformersTableProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -27,14 +20,14 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
     }).format(value)
   }
 
-  const formatMetric = (project: Project) => {
+  const formatMetric = (project: ProjectPLData) => {
     if (metricKey === 'profit_margin_percent') {
       return `${(project[metricKey] || 0).toFixed(1)}%`
     }
     return formatCurrency(project[metricKey] || 0)
   }
 
-  const getMetricColor = (project: Project) => {
+  const getMetricColor = (project: ProjectPLData) => {
     const value = project[metricKey] || 0
     if (value >= 0) return 'text-green-600'
     return 'text-red-600'
@@ -49,10 +42,10 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
         {projects.length > 0 ? (
           <div className="space-y-3">
             {projects.slice(0, 5).map((project, index) => (
-              <Link
+              <button
                 key={project.project_id ?? index}
-                href={`/projects/${project.project_id ?? ''}`}
-                className="block p-3 rounded-lg hover:bg-background transition-colors"
+                onClick={() => onProjectClick?.(project)}
+                className="block w-full text-left p-3 rounded-lg hover:bg-background transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -75,7 +68,7 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel }: 
                     <p className="text-xs text-muted-foreground">{metricLabel}</p>
                   </div>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         ) : (

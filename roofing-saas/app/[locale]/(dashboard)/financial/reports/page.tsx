@@ -5,7 +5,8 @@ import { Link } from '@/lib/i18n/navigation'
 import { DollarSign, TrendingUp, TrendingDown, Briefcase, Calendar } from 'lucide-react'
 import { RevenueChart } from './revenue-chart'
 import { MarginByTypeChart } from './margin-by-type-chart'
-import { TopPerformersTable } from './top-performers-table'
+import { ReportsClient } from './reports-client'
+import type { ProjectPLData } from './job-profitability-sheet'
 
 export default async function FinancialReportsPage() {
   const user = await getCurrentUser()
@@ -185,24 +186,11 @@ export default async function FinancialReportsPage() {
           <MarginByTypeChart typeData={byType} />
         </div>
 
-        {/* Performance Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Top Profitable Projects */}
-          <TopPerformersTable
-            title="Most Profitable Projects"
-            projects={plData?.sort((a, b) => (b.gross_profit || 0) - (a.gross_profit || 0)).slice(0, 10) || []}
-            metricKey="gross_profit"
-            metricLabel="Profit"
-          />
-
-          {/* Highest Margin Projects */}
-          <TopPerformersTable
-            title="Highest Margin Projects"
-            projects={plData?.sort((a, b) => (b.profit_margin_percent || 0) - (a.profit_margin_percent || 0)).slice(0, 10) || []}
-            metricKey="profit_margin_percent"
-            metricLabel="Margin %"
-          />
-        </div>
+        {/* Performance Tables + Drill-Down Sheet */}
+        <ReportsClient
+          profitProjects={[...(plData || [])].sort((a, b) => (b.gross_profit || 0) - (a.gross_profit || 0)).slice(0, 10) as unknown as ProjectPLData[]}
+          marginProjects={[...(plData || [])].sort((a, b) => (b.profit_margin_percent || 0) - (a.profit_margin_percent || 0)).slice(0, 10) as unknown as ProjectPLData[]}
+        />
 
         {/* Job Type Breakdown */}
         <div className="bg-card rounded-lg shadow mb-8">
