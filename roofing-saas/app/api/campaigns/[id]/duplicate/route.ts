@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import {
-  AuthenticationError,
   AuthorizationError,
   NotFoundError,
   InternalError,
@@ -26,21 +25,8 @@ type DbCampaignTrigger = Database['public']['Tables']['campaign_triggers']['Row'
  * - All campaign triggers
  * - All campaign steps with proper ID mapping for branching
  */
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (_request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Check feature access
     try {
       await requireFeature(tenantId, 'campaigns')
@@ -48,7 +34,7 @@ export async function POST(
       throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -120,7 +106,7 @@ export async function POST(
         business_hours: originalCampaign.business_hours,
         enrollment_type: originalCampaign.enrollment_type,
         max_enrollments: originalCampaign.max_enrollments,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -265,4 +251,4 @@ export async function POST(
     logger.error('Error in POST /api/campaigns/:id/duplicate', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

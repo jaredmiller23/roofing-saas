@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapSupabaseError,
 } from '@/lib/api/errors'
@@ -15,21 +13,11 @@ import { isHeicBuffer, isHeicMimeType, convertHeicToJpeg } from '@/lib/images/he
  * POST /api/project-files/upload
  * Upload files via multipart/form-data (for mobile and direct uploads)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/project-files/upload', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/project-files/upload', { tenantId, userId })
 
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -153,7 +141,7 @@ export async function POST(request: NextRequest) {
       folder_path: folderPath,
       description: description || null,
       tenant_id: tenantId,
-      uploaded_by: user.id,
+      uploaded_by: userId,
       status: 'active',
       version: 1,
       parent_file_id: null,
@@ -196,7 +184,7 @@ export async function POST(request: NextRequest) {
     logger.error('File upload error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 // Set max file size for the upload
 export const runtime = 'nodejs'

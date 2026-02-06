@@ -1,29 +1,20 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/events/[id]
  * Get a single event by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -49,27 +40,18 @@ export async function GET(
     logger.error('Error in GET /api/events/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/events/[id]
  * Update an event
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const body = await request.json()
     const supabase = await createClient()
@@ -100,27 +82,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/events/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/events/[id]
  * Soft delete an event
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -150,4 +123,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/events/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

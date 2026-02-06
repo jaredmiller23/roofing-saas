@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -13,21 +11,11 @@ import { logger } from '@/lib/logger'
  * GET /api/project-files
  * List project files with filtering and pagination
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/project-files', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/project-files', { tenantId, userId })
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
@@ -106,27 +94,17 @@ export async function GET(request: NextRequest) {
     logger.error('Project files API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/project-files
  * Create a new project file record
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/project-files', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/project-files', { tenantId, userId })
 
     const body = await request.json()
 
@@ -145,7 +123,7 @@ export async function POST(request: NextRequest) {
       description: body.description,
       tags: body.tags || [],
       tenant_id: tenantId,
-      uploaded_by: user.id,
+      uploaded_by: userId,
       is_deleted: false,
     }
 
@@ -169,4 +147,4 @@ export async function POST(request: NextRequest) {
     logger.error('Create project file error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

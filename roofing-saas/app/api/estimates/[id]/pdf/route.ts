@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { generateEstimatePDF } from '@/lib/pdf/estimate-pdf-generator'
@@ -16,23 +16,13 @@ import type { EstimatePDFOption, EstimatePDFLineItem } from '@/lib/pdf/estimate-
  *
  * Returns: application/pdf binary
  */
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
     const supabase = await createClient()
 
     // Parse optional body for specific option_ids
@@ -221,4 +211,4 @@ export async function POST(
     logger.error('Error in POST /api/estimates/[id]/pdf', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

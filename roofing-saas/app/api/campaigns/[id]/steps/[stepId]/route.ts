@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
+import { AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type {
@@ -15,22 +15,9 @@ import type {
  *
  * Body: UpdateCampaignStepRequest
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; stepId: string }> }
-) {
+export const PATCH = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -123,28 +110,15 @@ export async function PATCH(
     logger.error('Error in PATCH /api/campaigns/:id/steps/:stepId', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/campaigns/:id/steps/:stepId
  * Delete campaign step (admin only)
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; stepId: string }> }
-) {
+export const DELETE = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -181,4 +155,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/campaigns/:id/steps/:stepId', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

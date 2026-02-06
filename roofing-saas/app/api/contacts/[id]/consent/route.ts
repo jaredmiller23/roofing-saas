@@ -8,7 +8,7 @@
  */
 
 import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams, type AuthContext } from '@/lib/auth/with-auth'
 import {
   captureCallConsent,
   revokeConsent,
@@ -21,7 +21,7 @@ import {
 } from '@/lib/compliance'
 import type { ConsentMethod, ConsentType } from '@/lib/compliance'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
+import { ValidationError } from '@/lib/api/errors'
 import { z } from 'zod'
 
 // Validation schemas
@@ -43,17 +43,13 @@ const revokeConsentSchema = z.object({
  * POST /api/contacts/[id]/consent
  * Capture TCPA-compliant consent with full proof
  */
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { userId, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const { id: contactId } = await context.params
-    const user = await getCurrentUser()
-    if (!user) throw AuthenticationError('Not authenticated')
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) throw AuthorizationError('No tenant access')
+    const { id: contactId } = await params
 
     const body = await request.json()
     const validated = captureConsentSchema.parse(body)
@@ -95,7 +91,7 @@ export async function POST(
       method: validated.method as ConsentMethod,
       legalText,
       formVersion: validated.formVersion,
-      userId: user.id,
+      userId,
     })
 
     if (!result.success) {
@@ -113,23 +109,19 @@ export async function POST(
     }
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * GET /api/contacts/[id]/consent
  * Retrieve consent proof for audits and lawsuit defense
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const { id: contactId } = await context.params
-    const user = await getCurrentUser()
-    if (!user) throw AuthenticationError('Not authenticated')
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) throw AuthorizationError('No tenant access')
+    const { id: contactId } = await params
 
     const proof = await getConsentProof(contactId, tenantId)
 
@@ -147,23 +139,19 @@ export async function GET(
   } catch (error) {
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * DELETE /api/contacts/[id]/consent
  * Revoke consent (process opt-out request)
  */
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const { id: contactId } = await context.params
-    const user = await getCurrentUser()
-    if (!user) throw AuthenticationError('Not authenticated')
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) throw AuthorizationError('No tenant access')
+    const { id: contactId } = await params
 
     const body = await request.json()
     const validated = revokeConsentSchema.parse(body)
@@ -190,4 +178,4 @@ export async function DELETE(
     }
     return errorResponse(error as Error)
   }
-}
+})

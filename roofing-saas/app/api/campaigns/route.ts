@@ -1,8 +1,8 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
+import { AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { requireFeature } from '@/lib/billing/feature-gates'
@@ -22,18 +22,8 @@ import type {
  * - campaign_type: 'drip' | 'event' | 'reengagement' | 'retention' | 'nurture' (optional)
  * - include_deleted: boolean (default: false)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Check feature access
     try {
       await requireFeature(tenantId, 'campaigns')
@@ -82,7 +72,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/campaigns', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/campaigns
@@ -90,18 +80,8 @@ export async function GET(request: NextRequest) {
  *
  * Body: CreateCampaignRequest
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { user, userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Check feature access
     try {
       await requireFeature(tenantId, 'campaigns')
@@ -109,7 +89,7 @@ export async function POST(request: NextRequest) {
       throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -157,7 +137,7 @@ export async function POST(request: NextRequest) {
         business_hours: (body.business_hours || null) as Json | null,
         enrollment_type: body.enrollment_type || 'automatic',
         max_enrollments: body.max_enrollments || null,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -176,4 +156,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/campaigns', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

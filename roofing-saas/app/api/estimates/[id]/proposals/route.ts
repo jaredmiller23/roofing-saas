@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -12,23 +12,13 @@ import { logger } from '@/lib/logger'
  * The [id] parameter is the project_id.
  * Returns proposals ordered by most recent first.
  */
-export async function GET(
+export const GET = withAuthParams(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
 
     const supabase = await createClient()
 
@@ -65,4 +55,4 @@ export async function GET(
     logger.error('Error in GET /api/estimates/[id]/proposals', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,10 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
   mapZodError,
 } from '@/lib/api/errors'
@@ -76,21 +74,11 @@ function addressMatch(
  * POST /api/contacts/check-duplicate
  * Check for potential duplicate contacts
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }: AuthContext) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/contacts/check-duplicate', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/contacts/check-duplicate', { tenantId, userId })
 
     const body = await request.json()
 
@@ -255,4 +243,4 @@ export async function POST(request: NextRequest) {
     logger.error('Check duplicate error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, NotFoundError, ValidationError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { AuthorizationError, InternalError, NotFoundError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -53,23 +53,13 @@ function resolveIsSelected(data: { is_recommended?: boolean; is_selected?: boole
 }
 
 // GET - List quote options for a project/estimate
-export async function GET(
+export const GET = withAuthParams(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
     const supabase = await createClient()
 
     // First verify the project exists and belongs to the tenant
@@ -131,26 +121,16 @@ export async function GET(
     logger.error('Error in GET /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // POST - Create new quote option
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
     const body = await request.json()
 
     // Validate input
@@ -253,26 +233,16 @@ export async function POST(
     logger.error('Error in POST /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // PATCH - Update quote option
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
     const body = await request.json()
 
     // Validate input
@@ -399,26 +369,16 @@ export async function PATCH(
     logger.error('Error in PATCH /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // DELETE - Delete quote option
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const resolvedParams = await params
-    const projectId = resolvedParams.id
+    const { id: projectId } = await params
     const url = new URL(request.url)
     const optionId = url.searchParams.get('option_id')
 
@@ -470,4 +430,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/estimates/[id]/options', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

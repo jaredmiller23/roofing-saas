@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -14,10 +13,7 @@ import { logger } from '@/lib/logger'
  * - Automatically marks inbound messages as read
  * - Tenant-isolated (only shows messages for user's org)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ contactId: string }> }
-) {
+export const GET = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   const startTime = Date.now()
 
   try {
@@ -29,17 +25,7 @@ export async function GET(
       throw ValidationError('Invalid contact ID format')
     }
 
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', `/api/messages/${contactId}`, { tenantId, userId: user.id, contactId })
+    logger.apiRequest('GET', `/api/messages/${contactId}`, { tenantId, userId, contactId })
 
     const supabase = await createClient()
 
@@ -63,7 +49,7 @@ export async function GET(
       .from('activities')
       .update({
         read_at: new Date().toISOString(),
-        read_by: user.id,
+        read_by: userId,
       })
       .eq('tenant_id', tenantId)
       .eq('contact_id', contactId)
@@ -91,4 +77,4 @@ export async function GET(
     logger.error('Failed to load messages', { error: (error as Error).message })
     return errorResponse(error as Error)
   }
-}
+})

@@ -1,10 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   InternalError,
 } from '@/lib/api/errors'
@@ -18,18 +16,8 @@ export const dynamic = 'force-dynamic'
  * Get all carrier patterns for the tenant
  * Optional filters: carrier_id, carrier_name, pattern_type
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
 
     // Get query parameters
@@ -101,24 +89,14 @@ export async function GET(request: NextRequest) {
     logger.error('[API] Error in GET /api/carriers/patterns:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/carriers/patterns
  * Create or increment a carrier pattern
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
     const body = await request.json()
 
@@ -301,24 +279,14 @@ export async function POST(request: NextRequest) {
     logger.error('[API] Error in POST /api/carriers/patterns:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/carriers/patterns
  * Delete a specific carrier pattern (pattern_id in query params)
  */
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const patternId = request.nextUrl.searchParams.get('pattern_id')
     if (!patternId) {
       throw ValidationError('pattern_id query parameter is required')
@@ -350,4 +318,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('[API] Error in DELETE /api/carriers/patterns:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

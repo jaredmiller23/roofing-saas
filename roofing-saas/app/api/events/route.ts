@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
 import type { Database, Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { InternalError, ValidationError } from '@/lib/api/errors'
 import { paginatedResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { createEventSchema } from '@/lib/validations/event'
 
@@ -11,18 +11,8 @@ import { createEventSchema } from '@/lib/validations/event'
  * GET /api/events
  * List all events with filtering and pagination
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10'))) // Max 100 per page
@@ -81,24 +71,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/events:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/events
  * Create a new event
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
 
     // Validate input - prevents clients from setting server-controlled fields
@@ -112,7 +92,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Use organizer from validated data if provided, otherwise default to current user
-    const organizer = validatedData.organizer || user.id
+    const organizer = validatedData.organizer || userId
 
     // external_attendees is not in the Zod schema but is a valid events column
     const externalAttendees = body.external_attendees ?? null
@@ -122,7 +102,7 @@ export async function POST(request: NextRequest) {
         ...validatedData,
         external_attendees: externalAttendees as Json | null,
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
         organizer: organizer,
       } as unknown as Database['public']['Tables']['events']['Insert'])
       .select()
@@ -138,4 +118,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/events:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

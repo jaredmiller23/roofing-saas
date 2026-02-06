@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export interface TeamMember {
@@ -18,18 +18,8 @@ export interface TeamMember {
  * Get list of team members in the current tenant
  * Available to all authenticated users (for event assignment, etc.)
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Step 1: Fetch tenant_users for this tenant
@@ -99,4 +89,4 @@ export async function GET() {
     logger.error('Error in GET /api/team-members:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

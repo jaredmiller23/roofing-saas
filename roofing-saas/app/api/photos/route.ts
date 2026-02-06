@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -15,22 +15,10 @@ import { createClient } from '@/lib/supabase/server'
  * - limit: Max results (default 50)
  * - offset: Pagination offset (default 0)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -80,7 +68,7 @@ export async function GET(request: NextRequest) {
     logger.error('Photos API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * DELETE /api/photos
@@ -89,22 +77,10 @@ export async function GET(request: NextRequest) {
  * Query params:
  * - id: Photo ID (required)
  */
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -157,4 +133,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('Photo delete error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

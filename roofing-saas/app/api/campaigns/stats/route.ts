@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -8,18 +8,8 @@ import { logger } from '@/lib/logger'
  * GET /api/campaigns/stats
  * Get aggregate campaign statistics for current tenant
  */
-export async function GET() {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const supabase = await createClient()
 
     // Get campaign counts by status
@@ -92,4 +82,4 @@ export async function GET() {
     logger.error('Error in GET /api/campaigns/stats', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

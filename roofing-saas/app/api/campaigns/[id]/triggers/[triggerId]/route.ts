@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, noContentResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -19,21 +18,8 @@ const triggerUpdateSchema = z.object({
  * PATCH /api/campaigns/[id]/triggers/[triggerId]
  * Update a campaign trigger
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; triggerId: string }> }
-) {
+export const PATCH = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaignId, triggerId } = await params
     const supabase = await createClient()
 
@@ -95,27 +81,14 @@ export async function PATCH(
     logger.error('Error in PATCH /api/campaigns/[id]/triggers/[triggerId]', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/campaigns/[id]/triggers/[triggerId]
  * Delete a campaign trigger
  */
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string; triggerId: string }> }
-) {
+export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaignId, triggerId } = await params
     const supabase = await createClient()
 
@@ -147,4 +120,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/campaigns/[id]/triggers/[triggerId]', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

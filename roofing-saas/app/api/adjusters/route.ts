@@ -1,10 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   InternalError,
 } from '@/lib/api/errors'
@@ -17,18 +15,8 @@ export const dynamic = 'force-dynamic'
  * GET /api/adjusters
  * List all adjusters (insurance_personnel) for the tenant
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
 
     // Get query parameters
@@ -117,24 +105,14 @@ export async function GET(request: NextRequest) {
     logger.error('[API] Error in GET /api/adjusters:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/adjusters
  * Create a new adjuster (insurance_personnel)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
     const body = await request.json()
 
@@ -243,4 +221,4 @@ export async function POST(request: NextRequest) {
     logger.error('[API] Error in POST /api/adjusters:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

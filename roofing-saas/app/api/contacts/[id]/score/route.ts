@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
+import { withAuthParams, type AuthContext } from '@/lib/auth/with-auth'
 import { calculateLeadScore } from '@/lib/scoring/lead-scorer'
 import type { Contact } from '@/lib/types/contact'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -11,20 +11,14 @@ import { logger } from '@/lib/logger'
  * GET /api/contacts/[id]/score
  * Calculate and return lead score for a specific contact
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const params = await context.params
+    const { id: contactId } = await params
 
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const contactId = params.id
     if (!contactId) {
       throw ValidationError('Contact ID is required')
     }
@@ -35,7 +29,7 @@ export async function GET(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !contact) {
@@ -53,7 +47,7 @@ export async function GET(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
 
     if (updateError) {
       logger.error('Failed to update lead score in database:', { error: updateError })
@@ -69,26 +63,20 @@ export async function GET(
     logger.error('Error calculating lead score:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/contacts/[id]/score
  * Recalculate and update lead score for a specific contact
  */
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const params = await context.params
+    const { id: contactId } = await params
 
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const contactId = params.id
     if (!contactId) {
       throw ValidationError('Contact ID is required')
     }
@@ -103,7 +91,7 @@ export async function POST(
       .from('contacts')
       .select('*')
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !contact) {
@@ -122,7 +110,7 @@ export async function POST(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
 
     if (updateError) {
       logger.error('Failed to update lead score in database:', { error: updateError })
@@ -141,26 +129,20 @@ export async function POST(
     logger.error('Error recalculating lead score:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/contacts/[id]/score
  * Manually override lead score for a specific contact
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+  { userId, tenantId }: AuthContext,
+  { params }
+) => {
   try {
-    const params = await context.params
+    const { id: contactId } = await params
 
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const contactId = params.id
     if (!contactId) {
       throw ValidationError('Contact ID is required')
     }
@@ -179,7 +161,7 @@ export async function PATCH(
       .from('contacts')
       .select('id, lead_score')
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !contact) {
@@ -196,7 +178,7 @@ export async function PATCH(
         updated_at: new Date().toISOString()
       })
       .eq('id', contactId)
-      .eq('tenant_id', (user as unknown as { tenant_id?: string }).tenant_id ?? '')
+      .eq('tenant_id', tenantId)
 
     if (updateError) {
       logger.error('Failed to update lead score in database:', { error: updateError })
@@ -213,11 +195,11 @@ export async function PATCH(
       scoreChange: score - previousScore,
       manualOverride: true,
       reason: reason || 'Manual override',
-      updatedBy: (user as unknown as { id?: string }).id,
+      updatedBy: userId,
       updatedAt: new Date().toISOString(),
     })
   } catch (error) {
     logger.error('Error updating lead score:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { NotFoundError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { errorResponse, createdResponse, paginatedResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type {
@@ -20,21 +19,8 @@ import type {
  * - limit: number (default: 50)
  * - offset: number (default: 0)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaign_id } = await params
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status') as EnrollmentStatus | null
@@ -94,7 +80,7 @@ export async function GET(
     logger.error('Error in GET /api/campaigns/:id/enrollments', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/campaigns/:id/enrollments
@@ -102,21 +88,8 @@ export async function GET(
  *
  * Body: EnrollContactRequest
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaign_id } = await params
     const body: EnrollContactRequest = await request.json()
 
@@ -198,7 +171,7 @@ export async function POST(
         tenant_id: tenantId,
         contact_id: body.contact_id,
         enrollment_source: body.enrollment_source || 'manual_admin',
-        enrolled_by: user.id,
+        enrolled_by: userId,
         status: 'active',
         current_step_id: firstStep?.id || null,
         current_step_order: firstStep?.step_order || 0,
@@ -220,4 +193,4 @@ export async function POST(
     logger.error('Error in POST /api/campaigns/:id/enrollments', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

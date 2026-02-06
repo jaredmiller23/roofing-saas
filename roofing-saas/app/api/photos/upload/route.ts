@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
 import { fileTypeFromBuffer } from 'file-type'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
+import { ValidationError } from '@/lib/api/errors'
 import { logger } from '@/lib/logger'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
 import { convertHeicToJpeg, isHeicBuffer, isHeicMimeType } from '@/lib/images/heic-converter'
@@ -26,22 +26,10 @@ const ALLOWED_IMAGE_TYPES = [
  * POST /api/photos/upload
  * Upload a photo and save metadata to database
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     // Parse multipart form data
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -179,8 +167,8 @@ export async function POST(request: NextRequest) {
     const random = Math.random().toString(36).substring(2, 8)
 
     // Always use .jpg extension since we convert HEIC to JPEG
-    const mainFilePath = `${user.id}/${year}/${month}/IMG_${timestamp}_${random}.jpg`
-    const thumbFilePath = `${user.id}/${year}/${month}/thumb_${timestamp}_${random}.jpg`
+    const mainFilePath = `${userId}/${year}/${month}/IMG_${timestamp}_${random}.jpg`
+    const thumbFilePath = `${userId}/${year}/${month}/thumb_${timestamp}_${random}.jpg`
 
     // Upload main image to Supabase Storage
     const { data: mainStorageData, error: mainStorageError } = await supabase.storage
@@ -247,7 +235,7 @@ export async function POST(request: NextRequest) {
         thumbnail_dimensions: thumbnailWidth > 0 ? { width: thumbnailWidth, height: thumbnailHeight } : null,
         ...metadata,
       },
-      uploaded_by: user.id,
+      uploaded_by: userId,
       is_deleted: false,
     }
 
@@ -262,7 +250,7 @@ export async function POST(request: NextRequest) {
 
     // Award points for photo upload (non-blocking)
     awardPointsSafe(
-      user.id,
+      userId,
       POINT_VALUES.PHOTO_UPLOADED,
       'Uploaded property photo',
       data.id
@@ -282,7 +270,7 @@ export async function POST(request: NextRequest) {
       if (photoCount && photoCount >= 5 && photoCount % 5 === 0) {
         // Award bonus for every 5 photos
         awardPointsSafe(
-          user.id,
+          userId,
           POINT_VALUES.PHOTO_SET_COMPLETED,
           `Completed photo set (${photoCount} photos)`,
           data.id
@@ -302,4 +290,4 @@ export async function POST(request: NextRequest) {
     logger.error('Photo upload error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

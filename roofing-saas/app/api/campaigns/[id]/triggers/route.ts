@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -19,21 +18,8 @@ const triggerSchema = z.object({
  * GET /api/campaigns/[id]/triggers
  * List triggers for a campaign
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaignId } = await params
     const supabase = await createClient()
 
@@ -65,27 +51,14 @@ export async function GET(
     logger.error('Error in GET /api/campaigns/[id]/triggers', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/campaigns/[id]/triggers
  * Create a new trigger for a campaign
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id: campaignId } = await params
     const supabase = await createClient()
 
@@ -136,4 +109,4 @@ export async function POST(
     logger.error('Error in POST /api/campaigns/[id]/triggers', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

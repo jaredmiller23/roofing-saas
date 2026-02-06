@@ -5,23 +5,13 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     const searchParams = request.nextUrl.searchParams
@@ -54,20 +44,10 @@ export async function GET(request: NextRequest) {
     logger.error('Crew members API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const {
@@ -120,20 +100,10 @@ export async function POST(request: NextRequest) {
     logger.error('Crew members API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const { id } = body
@@ -175,20 +145,10 @@ export async function PATCH(request: NextRequest) {
     logger.error('Crew members API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest, { tenantId }: AuthContext) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
@@ -218,4 +178,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('Crew members API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

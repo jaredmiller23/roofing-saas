@@ -5,24 +5,14 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const searchParams = request.nextUrl.searchParams
     const projectId = searchParams.get('project_id')
@@ -64,21 +54,11 @@ export async function GET(request: NextRequest) {
     logger.error('Job expenses API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const body = await request.json()
     const {
@@ -120,7 +100,7 @@ export async function POST(request: NextRequest) {
         notes,
         expense_date,
         paid_date,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -137,21 +117,11 @@ export async function POST(request: NextRequest) {
     logger.error('Job expenses API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const body = await request.json()
     const { id } = body
@@ -175,7 +145,7 @@ export async function PATCH(request: NextRequest) {
 
     // Set approval metadata from session if approving
     if (body.is_approved === true) {
-      updates.approved_by = user.id
+      updates.approved_by = userId
       updates.approved_at = new Date().toISOString()
     }
 
@@ -199,21 +169,11 @@ export async function PATCH(request: NextRequest) {
     logger.error('Job expenses API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
@@ -240,4 +200,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('Job expenses API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
