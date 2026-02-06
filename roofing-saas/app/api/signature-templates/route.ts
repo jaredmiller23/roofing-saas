@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapZodError,
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -51,20 +49,10 @@ export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
  * - page: page number (default 1)
  * - limit: items per page (default 20)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     logger.apiRequest('GET', '/api/signature-templates', { tenantId, userId: user.id })
 
     const searchParams = request.nextUrl.searchParams
@@ -110,26 +98,16 @@ export async function GET(request: NextRequest) {
     logger.error('Signature templates API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/signature-templates
  * Create a new signature document template
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     logger.apiRequest('POST', '/api/signature-templates', { tenantId, userId: user.id })
 
     const body = await request.json().catch(() => ({}))
@@ -172,4 +150,4 @@ export async function POST(request: NextRequest) {
     logger.error('Create signature template error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

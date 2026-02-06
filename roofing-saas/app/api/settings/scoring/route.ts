@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -49,18 +49,8 @@ const scoringConfigSchema = z.object({
  * GET /api/settings/scoring
  * Fetch lead scoring configuration for the current tenant
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -97,24 +87,14 @@ export async function GET() {
     logger.error('Error in GET /api/settings/scoring', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/settings/scoring
  * Update lead scoring configuration (upsert)
  */
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const validation = scoringConfigSchema.safeParse(body)
 
@@ -190,4 +170,4 @@ export async function PATCH(request: NextRequest) {
     logger.error('Error in PATCH /api/settings/scoring', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

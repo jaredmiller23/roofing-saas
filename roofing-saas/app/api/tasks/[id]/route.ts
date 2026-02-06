@@ -1,8 +1,8 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -10,21 +10,12 @@ import { logger } from '@/lib/logger'
  * GET /api/tasks/[id]
  * Get a single task by ID
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -54,27 +45,18 @@ export async function GET(
     logger.error('Error in GET /api/tasks/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/tasks/[id]
  * Update a task
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id } = await params
     const body = await request.json()
 
@@ -148,27 +130,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/tasks/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/tasks/[id]
  * Soft delete a task
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -188,4 +161,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/tasks/:id', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,8 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   NotFoundError,
   ValidationError,
   InternalError
@@ -23,23 +21,14 @@ import { isResendConfigured } from '@/lib/resend/client'
  * - message: string (optional custom message)
  * - expiration_days: number (default 30)
  */
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
     const body = await request.json().catch(() => ({}))
     const {
@@ -251,4 +240,4 @@ export async function POST(
     logger.error('Error sending signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

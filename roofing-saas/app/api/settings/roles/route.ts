@@ -1,25 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings/roles
  * Get all roles for tenant
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     const { data: roles, error } = await supabase
@@ -37,24 +27,14 @@ export async function GET() {
     logger.error('Error fetching roles:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/settings/roles
  * Create a new role
  */
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const { name, description, permissions, is_system } = body
 
@@ -86,4 +66,4 @@ export async function POST(request: Request) {
     logger.error('Error creating role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

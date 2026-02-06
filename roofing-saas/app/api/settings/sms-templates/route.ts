@@ -1,25 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings/sms-templates
  * Get all SMS templates for tenant
  */
-export async function GET(request: Request) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
 
@@ -45,24 +35,14 @@ export async function GET(request: Request) {
     logger.error('Error fetching SMS templates:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/settings/sms-templates
  * Create a new SMS template
  */
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const {
       name,
@@ -109,4 +89,4 @@ export async function POST(request: Request) {
     logger.error('Error creating SMS template:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

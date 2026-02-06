@@ -1,8 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   InternalError
 } from '@/lib/api/errors'
@@ -38,20 +36,10 @@ const signatureFieldsSchema = z.array(signatureFieldSchema).optional().default([
  * - limit: max results (default 50)
  * - offset: pagination offset
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
     const projectId = searchParams.get('project_id')
@@ -115,7 +103,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error fetching signature documents', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/signature-documents
@@ -133,20 +121,10 @@ export async function GET(request: NextRequest) {
  * - requires_company_signature: boolean
  * - expires_at: timestamp
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const body = await request.json().catch(() => ({}))
     const {
       title,
@@ -258,4 +236,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error creating signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

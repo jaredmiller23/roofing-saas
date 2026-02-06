@@ -1,8 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   NotFoundError,
   ValidationError
 } from '@/lib/api/errors'
@@ -17,23 +15,14 @@ import { generateSignedPDF, uploadPDFToStorage, type SignatureData } from '@/lib
  *
  * Returns the PDF file with signatures embedded
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
 
     logger.apiRequest('GET', `/api/signature-documents/${id}/download`, {
@@ -155,4 +144,4 @@ export async function GET(
     logger.error('Error downloading signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

@@ -1,7 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
   AuthorizationError,
   NotFoundError,
   InternalError
@@ -15,23 +14,14 @@ import { hasPermission } from '@/lib/auth/permissions'
  * GET /api/signature-documents/[id]
  * Get a single signature document by ID
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
 
     logger.apiRequest('GET', `/api/signature-documents/${id}`, { tenantId, id })
@@ -65,7 +55,7 @@ export async function GET(
     logger.error('Error fetching signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * PATCH /api/signature-documents/[id]
@@ -79,23 +69,14 @@ export async function GET(
  *
  * Body: Partial document fields to update
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
     const updates = await request.json().catch(() => ({}))
 
@@ -186,7 +167,7 @@ export async function PATCH(
     logger.error('Error updating signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * DELETE /api/signature-documents/[id]
@@ -199,23 +180,14 @@ export async function PATCH(
  *   Also sets status to 'expired' to invalidate the signing link
  * - expired/declined: only users with signatures.delete permission (admin/owner)
  */
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
 
     logger.apiRequest('DELETE', `/api/signature-documents/${id}`, { tenantId, id })
@@ -288,4 +260,4 @@ export async function DELETE(
     logger.error('Error deleting signature document', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

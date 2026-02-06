@@ -3,11 +3,9 @@
  * Manually resend a signature reminder email
  */
 
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   NotFoundError,
   ValidationError
 } from '@/lib/api/errors'
@@ -41,23 +39,14 @@ interface DocumentRecord {
   } | null
 }
 
-export async function POST(
+export const POST = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { user, tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated (debug: getCurrentUser returned null)')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError(`User is not associated with a tenant (debug: userId=${user.id}, email=${user.email})`)
-    }
-
     const { id } = await params
 
     logger.info('Resend request started', {
@@ -198,4 +187,4 @@ export async function POST(
     logger.error('Error resending signature reminder', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

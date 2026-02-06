@@ -44,22 +44,21 @@ When these drift apart, you get:
 | Zod Schema | `lib/validations/task.ts` |
 | Form Component | `components/tasks/TaskFormEnhanced.tsx` |
 
-**Status**: DRIFTED. Zod schema defines fields not present in the DB migration.
+**Status**: Aligned (as of Feb 5 2026). All fields exist in DB via later migrations.
 
-**Fields in Zod but NOT in migration**:
+**Note**: The initial migration (`20251003000300`) only creates basic fields. Two subsequent migrations add the full schema:
+- `20251003001200_create_task_management.sql` — adds `start_date`, `parent_task_id`, `progress`, `estimated_hours`, `actual_hours`, `reminder_enabled`, `reminder_date`, `tags`, and more
+- `20251003001300_enhance_task_management.sql` — idempotent ALTERs for same fields
 
-| Field | In Zod | In DB | Risk |
-|-------|--------|-------|------|
-| `start_date` | `z.string().optional()` | Missing | Silently dropped on insert |
-| `parent_task_id` | `z.string().uuid().optional()` | Missing | Silently dropped on insert |
-| `progress` | `z.number().min(0).max(100)` | Missing | Silently dropped on insert |
-| `estimated_hours` | `z.number().min(0)` | Missing | Silently dropped on insert |
-| `actual_hours` | `z.number().min(0)` | Missing | Silently dropped on insert |
-| `reminder_enabled` | `z.boolean()` | Missing | Silently dropped on insert |
-| `reminder_date` | `z.string().optional()` | Missing | Silently dropped on insert |
-| `tags` | `z.array(z.string())` | Missing | Silently dropped on insert |
+**Minor type mismatches** (low risk, form defaults handle these):
 
-**Action needed**: Either add these columns via migration, or remove them from the Zod schema and form to stop exposing non-functional UI.
+| Field | Zod | DB | Risk |
+|-------|-----|-----|------|
+| `progress` | `z.number().int()` (required) | `INTEGER DEFAULT 0` (nullable) | Form defaults to 0 — works |
+| `reminder_enabled` | `z.boolean()` (required) | `BOOLEAN DEFAULT false` (nullable) | Form defaults to false — works |
+| `tags` | `z.array(z.string())` (required) | `TEXT[]` (nullable) | Form defaults to [] — works |
+
+**Action needed**: Consider adding `.optional().nullable()` to `progress`, `reminder_enabled`, `tags` in Zod for consistency with DB types. Low priority — form defaults prevent issues.
 
 **Core fields (aligned across all 3 layers)**: `title`*, `description`, `project_id`, `contact_id`, `assigned_to`, `due_date`, `priority` (low/medium/high), `status` (todo/in_progress/completed/cancelled).
 

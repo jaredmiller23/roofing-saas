@@ -1,8 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   InternalError,
   NotFoundError,
   mapZodError,
@@ -43,23 +41,14 @@ const updateTemplateSchema = z.object({
  * GET /api/signature-templates/[id]
  * Get a specific signature template by ID
  */
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
     const templateId = id
 
@@ -99,29 +88,20 @@ export async function GET(
     logger.error('Error fetching template', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * PATCH /api/signature-templates/[id]
  * Update a signature template
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
     const body = await request.json().catch(() => ({}))
 
@@ -169,29 +149,20 @@ export async function PATCH(
     logger.error('Error updating template', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * DELETE /api/signature-templates/[id]
  * Soft-delete a signature template
  */
-export async function DELETE(
+export const DELETE = withAuthParams(async (
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const { id } = await params
 
     logger.apiRequest('DELETE', `/api/signature-templates/${id}`, {
@@ -226,4 +197,4 @@ export async function DELETE(
     logger.error('Error deleting template', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

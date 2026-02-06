@@ -1,28 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * PATCH /api/settings/roles/[id]
  * Update a role
  */
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PATCH = withAuthParams(async (
+  request,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const body = await request.json()
     const supabase = await createClient()
@@ -64,27 +55,18 @@ export async function PATCH(
     logger.error('Error updating role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/settings/roles/[id]
  * Delete a role
  */
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -115,4 +97,4 @@ export async function DELETE(
     logger.error('Error deleting role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

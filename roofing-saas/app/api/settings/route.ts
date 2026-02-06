@@ -1,25 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/settings
  * Get tenant settings
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Get tenant settings
@@ -81,24 +71,14 @@ export async function GET() {
     logger.error('Error fetching settings:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PUT /api/settings
  * Update tenant settings
  */
-export async function PUT(request: Request) {
+export const PUT = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const supabase = await createClient()
 
@@ -194,4 +174,4 @@ export async function PUT(request: Request) {
     logger.error('Error updating settings:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
