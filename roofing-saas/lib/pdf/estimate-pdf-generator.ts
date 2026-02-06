@@ -117,7 +117,7 @@ export async function generateEstimatePDF(data: EstimatePDFData): Promise<Uint8A
     drawFooter(page, font, data, width)
   }
 
-  return pdfDoc.save()
+  return await pdfDoc.save()
 }
 
 function drawHeader(

@@ -10,6 +10,13 @@ const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV !== 'production', // Only enable for production builds (Serwist requires webpack)
+  exclude: [
+    // Font files are processed by next/font/local and served at hashed /_next/static/media/ URLs.
+    // The originals in /public/fonts/ are never served, so precaching them causes 404 errors.
+    /\/fonts\//,
+    // sw-custom.js is a legacy service worker that conflicts with the Serwist-managed sw.js
+    /sw-custom\.js$/,
+  ],
 });
 
 // Note: Runtime caching strategies have been moved to app/sw.ts
