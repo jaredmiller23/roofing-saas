@@ -48,6 +48,11 @@ async function queryMetrics(since: string, orderBy: string, limit: number): Prom
 }
 
 export async function GET(request: NextRequest) {
+  // Restrict to development environment only
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not available in production' }, { status: 404 })
+  }
+
   const searchParams = request.nextUrl.searchParams
   const hours = parseInt(searchParams.get('hours') || '1')
   const limit = parseInt(searchParams.get('limit') || '500')

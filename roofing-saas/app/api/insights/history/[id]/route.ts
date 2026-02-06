@@ -1,20 +1,27 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { ValidationError, InternalError } from '@/lib/api/errors'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const body = await request.json()
-    const { userId, tenantId } = body
     const resolvedParams = await params
     const queryId = resolvedParams.id
 
-    if (!userId || !tenantId || !queryId) {
-      return errorResponse(ValidationError('Missing required fields'))
+    // Server-side authentication
+    const user = await getCurrentUser()
+    if (!user) {
+      return errorResponse(AuthorizationError('Authentication required'))
+    }
+
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      return errorResponse(AuthorizationError('No tenant access'))
     }
 
     const supabase = await createClient()

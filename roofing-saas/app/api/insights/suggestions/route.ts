@@ -1,18 +1,24 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId, getUserRole } from '@/lib/auth/session'
 import { type QuerySuggestion } from '@/lib/ai/query-types'
-import { ValidationError } from '@/lib/api/errors'
+import { AuthorizationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const url = new URL(request.url)
-    const role = url.searchParams.get('role') || 'user'
-    const tenantId = url.searchParams.get('tenant')
-
-    if (!tenantId) {
-      return errorResponse(ValidationError('Tenant ID required'))
+    // Server-side authentication
+    const user = await getCurrentUser()
+    if (!user) {
+      return errorResponse(AuthorizationError('Authentication required'))
     }
+
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      return errorResponse(AuthorizationError('No tenant access'))
+    }
+
+    const role = await getUserRole(userId) || 'user'
 
     const supabase = await createClient()
 

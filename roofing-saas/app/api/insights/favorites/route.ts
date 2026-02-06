@@ -1,15 +1,28 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { ValidationError, NotFoundError, AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { queryId, userId, tenantId } = body
+    const { queryId } = body
 
-    if (!queryId || !userId || !tenantId) {
-      return errorResponse(ValidationError('Missing required fields'))
+    if (!queryId) {
+      return errorResponse(ValidationError('Missing required field: queryId'))
+    }
+
+    // Server-side authentication
+    const user = await getCurrentUser()
+    if (!user) {
+      return errorResponse(AuthorizationError('Authentication required'))
+    }
+
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      return errorResponse(AuthorizationError('No tenant access'))
     }
 
     const supabase = await createClient()

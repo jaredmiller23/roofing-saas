@@ -16,14 +16,10 @@ import {
 } from '@/lib/ai/query-types'
 
 interface InsightsPageClientProps {
-  userId: string
-  tenantId: string
   userRole: string
 }
 
 export function InsightsPageClient({
-  userId,
-  tenantId,
   userRole
 }: InsightsPageClientProps) {
   const { isOpen, setIsOpen } = useQueryInput()
@@ -41,16 +37,16 @@ export function InsightsPageClient({
   // Load initial data functions wrapped in useCallback
   const loadSuggestions = React.useCallback(async () => {
     try {
-      const data = await apiFetch<{ suggestions: QuerySuggestion[] }>(`/api/insights/suggestions?role=${userRole}&tenant=${tenantId}`)
+      const data = await apiFetch<{ suggestions: QuerySuggestion[] }>('/api/insights/suggestions')
       setSuggestions(data.suggestions || [])
     } catch (error) {
       console.error('Failed to load suggestions:', error)
     }
-  }, [userRole, tenantId])
+  }, [])
 
   const loadQueryHistory = React.useCallback(async () => {
     try {
-      const data = await apiFetch<{ history: QueryHistoryType[] }>(`/api/insights/history?tenant=${tenantId}&userId=${userId}`)
+      const data = await apiFetch<{ history: QueryHistoryType[] }>('/api/insights/history')
       setQueryHistory(data.history || [])
 
       // Extract recent and favorite queries
@@ -69,7 +65,7 @@ export function InsightsPageClient({
     } catch (error) {
       console.error('Failed to load query history:', error)
     }
-  }, [tenantId, userId])
+  }, [])
 
   React.useEffect(() => {
     loadSuggestions()
@@ -85,12 +81,7 @@ export function InsightsPageClient({
     try {
       const data = await apiFetch<{ result: QueryResult }>('/api/insights/query', {
         method: 'POST',
-        body: {
-          query,
-          userId,
-          tenantId,
-          userRole
-        }
+        body: { query }
       })
 
       setCurrentResult(data.result)
@@ -132,11 +123,7 @@ export function InsightsPageClient({
       try {
         await apiFetch('/api/insights/favorites', {
           method: 'POST',
-          body: {
-            queryId,
-            userId,
-            tenantId
-          }
+          body: { queryId }
         })
 
         loadQueryHistory() // Reload to reflect changes
@@ -155,11 +142,7 @@ export function InsightsPageClient({
   const handleDeleteQuery = async (queryId: string) => {
     try {
       await apiFetch(`/api/insights/history/${queryId}`, {
-        method: 'DELETE',
-        body: {
-          userId,
-          tenantId
-        }
+        method: 'DELETE'
       })
 
       loadQueryHistory() // Reload to reflect changes

@@ -44,10 +44,11 @@ export async function POST(request: NextRequest) {
       throw ValidationError('Missing required field: stormEvent')
     }
 
-    // Get all contacts with coordinates
+    // Get all contacts with coordinates for this tenant
     const { data: contacts, error: contactsError } = await supabase
       .from('contacts')
       .select('*')
+      .eq('tenant_id', tenantId)
       .not('latitude', 'is', null)
       .not('longitude', 'is', null)
       .eq('is_deleted', false)

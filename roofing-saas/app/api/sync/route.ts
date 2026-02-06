@@ -5,9 +5,10 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getUserTenantId } from '@/lib/auth/session';
 import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { AuthenticationError, ValidationError } from '@/lib/api/errors';
+import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
 export interface SyncRequest {
@@ -63,6 +64,11 @@ export async function POST(request: NextRequest) {
       throw AuthenticationError('Unauthorized');
     }
 
+    const tenantId = await getUserTenantId(user.id);
+    if (!tenantId) {
+      throw AuthorizationError('No tenant access');
+    }
+
     // Parse request body
     const body: SyncRequest = await request.json();
     const { operations, client_timestamp, conflict_resolution = 'merge' } = body;
@@ -74,6 +80,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Sync request received', {
       userId: user.id,
+      tenantId,
       operationCount: operations.length,
       clientTimestamp: client_timestamp
     });
@@ -86,9 +93,9 @@ export async function POST(request: NextRequest) {
     for (const operation of operations) {
       try {
         const result = await processOperation(
-          supabase, 
-          user.id, 
-          operation, 
+          supabase,
+          tenantId,
+          operation,
           conflict_resolution
         );
         
@@ -147,7 +154,7 @@ export async function POST(request: NextRequest) {
  */
 async function processOperation(
   supabase: SupabaseClient,
-  userId: string,
+  tenantId: string,
   operation: SyncOperation,
   conflictResolution: string
 ): Promise<SyncResult> {
@@ -155,36 +162,36 @@ async function processOperation(
 
   // Validate table name (security)
   const allowedTables = [
-    'contacts', 'projects', 'activities', 'notes', 'photos', 
+    'contacts', 'projects', 'activities', 'notes', 'photos',
     'estimates', 'documents', 'tasks', 'appointments'
   ];
-  
+
   if (!allowedTables.includes(table)) {
     throw new Error(`Table '${table}' is not allowed for sync operations`);
   }
 
-  // Add user context to data
-  const dataWithUser = {
+  // Add tenant context to data — use actual tenant ID, not user ID
+  const dataWithTenant = {
     ...data,
-    tenant_id: userId, // Ensure data belongs to the user
+    tenant_id: tenantId,
   };
 
   switch (op) {
     case 'CREATE':
-      return await handleCreate(supabase, table, dataWithUser, id);
-      
+      return await handleCreate(supabase, table, dataWithTenant, id);
+
     case 'UPDATE':
       return await handleUpdate(
-        supabase, 
-        table, 
-        dataWithUser, 
+        supabase,
+        table,
+        dataWithTenant,
         client_timestamp,
         conflictResolution,
         id
       );
-      
+
     case 'DELETE':
-      return await handleDelete(supabase, table, data.id as string, userId, id);
+      return await handleDelete(supabase, table, data.id as string, tenantId, id);
       
     default:
       throw new Error(`Unknown operation: ${op}`);
@@ -314,18 +321,19 @@ async function handleDelete(
   supabase: SupabaseClient,
   table: string,
   recordId: string,
-  userId: string,
+  tenantId: string,
   operationId: string
 ): Promise<SyncResult> {
   if (!recordId) {
     throw new Error('Record ID is required for delete operations');
   }
 
+  // Soft delete per codebase standard — never hard delete
   const { error } = await supabase
     .from(table)
-    .delete()
+    .update({ is_deleted: true, updated_at: new Date().toISOString() })
     .eq('id', recordId)
-    .eq('tenant_id', userId);
+    .eq('tenant_id', tenantId);
 
   if (error) {
     throw new Error(`Delete failed: ${error.message}`);

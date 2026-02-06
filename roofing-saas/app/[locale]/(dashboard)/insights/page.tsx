@@ -1,4 +1,4 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { getCurrentUser, getUserTenantId, getUserRole } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
 import { InsightsPageClient } from './insights-client'
 
@@ -13,13 +13,10 @@ export default async function InsightsPage() {
     redirect('/register')
   }
 
-  // Get user metadata for role-based suggestions
-  const userRole = user.user_metadata?.role || 'user'
+  const userRole = await getUserRole(user.id) || 'user'
 
   return (
     <InsightsPageClient
-      userId={user.id}
-      tenantId={tenantId}
       userRole={userRole}
     />
   )

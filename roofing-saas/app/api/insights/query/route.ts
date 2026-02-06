@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getUserTenantId, getUserRole } from '@/lib/auth/session'
 import { queryInterpreter } from '@/lib/ai/query-interpreter'
 import { sqlGenerator } from '@/lib/ai/sql-generator'
 import {
@@ -14,43 +15,34 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { query, userId, tenantId, userRole } = body
+    const { query } = body
 
-    if (!query || !userId || !tenantId) {
-      return errorResponse(ValidationError('Missing required fields'))
+    if (!query) {
+      return errorResponse(ValidationError('Missing required field: query'))
     }
+
+    // Server-side authentication — never trust client-provided identity
+    const user = await getCurrentUser()
+    if (!user) {
+      return errorResponse(AuthorizationError('Authentication required'))
+    }
+
+    const userId = user.id
+    const tenantId = await getUserTenantId(userId)
+    if (!tenantId) {
+      return errorResponse(AuthorizationError('No tenant access'))
+    }
+
+    const userRole = await getUserRole(userId) || 'viewer'
 
     const startTime = Date.now()
     const supabase = await createClient()
-
-    // Verify user has access to tenant
-    let userAccess: { role: string } | null = null
-
-    // In development mode, allow bypassing auth for testing
-    if (process.env.NODE_ENV === 'development' && userId.startsWith('test-')) {
-      console.log('Development mode: bypassing auth check for test user')
-      userAccess = { role: userRole || 'admin' }
-    } else {
-      const { data, error: accessError } = await supabase
-        .from('tenant_users')
-        .select('role')
-        .eq('tenant_id', tenantId)
-        .eq('user_id', userId)
-        .single()
-
-      if (accessError || !data) {
-        console.error('User access check failed:', { accessError, userId, tenantId })
-        return errorResponse(AuthorizationError('Unauthorized access to tenant data. Please ensure you are properly logged in and have access to this workspace.'))
-      }
-
-      userAccess = { role: data.role ?? 'viewer' }
-    }
 
     // Build query context
     const context: QueryContext = {
       userId,
       tenantId,
-      userRole: userRole || userAccess!.role,
+      userRole,
       availableTables: ['contacts', 'projects', 'project_profit_loss'],
       permissions: ['SELECT'] // Only allow read operations
     }
@@ -381,22 +373,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Rate limiting helper (in production, use Redis or similar)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
-
-function _checkRateLimit(userId: string, maxRequests = 50, windowMs = 60000): boolean {
-  const now = Date.now()
-  const userLimit = rateLimitStore.get(userId)
-
-  if (!userLimit || now > userLimit.resetTime) {
-    rateLimitStore.set(userId, { count: 1, resetTime: now + windowMs })
-    return true
-  }
-
-  if (userLimit.count >= maxRequests) {
-    return false
-  }
-
-  userLimit.count++
-  return true
-}
