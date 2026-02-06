@@ -5,20 +5,15 @@
 // Purpose: Create a new MFA challenge for verification
 // =============================================
 
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createMFAChallenge } from '@/lib/auth/mfa'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const body = await request.json()
     const { factorId } = body
 
@@ -37,4 +32,4 @@ export async function POST(request: Request) {
     logger.error('Error creating MFA challenge:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

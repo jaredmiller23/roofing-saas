@@ -5,9 +5,11 @@
 // Purpose: Get current user's permissions
 // =============================================
 
-import { getCurrentUser, getUserRole } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
+import { getUserRole } from '@/lib/auth/session'
 import { getUserPermissions } from '@/lib/auth/permissions'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -15,14 +17,8 @@ import { logger } from '@/lib/logger'
  * GET /api/auth/permissions
  * Get the current user's permissions
  */
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const [permissions, role] = await Promise.all([
       getUserPermissions(user.id),
       getUserRole(user.id),
@@ -37,4 +33,4 @@ export async function GET() {
     logger.error('Error fetching permissions:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

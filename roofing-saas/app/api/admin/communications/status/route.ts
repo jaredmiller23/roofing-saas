@@ -1,6 +1,6 @@
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { getComplianceStats } from '@/lib/twilio/compliance'
 
@@ -8,18 +8,8 @@ import { getComplianceStats } from '@/lib/twilio/compliance'
  * GET /api/admin/communications/status
  * Returns communications configuration status, activity stats, and compliance overview
  */
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const supabase = await createClient()
 
     // Check Twilio configuration
@@ -146,4 +136,4 @@ export async function GET() {
   } catch (error) {
     return errorResponse(error as Error)
   }
-}
+})

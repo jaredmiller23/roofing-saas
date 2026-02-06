@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
 import {
-  AuthenticationError,
   AuthorizationError,
   ValidationError,
   InternalError
@@ -16,20 +16,10 @@ import type { AuditLogFilters, AuditEntry } from '@/lib/audit/audit-types'
  * Export audit log entries as CSV for compliance reporting
  * Admin-only endpoint
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Check if user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
@@ -160,7 +150,7 @@ export async function GET(request: NextRequest) {
     logger.error('Audit log export API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * Generate CSV content from audit entries
@@ -235,20 +225,10 @@ function generateCSV(entries: AuditEntry[]): string {
  * Generate audit report with custom format (PDF, detailed CSV, etc.)
  * Admin-only endpoint for advanced compliance reporting
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Check if user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
@@ -358,4 +338,4 @@ export async function POST(request: NextRequest) {
     logger.error('Custom audit report export error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

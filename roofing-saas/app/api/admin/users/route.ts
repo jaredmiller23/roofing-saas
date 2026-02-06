@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
+import { AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type { UserForImpersonation } from '@/lib/impersonation/types'
@@ -19,22 +20,12 @@ interface AuthUserData {
  * Query params:
  * - exclude_admins: If true, exclude users with role='admin' (default: false)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Verify user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -104,4 +95,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/admin/users', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

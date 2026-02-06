@@ -6,8 +6,8 @@ import type {
 } from '@/lib/impersonation/types'
 import { IMPERSONATION_COOKIE_NAME } from '@/lib/impersonation/types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -15,13 +15,8 @@ import { logger } from '@/lib/logger'
  * GET /api/admin/impersonate/status
  * Check if currently impersonating another user
  */
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
 
@@ -105,4 +100,4 @@ export async function GET(_request: NextRequest) {
     logger.error('Error in GET /api/admin/impersonate/status', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

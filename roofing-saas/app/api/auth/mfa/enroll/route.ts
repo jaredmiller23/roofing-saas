@@ -6,20 +6,14 @@
 // =============================================
 
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { enrollMFA, generateRecoveryCodes } from '@/lib/auth/mfa'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const body = await request.json().catch(() => ({}))
     const friendlyName = body.friendlyName || 'Authenticator App'
 
@@ -42,4 +36,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error enrolling MFA:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

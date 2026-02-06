@@ -5,19 +5,15 @@
 // Purpose: Get current user's role in their tenant
 // =============================================
 
-import { getCurrentUser, getUserRole } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
+import { getUserRole } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const role = await getUserRole(user.id)
 
     return successResponse({
@@ -29,4 +25,4 @@ export async function GET() {
     logger.error('Error getting user role:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

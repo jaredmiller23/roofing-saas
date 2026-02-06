@@ -1,5 +1,6 @@
-import { getCurrentUser } from '@/lib/auth/session'
-import { AuthenticationError, ValidationError } from '@/lib/api/errors'
+import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
+import { ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { sendEmail, isValidEmail } from '@/lib/resend/email'
 import { z } from 'zod'
@@ -12,16 +13,11 @@ const testEmailSchema = z.object({
  * POST /api/admin/communications/test-email
  * Send a test email message (development mode only)
  */
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: NextRequest, { user }) => {
   try {
     // Only allow in development
     if (process.env.NODE_ENV !== 'development') {
       throw ValidationError('Test endpoints are only available in development mode')
-    }
-
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
     }
 
     const body = await request.json()
@@ -56,4 +52,4 @@ export async function POST(request: Request) {
   } catch (error) {
     return errorResponse(error as Error)
   }
-}
+})

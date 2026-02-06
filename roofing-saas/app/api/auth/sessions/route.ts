@@ -6,24 +6,18 @@
 // =============================================
 
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { getUserSessions, revokeSession, getRequestContext, parseUserAgent } from '@/lib/auth/sessions'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/auth/sessions
  * Get all active sessions for the current user
  */
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const sessions = await getUserSessions(user.id)
 
     // Get current request context to identify current session
@@ -53,20 +47,14 @@ export async function GET() {
     logger.error('Error getting sessions:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/auth/sessions
  * Revoke a specific session by ID
  */
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('id')
 
@@ -98,4 +86,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('Error revoking session:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

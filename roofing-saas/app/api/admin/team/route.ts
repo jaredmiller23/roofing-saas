@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
+import { AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -23,21 +24,11 @@ interface TeamMember {
  * GET /api/admin/team
  * Get list of team members for the tenant
  */
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -110,7 +101,7 @@ export async function GET() {
     logger.error('Error in GET /api/admin/team', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -122,21 +113,11 @@ const inviteSchema = z.object({
  * POST /api/admin/team
  * Invite a new team member
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const body = await request.json()
@@ -234,4 +215,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/admin/team', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -5,20 +5,15 @@
 // Purpose: Get current MFA status for authenticated user
 // =============================================
 
-import { getCurrentUser } from '@/lib/auth/session'
+import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { getMFAStatus, getAssuranceLevel } from '@/lib/auth/mfa'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET() {
+export const GET = withAuth(async (_request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const [mfaStatus, assuranceLevel] = await Promise.all([
       getMFAStatus(),
       getAssuranceLevel(),
@@ -37,4 +32,4 @@ export async function GET() {
     logger.error('Error getting MFA status:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

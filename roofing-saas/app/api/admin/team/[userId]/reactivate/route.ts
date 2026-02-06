@@ -7,35 +7,23 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
+import { AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
-
-interface RouteParams {
-  params: Promise<{ userId: string }>
-}
 
 /**
  * POST /api/admin/team/[userId]/reactivate
  * Reactivate a deactivated team member's account
  */
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withAuthParams(async (_request: NextRequest, { user, tenantId }, { params }) => {
   try {
     const { userId } = await params
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
 
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -82,4 +70,4 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     logger.error('Error in POST /api/admin/team/[userId]/reactivate', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

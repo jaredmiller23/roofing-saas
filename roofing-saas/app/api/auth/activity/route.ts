@@ -6,10 +6,10 @@
 // =============================================
 
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { getLoginHistory, LoginEventType } from '@/lib/auth/activity-log'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -21,14 +21,8 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  * - offset: number (default 0)
  * - types: comma-separated event types to filter
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { searchParams } = new URL(request.url)
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
     const offset = parseInt(searchParams.get('offset') || '0')
@@ -58,4 +52,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error getting login activity:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

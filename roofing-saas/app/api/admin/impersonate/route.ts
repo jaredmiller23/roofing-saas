@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
 import { cookies } from 'next/headers'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import type {
@@ -17,22 +18,12 @@ import { IMPERSONATION_COOKIE_NAME, IMPERSONATION_DURATION_HOURS } from '@/lib/i
  * POST /api/admin/impersonate
  * Start impersonating another user
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Verify user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     // Check if already impersonating
@@ -161,19 +152,14 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/admin/impersonate', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/admin/impersonate
  * Stop impersonating (exit impersonation session)
  */
-export async function DELETE(_request: NextRequest) {
+export const DELETE = withAuth(async (_request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get(IMPERSONATION_COOKIE_NAME)
 
@@ -221,4 +207,4 @@ export async function DELETE(_request: NextRequest) {
     logger.error('Error in DELETE /api/admin/impersonate', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

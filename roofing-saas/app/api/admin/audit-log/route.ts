@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
+import { isAdmin } from '@/lib/auth/session'
 import {
-  AuthenticationError,
   AuthorizationError,
   ValidationError,
   InternalError
@@ -16,20 +16,10 @@ import type { AuditLogResponse, AuditLogFilters, AuditEntry, AuditEntityType, Au
  * Fetch audit log entries with filtering and pagination
  * Admin-only endpoint for compliance and troubleshooting
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Check if user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
@@ -170,27 +160,17 @@ export async function GET(request: NextRequest) {
     logger.error('Audit log API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/admin/audit-log
  * Manual audit log creation (for system events, migration, etc.)
  * Admin-only endpoint
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Check if user is admin
     const userIsAdmin = await isAdmin(user.id)
     if (!userIsAdmin) {
@@ -273,4 +253,4 @@ export async function POST(request: NextRequest) {
     logger.error('Manual audit log creation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
