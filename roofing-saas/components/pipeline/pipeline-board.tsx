@@ -103,6 +103,18 @@ export function PipelineBoard() {
     fetchStages()
   }, [])
 
+  // Refetch stages when tab becomes visible (handles settings changes in other tabs)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchStages()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   // Fetch pipeline stages from database
   async function fetchStages() {
     try {
