@@ -10,7 +10,7 @@ import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
-import type { CreateDecisionInput, DecisionWithTask, DecisionStatus } from '@/lib/types/decision'
+import type { CreateDecisionInput, Decision, DecisionWithTask, DecisionStatus } from '@/lib/types/decision'
 
 export const dynamic = 'force-dynamic'
 
@@ -96,9 +96,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Map to expected format, extracting task title from joined data
-    const mappedDecisions: DecisionWithTask[] = (decisions || []).map(decision => {
-      // Handle the joined task data - it comes as an object or null
-      const taskData = decision.tasks as { title: string } | null
+    // Cast needed: decisions table not yet in generated Supabase types
+    type DecisionRow = Decision & { tasks: { title: string } | null }
+    const mappedDecisions: DecisionWithTask[] = ((decisions || []) as unknown as DecisionRow[]).map(decision => {
+      const taskData = decision.tasks
       return {
         id: decision.id,
         tenant_id: decision.tenant_id,
