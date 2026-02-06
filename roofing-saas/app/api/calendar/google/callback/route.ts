@@ -3,7 +3,7 @@
  * Handles the OAuth callback from Google
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { exchangeAuthCode, getGoogleUserInfo } from '@/lib/google/calendar-client'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
@@ -36,8 +36,10 @@ export async function GET(request: NextRequest) {
     // Handle OAuth errors
     if (error) {
       logger.error('Google OAuth error', { error })
-      return NextResponse.redirect(
-        `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent(error)}`
+      const oauthErrorUrl = `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent(error)}`
+      return new Response(
+        `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${oauthErrorUrl}"><script>window.location.replace(${JSON.stringify(oauthErrorUrl)})</script></head><body>Redirecting...</body></html>`,
+        { status: 200, headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' } }
       )
     }
 
@@ -49,8 +51,10 @@ export async function GET(request: NextRequest) {
     // Check state is not too old (5 minutes)
     if (Date.now() - stateData.timestamp > 5 * 60 * 1000) {
       logger.warn('Google OAuth state token expired', { timestamp: stateData.timestamp })
-      return NextResponse.redirect(
-        `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent('Authorization expired. Please try again.')}`
+      const expiredUrl = `${request.nextUrl.origin}${returnTo}?google_error=${encodeURIComponent('Authorization expired. Please try again.')}`
+      return new Response(
+        `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${expiredUrl}"><script>window.location.replace(${JSON.stringify(expiredUrl)})</script></head><body>Redirecting...</body></html>`,
+        { status: 200, headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' } }
       )
     }
 
@@ -127,20 +131,28 @@ export async function GET(request: NextRequest) {
     })
 
     // Redirect back to original page with success message and email
+    // Use client-side redirect to avoid next-intl middleware interfering with
+    // server-side NextResponse.redirect() which can cause 404 on locale routes
     const redirectUrl = new URL(`${request.nextUrl.origin}${returnTo}`)
     redirectUrl.searchParams.set('google_connected', 'true')
     if (googleEmail) {
       redirectUrl.searchParams.set('email', googleEmail)
     }
-    return NextResponse.redirect(redirectUrl.toString())
+    const targetUrl = redirectUrl.toString()
+    return new Response(
+      `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${targetUrl}"><script>window.location.replace(${JSON.stringify(targetUrl)})</script></head><body>Redirecting...</body></html>`,
+      { status: 200, headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' } }
+    )
   } catch (error) {
     logger.error('Google Calendar callback error', { error })
     // For OAuth flow, redirect with error rather than returning JSON
     if (error instanceof Error && (error.message.includes('Missing required') || error.message.includes('Invalid state') || error.message.includes('expired'))) {
       return errorResponse(error)
     }
-    return NextResponse.redirect(
-      `${request.nextUrl.origin}/en/events?google_error=Failed+to+connect`
+    const errorUrl = `${request.nextUrl.origin}/en/events?google_error=Failed+to+connect`
+    return new Response(
+      `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${errorUrl}"><script>window.location.replace(${JSON.stringify(errorUrl)})</script></head><body>Redirecting...</body></html>`,
+      { status: 200, headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' } }
     )
   }
 }

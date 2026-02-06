@@ -6,7 +6,7 @@ import { useRouter, Link } from '@/lib/i18n/navigation'
 import { useSearchParams, usePathname } from 'next/navigation'
 import { EventsTable } from '@/components/events/events-table'
 import { Calendar, List } from 'lucide-react'
-import { apiFetchPaginated } from '@/lib/api/client'
+import { apiFetch, apiFetchPaginated } from '@/lib/api/client'
 
 interface PageCalendarEvent {
   id: string
@@ -96,11 +96,22 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents()
-    // Check user preference for calendar type
-    const savedCalendarType = localStorage.getItem('calendarType')
-    if (savedCalendarType === 'google') {
-      setCalendarType('google')
-    }
+    // Auto-detect: if Google Calendar is connected, switch to Google tab
+    // This ensures users create events in Google Calendar (not local-only)
+    apiFetch<{ connected: boolean }>('/api/calendar/google/status')
+      .then((data) => {
+        if (data.connected) {
+          setCalendarType('google')
+          localStorage.setItem('calendarType', 'google')
+        } else {
+          const saved = localStorage.getItem('calendarType')
+          if (saved === 'google') setCalendarType('google')
+        }
+      })
+      .catch(() => {
+        const saved = localStorage.getItem('calendarType')
+        if (saved === 'google') setCalendarType('google')
+      })
   }, [])
 
   const fetchEvents = async (range?: Date[] | { start: Date; end: Date }) => {
@@ -185,12 +196,18 @@ export default function EventsPage() {
             </p>
           </div>
 
-          <Link
-            href="/events/new"
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
-          >
-            + Schedule Event
-          </Link>
+          {calendarType === 'google' && view === 'calendar' ? (
+            <p className="text-sm text-muted-foreground italic">
+              Click a time slot on the calendar to create a Google event
+            </p>
+          ) : (
+            <Link
+              href="/events/new"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+            >
+              + Schedule Event
+            </Link>
+          )}
         </div>
 
         {/* View Toggle */}
