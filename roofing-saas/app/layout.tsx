@@ -1,26 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Pacifico } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { PWAProvider } from "@/components/pwa";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "sonner";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "../public/fonts/GeistSans-Latin.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
   display: 'swap',
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../public/fonts/GeistMono-Latin.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
   display: 'swap',
 });
 
-const pacifico = Pacifico({
-  weight: "400",
+const pacifico = localFont({
+  src: "../public/fonts/Pacifico-Regular.woff2",
   variable: "--font-pacifico",
-  subsets: ["latin"],
   display: 'swap',
 });
 
@@ -126,10 +125,6 @@ export const metadata: Metadata = {
     "X-XSS-Protection": "1; mode=block",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     
-    // Performance hints
-    "dns-prefetch": "//fonts.googleapis.com",
-    "preconnect": "https://fonts.gstatic.com",
-    
     // Offline capabilities indicator
     "offline-capable": "true",
     "cache-enabled": "true",
@@ -158,10 +153,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/*
-          Note: Geist fonts are loaded via next/font/google (lines 8-18).
-          No manual preloading needed - Next.js handles font optimization automatically.
-        */}
+        {/* Fonts are self-hosted via next/font/local — no external fetches needed */}
 
         {/* PWA Icons - Enhanced */}
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
@@ -201,10 +193,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         
         {/* Performance optimizations */}
         <meta httpEquiv="x-dns-prefetch-control" content="on" />
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
         {/* Security headers are handled via HTTP headers in next.config.ts */}
         
