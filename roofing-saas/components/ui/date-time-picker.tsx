@@ -126,6 +126,7 @@ export function DateTimePicker({
                 maxLength={2}
                 value={timeHours}
                 onChange={(e) => handleTimeChange('hours', e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
                 onBlur={() => setTimeHours(timeHours.padStart(2, '0'))}
                 className="w-10 rounded border border-border bg-background px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="HH"
@@ -137,6 +138,7 @@ export function DateTimePicker({
                 maxLength={2}
                 value={timeMinutes}
                 onChange={(e) => handleTimeChange('minutes', e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
                 onBlur={() => setTimeMinutes(timeMinutes.padStart(2, '0'))}
                 className="w-10 rounded border border-border bg-background px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="MM"
