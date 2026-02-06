@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Calendar, Loader2, AlertCircle, RefreshCw, Clock, MapPin } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiFetch } from '@/lib/api/client'
 import { StandardCalendar } from './StandardCalendar'
@@ -55,6 +56,7 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
   const [error, setError] = useState<string | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [googleEmail, setGoogleEmail] = useState<string | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
 
   const fetchEvents = useCallback(async (range?: Date[] | { start: Date; end: Date }) => {
     setIsLoadingEvents(true)
@@ -335,9 +337,37 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
         )}
         <StandardCalendar
           events={events}
+          onEventClick={(event) => setSelectedEvent(event)}
           onRangeChange={fetchEvents}
         />
       </div>
+
+      <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedEvent?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {selectedEvent.start.toLocaleString()} &mdash; {selectedEvent.end.toLocaleString()}
+                </span>
+              </div>
+              {selectedEvent.location && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{selectedEvent.location}</span>
+                </div>
+              )}
+              {selectedEvent.description && (
+                <p className="text-sm text-foreground whitespace-pre-wrap">{selectedEvent.description}</p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
