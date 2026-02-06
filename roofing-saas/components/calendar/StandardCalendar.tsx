@@ -18,7 +18,7 @@ const localizer = dateFnsLocalizer({
   locales,
 })
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id: string
   title: string
   start: Date
@@ -85,6 +85,7 @@ export function StandardCalendar({
       'callback': 'var(--color-terracotta)',  // Warm accents
       'appointment': 'var(--primary)',        // Primary brand
       'deadline': 'var(--destructive)',       // Error/urgent
+      'google': 'var(--secondary)',           // Google Calendar events (teal)
     }
 
     let backgroundColor = typeColorMap[event.event_type || ''] || 'var(--primary)'
@@ -161,6 +162,10 @@ export function StandardCalendar({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-destructive" />
           <span className="text-muted-foreground">Deadline</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-secondary" />
+          <span className="text-muted-foreground">Google Calendar</span>
         </div>
       </div>
     </div>
