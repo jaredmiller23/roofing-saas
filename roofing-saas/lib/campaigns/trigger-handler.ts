@@ -6,7 +6,7 @@
  * when contacts exit the stage that triggered their enrollment.
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import type { StageChangeTriggerConfig, ExitReason } from './types'
 
@@ -25,7 +25,7 @@ interface StageChangeEvent {
  * Also exit contacts from campaigns when they leave the stage that triggered enrollment.
  */
 export async function handleStageChange(event: StageChangeEvent): Promise<void> {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   try {
     logger.info('[Campaign] Checking triggers for stage change', {
@@ -197,7 +197,7 @@ interface EnrollmentParams {
  * Enroll a contact into a campaign
  */
 export async function enrollInCampaign(params: EnrollmentParams): Promise<string | null> {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   // Need a contact to enroll
   let contactId = params.contactId
@@ -305,7 +305,7 @@ export async function enrollInCampaign(params: EnrollmentParams): Promise<string
  * and the project moves from "proposal" to "negotiation", we exit the enrollment.
  */
 async function exitEnrollmentsForStageExit(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: Awaited<ReturnType<typeof createAdminClient>>,
   event: StageChangeEvent
 ): Promise<void> {
   const fromStage = event.fromStage
