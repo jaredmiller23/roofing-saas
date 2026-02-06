@@ -120,9 +120,15 @@ export class GoogleCalendarClient {
       const response = await fetch(url, options)
 
       if (!response.ok) {
-        const error = await response.text()
-        logger.error('Google API Error', { status: response.status, error })
-        throw new Error(`Google API error: ${response.status} - ${error}`)
+        let errorDetail = ''
+        try {
+          const data = await response.json()
+          errorDetail = data.error?.message || response.statusText
+        } catch {
+          errorDetail = response.statusText
+        }
+        logger.error('Google API Error', { status: response.status, error: errorDetail })
+        throw new Error(`Google API error: ${response.status} - ${errorDetail}`)
       }
 
       // Handle empty responses (like DELETE)
@@ -294,11 +300,12 @@ export async function getGoogleCalendarClient(userId: string, tenantId: string):
     return null
   }
 
-  // Check if token is expired
+  // Check if token is expired or expiring within 5 minutes
   const expiresAt = new Date(token.expires_at)
   const now = new Date()
+  const bufferMs = 5 * 60 * 1000
 
-  if (expiresAt <= now) {
+  if (expiresAt.getTime() - bufferMs <= now.getTime()) {
     // Token expired, need to refresh
     logger.info('Google token expired, refreshing', { userId, tenantId })
     const newToken = await refreshAccessToken(decryptedRefreshToken as string)

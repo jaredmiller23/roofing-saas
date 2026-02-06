@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Calendar, Loader2, AlertCircle, RefreshCw, Clock, MapPin } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiFetch } from '@/lib/api/client'
@@ -57,6 +59,32 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [googleEmail, setGoogleEmail] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [createSlot, setCreateSlot] = useState<{ start: Date; end: Date } | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const newEventTitleRef = useRef<HTMLInputElement>(null)
+
+  const handleCreateGoogleEvent = async () => {
+    if (!createSlot || !newEventTitleRef.current?.value.trim()) return
+
+    setIsCreating(true)
+    try {
+      await apiFetch('/api/calendar/google/events', {
+        method: 'POST',
+        body: {
+          summary: newEventTitleRef.current.value.trim(),
+          start: createSlot.start.toISOString(),
+          end: createSlot.end.toISOString(),
+        },
+      })
+      setCreateSlot(null)
+      await fetchEvents()
+    } catch (err) {
+      console.error('Error creating Google Calendar event:', err)
+      setError('Failed to create event. Please try again.')
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   const fetchEvents = useCallback(async (range?: Date[] | { start: Date; end: Date }) => {
     setIsLoadingEvents(true)
@@ -338,10 +366,12 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
         <StandardCalendar
           events={events}
           onEventClick={(event) => setSelectedEvent(event)}
+          onSlotSelect={(slot) => setCreateSlot(slot)}
           onRangeChange={fetchEvents}
         />
       </div>
 
+      {/* View event detail dialog */}
       <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
         <DialogContent>
           <DialogHeader>
@@ -366,6 +396,48 @@ export function GoogleCalendar({ onDisconnect, initialOAuthState }: GoogleCalend
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create event dialog */}
+      <Dialog open={!!createSlot} onOpenChange={(open) => !open && setCreateSlot(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Google Calendar Event</DialogTitle>
+          </DialogHeader>
+          {createSlot && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {createSlot.start.toLocaleString()} &mdash; {createSlot.end.toLocaleString()}
+                </span>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="event-title">Event Title</Label>
+                <Input
+                  id="event-title"
+                  ref={newEventTitleRef}
+                  placeholder="Enter event title"
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateGoogleEvent()}
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateSlot(null)}>Cancel</Button>
+            <Button onClick={handleCreateGoogleEvent} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Event'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

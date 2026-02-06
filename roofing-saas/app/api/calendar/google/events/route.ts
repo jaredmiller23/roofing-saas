@@ -15,19 +15,24 @@
 
 import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { getGoogleCalendarClient, GoogleCalendarEvent } from '@/lib/google/calendar-client'
+import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
+  let userId: string | null = null
+  let tenantId: string | null = null
+
   try {
     const user = await getCurrentUser()
     if (!user) {
       throw AuthenticationError()
     }
+    userId = user.id
 
-    const tenantId = await getUserTenantId(user.id)
+    tenantId = await getUserTenantId(user.id)
     if (!tenantId) {
       throw AuthorizationError('No tenant found')
     }
@@ -81,6 +86,21 @@ export async function GET(request: NextRequest) {
     // Check if it's a Google API error (e.g., token revoked)
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events'
     if (errorMessage.includes('401') || errorMessage.includes('invalid_grant')) {
+      // Clean up the stale token so user can reconnect cleanly
+      if (userId && tenantId) {
+        try {
+          const supabase = await createClient()
+          await supabase
+            .from('google_calendar_tokens')
+            .delete()
+            .eq('user_id', userId)
+            .eq('tenant_id', tenantId)
+          logger.info('Deleted revoked Google Calendar token', { userId, tenantId })
+        } catch (cleanupError) {
+          logger.warn('Failed to clean up revoked token', { cleanupError })
+        }
+      }
+
       return successResponse({
         connected: false,
         events: [],
