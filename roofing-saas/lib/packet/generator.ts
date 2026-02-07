@@ -267,21 +267,47 @@ export async function generatePacket(
 /**
  * Get inspection/damage data for a project
  */
-async function getInspectionData(_project_id: string, _supabase: SupabaseClient): Promise<DamageDocumentation> {
-  // TODO: project_photos and project_inspections tables do not exist yet.
-  // When these tables are created, restore queries here.
-  // The existing project_files table stores photos but with a different schema
-  // than what this function expects. A future migration should either:
-  //   1. Create project_photos/project_inspections tables, OR
-  //   2. Adapt this function to query project_files with file_type='photo'
+async function getInspectionData(project_id: string, supabase: SupabaseClient): Promise<DamageDocumentation> {
+  // Query photos from project_files (existing table)
+  const { data: photoFiles } = await supabase
+    .from('project_files')
+    .select('id, file_url, description, file_category, latitude, longitude, captured_at')
+    .eq('project_id', project_id)
+    .eq('file_type', 'photo')
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+
+  const photos = (photoFiles || []).map(f => ({
+    id: f.id,
+    url: f.file_url,
+    caption: f.description || undefined,
+    damage_type: f.file_category || undefined,
+    severity: undefined,
+    location: undefined,
+    taken_at: f.captured_at || new Date().toISOString(),
+    gps_coordinates: f.latitude && f.longitude
+      ? { lat: Number(f.latitude), lng: Number(f.longitude) }
+      : undefined,
+  }))
+
+  // Query latest inspection record
+  const { data: inspection } = await supabase
+    .from('project_inspections' as string)
+    .select('inspection_date, inspector_name, damage_summary, affected_areas, test_square_count, hail_hits_per_square')
+    .eq('project_id', project_id)
+    .eq('is_deleted', false)
+    .order('inspection_date', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   return {
-    photos: [],
-    inspection_date: new Date().toISOString(),
-    inspector_name: undefined,
-    damage_summary: generateDamageSummary([]),
-    affected_areas: [],
-    test_square_count: undefined,
-    hail_hits_per_square: undefined,
+    photos,
+    inspection_date: inspection?.inspection_date || new Date().toISOString(),
+    inspector_name: inspection?.inspector_name || undefined,
+    damage_summary: inspection?.damage_summary || generateDamageSummary(photos),
+    affected_areas: inspection?.affected_areas || [],
+    test_square_count: inspection?.test_square_count || undefined,
+    hail_hits_per_square: inspection?.hail_hits_per_square || undefined,
   }
 }
 
@@ -289,10 +315,26 @@ async function getInspectionData(_project_id: string, _supabase: SupabaseClient)
  * Get weather causation data for a project
  */
 async function getWeatherCausation(project_id: string, supabase: SupabaseClient): Promise<WeatherCausation | undefined> {
-  // TODO: weather_reports table does not exist yet.
-  // When created, add query here to check for existing weather reports first.
+  // Check for existing weather report first
+  const { data: report } = await supabase
+    .from('weather_reports' as string)
+    .select('causation_narrative, evidence_score, events, pdf_url')
+    .eq('project_id', project_id)
+    .eq('is_deleted', false)
+    .order('generated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
-  // Check for linked storm events
+  if (report) {
+    return {
+      events: (report.events as Array<{ event_date: string; event_type: string; magnitude?: number; distance_miles?: number; source: string }>) || [],
+      causation_narrative: report.causation_narrative || '',
+      evidence_score: report.evidence_score || 0,
+      pdf_url: report.pdf_url || undefined,
+    }
+  }
+
+  // Fall back to linked storm events
   const { data: project } = await supabase
     .from('projects')
     .select('storm_event_id')
