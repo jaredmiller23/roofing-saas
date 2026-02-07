@@ -68,10 +68,9 @@ CREATE POLICY "Admins can manage archived activities" ON activities_archive
     tenant_id IN (
       SELECT tu.tenant_id
       FROM tenant_users tu
-      JOIN user_roles ur ON ur.user_id = tu.user_id AND ur.tenant_id = tu.tenant_id
       WHERE tu.user_id = auth.uid()
       AND tu.status = 'active'
-      AND ur.role IN ('admin', 'owner')
+      AND tu.role IN ('admin', 'owner')
     )
   );
 
