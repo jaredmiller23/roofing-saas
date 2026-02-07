@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { Link } from '@/lib/i18n/navigation'
-import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, RotateCcw, ExternalLink, XCircle } from 'lucide-react'
+import { User, Briefcase, FileText, Phone, Mail, MapPin, Calendar, DollarSign, Play, CheckCircle, Calculator, Send, RotateCcw, ExternalLink, XCircle, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { SendSignatureDialog } from '@/components/signatures'
 import { QuoteComparison } from '@/components/estimates/QuoteComparison'
@@ -21,6 +21,7 @@ import type { QuoteOption } from '@/lib/types/quote-option'
 import { ProjectSubstatusManager } from '@/components/pipeline/ProjectSubstatusManager'
 import { PresenceIndicator } from '@/components/collaboration/PresenceIndicator'
 import { ProjectFilesTable } from '@/components/project-files/project-files-table'
+import { WarrantyList } from '@/components/warranties/warranty-list'
 import { RealtimeToast, realtimeToastPresets } from '@/components/collaboration/RealtimeToast'
 import { usePresence, type PresenceUser } from '@/lib/hooks/usePresence'
 import { createClient } from '@/lib/supabase/client'
@@ -475,7 +476,7 @@ export default function ProjectDetailPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${isEstimateProject(project) ? 'grid-cols-5' : 'grid-cols-4'} lg:w-auto lg:inline-grid`}>
+          <TabsList className={`grid w-full ${isEstimateProject(project) ? 'grid-cols-6' : 'grid-cols-5'} lg:w-auto lg:inline-grid`}>
             <TabsTrigger value="overview" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -499,6 +500,10 @@ export default function ProjectDetailPage() {
                   {jobs.length}
                 </span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="warranties" className="gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Warranties</span>
             </TabsTrigger>
             <TabsTrigger value="files" className="gap-2">
               <FileText className="h-4 w-4" />
@@ -872,11 +877,20 @@ export default function ProjectDetailPage() {
             )}
           </TabsContent>
 
+          {/* Warranties Tab */}
+          <TabsContent value="warranties" className="space-y-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-foreground">Warranties</h2>
+              <p className="text-sm text-muted-foreground">Track warranty coverage for this project</p>
+            </div>
+            <WarrantyList projectId={projectId} showProjectColumn={false} />
+          </TabsContent>
+
           {/* Files Tab */}
           <TabsContent value="files" className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-2">Project Files & Photos</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-2">Project Files &amp; Photos</h2>
                 <p className="text-sm text-muted-foreground">Documents, photos, and attachments</p>
               </div>
               <Link href={`/project-files/new?project_id=${projectId}`}>
