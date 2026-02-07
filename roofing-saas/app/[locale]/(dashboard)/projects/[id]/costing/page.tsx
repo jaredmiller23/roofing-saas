@@ -263,7 +263,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
 
         {/* Budget vs Actual Breakdown */}
         <div className="bg-card rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border">
+          <div className="px-6 py-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">Budget vs Actual Breakdown</h2>
           </div>
           <div className="p-6">
@@ -310,7 +310,7 @@ export default async function ProjectCostingPage({ params }: CostingPageProps) {
               })}
 
               {/* Total Row */}
-              <div className="pt-4 border-t border">
+              <div className="pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-semibold text-foreground">Total</h3>

@@ -300,7 +300,7 @@ export function BrandingSettings() {
 
               {/* Logo Preview */}
               {settings.logo_url && (
-                <div className="pt-4 border-t border">
+                <div className="pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground mb-2">Logo Preview</p>
                   <div className="bg-muted rounded-lg p-4 flex items-center justify-center h-24 relative">
                     <Image src={settings.logo_url} alt="Logo Preview" fill className="object-contain" />

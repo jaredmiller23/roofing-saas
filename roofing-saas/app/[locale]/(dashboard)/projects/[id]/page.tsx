@@ -671,7 +671,7 @@ export default function ProjectDetailPage() {
 
                     {/* Legacy pipeline info if exists */}
                     {(pipeline || stage) && (
-                      <div className="pt-3 border-t border">
+                      <div className="pt-3 border-t border-border">
                         <label className="text-xs font-medium text-muted-foreground mb-2 block">Legacy Pipeline</label>
                         <div className="text-xs text-muted-foreground">
                           {pipeline && <span>{pipeline}</span>}

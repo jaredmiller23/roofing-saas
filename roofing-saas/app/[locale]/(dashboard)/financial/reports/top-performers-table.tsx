@@ -35,7 +35,7 @@ export function TopPerformersTable({ title, projects, metricKey, metricLabel, on
 
   return (
     <div className="bg-card rounded-lg shadow">
-      <div className="px-6 py-4 border-b border">
+      <div className="px-6 py-4 border-b border-border">
         <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       </div>
       <div className="p-6">

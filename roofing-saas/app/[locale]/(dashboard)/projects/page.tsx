@@ -29,7 +29,7 @@ export default function ProjectsPage() {
     <div className="h-[calc(100vh-var(--header-height))] overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="px-4 md:px-8 py-4 md:py-6 bg-card border-b border">
+        <div className="px-4 md:px-8 py-4 md:py-6 bg-card border-b border-border">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">

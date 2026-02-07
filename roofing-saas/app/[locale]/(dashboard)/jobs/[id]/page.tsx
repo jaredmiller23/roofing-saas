@@ -222,7 +222,7 @@ export default async function JobDetailPage({
               <p className="text-foreground">{formatCurrency(job.other_costs)}</p>
             </div>
 
-            <div className="md:col-span-2 pt-4 border-t border">
+            <div className="md:col-span-2 pt-4 border-t border-border">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Total Cost</label>
               <p className="text-xl font-semibold text-foreground">{formatCurrency(job.total_cost)}</p>
             </div>

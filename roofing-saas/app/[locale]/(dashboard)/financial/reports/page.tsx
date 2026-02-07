@@ -194,7 +194,7 @@ export default async function FinancialReportsPage() {
 
         {/* Job Type Breakdown */}
         <div className="bg-card rounded-lg shadow mb-8">
-          <div className="px-6 py-4 border-b border">
+          <div className="px-6 py-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground">Performance by Job Type</h2>
           </div>
           <div className="p-6">

@@ -115,7 +115,7 @@ export function SubstatusAnalytics({
   return (
     <div className={`bg-card rounded-lg border border-border ${className}`}>
       {/* Header */}
-      <div className="px-6 py-4 border-b border">
+      <div className="px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-muted-foreground" />
@@ -197,7 +197,7 @@ export function SubstatusAnalytics({
 
       {/* Footer with insights */}
       {sortedDistribution.length > 0 && (
-        <div className="px-6 py-4 border-t border bg-muted/30">
+        <div className="px-6 py-4 border-t border-border bg-muted/30">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
             <div>

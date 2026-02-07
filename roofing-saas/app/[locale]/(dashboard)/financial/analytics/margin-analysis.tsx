@@ -114,7 +114,7 @@ export function MarginAnalysis({ projects, marginThresholds }: MarginAnalysisPro
 
   return (
     <div className="bg-card rounded-lg shadow mb-8">
-      <div className="px-6 py-4 border-b border">
+      <div className="px-6 py-4 border-b border-border">
         <h2 className="text-xl font-semibold text-foreground">Margin Analysis</h2>
         <p className="text-sm text-muted-foreground mt-1">Profitability breakdown by job type and performance</p>
       </div>

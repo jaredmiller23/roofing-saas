@@ -422,7 +422,7 @@ export function ContactsTable({ params }: ContactsTableProps) {
       </div>
 
       {/* Pagination */}
-      <div className="bg-muted px-6 py-4 flex items-center justify-between border-t border">
+      <div className="bg-muted px-6 py-4 flex items-center justify-between border-t border-border">
         <div className="text-sm text-muted-foreground">
           Showing {contacts.length} of {total} contacts
         </div>

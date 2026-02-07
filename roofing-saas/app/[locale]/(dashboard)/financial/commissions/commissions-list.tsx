@@ -95,7 +95,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
   if (commissions.length === 0) {
     return (
       <div className="bg-card rounded-lg shadow">
-        <div className="px-6 py-4 border-b border">
+        <div className="px-6 py-4 border-b border-border">
           <h2 className="text-xl font-semibold text-foreground">Recent Commissions</h2>
         </div>
         <div className="p-12 text-center text-muted-foreground">
@@ -108,7 +108,7 @@ export function CommissionsList({ commissions }: CommissionsListProps) {
 
   return (
     <div className="bg-card rounded-lg shadow">
-      <div className="px-6 py-4 border-b border">
+      <div className="px-6 py-4 border-b border-border">
         <h2 className="text-xl font-semibold text-foreground">Recent Commissions</h2>
       </div>
 

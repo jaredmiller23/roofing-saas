@@ -35,7 +35,7 @@ export function SaveFilterDialog({ onSave, onCancel }: SaveFilterDialogProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-card rounded-lg shadow-xl w-full max-w-md">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             <h3 className="text-lg font-semibold text-foreground">
               Save Filter Preset
             </h3>

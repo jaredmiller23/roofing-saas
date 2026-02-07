@@ -185,7 +185,7 @@ export default function TerritoryDetailPage() {
           </dl>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-6 pt-6 border-t border">
+          <div className="flex gap-3 mt-6 pt-6 border-t border-border">
             <Link
               href={`/territories/${territory.id}/edit`}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"

@@ -98,7 +98,7 @@ export function CostTrendAnalysis({ expenses }: CostTrendAnalysisProps) {
 
   return (
     <div className="bg-card rounded-lg shadow mb-8">
-      <div className="px-6 py-4 border-b border">
+      <div className="px-6 py-4 border-b border-border">
         <h2 className="text-xl font-semibold text-foreground">Cost Trend Analysis</h2>
         <p className="text-sm text-muted-foreground mt-1">Month-over-month cost changes and vendor analysis</p>
       </div>

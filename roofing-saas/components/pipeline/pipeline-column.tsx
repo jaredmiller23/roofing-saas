@@ -38,7 +38,7 @@ export function PipelineColumn({ stage, projects, onMoveProject, onSubstatusChan
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex-1 rounded-b-lg border-x border-b border p-3 overflow-y-auto space-y-3 min-h-[200px] transition-colors ${
+            className={`flex-1 rounded-b-lg border-x border-b border-border p-3 overflow-y-auto space-y-3 min-h-[200px] transition-colors ${
               snapshot.isDraggingOver
                 ? 'bg-primary/10 border-primary/30'
                 : 'bg-muted/30'

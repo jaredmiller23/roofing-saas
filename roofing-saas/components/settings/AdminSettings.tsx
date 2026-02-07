@@ -259,7 +259,7 @@ export function AdminSettings() {
           )}
 
           {recentLogs.length > 0 && (
-            <div className="mt-4 pt-4 border-t border">
+            <div className="mt-4 pt-4 border-t border-border">
               <Button variant="outline" size="sm" className="w-full" asChild>
                 <Link href="/admin/audit-logs">
                   <Eye className="h-4 w-4 mr-2" />

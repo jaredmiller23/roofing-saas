@@ -450,7 +450,7 @@ export function PipelineBoard() {
       )}
 
       {/* Header with Search and Filters */}
-      <div className="p-4 bg-card border-b border">
+      <div className="p-4 bg-card border-b border-border">
         <div className="flex flex-col gap-3">
           {/* Top row: Search and Quick Filters */}
           <div className="flex items-center gap-4">
