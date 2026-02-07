@@ -250,7 +250,14 @@
     "components/photos/PhotoViewer.tsx:*:text-white",
     "app/view/estimate/\\[id\\]/page.tsx:323:bg-blue-100",
     "app/view/estimate/\\[id\\]/page.tsx:323:text-blue-700",
-    "app/view/estimate/\\[id\\]/page.tsx:323:border-blue-300"
+    "app/view/estimate/\\[id\\]/page.tsx:323:border-blue-300",
+    "components/admin/api-docs.tsx:*:bg-green-600",
+    "components/admin/api-docs.tsx:*:bg-blue-600",
+    "components/admin/api-docs.tsx:*:bg-yellow-600",
+    "components/admin/api-docs.tsx:*:bg-red-600",
+    "components/admin/api-docs.tsx:*:text-white",
+    "components/admin/api-docs.tsx:*:text-orange-500",
+    "components/admin/api-docs.tsx:*:text-green-500"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",

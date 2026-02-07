@@ -15,6 +15,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useUIMode } from '@/hooks/useUIMode'
 import { RefreshCw, ChevronDown } from 'lucide-react'
 import { SetupChecklist } from '@/components/onboarding/SetupChecklist'
+import { GuidedTour } from '@/components/onboarding/guided-tour'
+import { dashboardTour } from '@/lib/tours/tour-definitions'
 
 // Only lazy load the heavy Leaderboard component (has charts/complex UI)
 const Leaderboard = dynamic(() => import('@/components/gamification/Leaderboard').then(mod => ({ default: mod.Leaderboard })), {
@@ -276,7 +278,9 @@ export default function DashboardPage() {
     <div className="px-4 sm:px-6 py-4 pt-16 lg:px-8 lg:py-8 lg:pt-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Setup checklist for new tenants */}
-        <SetupChecklist />
+        <div data-tour="setup-checklist">
+          <SetupChecklist />
+        </div>
 
         {/* Header with Scope Filter */}
         <div className="flex items-center justify-between">
@@ -292,11 +296,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Comprehensive KPI Dashboard */}
-        <DashboardMetrics
-          scope={scope}
-          data={data?.metrics}
-          isLoading={isLoading}
-        />
+        <div data-tour="dashboard-metrics">
+          <DashboardMetrics
+            scope={scope}
+            data={data?.metrics}
+            isLoading={isLoading}
+          />
+        </div>
 
         {/* Weather - Full Width */}
         <div className="w-full">
@@ -313,14 +319,16 @@ export default function DashboardPage() {
             data={data?.points}
             isLoading={isLoading}
           />
-          <ActivityFeed
-            data={data?.activity}
-            isLoading={isLoading}
-          />
+          <div data-tour="dashboard-activity">
+            <ActivityFeed
+              data={data?.activity}
+              isLoading={isLoading}
+            />
+          </div>
         </div>
 
         {/* Leaderboards */}
-        <div>
+        <div data-tour="dashboard-pipeline">
           <h2 className="text-xl font-semibold text-foreground mb-4">Team Performance</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Leaderboard
@@ -344,6 +352,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Guided tour for first-time users */}
+      {!isLoading && (
+        <GuidedTour
+          tourId={dashboardTour.tourId}
+          steps={dashboardTour.steps}
+        />
+      )}
     </div>
   )
 }

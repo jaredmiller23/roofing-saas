@@ -196,7 +196,7 @@ export function Sidebar({ userEmail, userRole = 'user' }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3" role="list">
+        <nav className="flex-1 overflow-y-auto py-4 px-3" role="list" data-tour="sidebar-nav">
           {navSections.map((section, sectionIndex) => (
             <div key={sectionIndex}>
               {/* Section Header */}
