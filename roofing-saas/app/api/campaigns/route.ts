@@ -80,7 +80,7 @@ export const GET = withAuth(async (request, { tenantId }) => {
  *
  * Body: CreateCampaignRequest
  */
-export const POST = withAuth(async (request, { user, userId, tenantId }) => {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     // Check feature access
     try {

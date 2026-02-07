@@ -11,7 +11,7 @@ import { createEventSchema } from '@/lib/validations/event'
  * GET /api/events
  * List all events with filtering and pagination
  */
-export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
@@ -77,7 +77,7 @@ export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) =
  * POST /api/events
  * Create a new event
  */
-export const POST = withAuth(async (request: NextRequest, { user, userId, tenantId }) => {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     const body = await request.json()
 

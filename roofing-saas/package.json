@@ -80,6 +80,7 @@
     "@types/react-pdf": "^5.0.7",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
+    "babel-plugin-react-compiler": "^1.0.0",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

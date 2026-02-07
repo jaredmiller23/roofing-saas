@@ -3,13 +3,14 @@ import { reverseGeocode } from '@/lib/maps/geocoding'
 import { logger } from '@/lib/logger'
 import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
+import { withAuth } from '@/lib/auth/with-auth'
 
 /**
  * POST /api/maps/reverse-geocode
  * Convert coordinates to address
  * Used for pin dropping - get address when user clicks on map
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json()
     const { latitude, longitude } = body
@@ -49,4 +50,4 @@ export async function POST(request: NextRequest) {
     logger.error('Reverse geocoding error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to reverse geocode coordinates'))
   }
-}
+})

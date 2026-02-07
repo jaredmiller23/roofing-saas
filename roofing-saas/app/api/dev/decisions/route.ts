@@ -47,8 +47,9 @@ export async function GET(request: NextRequest) {
     const tags = tagsParam ? tagsParam.split(',').map(t => t.trim()) : null
 
     // Build query with left join to tasks for related task title
-    // Note: Cast to any until types are regenerated after migration runs
+    // Note: Cast needed — decisions table not in generated types yet
     let query = supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('decisions' as any)
       .select(`
         id,
@@ -175,8 +176,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Note: Cast to any until types are regenerated after migration runs
+    // Note: Cast needed — decisions table not in generated types yet
     const { data: decision, error: insertError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('decisions' as any)
       .insert({
         tenant_id: tenantId,

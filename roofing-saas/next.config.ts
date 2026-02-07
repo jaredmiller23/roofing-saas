@@ -24,10 +24,18 @@ const withSerwist = withSerwistInit({
 // Serwist's defaultCache provides similar functionality. If custom caching is needed, convert strategies in app/sw.ts
 
 const nextConfig: NextConfig = {
+  // React Compiler 1.0 - automatic memoization (eliminates need for useMemo/useCallback)
+  reactCompiler: true,
+
   // CRITICAL FIX: Disable React Strict Mode to prevent double-mounting
   // This fixes the "Map container is already initialized" error in development
   // Note: This only affects development mode, production is unaffected
   reactStrictMode: false,
+
+  experimental: {
+    // Turbopack file system caching for faster dev rebuilds
+    turbopackFileSystemCacheForDev: true,
+  },
 
   // Note: In Next.js 16, ESLint is handled separately via CLI
   // Run: npx eslint . --fix
