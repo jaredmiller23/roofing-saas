@@ -19,7 +19,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should register service worker', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
 
     // Wait for service worker to register
     const swRegistered = await page.evaluate(async () => {
@@ -34,7 +34,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should be installable as PWA', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
 
     const isInstallable = await checkPWAInstallable(page)
     expect(isInstallable).toBe(true)
@@ -51,7 +51,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should cache static assets', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await waitForServiceWorker(page)
 
     // Check that service worker has cached resources
@@ -79,7 +79,7 @@ test.describe('PWA Advanced Features', () => {
 
   test('should work offline after initial load', async ({ page }) => {
     // Load page while online
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await waitForServiceWorker(page)
 
     // Wait for content to load
@@ -89,7 +89,7 @@ test.describe('PWA Advanced Features', () => {
     await goOffline(page)
 
     // Navigate to another cached page
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
 
     // Page should still load (from cache or service worker)
     await page.waitForLoadState('domcontentloaded')
@@ -100,7 +100,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should queue actions while offline', async ({ page }) => {
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await waitForServiceWorker(page)
 
     // Go offline
@@ -139,7 +139,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should sync queued actions when back online', async ({ page }) => {
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await waitForServiceWorker(page)
 
     // Queue an action while offline
@@ -201,12 +201,12 @@ test.describe('PWA Advanced Features', () => {
     expect(queueStatus.isEmpty).toBe(true)
 
     // Verify data was actually saved
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await expect(page.locator('text=456 Sync Test Ave')).toBeVisible()
   })
 
   test('should handle app update notifications', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await waitForServiceWorker(page)
 
     // Simulate service worker update
@@ -225,7 +225,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should persist user session across app restarts', async ({ page, context }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
 
     // Get user info
     const userName = await page.locator('[data-testid="user-name"]').textContent()
@@ -234,7 +234,7 @@ test.describe('PWA Advanced Features', () => {
     await page.close()
 
     const newPage = await context.newPage()
-    await newPage.goto('/dashboard')
+    await newPage.goto('/en/dashboard')
 
     // Should still be logged in
     await expect(newPage).toHaveURL(/dashboard/)
@@ -247,7 +247,7 @@ test.describe('PWA Advanced Features', () => {
   test('should handle background sync', async ({ page }) => {
     test.skip(!process.env.ENABLE_BACKGROUND_SYNC, 'Background sync not enabled')
 
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await waitForServiceWorker(page)
 
     // Check if background sync is supported
@@ -279,7 +279,7 @@ test.describe('PWA Advanced Features', () => {
   })
 
   test('should maintain PWA state during updates', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
 
     // Add some data to IndexedDB
     await page.evaluate(() => {

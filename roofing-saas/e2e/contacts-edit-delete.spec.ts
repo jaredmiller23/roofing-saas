@@ -20,7 +20,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const lastName = 'Verify'
 
       // Create a contact first
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill(lastName)
@@ -45,7 +45,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const firstName = `Workflow${Date.now()}`
 
       // Create a fresh contact (no projects)
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill('Guide')
@@ -66,7 +66,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const lastName = 'Original'
 
       // Create a contact
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill(lastName)
@@ -94,7 +94,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const lastName = 'Target'
       const email = generateUniqueEmail()
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill(lastName)
@@ -127,7 +127,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const firstName = `Validate${Date.now()}`
       const email = generateUniqueEmail()
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill('Test')
@@ -162,7 +162,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const lastName = 'Me'
       const email = generateUniqueEmail()
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill(lastName)
@@ -190,7 +190,7 @@ test.describe('Contact Edit & Delete Operations', () => {
       const firstName = `KeepMe${Date.now()}`
       const email = generateUniqueEmail()
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
       await page.locator('#first_name').fill(firstName)
       await page.locator('#last_name').fill('DontDelete')

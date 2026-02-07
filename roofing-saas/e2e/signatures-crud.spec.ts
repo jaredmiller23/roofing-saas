@@ -12,7 +12,7 @@ test.describe('Signatures Management', () => {
 
   test.describe('Signatures List Page', () => {
     test('should load signatures page with header and action buttons', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
 
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
 
@@ -22,7 +22,7 @@ test.describe('Signatures Management', () => {
     })
 
     test('should have search and status filter', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
 
       // Search input
@@ -39,7 +39,7 @@ test.describe('Signatures Management', () => {
     })
 
     test('should display documents or empty state', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
 
       // Wait for loading to complete
@@ -55,7 +55,7 @@ test.describe('Signatures Management', () => {
 
   test.describe('Signature Document Actions', () => {
     test('should navigate to document detail by clicking title', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
       await page.waitForLoadState('networkidle')
 
@@ -69,7 +69,7 @@ test.describe('Signatures Management', () => {
     })
 
     test('should open edit dialog from actions dropdown', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
       await page.waitForLoadState('networkidle')
 
@@ -96,7 +96,7 @@ test.describe('Signatures Management', () => {
     })
 
     test('should open delete confirmation from actions dropdown', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
       await page.waitForLoadState('networkidle')
 
@@ -122,7 +122,7 @@ test.describe('Signatures Management', () => {
 
   test.describe('Signature Templates Page', () => {
     test('should navigate to templates page', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1:has-text("E-Signatures")')).toBeVisible({ timeout: 10000 })
 
       await page.getByRole('button', { name: /Templates/ }).click()
@@ -131,7 +131,7 @@ test.describe('Signatures Management', () => {
     })
 
     test('should display templates or empty state', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1:has-text("Signature Templates")')).toBeVisible({ timeout: 10000 })
       await page.waitForLoadState('networkidle')
 
@@ -142,14 +142,14 @@ test.describe('Signatures Management', () => {
     })
 
     test('should have New Template button', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1:has-text("Signature Templates")')).toBeVisible({ timeout: 10000 })
 
       await expect(page.getByRole('button', { name: /New Template/ })).toBeVisible()
     })
 
     test('should have search and category filter', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1:has-text("Signature Templates")')).toBeVisible({ timeout: 10000 })
 
       const searchInput = page.locator('input[placeholder="Search templates..."]')

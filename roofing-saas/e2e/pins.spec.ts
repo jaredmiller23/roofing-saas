@@ -14,7 +14,7 @@ import { test, expect, type Page } from '@playwright/test'
 test.describe('Pin CRUD Operations', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to knocks page to ensure we're authenticated
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
   })
 
@@ -195,7 +195,7 @@ test.describe('Pin CRUD Operations', () => {
 
 test.describe('Pin UI Integration', () => {
   test('field activity map page loads', async ({ page }) => {
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Check for map or territory UI elements
@@ -211,7 +211,7 @@ test.describe('Pin UI Integration', () => {
   })
 
   test('knocks page loads', async ({ page }) => {
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Should redirect or show knocks content

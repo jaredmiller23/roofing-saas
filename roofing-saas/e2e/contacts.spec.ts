@@ -18,7 +18,7 @@ test.describe('Contact CRUD Operations', () => {
 
   test.describe('Contact List Page', () => {
     test('should load contacts page with Add Contact link', async ({ page }) => {
-      await page.goto('/contacts')
+      await page.goto('/en/contacts')
 
       // Page should have title
       await expect(page.locator('h1:has-text("Contacts")')).toBeVisible({ timeout: 10000 })
@@ -30,7 +30,7 @@ test.describe('Contact CRUD Operations', () => {
     })
 
     test('should have search functionality', async ({ page }) => {
-      await page.goto('/contacts')
+      await page.goto('/en/contacts')
       await expect(page.locator('h1:has-text("Contacts")')).toBeVisible({ timeout: 10000 })
 
       // Search input should exist (has id="search" and specific placeholder)
@@ -45,7 +45,7 @@ test.describe('Contact CRUD Operations', () => {
 
   test.describe('Contact Creation', () => {
     test('should navigate to new contact form', async ({ page }) => {
-      await page.goto('/contacts')
+      await page.goto('/en/contacts')
       await expect(page.locator('h1:has-text("Contacts")')).toBeVisible({ timeout: 10000 })
 
       // Click Add Contact link
@@ -57,7 +57,7 @@ test.describe('Contact CRUD Operations', () => {
     })
 
     test('should display contact form with required fields', async ({ page }) => {
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
 
       // Wait for form to load
       await expect(page.locator('h1:has-text("Add New Contact")')).toBeVisible({ timeout: 10000 })
@@ -77,7 +77,7 @@ test.describe('Contact CRUD Operations', () => {
       const firstName = `Test${Date.now()}`
       const lastName = 'User'
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('h1:has-text("Add New Contact")')).toBeVisible({ timeout: 10000 })
 
       // Fill required fields
@@ -100,7 +100,7 @@ test.describe('Contact CRUD Operations', () => {
       const firstName = `Full${Date.now()}`
       const lastName = 'Contact'
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('h1:has-text("Add New Contact")')).toBeVisible({ timeout: 10000 })
 
       // Fill all available fields
@@ -122,7 +122,7 @@ test.describe('Contact CRUD Operations', () => {
     })
 
     test('should show validation errors for empty required fields', async ({ page }) => {
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('h1:has-text("Add New Contact")')).toBeVisible({ timeout: 10000 })
 
       // Try to submit empty form
@@ -140,7 +140,7 @@ test.describe('Contact CRUD Operations', () => {
 
   test.describe('Contact Detail Page', () => {
     test('should navigate to contact detail from list', async ({ page }) => {
-      await page.goto('/contacts')
+      await page.goto('/en/contacts')
       await expect(page.locator('h1:has-text("Contacts")')).toBeVisible({ timeout: 10000 })
 
       // Wait for contacts table/list to load
@@ -187,7 +187,7 @@ test.describe('Contact CRUD Operations', () => {
         }
       })
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
 
       // Fill and submit
@@ -231,7 +231,7 @@ test.describe('Contact CRUD Operations', () => {
         }
       })
 
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
       await expect(page.locator('#first_name')).toBeVisible({ timeout: 10000 })
 
       // Fill and submit

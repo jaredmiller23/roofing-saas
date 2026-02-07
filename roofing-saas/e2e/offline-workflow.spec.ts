@@ -85,7 +85,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should queue photo when offline', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -115,7 +115,7 @@ test.describe('PWA Offline Workflow', () => {
     page,
   }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -161,7 +161,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should show queue status UI with correct counts', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -184,7 +184,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should handle manual sync trigger', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -223,7 +223,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should retry failed uploads', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Intercept upload API and make it fail
     await page.route('**/api/photos/upload', (route) => {
@@ -278,7 +278,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should capture geolocation with photos', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -308,7 +308,7 @@ test.describe('PWA Offline Workflow', () => {
 
   test('should compress images before queueing', async ({ page }) => {
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Go offline
     await goOffline(page)
@@ -339,7 +339,7 @@ test.describe('PWA Offline Workflow', () => {
     await context.grantPermissions(['camera'])
 
     // Navigate to photo upload page
-    await page.goto('/photos/upload')
+    await page.goto('/en/photos/upload')
 
     // Note: Actual camera testing requires a real device
     // This test verifies the UI is present
@@ -354,7 +354,7 @@ test.describe('PWA Offline Workflow', () => {
     await goOffline(page)
 
     // Try to navigate to a new page
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
 
     // Should show offline page
     const offlinePageVisible = await isVisible(

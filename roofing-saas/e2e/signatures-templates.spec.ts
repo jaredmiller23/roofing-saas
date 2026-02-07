@@ -12,7 +12,7 @@ test.describe('Signature Templates', () => {
 
   test.describe('Signatures Page', () => {
     test('should load signatures page with navigation', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
 
       // Main heading
       await expect(page.locator('h1').filter({ hasText: 'E-Signatures' })).toBeVisible({ timeout: 10000 })
@@ -27,7 +27,7 @@ test.describe('Signature Templates', () => {
     })
 
     test('should have search and status filter', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1').filter({ hasText: 'E-Signatures' })).toBeVisible({ timeout: 10000 })
 
       // Search input
@@ -42,7 +42,7 @@ test.describe('Signature Templates', () => {
 
   test.describe('Template List Page', () => {
     test('should navigate to templates page', async ({ page }) => {
-      await page.goto('/signatures')
+      await page.goto('/en/signatures')
       await expect(page.locator('h1').filter({ hasText: 'E-Signatures' })).toBeVisible({ timeout: 10000 })
 
       // Click Templates link
@@ -54,7 +54,7 @@ test.describe('Signature Templates', () => {
     })
 
     test('should display template list page with controls', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
 
       // Heading
       await expect(page.locator('h1').filter({ hasText: 'Signature Templates' })).toBeVisible({ timeout: 10000 })
@@ -77,7 +77,7 @@ test.describe('Signature Templates', () => {
     })
 
     test('should show templates or empty state', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1').filter({ hasText: 'Signature Templates' })).toBeVisible({ timeout: 10000 })
 
       // Wait for content to load
@@ -91,7 +91,7 @@ test.describe('Signature Templates', () => {
     })
 
     test('should filter templates by search', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1').filter({ hasText: 'Signature Templates' })).toBeVisible({ timeout: 10000 })
 
       // Type in search
@@ -112,7 +112,7 @@ test.describe('Signature Templates', () => {
 
   test.describe('Template Creation Page', () => {
     test('should navigate to new template page', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1').filter({ hasText: 'Signature Templates' })).toBeVisible({ timeout: 10000 })
 
       // Click New Template
@@ -126,7 +126,7 @@ test.describe('Signature Templates', () => {
 
   test.describe('Template Actions', () => {
     test('should open delete confirmation dialog for template', async ({ page }) => {
-      await page.goto('/signatures/templates')
+      await page.goto('/en/signatures/templates')
       await expect(page.locator('h1').filter({ hasText: 'Signature Templates' })).toBeVisible({ timeout: 10000 })
 
       // Wait for templates to load

@@ -20,7 +20,7 @@ test.describe('Compliance Settings - Unauthenticated', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test('should redirect to login when accessing settings unauthenticated', async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/en/settings')
 
     // Should redirect to login page when not authenticated
     await expect(page).toHaveURL(/\/login/)
@@ -34,7 +34,7 @@ test.describe('Compliance Settings - Unauthenticated', () => {
 test.describe('Compliance Settings - Authenticated', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to settings page
-    await page.goto('/settings', { waitUntil: 'networkidle' })
+    await page.goto('/en/settings', { waitUntil: 'networkidle' })
 
     // Wait for settings page to load
     await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible({ timeout: 10000 })
@@ -331,7 +331,7 @@ test.describe('Compliance Settings - Smoke Tests (Authenticated)', () => {
     })
 
     // Navigate to settings page
-    const response = await page.goto('/settings', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/settings', { waitUntil: 'networkidle' })
 
     // Check HTTP response
     expect(response?.status()).not.toBe(500)
@@ -361,7 +361,7 @@ test.describe('Compliance Settings - Smoke Tests (Authenticated)', () => {
 
   test('should handle API errors gracefully', async ({ page }) => {
     // Navigate to settings
-    await page.goto('/settings')
+    await page.goto('/en/settings')
 
     // Navigate to Compliance tab
     await page.waitForSelector('[role="tablist"]')

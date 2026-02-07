@@ -18,17 +18,17 @@ test.describe('Campaigns - Unauthenticated', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test('should redirect to login when accessing campaigns without auth', async ({ page }) => {
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await expect(page).toHaveURL(/\/login/)
   })
 
   test('should redirect to login when accessing campaign builder without auth', async ({ page }) => {
-    await page.goto('/campaigns/test-id/builder')
+    await page.goto('/en/campaigns/test-id/builder')
     await expect(page).toHaveURL(/\/login/)
   })
 
   test('should redirect to login when creating new campaign without auth', async ({ page }) => {
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
     await expect(page).toHaveURL(/\/login/)
   })
 })
@@ -38,7 +38,7 @@ test.describe('Campaigns - Unauthenticated', () => {
  */
 test.describe('Campaign List - Authenticated', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
   })
 
@@ -95,7 +95,7 @@ test.describe('Campaign List - Authenticated', () => {
 test.describe('Create Campaign', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate directly to create campaign page
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
     await page.waitForLoadState('networkidle')
   })
 
@@ -187,7 +187,7 @@ test.describe('Campaign Builder', () => {
   test.beforeAll(async ({ browser }) => {
     // Create a test campaign for the builder tests
     const page = await browser.newPage()
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
 
     const timestamp = Date.now()
     await page.getByLabel('Campaign Name *').fill(`E2E Builder Test ${timestamp}`)
@@ -202,7 +202,7 @@ test.describe('Campaign Builder', () => {
   })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/campaigns/${campaignId}/builder`)
+    await page.goto(`/en/campaigns/${campaignId}/builder`)
     await page.waitForLoadState('networkidle')
   })
 
@@ -344,7 +344,7 @@ test.describe('Campaign Builder', () => {
  */
 test.describe('Campaign Actions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
   })
 
@@ -406,7 +406,7 @@ test.describe('Campaign Steps', () => {
   test.beforeAll(async ({ browser }) => {
     // Create a test campaign for step tests
     const page = await browser.newPage()
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
 
     await page.getByLabel('Campaign Name *').fill(`Step Test Campaign ${Date.now()}`)
     await page.getByRole('button', { name: 'Create Campaign' }).click()
@@ -419,7 +419,7 @@ test.describe('Campaign Steps', () => {
   })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/campaigns/${campaignId}/builder`)
+    await page.goto(`/en/campaigns/${campaignId}/builder`)
     await page.waitForLoadState('networkidle')
 
     // Navigate to Steps tab
@@ -498,7 +498,7 @@ test.describe('Campaign Triggers', () => {
   test.beforeAll(async ({ browser }) => {
     // Create test campaign
     const page = await browser.newPage()
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
 
     await page.getByLabel('Campaign Name *').fill(`Trigger Test ${Date.now()}`)
     await page.getByRole('button', { name: 'Create Campaign' }).click()
@@ -511,7 +511,7 @@ test.describe('Campaign Triggers', () => {
   })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`/campaigns/${campaignId}/builder`)
+    await page.goto(`/en/campaigns/${campaignId}/builder`)
     await page.waitForLoadState('networkidle')
 
     // Navigate to Triggers tab
@@ -559,7 +559,7 @@ test.describe('Campaign Triggers', () => {
  */
 test.describe('Campaign Activation', () => {
   test('should activate campaign from list', async ({ page }) => {
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
 
     // Find a campaign card that has an "Activate" action (i.e. not already active)
@@ -605,7 +605,7 @@ test.describe('Campaign Activation', () => {
   })
 
   test('should pause active campaign from list', async ({ page }) => {
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
 
     // Find a campaign card with an active status
@@ -666,7 +666,7 @@ test.describe('Campaign Performance', () => {
     const errors: string[] = []
     page.on('pageerror', err => errors.push(err.message))
 
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
 
     // Verify no JavaScript errors
@@ -675,7 +675,7 @@ test.describe('Campaign Performance', () => {
 
   test('should load campaign builder without errors', async ({ page }) => {
     // Create a campaign first
-    await page.goto('/campaigns/new')
+    await page.goto('/en/campaigns/new')
     await page.getByLabel('Campaign Name *').fill(`Perf Test ${Date.now()}`)
     await page.getByRole('button', { name: 'Create Campaign' }).click()
 

@@ -18,7 +18,7 @@ test.describe('Error State Handling', () => {
       // Mock API to return database error
       await mockApiError(page, '/api/tasks', ERROR_SCENARIOS.DATABASE_ERROR)
 
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
       await page.waitForLoadState('networkidle')
 
       // Verify error is displayed properly (NOT "[object Object]")
@@ -37,7 +37,7 @@ test.describe('Error State Handling', () => {
     test('should display proper error message when tasks API returns QUERY_ERROR', async ({ page }) => {
       await mockApiError(page, '/api/tasks', ERROR_SCENARIOS.QUERY_ERROR)
 
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
       await page.waitForLoadState('networkidle')
 
       const alert = page.locator('[role="alert"], .text-red-900, .text-red-600').first()
@@ -50,7 +50,7 @@ test.describe('Error State Handling', () => {
     test('should handle unauthorized error gracefully', async ({ page }) => {
       await mockApiUnauthorized(page, '/api/tasks')
 
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
       await page.waitForLoadState('networkidle')
 
       const alert = page.locator('[role="alert"], .text-red-900, .text-red-600').first()
@@ -64,7 +64,7 @@ test.describe('Error State Handling', () => {
     test('should handle network timeout gracefully', async ({ page }) => {
       await mockApiTimeout(page, '/api/tasks')
 
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
 
       // Should show some error indication (not crash)
       await expect(page.locator('body')).toBeVisible()
@@ -82,7 +82,7 @@ test.describe('Error State Handling', () => {
     test('should display proper error message when contacts API fails', async ({ page }) => {
       await mockApiError(page, '/api/contacts', ERROR_SCENARIOS.DATABASE_ERROR)
 
-      await page.goto('/contacts')
+      await page.goto('/en/contacts')
       await page.waitForLoadState('networkidle')
 
       const alert = page.locator('[role="alert"], .text-red-900, .text-red-600').first()
@@ -94,7 +94,7 @@ test.describe('Error State Handling', () => {
     })
 
     test('should handle validation error when creating contact', async ({ page }) => {
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
 
       // Mock API to return validation error
       await mockApiError(page, '/api/contacts',
@@ -122,7 +122,7 @@ test.describe('Error State Handling', () => {
     test('should display proper error message in Kanban view when API fails', async ({ page }) => {
       await mockApiError(page, '/api/contacts', ERROR_SCENARIOS.DATABASE_ERROR)
 
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Check for error in kanban view
@@ -134,7 +134,7 @@ test.describe('Error State Handling', () => {
     })
 
     test('should display proper error message in Table view when API fails', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Switch to table view
@@ -160,7 +160,7 @@ test.describe('Error State Handling', () => {
     test('should display proper error message when digital cards API fails', async ({ page }) => {
       await mockApiError(page, '/api/digital-cards', ERROR_SCENARIOS.DATABASE_ERROR)
 
-      await page.goto('/digital-cards')
+      await page.goto('/en/digital-cards')
       await page.waitForLoadState('networkidle')
 
       // Wait for error alert to appear
@@ -175,7 +175,7 @@ test.describe('Error State Handling', () => {
   test.describe('General Error Handling', () => {
     test('should never display "[object Object]" anywhere in the app', async ({ page }) => {
       // Visit multiple pages and trigger various actions
-      const pages = ['/dashboard', '/contacts', '/projects', '/tasks', '/knocks']
+      const pages = ['/en/dashboard', '/en/contacts', '/en/projects', '/en/tasks', '/en/knocks']
 
       for (const pagePath of pages) {
         await page.goto(pagePath, { waitUntil: 'networkidle' })
@@ -189,7 +189,7 @@ test.describe('Error State Handling', () => {
 
     test('should handle missing required fields with clear error messages', async ({ page }) => {
       // Test form submission without required fields
-      await page.goto('/contacts/new')
+      await page.goto('/en/contacts/new')
 
       // Use more specific selector to avoid matching "Sign Out" button
       const submitButton = page.locator('form button[type="submit"]').first()
@@ -214,7 +214,7 @@ test.describe('Edge Cases', () => {
       body: JSON.stringify({ tasks: [], total: 0 })
     }))
 
-    await page.goto('/tasks')
+    await page.goto('/en/tasks')
     await page.waitForLoadState('networkidle')
 
     // Should show empty state (not crash)
@@ -238,7 +238,7 @@ test.describe('Edge Cases', () => {
       body: 'Invalid JSON{'
     }))
 
-    await page.goto('/tasks')
+    await page.goto('/en/tasks')
 
     // App should handle gracefully (not crash with white screen)
     await expect(page.locator('body')).toBeVisible()
@@ -278,7 +278,7 @@ test.describe('Geolocation Error Handling', () => {
       })
     })
 
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Ensure we're on the map view (where location is enabled)
@@ -354,7 +354,7 @@ test.describe('Geolocation Error Handling', () => {
       })
     })
 
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Should initially show "Locating..."

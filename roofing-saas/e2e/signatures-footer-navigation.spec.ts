@@ -11,7 +11,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
 
   test('footer navigation should be visible and have higher z-index than AI assistant', async ({ page }) => {
     // Navigate to signatures new page
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Wait for page to load
     await expect(page.locator('h1', { hasText: 'Create Signature Document' })).toBeVisible()
@@ -39,7 +39,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   })
 
   test('footer navigation should remain visible when AI assistant is present', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Wait for page to load
     await expect(page.locator('h1', { hasText: 'Create Signature Document' })).toBeVisible()
@@ -65,7 +65,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   })
 
   test('footer buttons should function correctly across all steps', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Step 1: Template Selection
     await expect(page.locator('h1', { hasText: 'Create Signature Document' })).toBeVisible()
@@ -98,7 +98,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   test('footer should be positioned correctly for mobile and desktop layouts', async ({ page }) => {
     // Test desktop layout
     await page.setViewportSize({ width: 1200, height: 800 })
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     const footer = page.locator('.fixed.bottom-0').last()
     await expect(footer).toBeVisible()
@@ -118,7 +118,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   })
 
   test('cancel button should navigate back to signatures page', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     const cancelButton = page.getByRole('button', { name: /cancel/i })
     await expect(cancelButton).toBeVisible()
@@ -131,7 +131,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   })
 
   test('footer should maintain proper spacing with page content', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Check that there's proper spacing at bottom of content
     const bottomSpacer = page.locator('.h-20').last()
@@ -151,7 +151,7 @@ test.describe('Signatures New Page Footer Navigation', () => {
   })
 
   test('progress indicator should be visible and update correctly', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Check initial progress
     await expect(page.getByText('Step 1 of 5')).toBeVisible()

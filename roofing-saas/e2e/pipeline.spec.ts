@@ -27,7 +27,7 @@ test.describe('Pipeline Page - Unauthenticated', () => {
 
   test('should redirect to login when not authenticated', async ({ page }) => {
     // Go to projects page (where pipeline lives)
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Should redirect to login page when not authenticated
     await expect(page).toHaveURL(/\/login/)
@@ -35,7 +35,7 @@ test.describe('Pipeline Page - Unauthenticated', () => {
 
   test('should redirect /pipeline to /projects then to login', async ({ page }) => {
     // Test the legacy /pipeline URL still works (redirects to /projects)
-    await page.goto('/pipeline')
+    await page.goto('/en/pipeline')
 
     // Should eventually end up at login (via /projects redirect)
     await expect(page).toHaveURL(/\/login/)
@@ -48,7 +48,7 @@ test.describe('Pipeline Page - Unauthenticated', () => {
  */
 test.describe('Pipeline Page - Authenticated', () => {
   test('should load pipeline page when authenticated', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Should stay on projects page (not redirect to login)
     await expect(page).toHaveURL(/\/projects/)
@@ -58,7 +58,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should display all 8 pipeline stages', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Wait for the kanban view to load
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -82,7 +82,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should show pipeline value statistics', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Wait for the kanban view to load
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -95,7 +95,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should support quick filter chips', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Wait for the kanban view to load
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -108,7 +108,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should toggle between kanban and table views', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Should start in kanban view
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -129,7 +129,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should have working search input', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Wait for the kanban view to load
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -144,7 +144,7 @@ test.describe('Pipeline Page - Authenticated', () => {
   })
 
   test('should allow toggling individual pipeline stages', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
 
     // Wait for the kanban view to load
     await expect(page.getByTestId('kanban-view')).toBeVisible()
@@ -180,7 +180,7 @@ test.describe('Pipeline Page - Smoke Tests (Unauthenticated)', () => {
     })
 
     // Navigate to projects - will redirect to login for unauthenticated users
-    const response = await page.goto('/projects', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/projects', { waitUntil: 'networkidle' })
 
     // Check HTTP response
     expect(response?.status()).not.toBe(500)
@@ -242,7 +242,7 @@ test.describe('Pipeline Page - Smoke Tests (Unauthenticated)', () => {
   })
 
   test('should handle /pipeline redirect without errors', async ({ page }) => {
-    const response = await page.goto('/pipeline', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/pipeline', { waitUntil: 'networkidle' })
 
     // Should handle redirect chain successfully
     expect(response?.status()).not.toBe(500)
@@ -267,7 +267,7 @@ test.describe('Pipeline Page - Smoke Tests (Authenticated)', () => {
     })
 
     // Navigate to projects - should stay on page when authenticated
-    const response = await page.goto('/projects', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/projects', { waitUntil: 'networkidle' })
 
     // Check HTTP response
     expect(response?.status()).not.toBe(500)
@@ -293,7 +293,7 @@ test.describe('Pipeline Page - Smoke Tests (Authenticated)', () => {
   })
 
   test('should handle /pipeline redirect when authenticated', async ({ page }) => {
-    const response = await page.goto('/pipeline', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/pipeline', { waitUntil: 'networkidle' })
 
     // Should handle redirect chain successfully
     expect(response?.status()).not.toBe(500)

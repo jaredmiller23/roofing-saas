@@ -12,12 +12,12 @@ test.describe('E-Signature Workflow', () => {
 
   test('should create a new signature document', async ({ page }) => {
     // Navigate to signatures page
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
     await expect(page).toHaveTitle(/Signatures/i)
 
     // Click "New Document" button
     await page.click('text=New Document')
-    await page.waitForURL('/signatures/new')
+    await page.waitForURL('/en/signatures/new')
 
     // Fill in document details
     await page.fill('input[name="title"]', 'Test Contract - E2E')
@@ -38,7 +38,7 @@ test.describe('E-Signature Workflow', () => {
     await waitForNotification(page, 'Document created successfully')
 
     // Should redirect to documents list
-    await page.waitForURL('/signatures')
+    await page.waitForURL('/en/signatures')
 
     // Document should appear in list
     const documentCard = page.locator('text=Test Contract - E2E')
@@ -46,7 +46,7 @@ test.describe('E-Signature Workflow', () => {
   })
 
   test('should display document in pending status', async ({ page }) => {
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
 
     // Find a pending document
     const pendingDoc = page.locator('[data-status="pending"]').first()
@@ -58,7 +58,7 @@ test.describe('E-Signature Workflow', () => {
   })
 
   test('should send document for signature', async ({ page }) => {
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
 
     // Create and send a document
     await page.click('text=New Document')
@@ -117,7 +117,7 @@ test.describe('E-Signature Workflow', () => {
   })
 
   test('should download completed document', async ({ page }) => {
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
 
     // Find a completed document
     const completedDoc = page.locator('[data-status="completed"]').first()
@@ -153,7 +153,7 @@ test.describe('E-Signature Workflow', () => {
   })
 
   test('should track signature completion status', async ({ page }) => {
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
 
     // Check statistics
     const stats = page.locator('[data-testid="signature-stats"]')
@@ -179,7 +179,7 @@ test.describe('E-Signature Workflow', () => {
   })
 
   test('should support multiple signers', async ({ page }) => {
-    await page.goto('/signatures/new')
+    await page.goto('/en/signatures/new')
 
     // Create document with multiple signers
     await page.fill('input[name="title"]', 'Multi-Signer Contract')

@@ -267,7 +267,7 @@ test.describe('Voice Session API', () => {
 
 test.describe('Voice Page UI', () => {
   test('voice page loads successfully', async ({ page }) => {
-    await page.goto('/voice')
+    await page.goto('/en/voice')
     await page.waitForLoadState('networkidle')
 
     // Verify page loaded
@@ -285,7 +285,7 @@ test.describe('Voice Page UI', () => {
   })
 
   test('voice assistant page loads successfully', async ({ page }) => {
-    await page.goto('/voice-assistant')
+    await page.goto('/en/voice-assistant')
     await page.waitForLoadState('networkidle')
 
     // Should load without error
@@ -302,7 +302,7 @@ test.describe('Voice Page UI', () => {
 
 test.describe('AI Assistant Integration', () => {
   test('ai assistant context is available', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Check if AI assistant toggle/button exists
@@ -318,7 +318,7 @@ test.describe('AI Assistant Integration', () => {
   })
 
   test('ai assistant can be accessed from contacts page', async ({ page }) => {
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     // Use domcontentloaded instead of networkidle to avoid timeout with polling/SSE
     await page.waitForLoadState('domcontentloaded')
     // Wait for initial render — contacts page heading or table

@@ -163,7 +163,7 @@ test.describe('Estimates / Proposals', () => {
     const page = await context.newPage()
 
     // Navigate to the app first so cookies are in-scope for API calls
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    await page.goto('/en/dashboard', { waitUntil: 'domcontentloaded' })
 
     // 1. Create contact + project
     const ids = await createContactAndProject(page)
@@ -206,7 +206,7 @@ test.describe('Estimates / Proposals', () => {
   test('should navigate to project detail and see Quote Options tab', async ({ page }) => {
     test.slow()
 
-    await page.goto(`/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
 
     // Project name should be visible
     await expect(page.locator(`h1:has-text("${TEST_PROJECT_NAME}")`)).toBeVisible({ timeout: 15000 })
@@ -231,7 +231,7 @@ test.describe('Estimates / Proposals', () => {
   test('should display all three quote options on the project page', async ({ page }) => {
     test.slow()
 
-    await page.goto(`/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
     await expect(page.locator(`h1:has-text("${TEST_PROJECT_NAME}")`)).toBeVisible({ timeout: 15000 })
 
     // Click the Quote Options tab
@@ -267,7 +267,7 @@ test.describe('Estimates / Proposals', () => {
     expect(viewUrl).toContain('/view/estimate/')
 
     // Navigate to project and verify proposal status card appears
-    await page.goto(`/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
     await expect(page.locator(`h1:has-text("${TEST_PROJECT_NAME}")`)).toBeVisible({ timeout: 15000 })
 
     const quoteTab = page.locator('[role="tab"]').filter({ hasText: /Quote/ })
@@ -292,7 +292,7 @@ test.describe('Estimates / Proposals', () => {
       storageState: 'playwright/.auth/user.json',
     })
     const authPage = await authContext.newPage()
-    await authPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    await authPage.goto('/en/dashboard', { waitUntil: 'domcontentloaded' })
 
     const proposalsRes = await authPage.request.get(`/api/estimates/${projectId}/proposals`)
     expect(proposalsRes.ok()).toBeTruthy()
@@ -352,7 +352,7 @@ test.describe('Estimates / Proposals', () => {
       storageState: 'playwright/.auth/user.json',
     })
     const authPage = await authContext.newPage()
-    await authPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    await authPage.goto('/en/dashboard', { waitUntil: 'domcontentloaded' })
 
     const { proposalId } = await sendEstimateViaAPI(
       authPage,
@@ -420,7 +420,7 @@ test.describe('Estimates / Proposals', () => {
       storageState: 'playwright/.auth/user.json',
     })
     const authPage = await authContext.newPage()
-    await authPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    await authPage.goto('/en/dashboard', { waitUntil: 'domcontentloaded' })
 
     const { proposalId } = await sendEstimateViaAPI(
       authPage,
@@ -481,7 +481,7 @@ test.describe('Estimates / Proposals', () => {
   test('should show proposal status cards on project page after send/accept/decline', async ({ page }) => {
     test.slow()
 
-    await page.goto(`/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
     await expect(page.locator(`h1:has-text("${TEST_PROJECT_NAME}")`)).toBeVisible({ timeout: 15000 })
 
     // Go to Quote Options tab
@@ -513,7 +513,7 @@ test.describe('Estimates / Proposals', () => {
   test('should open and use the Send Estimate dialog from project page', async ({ page }) => {
     test.slow()
 
-    await page.goto(`/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`/en/projects/${projectId}`, { waitUntil: 'domcontentloaded' })
     await expect(page.locator(`h1:has-text("${TEST_PROJECT_NAME}")`)).toBeVisible({ timeout: 15000 })
 
     // Go to Quote Options tab
@@ -572,7 +572,7 @@ test.describe('Estimates / Proposals', () => {
       storageState: 'playwright/.auth/user.json',
     })
     const authPage = await authContext.newPage()
-    await authPage.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    await authPage.goto('/en/dashboard', { waitUntil: 'domcontentloaded' })
 
     const proposalsRes = await authPage.request.get(`/api/estimates/${projectId}/proposals`)
     const proposalsBody = await proposalsRes.json()

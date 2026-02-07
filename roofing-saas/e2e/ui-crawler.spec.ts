@@ -69,7 +69,7 @@ test.describe('UI Crawler - Full Application Test', () => {
 
     // Test dashboard page
     console.log('Testing: Dashboard')
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await expect(page).toHaveURL(/\/dashboard/)
 
     // Check for common UI elements
@@ -114,7 +114,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log('Testing: Contacts Module')
 
     // Contacts list
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.waitForLoadState('networkidle')
 
     // Check for "New Contact" button or similar action
@@ -160,11 +160,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log('Testing: Projects/Pipeline Module')
 
     // Test projects page
-    await page.goto('/projects')
+    await page.goto('/en/projects')
     await page.waitForLoadState('networkidle')
 
     // Test pipeline page
-    await page.goto('/pipeline')
+    await page.goto('/en/pipeline')
     await page.waitForLoadState('networkidle')
 
     // Check for drag-and-drop elements (kanban board)
@@ -176,7 +176,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Field Activity')
     console.log('Testing: Field Activity Module')
 
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Check for map container
@@ -200,11 +200,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Storm Targeting')
     console.log('Testing: Storm Targeting Module')
 
-    await page.goto('/storm-targeting')
+    await page.goto('/en/storm-targeting')
     await page.waitForLoadState('networkidle')
 
     // Check for leads page
-    await page.goto('/storm-targeting/leads')
+    await page.goto('/en/storm-targeting/leads')
     await page.waitForLoadState('networkidle')
 
     // Look for enrichment or processing controls
@@ -216,7 +216,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Knocks')
     console.log('Testing: Knocks Module')
 
-    await page.goto('/knocks')
+    await page.goto('/en/knocks')
     await page.waitForLoadState('networkidle')
 
     // Check for knock logging button
@@ -228,7 +228,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'E-Signature')
     console.log('Testing: E-Signature Module')
 
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
     await page.waitForLoadState('networkidle')
 
     // Check for signature list or creation
@@ -244,11 +244,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log('Testing: Voice Assistant Module')
 
     // Test voice page
-    await page.goto('/voice')
+    await page.goto('/en/voice')
     await page.waitForLoadState('networkidle')
 
     // Test voice assistant page
-    await page.goto('/voice-assistant')
+    await page.goto('/en/voice-assistant')
     await page.waitForLoadState('networkidle')
 
     // Check for microphone/audio controls
@@ -264,11 +264,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Tasks')
     console.log('Testing: Tasks Module')
 
-    await page.goto('/tasks')
+    await page.goto('/en/tasks')
     await page.waitForLoadState('networkidle')
 
     // Test board view
-    await page.goto('/tasks/board')
+    await page.goto('/en/tasks/board')
     await page.waitForLoadState('networkidle')
 
     // Check for task board columns
@@ -276,7 +276,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log(`Task board columns found: ${hasColumns}`)
 
     // Test events/calendar
-    await page.goto('/events')
+    await page.goto('/en/events')
     await page.waitForLoadState('networkidle')
   })
 
@@ -285,19 +285,19 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log('Testing: Financial Modules')
 
     // Test financial reports
-    await page.goto('/financial/reports')
+    await page.goto('/en/financial/reports')
     await page.waitForLoadState('networkidle')
 
     // Test commissions
-    await page.goto('/financial/commissions')
+    await page.goto('/en/financial/commissions')
     await page.waitForLoadState('networkidle')
 
     // Test analytics
-    await page.goto('/financial/analytics')
+    await page.goto('/en/financial/analytics')
     await page.waitForLoadState('networkidle')
 
     // Test reports
-    await page.goto('/financial/reports')
+    await page.goto('/en/financial/reports')
     await page.waitForLoadState('networkidle')
 
     // Check for charts or data visualization
@@ -309,11 +309,11 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Campaigns')
     console.log('Testing: Campaigns Module')
 
-    await page.goto('/campaigns')
+    await page.goto('/en/campaigns')
     await page.waitForLoadState('networkidle')
 
     // Test templates
-    await page.goto('/campaigns/templates')
+    await page.goto('/en/campaigns/templates')
     await page.waitForLoadState('networkidle')
 
     // Check for campaign creation
@@ -325,15 +325,15 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Settings')
     console.log('Testing: Settings Module')
 
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.waitForLoadState('networkidle')
 
     // Test profile settings
-    await page.goto('/settings/profile')
+    await page.goto('/en/settings/profile')
     await page.waitForLoadState('networkidle')
 
     // Test my-card settings
-    await page.goto('/settings/my-card')
+    await page.goto('/en/settings/my-card')
     await page.waitForLoadState('networkidle')
 
     // Check for form inputs
@@ -352,7 +352,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Gamification')
     console.log('Testing: Gamification Module')
 
-    await page.goto('/gamification')
+    await page.goto('/en/gamification')
     await page.waitForLoadState('networkidle')
 
     // Check for points/badges display
@@ -362,7 +362,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     console.log(`Gamification UI found: ${hasGamificationUI}`)
 
     // Test incentives
-    await page.goto('/incentives')
+    await page.goto('/en/incentives')
     await page.waitForLoadState('networkidle')
   })
 
@@ -373,7 +373,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     // Note: Organizations was merged into contacts (migration 20251119000600)
     // The /organizations page no longer exists
 
-    await page.goto('/surveys')
+    await page.goto('/en/surveys')
     await page.waitForLoadState('networkidle')
 
     // Check for survey creation
@@ -385,10 +385,10 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Call Logs')
     console.log('Testing: Call Logs and Jobs')
 
-    await page.goto('/call-logs')
+    await page.goto('/en/call-logs')
     await page.waitForLoadState('networkidle')
 
-    await page.goto('/jobs')
+    await page.goto('/en/jobs')
     await page.waitForLoadState('networkidle')
 
     // Check for job creation
@@ -400,7 +400,7 @@ test.describe('UI Crawler - Full Application Test', () => {
     setupConsoleTracking(page, 'Project Files')
     console.log('Testing: Project Files Module')
 
-    await page.goto('/project-files')
+    await page.goto('/en/project-files')
     await page.waitForLoadState('networkidle')
 
     // Check for file upload or creation

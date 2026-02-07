@@ -17,7 +17,7 @@ test.describe('Mobile Navigation Validation', () => {
 
   test('can enable Instagram nav style and see bottom nav', async ({ page }) => {
     // Step 1: Go to settings
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.waitForLoadState('networkidle')
 
     // Step 2: Click on the Appearance tab to see nav style options
@@ -54,7 +54,7 @@ test.describe('Mobile Navigation Validation', () => {
     ).catch(() => {})
 
     // Step 5: Navigate to dashboard
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Step 6: Verify the bottom navigation is visible with correct buttons
@@ -90,7 +90,7 @@ test.describe('Mobile Navigation Validation', () => {
   test('top bar has notifications and settings buttons (Instagram mode)', async ({ page }) => {
     // This test runs AFTER the first test which enables Instagram mode
     // So the session should already have Instagram nav style set
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('networkidle')
 
     // In Instagram layout, the top bar has Notifications and Settings buttons
@@ -103,7 +103,7 @@ test.describe('Mobile Navigation Validation', () => {
   })
 
   test('AI assistant bar is visible at bottom', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Look for AI assistant bar with "Ask anything..." button
@@ -114,7 +114,7 @@ test.describe('Mobile Navigation Validation', () => {
   })
 
   test('voice button is present in bottom nav', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Find voice button (center of bottom nav)

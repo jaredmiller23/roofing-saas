@@ -48,7 +48,7 @@ const sampleLeads = [
 test.describe('Projects/Sales Page - View Modes', () => {
   test.describe('Kanban View (Default)', () => {
     test('should load kanban view by default', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Check for kanban view container
@@ -56,7 +56,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should display leads in correct columns', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Verify kanban view is visible
@@ -79,7 +79,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
       // Set larger viewport so "Table" text is visible (it's hidden sm:inline, visible >= 640px)
       await page.setViewportSize({ width: 1280, height: 720 })
 
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Click the Table view button using test ID
@@ -104,7 +104,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should load leads in table view without errors', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Click Table button
@@ -136,7 +136,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should display table headers correctly', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       const tableButton = page.locator('button:has-text("Table")').first()
@@ -165,7 +165,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should sort by "Updated" column without errors', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       const tableButton = page.locator('button:has-text("Table")').first()
@@ -193,7 +193,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should handle all sort options without database errors', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       const tableButton = page.locator('button:has-text("Table")').first()
@@ -224,7 +224,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should display lead data in table rows', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       const tableButton = page.locator('button:has-text("Table")').first()
@@ -252,7 +252,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
   test.describe('View Toggle', () => {
     test('should toggle between Kanban and Table views', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 })
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Start with Kanban (default)
@@ -284,7 +284,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
 
   test.describe('Entity Type Toggle (Leads vs Jobs)', () => {
     test('should toggle between Leads and Jobs', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Look for entity type toggle
@@ -309,7 +309,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
     })
 
     test('should load Jobs in Table view without errors', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Switch to Jobs
@@ -337,7 +337,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
 
   test.describe('Error Handling in Different Views', () => {
     test('should show error in Table view when API fails', async ({ page }) => {
-      await page.goto('/projects')
+      await page.goto('/en/projects')
       await page.waitForLoadState('networkidle')
 
       // Mock API error
@@ -363,7 +363,7 @@ test.describe('Projects/Sales Page - View Modes', () => {
 test.describe('Regression Tests for Known Bugs', () => {
   test('BUG #2 REGRESSION: Should NOT fail with "column contacts.updated does not exist"', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 })
-    await page.goto('/projects')
+    await page.goto('/en/projects')
     await page.waitForLoadState('networkidle')
 
     // Switch to Table view (this used to fail)
@@ -396,7 +396,7 @@ test.describe('Regression Tests for Known Bugs', () => {
   })
 
   test('BUG #2 REGRESSION: Should sort by updated_at column (not updated)', async ({ page }) => {
-    await page.goto('/projects')
+    await page.goto('/en/projects')
     await page.waitForLoadState('networkidle')
 
     const tableButton = page.locator('button:has-text("Table")').first()

@@ -15,30 +15,30 @@ import { test, expect } from '@playwright/test'
 // All sidebar navigation links organized by section
 const sidebarLinks = [
   // CORE
-  { path: '/dashboard', label: 'Dashboard' },
-  { path: '/contacts', label: 'Contacts' },
-  { path: '/projects', label: 'Pipeline' },
-  { path: '/signatures', label: 'Signatures' },
-  { path: '/tasks', label: 'Tasks' },
-  { path: '/events', label: 'Events' },
+  { path: '/en/dashboard', label: 'Dashboard' },
+  { path: '/en/contacts', label: 'Contacts' },
+  { path: '/en/projects', label: 'Pipeline' },
+  { path: '/en/signatures', label: 'Signatures' },
+  { path: '/en/tasks', label: 'Tasks' },
+  { path: '/en/events', label: 'Events' },
 
   // SELL
-  { path: '/knocks', label: 'Knock' },
-  { path: '/claims', label: 'Claims' },
-  { path: '/incentives', label: 'Incentives' },
-  { path: '/insights', label: 'Insights' },
+  { path: '/en/knocks', label: 'Knock' },
+  { path: '/en/claims', label: 'Claims' },
+  { path: '/en/incentives', label: 'Incentives' },
+  { path: '/en/insights', label: 'Insights' },
 
   // COMMUNICATIONS
-  { path: '/call-logs', label: 'Call Log' },
-  { path: '/voicemail', label: 'Voicemail' },
-  { path: '/messages', label: 'Messages' },
-  { path: '/campaigns', label: 'Campaigns' },
+  { path: '/en/call-logs', label: 'Call Log' },
+  { path: '/en/voicemail', label: 'Voicemail' },
+  { path: '/en/messages', label: 'Messages' },
+  { path: '/en/campaigns', label: 'Campaigns' },
 
   // AI
-  { path: '/aria/knowledge', label: 'Knowledge Base' },
+  { path: '/en/aria/knowledge', label: 'Knowledge Base' },
 
   // SETTINGS
-  { path: '/settings', label: 'Settings' },
+  { path: '/en/settings', label: 'Settings' },
 ]
 
 test.describe('Sidebar Smoke Tests', () => {

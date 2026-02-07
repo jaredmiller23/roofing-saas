@@ -82,7 +82,7 @@ test.describe('Authentication Flows - Unauthenticated', () => {
 
   test('should redirect to login when accessing protected route unauthenticated', async ({ page }) => {
     // Try to access protected route
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.waitForLoadState('load')
 
     // Should redirect to login
@@ -91,7 +91,7 @@ test.describe('Authentication Flows - Unauthenticated', () => {
 
   test('should preserve destination after login redirect', async ({ page }) => {
     // Try to access protected route
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.waitForLoadState('load')
 
     // Should redirect to login
@@ -126,7 +126,7 @@ test.describe('Authentication Flows - Authenticated', () => {
   // Uses default authenticated storage state (configured in playwright.config.ts)
 
   test('should allow access to protected routes when authenticated', async ({ page }) => {
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.waitForLoadState('load')
 
     // Should NOT redirect to login
@@ -139,7 +139,7 @@ test.describe('Authentication Flows - Authenticated', () => {
 
   test('should maintain session across page refreshes', async ({ page }) => {
     // Navigate to dashboard (authenticated)
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('load')
 
     // Verify authenticated
@@ -158,11 +158,11 @@ test.describe('Authentication Flows - Authenticated', () => {
 
   test('should maintain session across navigation', async ({ page }) => {
     // Start at dashboard
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('load')
 
     // Navigate to different protected routes
-    const routes = ['/contacts', '/projects', '/dashboard']
+    const routes = ['/en/contacts', '/en/projects', '/en/dashboard']
 
     for (const route of routes) {
       await page.goto(route)
@@ -223,7 +223,7 @@ test.describe('Authentication Flows - Logout', () => {
     await expect(loginEmailInput).toBeVisible()
 
     // Verify session is cleared - try to access protected route
-    await page.goto('/dashboard')
+    await page.goto('/en/dashboard')
     await page.waitForLoadState('load')
 
     // Should redirect back to login (session was cleared)

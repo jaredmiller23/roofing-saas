@@ -23,7 +23,7 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant1User.email, tenant1User.password)
 
     // Create a contact as tenant 1
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.click('text=New Contact')
     await page.fill('input[name="first_name"]', 'Tenant1')
     await page.fill('input[name="last_name"]', 'Contact')
@@ -42,13 +42,13 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant2User.email, tenant2User.password)
 
     // Try to access tenant 1's contact directly
-    const response = await page.goto(`/contacts/${tenant1ContactId}`)
+    const response = await page.goto(`/en/contacts/${tenant1ContactId}`)
 
     // Should be denied access (404 or 403)
     expect([403, 404]).toContain(response?.status() || 0)
 
     // Should not see tenant 1's contact in list
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await expect(page.locator('text=contact@tenant1.com')).not.toBeVisible()
     await expect(page.locator('text=Tenant1 Contact')).not.toBeVisible()
   })
@@ -58,7 +58,7 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant1User.email, tenant1User.password)
 
     // Create a project
-    await page.goto('/projects')
+    await page.goto('/en/projects')
     await page.click('text=New Project')
     await page.fill('input[name="name"]', 'Tenant 1 Secret Project')
     await page.fill('textarea[name="description"]', 'Confidential project data')
@@ -72,11 +72,11 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant2User.email, tenant2User.password)
 
     // Try to access tenant 1's project
-    const response = await page.goto(`/projects/${tenant1ProjectId}`)
+    const response = await page.goto(`/en/projects/${tenant1ProjectId}`)
     expect([403, 404]).toContain(response?.status() || 0)
 
     // Should not see in projects list
-    await page.goto('/projects')
+    await page.goto('/en/projects')
     await expect(page.locator('text=Tenant 1 Secret Project')).not.toBeVisible()
   })
 
@@ -125,17 +125,17 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant1User.email, tenant1User.password)
 
     // Navigate through different sections
-    await page.goto('/dashboard')
-    await page.goto('/contacts')
-    await page.goto('/projects')
-    await page.goto('/activities')
+    await page.goto('/en/dashboard')
+    await page.goto('/en/contacts')
+    await page.goto('/en/projects')
+    await page.goto('/en/activities')
 
     // Check tenant indicator is consistent
     const tenantIndicator = page.locator('[data-testid="tenant-name"]')
     const tenantName = await tenantIndicator.textContent()
 
     // Navigate to another section
-    await page.goto('/settings')
+    await page.goto('/en/settings')
 
     // Tenant should be the same
     const tenantIndicator2 = page.locator('[data-testid="tenant-name"]')
@@ -188,7 +188,7 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant1User.email, tenant1User.password)
 
     // Create uniquely named contact
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.click('text=New Contact')
     await page.fill('input[name="first_name"]', 'SearchTest')
     await page.fill('input[name="last_name"]', 'Tenant1')
@@ -201,7 +201,7 @@ test.describe('Multi-Tenant Isolation', () => {
     await login(page, tenant2User.email, tenant2User.password)
 
     // Search for tenant 1's contact
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     await page.fill('input[placeholder*="Search"]', 'SearchTest')
     await page.keyboard.press('Enter')
 
@@ -237,7 +237,7 @@ test.describe('Multi-Tenant Isolation', () => {
     expect(newTenant).not.toBe(currentTenant)
 
     // Verify data is different tenant's data
-    await page.goto('/contacts')
+    await page.goto('/en/contacts')
     // Should see different contacts than before switch
   })
 
@@ -258,7 +258,7 @@ test.describe('Multi-Tenant Isolation', () => {
     // Both create contacts simultaneously
     await Promise.all([
       (async () => {
-        await page1.goto('/contacts')
+        await page1.goto('/en/contacts')
         await page1.click('text=New Contact')
         await page1.fill('input[name="first_name"]', 'Concurrent')
         await page1.fill('input[name="last_name"]', 'Test1')
@@ -266,7 +266,7 @@ test.describe('Multi-Tenant Isolation', () => {
         await page1.click('button:has-text("Save")')
       })(),
       (async () => {
-        await page2.goto('/contacts')
+        await page2.goto('/en/contacts')
         await page2.click('text=New Contact')
         await page2.fill('input[name="first_name"]', 'Concurrent')
         await page2.fill('input[name="last_name"]', 'Test2')
@@ -276,11 +276,11 @@ test.describe('Multi-Tenant Isolation', () => {
     ])
 
     // Verify each tenant only sees their own contact
-    await page1.goto('/contacts')
+    await page1.goto('/en/contacts')
     await expect(page1.locator('text=concurrent1@tenant1.com')).toBeVisible()
     await expect(page1.locator('text=concurrent2@tenant2.com')).not.toBeVisible()
 
-    await page2.goto('/contacts')
+    await page2.goto('/en/contacts')
     await expect(page2.locator('text=concurrent2@tenant2.com')).toBeVisible()
     await expect(page2.locator('text=concurrent1@tenant1.com')).not.toBeVisible()
 

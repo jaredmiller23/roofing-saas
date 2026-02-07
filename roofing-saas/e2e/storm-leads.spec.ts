@@ -14,7 +14,7 @@ import { test, expect } from '@playwright/test'
 test.describe('Storm Leads Management', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to storm leads page
-    await page.goto('/storm-targeting/leads')
+    await page.goto('/en/storm-targeting/leads')
     await page.waitForLoadState('networkidle')
   })
 
@@ -179,7 +179,7 @@ test.describe('Storm Leads API Endpoints', () => {
 
 test.describe('Storm Leads UI Interactions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/storm-targeting/leads')
+    await page.goto('/en/storm-targeting/leads')
     await page.waitForLoadState('networkidle')
   })
 
@@ -290,7 +290,7 @@ test.describe('Storm Leads UI Interactions', () => {
 
 test.describe('Storm Targeting Main Page', () => {
   test('main storm targeting page loads', async ({ page }) => {
-    await page.goto('/storm-targeting')
+    await page.goto('/en/storm-targeting')
     await page.waitForLoadState('networkidle')
 
     // Verify page loaded
@@ -308,7 +308,7 @@ test.describe('Storm Targeting Main Page', () => {
   })
 
   test('can navigate between storm targeting and leads', async ({ page }) => {
-    await page.goto('/storm-targeting')
+    await page.goto('/en/storm-targeting')
     await page.waitForLoadState('networkidle')
 
     // Look for link to leads

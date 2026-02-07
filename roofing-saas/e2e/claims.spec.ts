@@ -24,7 +24,7 @@ const generatePolicyNumber = () => `POL-${Math.floor(100000 + Math.random() * 90
 test.describe('Claims Management', () => {
   test.describe('Claims Dashboard', () => {
     test('should load claims dashboard', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Should be on claims page
@@ -39,7 +39,7 @@ test.describe('Claims Management', () => {
     })
 
     test('should display claims stats cards', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Wait for page header
@@ -55,7 +55,7 @@ test.describe('Claims Management', () => {
 
   test.describe('Claim Search and Filtering', () => {
     test('should have search input for claims', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Wait for page header
@@ -71,7 +71,7 @@ test.describe('Claims Management', () => {
     })
 
     test('should have status filter dropdown', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Wait for page header
@@ -94,7 +94,7 @@ test.describe('Claims Management', () => {
     })
 
     test('should have date range filters', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Wait for page header
@@ -109,7 +109,7 @@ test.describe('Claims Management', () => {
 
   test.describe('Claim Export', () => {
     test('should have export buttons', async ({ page }) => {
-      await page.goto('/claims')
+      await page.goto('/en/claims')
       // Skip networkidle - wait for DOM instead
 
       // Wait for page to load - look for Claims Management heading
@@ -130,7 +130,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Details', () => {
     test('should view claim details by clicking claim card', async ({ page }) => {
       // E2E claims are seeded via npm run seed:test
-      await page.goto('/claims')
+      await page.goto('/en/claims')
 
       // Wait for claims to load
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -161,7 +161,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Status Updates', () => {
     test('should display status workflow on claim detail page', async ({ page }) => {
       // E2E claims are seeded via npm run seed:test
-      await page.goto('/claims')
+      await page.goto('/en/claims')
 
       // Wait for claims to load
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -187,7 +187,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Documents', () => {
     test('should access documents tab on claim detail page', async ({ page }) => {
       // E2E claims are seeded via npm run seed:test
-      await page.goto('/claims')
+      await page.goto('/en/claims')
 
       // Wait for claims to load
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })
@@ -220,7 +220,7 @@ test.describe('Claims Management', () => {
   test.describe('Claim Inspection Flow', () => {
     test('should display timeline tab on claim detail page', async ({ page }) => {
       // E2E claims are seeded via npm run seed:test
-      await page.goto('/claims')
+      await page.goto('/en/claims')
 
       // Wait for claims to load
       await page.waitForSelector('h1:has-text("Claims Management")', { timeout: 10000 })

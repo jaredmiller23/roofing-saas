@@ -21,7 +21,7 @@ test.describe('QuickBooks Integration UI', () => {
 
   test.beforeEach(async ({ page }) => {
     // Navigate to Settings → Integrations tab
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.waitForLoadState('networkidle')
 
     // Click the Integrations tab

@@ -12,7 +12,7 @@ test.describe('Task CRUD Operations', () => {
 
   test.describe('Task List Page', () => {
     test('should load tasks page with create button', async ({ page }) => {
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
 
       // Page heading
       await expect(page.locator('h1').filter({ hasText: 'Tasks' })).toBeVisible({ timeout: 10000 })
@@ -23,7 +23,7 @@ test.describe('Task CRUD Operations', () => {
     })
 
     test('should have board view toggle', async ({ page }) => {
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
       await expect(page.locator('h1').filter({ hasText: 'Tasks' })).toBeVisible({ timeout: 10000 })
 
       const boardBtn = page.getByRole('link', { name: /Board/ })
@@ -33,7 +33,7 @@ test.describe('Task CRUD Operations', () => {
 
   test.describe('Task Creation', () => {
     test('should navigate to new task form', async ({ page }) => {
-      await page.goto('/tasks')
+      await page.goto('/en/tasks')
       await expect(page.locator('h1').filter({ hasText: 'Tasks' })).toBeVisible({ timeout: 10000 })
 
       await page.getByRole('link', { name: /New Task/ }).click()
@@ -43,7 +43,7 @@ test.describe('Task CRUD Operations', () => {
     })
 
     test('should display task form with all sections', async ({ page }) => {
-      await page.goto('/tasks/new')
+      await page.goto('/en/tasks/new')
       await expect(page.locator('h1').filter({ hasText: 'New Task' })).toBeVisible({ timeout: 10000 })
 
       // Basic Information section
@@ -64,7 +64,7 @@ test.describe('Task CRUD Operations', () => {
     })
 
     test('should show validation error for empty title', async ({ page }) => {
-      await page.goto('/tasks/new')
+      await page.goto('/en/tasks/new')
       await expect(page.locator('h1').filter({ hasText: 'New Task' })).toBeVisible({ timeout: 10000 })
 
       // Submit without filling title
@@ -81,7 +81,7 @@ test.describe('Task CRUD Operations', () => {
     test('should create task with required fields', async ({ page }) => {
       const taskTitle = `E2E Task ${Date.now()}`
 
-      await page.goto('/tasks/new')
+      await page.goto('/en/tasks/new')
       await expect(page.locator('h1').filter({ hasText: 'New Task' })).toBeVisible({ timeout: 10000 })
 
       // Fill required fields
@@ -106,7 +106,7 @@ test.describe('Task CRUD Operations', () => {
       const originalTitle = `Edit Me ${Date.now()}`
       const updatedTitle = `Updated ${Date.now()}`
 
-      await page.goto('/tasks/new')
+      await page.goto('/en/tasks/new')
       await expect(page.locator('input[name="title"]')).toBeVisible({ timeout: 10000 })
       await page.locator('input[name="title"]').fill(originalTitle)
       await page.getByRole('button', { name: 'Create Task' }).click()
@@ -144,7 +144,7 @@ test.describe('Task CRUD Operations', () => {
       // Create a task in todo status
       const taskTitle = `Status Test ${Date.now()}`
 
-      await page.goto('/tasks/new')
+      await page.goto('/en/tasks/new')
       await expect(page.locator('input[name="title"]')).toBeVisible({ timeout: 10000 })
       await page.locator('input[name="title"]').fill(taskTitle)
       await page.locator('select[name="status"]').selectOption('todo')

@@ -14,7 +14,7 @@ test.describe('Workflow Automations - Unauthenticated', () => {
   test.use({ storageState: { cookies: [], origins: [] } })
 
   test('should redirect to login when accessing settings without auth', async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await expect(page).toHaveURL(/\/login/)
   })
 })
@@ -25,7 +25,7 @@ test.describe('Workflow Automations - Unauthenticated', () => {
 test.describe('Workflow Automations - Authenticated', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to Settings page
-    await page.goto('/settings')
+    await page.goto('/en/settings')
 
     // Click on Automations tab
     await page.getByRole('tab', { name: /Automations/ }).click()
@@ -98,7 +98,7 @@ test.describe('Workflow Automations - Authenticated', () => {
 test.describe('Workflow CRUD Operations', () => {
   test('should create workflow from template', async ({ page }) => {
     // Navigate to Settings > Automations
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.getByRole('tab', { name: /Automations/ }).click()
     await expect(page.getByText('Workflow Automations')).toBeVisible()
 
@@ -131,7 +131,7 @@ test.describe('Workflow CRUD Operations', () => {
 
   test('should toggle workflow active state', async ({ page }) => {
     // Navigate to Settings > Automations
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.getByRole('tab', { name: /Automations/ }).click()
     await expect(page.getByText('Workflow Automations')).toBeVisible()
 
@@ -175,7 +175,7 @@ test.describe('Workflow CRUD Operations', () => {
 
   test('should show active/paused status indicators', async ({ page }) => {
     // Navigate to Settings > Automations
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.getByRole('tab', { name: /Automations/ }).click()
     await expect(page.getByText('Workflow Automations')).toBeVisible()
 
@@ -208,7 +208,7 @@ test.describe('Settings Automations - Smoke Tests', () => {
       }
     })
 
-    const response = await page.goto('/settings', { waitUntil: 'networkidle' })
+    const response = await page.goto('/en/settings', { waitUntil: 'networkidle' })
 
     expect(response?.status()).not.toBe(500)
     expect(response?.status()).toBeLessThan(500)
@@ -225,7 +225,7 @@ test.describe('Settings Automations - Smoke Tests', () => {
       }
     })
 
-    await page.goto('/settings')
+    await page.goto('/en/settings')
 
     // Click Automations tab
     await page.getByRole('tab', { name: /Automations/ }).click()
@@ -244,7 +244,7 @@ test.describe('Settings Automations - Smoke Tests', () => {
   })
 
   test('should handle API calls gracefully', async ({ page }) => {
-    await page.goto('/settings')
+    await page.goto('/en/settings')
     await page.getByRole('tab', { name: /Automations/ }).click()
 
     // Wait for workflows API call

@@ -308,7 +308,7 @@ async function mockSubscriptionApi(
  * On desktop, the sidebar is visible; on mobile, the billing item is in the list.
  */
 async function navigateToBilling(page: import('@playwright/test').Page) {
-  await page.goto('/settings')
+  await page.goto('/en/settings')
   await page.waitForLoadState('load')
 
   // Click the Billing item in the settings sidebar/list

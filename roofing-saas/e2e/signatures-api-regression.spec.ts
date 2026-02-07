@@ -31,7 +31,7 @@ test.describe('Signatures API Regression Tests', () => {
 
   test('should load signatures page without error', async ({ page }) => {
     // Navigate to signatures page
-    await page.goto('/signatures')
+    await page.goto('/en/signatures')
 
     // Should not show "failed to fetch sig docs" error
     const errorMessage = page.locator('text=/failed to fetch|fetch.*failed|error.*fetch/i')
