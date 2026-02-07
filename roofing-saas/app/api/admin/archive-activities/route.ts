@@ -29,7 +29,8 @@ export const POST = withAuth(async (request: NextRequest, { user, tenantId }) =>
 
     // Call the archive function
     // Note: Type assertion needed until database types are regenerated
-    const { data, error } = await supabase.rpc('archive_old_activities' as any) as { data: number | null, error: any }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)('archive_old_activities') as { data: number | null, error: { message: string } | null }
 
     if (error) {
       logger.error('Activity archival error', { error, tenantId, userId: user.id })

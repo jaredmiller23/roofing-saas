@@ -49,9 +49,10 @@ export const POST = withAuth(async (request: NextRequest, { user, tenantId }) =>
 
     // Call the refresh function
     // Returns table of (view_name, status, duration_ms) for each view
-    const { data, error } = await supabase.rpc('refresh_materialized_views' as any) as {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)('refresh_materialized_views') as {
       data: ViewRefreshResult[] | null
-      error: any
+      error: { message: string } | null
     }
 
     if (error) {

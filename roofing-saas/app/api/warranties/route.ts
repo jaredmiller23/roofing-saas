@@ -34,8 +34,8 @@ export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
     const status = searchParams.get('status')
 
      
-    let query = supabase
-      .from('warranties' as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = (supabase.from as any)('warranties')
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('is_deleted', false)
@@ -89,8 +89,8 @@ export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) 
     } = parsed.data
 
      
-    const { data, error } = await supabase
-      .from('warranties' as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from as any)('warranties')
       .insert({
         tenant_id: tenantId,
         project_id,
