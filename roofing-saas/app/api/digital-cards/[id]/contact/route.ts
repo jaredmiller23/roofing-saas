@@ -15,6 +15,9 @@ import type {
 } from '@/lib/digital-cards/types'
 import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { createdResponse, errorResponse } from '@/lib/api/response'
+import { sendEmail, createEmailHTML } from '@/lib/resend/email'
+import { isResendConfigured } from '@/lib/resend/client'
+import { logger } from '@/lib/logger'
 
 // =============================================
 // Helper: Basic email validation
@@ -58,7 +61,7 @@ export async function POST(
     // Fetch card and verify it's active with contact form enabled
     const { data: card, error: cardError } = await supabase
       .from('digital_business_cards')
-      .select('id, tenant_id, user_id, full_name, enable_contact_form')
+      .select('id, tenant_id, user_id, full_name, enable_contact_form, email')
       .eq('id', id)
       .eq('is_active', true)
       .single()
@@ -181,8 +184,36 @@ export async function POST(
         })
     }
 
-    // 4. TODO: Send email notification to card owner
-    // This would integrate with Resend/SendGrid to notify the rep
+    // 4. Send email notification to card owner
+    if (isResendConfigured() && card.email) {
+      try {
+        const notificationHtml = createEmailHTML(`
+          <h2>New Contact Form Submission</h2>
+          <p>Someone submitted the contact form on your digital business card.</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+            <tr><td style="padding: 8px; font-weight: bold;">Name</td><td style="padding: 8px;">${body.name}</td></tr>
+            <tr><td style="padding: 8px; font-weight: bold;">Email</td><td style="padding: 8px;">${body.email}</td></tr>
+            ${body.phone ? `<tr><td style="padding: 8px; font-weight: bold;">Phone</td><td style="padding: 8px;">${body.phone}</td></tr>` : ''}
+            ${body.company ? `<tr><td style="padding: 8px; font-weight: bold;">Company</td><td style="padding: 8px;">${body.company}</td></tr>` : ''}
+          </table>
+          <p><strong>Message:</strong></p>
+          <p style="background: #f3f4f6; padding: 12px; border-radius: 6px;">${body.message}</p>
+        `, 'New Contact Form Submission')
+
+        await sendEmail({
+          to: card.email,
+          subject: `New contact: ${body.name}`,
+          html: notificationHtml,
+        })
+        logger.info('Digital card contact notification sent', { cardId: id, to: card.email })
+      } catch (emailError) {
+        // Notification failure must NOT fail the public endpoint
+        logger.error('Failed to send digital card contact notification', {
+          cardId: id,
+          error: emailError,
+        })
+      }
+    }
 
     const response: SubmitContactFormResponse = {
       success: true,

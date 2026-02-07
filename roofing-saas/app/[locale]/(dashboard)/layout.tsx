@@ -55,17 +55,8 @@ export default async function DashboardLayout({
   const userRole = ctx?.role || 'user'
   const userEmail = user.email || ''
 
-  // MFA enforcement temporarily disabled to debug blank page issue
-  // TODO: Re-enable after fixing RSC streaming issue
-  // if (mfaRedirect) {
-  //   const headersList = await headers()
-  //   const pathname = headersList.get('x-pathname') || ''
-  //   const isOnSettings = pathname.includes('/settings')
-  //   if (!isOnSettings) {
-  //     redirect(`/${locale}${mfaRedirect}`)
-  //   }
-  // }
-  void mfaRedirect // suppress unused variable warning
+  // MFA enforcement: pass redirect path to client component
+  // Client-side redirect via usePathname() avoids needing headers() in the layout
 
   return (
     <CommandPaletteProvider>
@@ -81,6 +72,8 @@ export default async function DashboardLayout({
           <DashboardLayoutClient
             userRole={userRole}
             userEmail={userEmail}
+            mfaRedirect={mfaRedirect}
+            locale={locale}
           >
             {children}
           </DashboardLayoutClient>

@@ -6,6 +6,7 @@ import type { Contact } from '@/lib/types/contact'
 import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
+import { auditLogger } from '@/lib/audit/audit-logger'
 
 /**
  * GET /api/contacts/[id]/score
@@ -137,7 +138,7 @@ export const POST = withAuthParams(async (
  */
 export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { userId, tenantId }: AuthContext,
+  { user, userId, tenantId }: AuthContext,
   { params }
 ) => {
   try {
@@ -185,8 +186,22 @@ export const PATCH = withAuthParams(async (
       throw InternalError('Failed to update lead score')
     }
 
-    // TODO: Log manual override in audit trail
-    // This would typically create an audit entry showing who manually changed the score
+    // Log manual score override in audit trail
+    auditLogger.logUpdate(
+      userId,
+      user.email || 'unknown',
+      user.email || 'unknown',
+      tenantId,
+      'contact',
+      contactId,
+      { lead_score: previousScore },
+      { lead_score: score },
+      {
+        action: 'manual_score_override',
+        reason: reason || 'Manual override',
+        score_change: score - previousScore,
+      }
+    )
 
     return successResponse({
       contactId,
