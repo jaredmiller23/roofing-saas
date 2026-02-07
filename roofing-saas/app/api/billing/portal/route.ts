@@ -9,11 +9,12 @@
  * - View billing history
  */
 
-import { isAdmin } from '@/lib/auth/session';
 import { withAuth } from '@/lib/auth/with-auth';
+import { checkPermission } from '@/lib/auth/check-permission';
 import { createPortalSession } from '@/lib/billing/portal';
 import {
-  AuthorizationError,
+  ApiError,
+  ErrorCode,
   ValidationError,
   InternalError,
 } from '@/lib/api/errors';
@@ -22,10 +23,10 @@ import { logger } from '@/lib/logger';
 
 export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    // Only admins/owners can access billing portal
-    const userIsAdmin = await isAdmin(userId);
-    if (!userIsAdmin) {
-      throw AuthorizationError('Only administrators can access the billing portal');
+    // Require billing:view permission for portal access
+    const canView = await checkPermission(userId, 'billing', 'view');
+    if (!canView) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to access billing', 403));
     }
 
     // Parse body

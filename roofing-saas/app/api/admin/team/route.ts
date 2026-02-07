@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { withAuth } from '@/lib/auth/with-auth'
-import { isAdmin } from '@/lib/auth/session'
-import { AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { checkPermission } from '@/lib/auth/check-permission'
+import { ApiError, ErrorCode, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
@@ -24,11 +24,11 @@ interface TeamMember {
  * GET /api/admin/team
  * Get list of team members for the tenant
  */
-export const GET = withAuth(async (_request: NextRequest, { user, tenantId }) => {
+export const GET = withAuth(async (_request: NextRequest, { userId, tenantId }) => {
   try {
-    const userIsAdmin = await isAdmin(user.id)
-    if (!userIsAdmin) {
-      throw AuthorizationError('Admin access required')
+    const canView = await checkPermission(userId, 'users', 'view')
+    if (!canView) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to view team members', 403))
     }
 
     const supabase = await createClient()
@@ -115,9 +115,9 @@ const inviteSchema = z.object({
  */
 export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const userIsAdmin = await isAdmin(user.id)
-    if (!userIsAdmin) {
-      throw AuthorizationError('Admin access required')
+    const canEdit = await checkPermission(user.id, 'users', 'edit')
+    if (!canEdit) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to invite team members', 403))
     }
 
     const body = await request.json()

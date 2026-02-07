@@ -42,6 +42,8 @@
     "smoke-test:local": "tsx scripts/smoke-test.ts --local",
     "ops:verify": "tsx scripts/ops/verify.ts",
     "ops:verify:local": "tsx scripts/ops/verify.ts --local",
+    "ops:smoke": "tsx scripts/ops/smoke-test.ts",
+    "ops:smoke:local": "tsx scripts/ops/smoke-test.ts --local",
     "ops:auth": "tsx scripts/ops/auth.ts",
     "ops:debug-tenant": "tsx scripts/debug-tenant.ts",
     "generate-thumbnails": "tsx scripts/generate-missing-thumbnails.ts",

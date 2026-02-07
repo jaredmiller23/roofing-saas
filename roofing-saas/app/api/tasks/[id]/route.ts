@@ -1,8 +1,9 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { withAuthParams } from '@/lib/auth/with-auth'
+import { checkPermission } from '@/lib/auth/check-permission'
 import { NextRequest } from 'next/server'
-import { NotFoundError, InternalError } from '@/lib/api/errors'
+import { ApiError, ErrorCode, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -138,10 +139,15 @@ export const PATCH = withAuthParams(async (
  */
 export const DELETE = withAuthParams(async (
   _request: NextRequest,
-  { tenantId },
+  { userId, tenantId },
   { params }
 ) => {
   try {
+    const canDelete = await checkPermission(userId, 'tasks', 'delete')
+    if (!canDelete) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete tasks', 403))
+    }
+
     const { id } = await params
     const supabase = await createClient()
 

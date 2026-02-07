@@ -1,0 +1,69 @@
+name: Post-Deploy Verification
+
+on:
+  # Triggered automatically when Vercel completes a deployment
+  deployment_status:
+
+  # Manual trigger for on-demand verification
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Deployment URL to verify (defaults to production)'
+        required: false
+        default: 'https://roofing-saas.vercel.app'
+        type: string
+
+jobs:
+  smoke-test:
+    # For deployment_status: only run when deployment succeeds
+    # For workflow_dispatch: always run
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Run smoke test
+        env:
+          VERIFY_URL: >-
+            ${{
+              github.event_name == 'workflow_dispatch'
+                && github.event.inputs.url
+                || github.event.deployment_status.target_url
+                || 'https://roofing-saas.vercel.app'
+            }}
+        run: npm run ops:smoke
+
+      - name: Report failure
+        if: failure()
+        env:
+          DEPLOY_URL: >-
+            ${{
+              github.event_name == 'workflow_dispatch'
+                && github.event.inputs.url
+                || github.event.deployment_status.target_url
+                || 'https://roofing-saas.vercel.app'
+            }}
+        run: |
+          echo "::error::Post-deploy smoke test failed for ${DEPLOY_URL}"
+          echo ""
+          echo "The deployment may be broken. Check the smoke test output above for details."
+          echo ""
+          echo "To re-run manually:"
+          echo "  gh workflow run post-deploy-verify.yml -f url=YOUR_DEPLOYMENT_URL"

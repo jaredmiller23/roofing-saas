@@ -8,13 +8,14 @@
  * - Trial-to-paid conversions
  */
 
-import { isAdmin } from '@/lib/auth/session';
 import { withAuth } from '@/lib/auth/with-auth';
+import { checkPermission } from '@/lib/auth/check-permission';
 import { createCheckoutSession } from '@/lib/billing/checkout';
 import { PLANS } from '@/lib/billing/plans';
 import type { PlanTier, BillingInterval } from '@/lib/billing/types';
 import {
-  AuthorizationError,
+  ApiError,
+  ErrorCode,
   ValidationError,
   InternalError,
 } from '@/lib/api/errors';
@@ -23,10 +24,10 @@ import { logger } from '@/lib/logger';
 
 export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    // Only admins/owners can change subscription
-    const userIsAdmin = await isAdmin(userId);
-    if (!userIsAdmin) {
-      throw AuthorizationError('Only administrators can manage billing');
+    // Require billing:edit permission for checkout
+    const canEdit = await checkPermission(userId, 'billing', 'edit');
+    if (!canEdit) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to manage billing', 403));
     }
 
     // Parse and validate body

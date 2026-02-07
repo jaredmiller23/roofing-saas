@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { withAuth } from '@/lib/auth/with-auth'
+import { checkPermission } from '@/lib/auth/check-permission'
 import { logger } from '@/lib/logger'
-import { InternalError } from '@/lib/api/errors'
+import { ApiError, ErrorCode, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -77,8 +78,13 @@ export const GET = withAuth(async (_request, { tenantId }) => {
  * PUT /api/settings
  * Update tenant settings
  */
-export const PUT = withAuth(async (request, { tenantId }) => {
+export const PUT = withAuth(async (request, { userId, tenantId }) => {
   try {
+    const canEdit = await checkPermission(userId, 'settings', 'edit')
+    if (!canEdit) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to edit settings', 403))
+    }
+
     const body = await request.json()
     const supabase = await createClient()
 

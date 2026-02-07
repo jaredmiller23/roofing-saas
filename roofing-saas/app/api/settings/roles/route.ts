@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { withAuth } from '@/lib/auth/with-auth'
+import { checkPermission } from '@/lib/auth/check-permission'
 import { logger } from '@/lib/logger'
-import { ValidationError, InternalError } from '@/lib/api/errors'
+import { ApiError, ErrorCode, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -33,8 +34,13 @@ export const GET = withAuth(async (_request, { tenantId }) => {
  * POST /api/settings/roles
  * Create a new role
  */
-export const POST = withAuth(async (request, { user, tenantId }) => {
+export const POST = withAuth(async (request, { user, userId, tenantId }) => {
   try {
+    const canEdit = await checkPermission(userId, 'settings', 'edit')
+    if (!canEdit) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to manage roles', 403))
+    }
+
     const body = await request.json()
     const { name, description, permissions, is_system } = body
 

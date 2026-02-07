@@ -8,8 +8,9 @@ import {
 } from '@/lib/pipeline/validation'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { handleStageChange } from '@/lib/campaigns/trigger-handler'
+import { checkPermission } from '@/lib/auth/check-permission'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ApiError, ErrorCode, AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { PipelineStage } from '@/lib/types/api'
 import { getAuditContext, auditedUpdate, auditedDelete } from '@/lib/audit/audit-middleware'
@@ -344,10 +345,15 @@ export const PATCH = withAuthParams(async (
  */
 export const DELETE = withAuthParams(async (
   request: NextRequest,
-  { user, tenantId }: AuthContext,
+  { user, userId, tenantId }: AuthContext,
   { params }
 ) => {
   try {
+    const canDelete = await checkPermission(userId, 'projects', 'delete')
+    if (!canDelete) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete projects', 403))
+    }
+
     // Get audit context for logging - pass pre-fetched auth to avoid duplicate calls
     const auditContext = await getAuditContext(request, { user, tenantId })
     if (!auditContext) {

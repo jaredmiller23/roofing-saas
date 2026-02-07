@@ -4,6 +4,7 @@ import "./globals.css";
 import { PWAProvider } from "@/components/pwa";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { Toaster } from "sonner";
+import { CookieConsent } from "@/components/cookie-consent";
 
 const geistSans = localFont({
   src: "../public/fonts/GeistSans-Latin.woff2",
@@ -237,6 +238,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               </main>
             </div>
           </PWAProvider>
+          <CookieConsent />
           <Toaster 
             position="top-right" 
             richColors 

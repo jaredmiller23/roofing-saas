@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { withAuthParams } from '@/lib/auth/with-auth'
+import { checkPermission } from '@/lib/auth/check-permission'
 import { logger } from '@/lib/logger'
-import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ApiError, ErrorCode, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -10,10 +11,15 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  */
 export const PATCH = withAuthParams(async (
   request,
-  { tenantId },
+  { userId, tenantId },
   { params }
 ) => {
   try {
+    const canEdit = await checkPermission(userId, 'settings', 'edit')
+    if (!canEdit) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to edit roles', 403))
+    }
+
     const { id } = await params
     const body = await request.json()
     const supabase = await createClient()
@@ -63,10 +69,15 @@ export const PATCH = withAuthParams(async (
  */
 export const DELETE = withAuthParams(async (
   _request,
-  { tenantId },
+  { userId, tenantId },
   { params }
 ) => {
   try {
+    const canDelete = await checkPermission(userId, 'settings', 'delete')
+    if (!canDelete) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete roles', 403))
+    }
+
     const { id } = await params
     const supabase = await createClient()
 

@@ -1,8 +1,8 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { withAuth } from '@/lib/auth/with-auth'
-import { isAdmin } from '@/lib/auth/session'
-import { AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
+import { checkPermission } from '@/lib/auth/check-permission'
+import { ApiError, ErrorCode, AuthorizationError, InternalError, ConflictError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { requireFeature } from '@/lib/billing/feature-gates'
@@ -89,9 +89,9 @@ export const POST = withAuth(async (request, { userId, tenantId }) => {
       throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
-    const userIsAdmin = await isAdmin(userId)
-    if (!userIsAdmin) {
-      throw AuthorizationError('Admin access required')
+    const canCreate = await checkPermission(userId, 'campaigns', 'create')
+    if (!canCreate) {
+      return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to create campaigns', 403))
     }
 
     const body: CreateCampaignRequest = await request.json()
