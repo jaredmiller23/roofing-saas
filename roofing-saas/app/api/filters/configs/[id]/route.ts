@@ -102,7 +102,7 @@ export const DELETE = withAuthParams(async (
     const supabase = await createClient()
     const { error } = await supabase
       .from('filter_configs')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
 
     if (error) {

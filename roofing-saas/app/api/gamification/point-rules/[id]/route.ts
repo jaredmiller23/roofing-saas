@@ -73,10 +73,10 @@ export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) 
     const { id } = await params
     const supabase = await createClient()
 
-    // Delete point rule (RLS ensures tenant_id isolation)
+    // Soft delete point rule (RLS ensures tenant_id isolation)
     const { error } = await supabase
       .from('point_rules')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 
@@ -85,7 +85,7 @@ export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) 
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted point rule', { tenant_id: tenantId, rule_id: id })
+    logger.info('Soft deleted point rule', { tenant_id: tenantId, rule_id: id })
 
     return successResponse(null)
   } catch (error) {

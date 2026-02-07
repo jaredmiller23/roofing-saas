@@ -9,10 +9,10 @@ export const DELETE = withAuthParams(async (_request, { userId, tenantId }, { pa
 
     const supabase = await createClient()
 
-    // Delete the query history item
+    // Soft delete the query history item
     const { error } = await supabase
       .from('query_history')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', queryId)
       .eq('user_id', userId)
       .eq('tenant_id', tenantId)

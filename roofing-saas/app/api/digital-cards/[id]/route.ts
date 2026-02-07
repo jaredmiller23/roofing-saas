@@ -36,12 +36,13 @@ export const GET = withAuthParams(async (
 
     const supabase = await createClient()
 
-    // Fetch card
+    // Fetch card (exclude soft-deleted)
     const { data, error } = await supabase
       .from('digital_business_cards')
       .select('*')
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (error) {
@@ -184,10 +185,10 @@ export const DELETE = withAuthParams(async (
 
     const supabase = await createClient()
 
-    // Delete the card
+    // Soft delete the card
     const { error } = await supabase
       .from('digital_business_cards')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 

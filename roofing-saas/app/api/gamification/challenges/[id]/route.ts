@@ -80,7 +80,7 @@ export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) 
 
     const { error } = await supabase
       .from('challenge_configs')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 
@@ -89,7 +89,7 @@ export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) 
       throw InternalError(error.message)
     }
 
-    logger.info('Deleted challenge', { tenantId, challenge_id: id })
+    logger.info('Soft deleted challenge', { tenantId, challenge_id: id })
 
     return noContentResponse()
   } catch (error) {

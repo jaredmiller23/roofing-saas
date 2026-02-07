@@ -138,10 +138,10 @@ export const DELETE = withAuthParams(async (request, { userId, tenantId }, { par
       throw NotFoundError('Campaign')
     }
 
-    // Hard delete (cascades to executions)
+    // Soft delete
     const { error } = await supabase
       .from('campaign_steps')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', stepId)
       .eq('campaign_id', campaign_id)
 

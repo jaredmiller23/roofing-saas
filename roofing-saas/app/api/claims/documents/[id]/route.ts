@@ -13,24 +13,24 @@ export const DELETE = withAuthParams(async (_request, { userId, tenantId }, { pa
     const { id: documentId } = await params
     const supabase = await createClient()
 
-    // Get document to verify ownership and get file_url
+    // Get document to verify ownership and get file_url (exclude soft-deleted)
     const { data: document, error: fetchError } = await supabase
       .from('documents')
       .select('*')
       .eq('id', documentId)
       .eq('tenant_id', tenantId)
       .eq('entity_type', 'claim')
+      .eq('is_deleted', false)
       .single()
 
     if (fetchError || !document) {
       throw NotFoundError('Document')
     }
 
-    // Hard delete the document record
-    // (In production, you might want soft delete by adding is_deleted column)
+    // Soft delete the document record
     const { error: deleteError } = await supabase
       .from('documents')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', documentId)
       .eq('tenant_id', tenantId)
 

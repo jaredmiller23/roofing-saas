@@ -84,7 +84,7 @@ export const DELETE = withAuthParams(async (
 
     const { error } = await supabase
       .from('user_roles')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 

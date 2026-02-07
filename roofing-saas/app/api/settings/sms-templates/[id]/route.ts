@@ -69,7 +69,7 @@ export const DELETE = withAuthParams(async (
 
     const { error } = await supabase
       .from('sms_templates')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 

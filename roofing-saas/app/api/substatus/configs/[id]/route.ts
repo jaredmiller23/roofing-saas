@@ -117,7 +117,7 @@ export const DELETE = withAuthParams(async (_request, { userId }, { params }) =>
     const supabase = await createClient()
     const { error } = await supabase
       .from('status_substatus_configs')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
 
     if (error) {

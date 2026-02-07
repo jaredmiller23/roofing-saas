@@ -19,6 +19,7 @@ export const GET = withAuthParams(async (_request, { tenantId }, { params }) => 
       .select('*')
       .eq('id', id)
       .eq('tenant_id', tenantId)
+      .eq('is_deleted', false)
       .single()
 
     if (error || !data) {
@@ -98,7 +99,7 @@ export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) 
 
     const { error } = await supabase
       .from('reward_configs')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', id)
       .eq('tenant_id', tenantId)
 

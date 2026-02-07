@@ -135,7 +135,7 @@ export const DELETE = withAuthParams(async (
       throw AuthorizationError('Cannot delete system filters')
     }
 
-    const { error } = await supabase.from('saved_filters').delete().eq('id', id)
+    const { error } = await supabase.from('saved_filters').update({ is_deleted: true }).eq('id', id)
 
     if (error) {
       logger.error('Error deleting saved filter:', { error })
