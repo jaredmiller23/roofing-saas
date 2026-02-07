@@ -11,12 +11,16 @@ import { NextRequest } from 'next/server'
 import { logger } from '@/lib/logger'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { AuthenticationError } from '@/lib/api/errors'
+import { createAdminClient } from '@/lib/supabase/server'
 import {
   enhanceStormEvent,
   createStormAlert,
   analyzeAffectedArea,
 } from '@/lib/storm/storm-intelligence'
 import type { StormEventData } from '@/lib/weather/causation-generator'
+
+// Production tenant for system-level operations (Appalachian Storm Restoration)
+const PRODUCTION_TENANT_ID = '00000000-0000-0000-0000-000000000000'
 
 // Service territory - Appalachian region (TN, VA, NC, KY)
 const SERVICE_STATES = ['TN', 'VA', 'NC', 'KY']
@@ -252,12 +256,97 @@ export async function GET(request: NextRequest) {
       `[Storm Monitor] Completed. Found ${nwsAlerts.length} alerts, Processed ${processedAlerts.length}. Duration: ${duration}ms`
     )
 
-    // Return processed alerts for visibility
-    // TODO: Store in database once tenant context is available
+    // Store processed alerts in database for visibility in the Storm Tracking dashboard
+    let storedCount = 0
+    if (processedAlerts.length > 0) {
+      try {
+        const adminSupabase = await createAdminClient()
+
+        for (const processed of processedAlerts) {
+          try {
+            // Find the original NWS alert for this processed alert
+            const nwsAlert = nwsAlerts.find(a => a.id === processed.id)
+            if (!nwsAlert) continue
+
+            const stormEventData = convertToStormEvent(nwsAlert)
+
+            // Upsert storm event (deduplicate by NWS alert ID)
+            const { data: stormEvent, error: eventError } = await adminSupabase
+              .from('storm_events')
+              .upsert({
+                tenant_id: PRODUCTION_TENANT_ID,
+                noaa_event_id: nwsAlert.id,
+                event_date: stormEventData.event_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+                event_type: stormEventData.event_type,
+                magnitude: stormEventData.magnitude,
+                state: stormEventData.state,
+                city: stormEventData.city || null,
+                latitude: stormEventData.latitude || null,
+                longitude: stormEventData.longitude || null,
+                event_narrative: stormEventData.event_narrative || null,
+              }, { onConflict: 'noaa_event_id' })
+              .select('id')
+              .single()
+
+            if (eventError) {
+              logger.error('[Storm Monitor] Failed to upsert storm event', {
+                noaaId: nwsAlert.id,
+                error: eventError.message,
+              })
+              continue
+            }
+
+            // Insert storm alert linked to the storm event
+            const { error: alertError } = await adminSupabase
+              .from('storm_alerts')
+              .insert({
+                tenant_id: PRODUCTION_TENANT_ID,
+                type: processed.type,
+                priority: processed.priority,
+                message: processed.message,
+                action_items: ['Review affected area', 'Contact customers in storm path'],
+                storm_event_id: stormEvent.id,
+                affected_area: {
+                  center: {
+                    lat: stormEventData.latitude || 0,
+                    lng: stormEventData.longitude || 0,
+                  },
+                  radius: 10,
+                  zipCodes: [],
+                  description: processed.area,
+                },
+                expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+              })
+
+            if (alertError) {
+              logger.error('[Storm Monitor] Failed to insert storm alert', {
+                noaaId: nwsAlert.id,
+                error: alertError.message,
+              })
+              continue
+            }
+
+            storedCount++
+          } catch (itemError) {
+            const msg = itemError instanceof Error ? itemError.message : String(itemError)
+            logger.error('[Storm Monitor] Error storing individual alert', { error: msg })
+          }
+        }
+
+        if (storedCount > 0) {
+          logger.info(`[Storm Monitor] Stored ${storedCount}/${processedAlerts.length} alerts in database`)
+        }
+      } catch (storeError) {
+        const msg = storeError instanceof Error ? storeError.message : String(storeError)
+        logger.error('[Storm Monitor] Error initializing DB storage', { error: msg })
+      }
+    }
+
     return successResponse({
       message: `Storm monitor completed`,
       alertsFound: nwsAlerts.length,
       alertsProcessed: processedAlerts.length,
+      alertsStored: storedCount,
       alerts: processedAlerts,
       duration,
     })

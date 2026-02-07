@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2, Send, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +41,14 @@ export function SendEstimateDialog({
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successState, setSuccessState] = useState<{ proposalId: string; viewUrl: string } | null>(null)
+
+  // Sync contact info when dialog opens or props change
+  useEffect(() => {
+    if (open) {
+      setRecipientEmail(contactEmail || '')
+      setRecipientName(contactName || '')
+    }
+  }, [open, contactEmail, contactName])
 
   const handleSend = async () => {
     if (!recipientEmail) {

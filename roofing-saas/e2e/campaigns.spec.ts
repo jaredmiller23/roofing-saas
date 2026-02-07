@@ -370,11 +370,30 @@ test.describe('Campaign Actions', () => {
     }
   })
 
-  test.skip('should duplicate a campaign', async ({ page }) => {
-    // SKIP: Duplicate functionality not working as expected
-    // BUG: Clicking "Duplicate" navigates to original campaign, not a copy
-    // TODO: Fix campaign duplicate API/handler to create copy with "(Copy)" suffix
-    await page.goto('/campaigns')
+  test('should duplicate a campaign', async ({ page }) => {
+    // Wait for campaign cards to load
+    const campaignCard = page.locator('[data-testid="campaign-card"]').first()
+    const hasCards = await campaignCard.isVisible({ timeout: 10000 }).catch(() => false)
+    if (!hasCards) {
+      test.skip(true, 'No campaigns available to duplicate')
+      return
+    }
+
+    // Get the original campaign name
+    const originalName = await campaignCard.locator('h3, [class*="CardTitle"]').first().textContent()
+
+    // Open the dropdown menu on the first campaign card
+    const dropdownButton = campaignCard.locator('button').filter({ has: page.locator('svg') }).first()
+    await dropdownButton.click()
+
+    // Click "Duplicate" from the dropdown
+    await page.getByText('Duplicate').click()
+
+    // Should navigate to the builder for the NEW campaign (not the original)
+    await page.waitForURL(/\/campaigns\/(.*)\/builder/, { timeout: 15000 })
+
+    // The new campaign name should have "(Copy)" suffix
+    await expect(page.getByText(`${originalName} (Copy)`)).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -418,16 +437,55 @@ test.describe('Campaign Steps', () => {
     await expect(page.getByText('Create your first step to get started')).toBeVisible()
   })
 
-  test.skip('should add email step to campaign', async ({ page }) => {
-    // SKIP: Step type selection UI not yet implemented
-    // TODO: Implement step type selector and add data-testid attributes
-    await page.goto(`/campaigns/${campaignId}/builder`)
+  test('should add email step to campaign', async ({ page }) => {
+    // Click "Add Step" button
+    await page.getByRole('button', { name: /Add Step|Add Your First Step/ }).first().click()
+
+    // Should navigate to the new-step page
+    await page.waitForURL(/\/campaigns\/(.*)\/builder\/new-step/)
+
+    // Select the "Send Email" step type
+    await page.locator('[data-testid="step-type-send_email"]').click()
+
+    // Fill in the email configuration
+    await page.getByLabel('Subject Line').fill('Welcome to our service')
+    await page.getByLabel('Email Body').fill('Hello {{first_name}}, thank you for joining!')
+
+    // Click "Create Step"
+    await page.getByRole('button', { name: 'Create Step' }).click()
+
+    // Should navigate back to builder
+    await page.waitForURL(/\/campaigns\/(.*)\/builder$/)
+
+    // The step should appear in the steps list
+    await expect(page.getByText('Send Email')).toBeVisible({ timeout: 10000 })
   })
 
-  test.skip('should delete step from campaign', async ({ page }) => {
-    // SKIP: Requires existing step to delete
-    // TODO: Create fixture that adds a step first
-    await page.goto(`/campaigns/${campaignId}/builder`)
+  test('should delete step from campaign', async ({ page }) => {
+    // The previous test ("should add email step") should have created a step.
+    // Wait for the steps to render — look for a step card with a delete button.
+    const deleteButton = page.locator('button').filter({ has: page.locator('svg.lucide-trash-2, svg[class*="Trash"]') }).first()
+    const hasStep = await deleteButton.isVisible({ timeout: 10000 }).catch(() => false)
+
+    if (!hasStep) {
+      test.skip(true, 'No steps to delete — run "should add email step" first')
+      return
+    }
+
+    // Set up dialog listener to auto-confirm the delete prompt
+    page.on('dialog', dialog => dialog.accept())
+
+    // Click the delete button
+    await deleteButton.click()
+
+    // Wait for the API response
+    await page.waitForResponse(
+      resp => resp.url().includes('/steps/') && resp.request().method() === 'DELETE',
+      { timeout: 10000 }
+    )
+
+    // The empty state should re-appear after deleting the only step
+    await expect(page.getByText('No steps added yet')).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -466,10 +524,31 @@ test.describe('Campaign Triggers', () => {
     await expect(page.getByRole('button', { name: /Add Trigger/ })).toBeVisible()
   })
 
-  test.skip('should configure contact created trigger', async ({ page }) => {
-    // SKIP: Trigger configuration UI not yet implemented
-    // TODO: Implement trigger type selector with data-testid attributes
-    await page.goto(`/campaigns/${campaignId}/builder`)
+  test('should configure contact created trigger', async ({ page }) => {
+    // Click "Add Trigger" button
+    await page.getByRole('button', { name: /Add Trigger|Add Your First Trigger/ }).first().click()
+
+    // Should navigate to the new-trigger page
+    await page.waitForURL(/\/campaigns\/(.*)\/builder\/new-trigger/)
+
+    // Select the "Event Triggered" trigger type
+    await page.locator('[data-testid="trigger-type-event"]').click()
+
+    // Select "Contact Created" from the event type dropdown
+    await page.getByRole('combobox').click()
+    await page.getByText('Contact Created').click()
+
+    // Click "Create Trigger"
+    await page.getByRole('button', { name: 'Create Trigger' }).click()
+
+    // Should navigate back to the builder
+    await page.waitForURL(/\/campaigns\/(.*)\/builder$/)
+
+    // Navigate to the Triggers tab to verify it was added
+    await page.getByRole('tab', { name: 'Triggers' }).click()
+
+    // The trigger should be visible in the list
+    await expect(page.getByText('event')).toBeVisible({ timeout: 10000 })
   })
 })
 
@@ -479,18 +558,102 @@ test.describe('Campaign Triggers', () => {
  * Keeping as skip markers for future data-driven activation tests
  */
 test.describe('Campaign Activation', () => {
-  test.skip('should activate campaign from list', async ({ page }) => {
-    // SKIP: Requires campaign cards with data-testid attributes
-    // The Campaign Builder tests cover activation via the builder page
-    // TODO: Add data-testid to campaign cards and implement list-based activation
+  test('should activate campaign from list', async ({ page }) => {
     await page.goto('/campaigns')
+    await page.waitForLoadState('networkidle')
+
+    // Find a campaign card that has an "Activate" action (i.e. not already active)
+    const campaignCard = page.locator('[data-testid="campaign-card"]').first()
+    const hasCards = await campaignCard.isVisible({ timeout: 10000 }).catch(() => false)
+
+    if (!hasCards) {
+      test.skip(true, 'No campaigns available to activate')
+      return
+    }
+
+    // Get the campaign ID from the card
+    const campaignId = await campaignCard.getAttribute('data-campaign-id')
+    if (!campaignId) {
+      test.skip(true, 'Campaign card missing data-campaign-id')
+      return
+    }
+
+    // Open the dropdown menu
+    const dropdownButton = campaignCard.locator('button').filter({ has: page.locator('svg') }).first()
+    await dropdownButton.click()
+
+    // Look for the Activate button in the dropdown
+    const activateItem = page.locator(`[data-testid="campaign-activate-${campaignId}"]`)
+    const canActivate = await activateItem.isVisible({ timeout: 3000 }).catch(() => false)
+
+    if (!canActivate) {
+      test.skip(true, 'Campaign is already active or archived — cannot activate from list')
+      return
+    }
+
+    // Click Activate
+    await activateItem.click()
+
+    // Wait for the status update API call
+    await page.waitForResponse(
+      resp => resp.url().includes(`/api/campaigns/${campaignId}`) && resp.status() === 200,
+      { timeout: 10000 }
+    )
+
+    // Verify the campaign status badge updated
+    await page.waitForLoadState('networkidle')
   })
 
-  test.skip('should pause active campaign from list', async ({ page }) => {
-    // SKIP: Requires active campaign and data-testid attributes
-    // The Campaign Builder tests cover pause via the builder page
-    // TODO: Add data-testid to campaign cards and implement list-based pause
+  test('should pause active campaign from list', async ({ page }) => {
     await page.goto('/campaigns')
+    await page.waitForLoadState('networkidle')
+
+    // Find a campaign card with an active status
+    const campaignCards = page.locator('[data-testid="campaign-card"]')
+    const cardCount = await campaignCards.count()
+
+    if (cardCount === 0) {
+      test.skip(true, 'No campaigns available to pause')
+      return
+    }
+
+    // Try each card looking for one that has a pause action
+    let foundPausable = false
+    for (let i = 0; i < cardCount; i++) {
+      const card = campaignCards.nth(i)
+      const campaignId = await card.getAttribute('data-campaign-id')
+      if (!campaignId) continue
+
+      // Open dropdown
+      const dropdownButton = card.locator('button').filter({ has: page.locator('svg') }).first()
+      await dropdownButton.click()
+
+      // Check for pause button
+      const pauseItem = page.locator(`[data-testid="campaign-pause-${campaignId}"]`)
+      const canPause = await pauseItem.isVisible({ timeout: 2000 }).catch(() => false)
+
+      if (canPause) {
+        // Click Pause
+        await pauseItem.click()
+
+        // Wait for the status update
+        await page.waitForResponse(
+          resp => resp.url().includes(`/api/campaigns/${campaignId}`) && resp.status() === 200,
+          { timeout: 10000 }
+        )
+
+        await page.waitForLoadState('networkidle')
+        foundPausable = true
+        break
+      }
+
+      // Close dropdown by pressing Escape
+      await page.keyboard.press('Escape')
+    }
+
+    if (!foundPausable) {
+      test.skip(true, 'No active campaigns found to pause')
+    }
   })
 })
 

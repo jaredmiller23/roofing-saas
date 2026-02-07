@@ -14,6 +14,7 @@ import { FieldWorkerBottomNav } from '@/components/layout/FieldWorkerBottomNav'
 import { FieldWorkerNav } from '@/components/layout/FieldWorkerNav'
 import { HamburgerMenu } from '@/components/layout/HamburgerMenu'
 import { MobileSearchBar } from '@/components/layout/MobileSearchBar'
+import { usePermissions } from '@/hooks/usePermissions'
 
 // Mock dependencies
 vi.mock('next/link', () => ({
@@ -312,13 +313,30 @@ describe('Mobile Navigation Simplified Integration', () => {
       })
     })
 
-    it.skip('should handle permissions correctly', () => {
-      // TODO: Requires refactoring mock setup to handle dynamic permission changes
-      // The vi.mock hoisting prevents runtime mock changes via require()
+    it('should disable voice button when voice_assistant permission is denied', () => {
+      // Override usePermissions mock to deny voice_assistant access.
+      // vi.mocked() works because the top-level vi.mock wraps usePermissions
+      // with vi.fn(), allowing per-test return value overrides.
+      vi.mocked(usePermissions).mockReturnValue({
+        permissions: null,
+        loading: false,
+        error: null,
+        can: vi.fn(() => true),
+        canView: vi.fn((module: string) => module !== 'voice_assistant'),
+        canCreate: vi.fn(() => true),
+        canEdit: vi.fn(() => true),
+        canDelete: vi.fn(() => true),
+        canAny: vi.fn(() => true),
+        canAll: vi.fn(() => true),
+        isAdmin: false,
+        isOwner: false,
+        refresh: vi.fn(),
+      })
+
       render(<FieldWorkerBottomNav />)
 
       const voiceButton = screen.getByTestId('voice-assistant-button')
-      expect(voiceButton).toBeInTheDocument()
+      expect(voiceButton).toBeDisabled()
     })
   })
 

@@ -88,8 +88,10 @@ export function AdaptiveLayout({ children, userEmail, userRole }: AdaptiveLayout
   }, [])
 
   const handleSearchSubmit = useCallback((value: string) => {
-    // Navigate to contacts page with search query
-    // TODO: Implement dedicated search page or global search
+    // Mobile field-worker search: navigate to contacts with search query.
+    // Desktop uses GlobalSearch (Cmd+K modal) which searches across all entities
+    // via /api/search. For mobile field workers, contacts is the primary search
+    // target -- they're looking for homeowners, not projects or files.
     if (value.trim()) {
       router.push(`/contacts?search=${encodeURIComponent(value.trim())}`)
       setIsSearchExpanded(false)

@@ -41,6 +41,7 @@ const triggerTypes: { value: TriggerType; label: string; description: string; ic
 ]
 
 const eventTypes = [
+  { value: 'contact_created', label: 'Contact Created' },
   { value: 'activity_created', label: 'Activity Created' },
   { value: 'document_signed', label: 'Document Signed' },
   { value: 'form_submitted', label: 'Form Submitted' },
@@ -241,7 +242,7 @@ export default function NewTriggerPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {eventTypes.map(event => (
-                    <SelectItem key={event.value} value={event.value}>
+                    <SelectItem key={event.value} value={event.value} data-testid={`event-type-${event.value}`}>
                       {event.label}
                     </SelectItem>
                   ))}
@@ -306,6 +307,7 @@ export default function NewTriggerPage() {
               <Card
                 key={type.value}
                 className="cursor-pointer hover:border-primary transition-colors"
+                data-testid={`trigger-type-${type.value}`}
                 onClick={() => setSelectedType(type.value)}
               >
                 <CardHeader className="pb-2">

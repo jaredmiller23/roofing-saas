@@ -338,6 +338,7 @@ export default function NewStepPage() {
               <Card
                 key={type.value}
                 className="cursor-pointer hover:border-primary transition-colors"
+                data-testid={`step-type-${type.value}`}
                 onClick={() => setSelectedType(type.value)}
               >
                 <CardHeader className="pb-2">

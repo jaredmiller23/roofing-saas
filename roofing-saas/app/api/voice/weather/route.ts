@@ -21,7 +21,7 @@ export const POST = withAuth(async (request, { tenantId }) => {
 
     logger.apiRequest('POST', '/api/voice/weather', { tenantId, location, days })
 
-    // TODO: Add OPENWEATHER_API_KEY to .env.local
+    // Requires OPENWEATHER_API_KEY env var (free tier: 1,000 calls/day)
     const apiKey = process.env.OPENWEATHER_API_KEY
     if (!apiKey) {
       // For now, return mock data

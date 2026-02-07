@@ -240,7 +240,11 @@ function CampaignCard({
     : '0'
 
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+    <Card
+      className="hover:shadow-lg transition-shadow cursor-pointer"
+      data-testid="campaign-card"
+      data-campaign-id={campaign.id}
+    >
       <CardHeader onClick={() => onEdit(campaign.id)}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -267,6 +271,7 @@ function CampaignCard({
               {campaign.status !== 'archived' && (
                 <DropdownMenuItem
                   onClick={() => onToggleStatus(campaign.id, campaign.status)}
+                  data-testid={campaign.status === 'active' ? `campaign-pause-${campaign.id}` : `campaign-activate-${campaign.id}`}
                 >
                   {campaign.status === 'active' ? (
                     <>

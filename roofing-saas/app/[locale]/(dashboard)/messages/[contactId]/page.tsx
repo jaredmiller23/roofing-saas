@@ -1,15 +1,24 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
+import { MobileThreadClient } from './MobileThreadClient'
 
 /**
  * Mobile Thread Page
- * Placeholder for future mobile-specific thread view
- * For now, redirects to main messages page
+ *
+ * Full-screen mobile thread view for a specific contact's SMS conversation.
+ * On desktop, the main /messages page handles thread display via split-pane.
+ * This page is the deep-link target when navigating to a specific conversation
+ * from mobile (e.g., notifications, contact cards).
+ *
+ * The client component handles:
+ * - Fetching contact info (name, phone) from the API
+ * - Rendering the MessageThread with full-screen layout
+ * - Back navigation to the messages list
  */
 export default async function MobileThreadPage({
-  params: _params,
+  params,
 }: {
-  params: Promise<{ contactId: string }>
+  params: Promise<{ contactId: string; locale: string }>
 }) {
   const user = await getCurrentUser()
 
@@ -17,7 +26,7 @@ export default async function MobileThreadPage({
     redirect('/login')
   }
 
-  // For now, redirect to main messages page
-  // TODO: Implement full-screen mobile thread view
-  redirect('/messages')
+  const { contactId } = await params
+
+  return <MobileThreadClient contactId={contactId} />
 }

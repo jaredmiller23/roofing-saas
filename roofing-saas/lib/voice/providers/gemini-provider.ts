@@ -92,8 +92,10 @@ export class GeminiProvider extends VoiceProvider {
         // Send setup message with configuration
         this.sendSetupMessage(sessionResponse)
 
-        // Setup audio processing
-        this.setupAudioProcessing(audioStream)
+        // Setup audio processing (async — worklet module load)
+        this.setupAudioProcessing(audioStream).catch((err) => {
+          logger.error('Failed to setup audio processing', { error: err })
+        })
 
         onConnected()
       }
@@ -163,7 +165,7 @@ export class GeminiProvider extends VoiceProvider {
     logger.info('Sent Gemini setup message')
   }
 
-  private setupAudioProcessing(audioStream: MediaStream): void {
+  private async setupAudioProcessing(audioStream: MediaStream): Promise<void> {
     // Create AudioContext for processing microphone input
     this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({
       sampleRate: 16000, // Gemini expects 16kHz
@@ -172,44 +174,62 @@ export class GeminiProvider extends VoiceProvider {
     // Create source node from microphone stream
     this.sourceNode = this.audioContext.createMediaStreamSource(audioStream)
 
-    // Create script processor for audio chunks
-    // Note: ScriptProcessorNode is deprecated but widely supported
-    // TODO: Migrate to AudioWorkletNode for better performance
-    const bufferSize = 4096
-    const processor = this.audioContext.createScriptProcessor(bufferSize, 1, 1)
+    try {
+      // Primary: AudioWorkletNode (runs on audio rendering thread, low-latency)
+      await this.audioContext.audioWorklet.addModule('/audio-worklet-processor.js')
+      const workletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor')
+      this.audioWorkletNode = workletNode
 
-    processor.onaudioprocess = (event) => {
-      if (!this.isConnected || !this.websocket) return
+      workletNode.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
+        if (!this.isConnected || !this.websocket) return
 
-      const inputData = event.inputBuffer.getChannelData(0)
-
-      // Convert Float32Array to Int16Array (16-bit PCM)
-      const pcmData = new Int16Array(inputData.length)
-      for (let i = 0; i < inputData.length; i++) {
-        // Clamp to [-1, 1] and convert to 16-bit integer
-        const s = Math.max(-1, Math.min(1, inputData[i]))
-        pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
-      }
-
-      // Convert to base64 for transmission
-      const base64Audio = this.arrayBufferToBase64(pcmData.buffer)
-
-      // Send audio chunk to Gemini
-      this.websocket?.send(JSON.stringify({
-        realtime_input: {
-          media_chunks: [
-            {
+        const base64Audio = this.arrayBufferToBase64(event.data)
+        this.websocket?.send(JSON.stringify({
+          realtime_input: {
+            media_chunks: [{
               mime_type: 'audio/pcm',
               data: base64Audio,
-            },
-          ],
-        },
-      }))
-    }
+            }],
+          },
+        }))
+      }
 
-    // Connect nodes: microphone -> processor -> destination
-    this.sourceNode.connect(processor)
-    processor.connect(this.audioContext.destination)
+      this.sourceNode.connect(workletNode)
+      workletNode.connect(this.audioContext.destination)
+      logger.info('Audio processing using AudioWorkletNode')
+    } catch (workletError) {
+      // Fallback: ScriptProcessorNode for browsers without AudioWorklet support
+      logger.warn('AudioWorklet unavailable, falling back to ScriptProcessorNode', { error: workletError })
+
+      const bufferSize = 4096
+      const processor = this.audioContext.createScriptProcessor(bufferSize, 1, 1)
+
+      processor.onaudioprocess = (event) => {
+        if (!this.isConnected || !this.websocket) return
+
+        const inputData = event.inputBuffer.getChannelData(0)
+
+        // Convert Float32Array to Int16Array (16-bit PCM)
+        const pcmData = new Int16Array(inputData.length)
+        for (let i = 0; i < inputData.length; i++) {
+          const s = Math.max(-1, Math.min(1, inputData[i]))
+          pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
+        }
+
+        const base64Audio = this.arrayBufferToBase64(pcmData.buffer)
+        this.websocket?.send(JSON.stringify({
+          realtime_input: {
+            media_chunks: [{
+              mime_type: 'audio/pcm',
+              data: base64Audio,
+            }],
+          },
+        }))
+      }
+
+      this.sourceNode.connect(processor)
+      processor.connect(this.audioContext.destination)
+    }
   }
 
   private handleWebSocketMessage(event: MessageEvent, onFunctionCall: (event: FunctionCallEvent) => void): void {
