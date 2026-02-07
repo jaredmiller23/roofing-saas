@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { ImpersonationBanner } from '@/components/impersonation'
 import { TrialBannerWrapper } from '@/components/layout/TrialBannerWrapper'
@@ -19,21 +18,26 @@ interface DashboardLayoutClientProps {
 }
 
 export function DashboardLayoutClient({ children, userRole, userEmail, mfaRedirect, locale }: DashboardLayoutClientProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (mfaRedirect && !pathname.includes('/settings')) {
-      router.replace(`/${locale || 'en'}${mfaRedirect}`)
-    }
-  }, [mfaRedirect, pathname, locale, router])
-
   return (
     <ErrorBufferProvider>
       <UIModeProvider>
         <UIPreferencesProvider>
           <ImpersonationBanner />
           <TrialBannerWrapper />
+          {mfaRedirect && (
+            <div className="sticky top-0 z-40 bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 text-sm text-center">
+              <span className="text-amber-200 font-medium">
+                Two-factor authentication is required for {userRole} accounts.
+              </span>
+              {' '}
+              <Link
+                href={`/${locale || 'en'}${mfaRedirect}`}
+                className="text-primary underline hover:text-primary/80 font-medium"
+              >
+                Set up MFA now
+              </Link>
+            </div>
+          )}
           <AdaptiveLayout
             userEmail={userEmail || ''}
             userRole={userRole || 'user'}
