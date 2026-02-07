@@ -590,7 +590,7 @@ export default function ProjectDetailPage() {
                     {activities.length > 0 ? (
                       <div className="space-y-3">
                         {activities.map((activity) => (
-                          <div key={activity.id} className="border border rounded-lg p-3 hover:bg-background">
+                          <div key={activity.id} className="border border-border rounded-lg p-3 hover:bg-background">
                             <div className="flex items-start justify-between mb-1">
                               <div>
                                 {activity.subject && (

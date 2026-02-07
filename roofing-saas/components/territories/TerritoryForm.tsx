@@ -200,7 +200,7 @@ export function TerritoryForm({
             <h3 className="text-sm font-medium text-foreground mb-3">Boundary Data</h3>
 
             {formData.boundary_data ? (
-              <div className="bg-muted/30 border border rounded-md p-4">
+              <div className="bg-muted/30 border border-border rounded-md p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">
@@ -220,7 +220,7 @@ export function TerritoryForm({
                 </div>
               </div>
             ) : (
-              <div className="bg-muted/30 border border rounded-md p-4 text-center">
+              <div className="bg-muted/30 border border-border rounded-md p-4 text-center">
                 <svg
                   className="mx-auto h-8 w-8 text-muted-foreground"
                   fill="none"

@@ -130,7 +130,7 @@ export function SubstatusSelector({
           />
 
           {/* Menu */}
-          <div className="absolute left-0 top-full mt-1 z-20 bg-card border border rounded-lg shadow-lg min-w-[200px] max-w-[300px] py-1">
+          <div className="absolute left-0 top-full mt-1 z-20 bg-card border border-border rounded-lg shadow-lg min-w-[200px] max-w-[300px] py-1">
             {error ? (
               <div className="px-3 py-2 text-sm text-red-600">
                 {error}

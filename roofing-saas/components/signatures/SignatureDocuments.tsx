@@ -113,7 +113,7 @@ export default function SignatureDocuments({
       {documents.map((doc) => (
         <div
           key={doc.id}
-          className="bg-card rounded-lg shadow-sm border border p-6 hover:shadow-md transition-shadow"
+          className="bg-card rounded-lg shadow-sm border border-border p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4 flex-1">

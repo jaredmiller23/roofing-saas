@@ -49,7 +49,7 @@ export function SavedFilterPicker({ filters, onSelect }: SavedFilterPickerProps)
           />
 
           {/* Dropdown */}
-          <div className="absolute left-0 top-full mt-1 w-72 bg-card rounded-lg shadow-lg border border z-20 max-h-96 overflow-y-auto">
+          <div className="absolute left-0 top-full mt-1 w-72 bg-card rounded-lg shadow-lg border border-border z-20 max-h-96 overflow-y-auto">
             <div className="p-2">
               {/* Default Filters */}
               {defaultFilters.length > 0 && (

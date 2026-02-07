@@ -269,7 +269,7 @@ export function TerritoryList({
             {territories.map(territory => (
               <div
                 key={territory.id}
-                className="border border rounded-lg p-4 hover:bg-accent transition-colors"
+                className="border border-border rounded-lg p-4 hover:bg-accent transition-colors"
               >
                 <div className="flex items-start justify-between">
                   {/* Territory info */}

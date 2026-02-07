@@ -81,7 +81,7 @@ export default async function CallLogDetailPage({
         </div>
 
         {/* Call Details Card */}
-        <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
+        <div className="bg-card shadow-sm rounded-lg border border-border p-6 mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Phone className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Call Information</h2>
@@ -129,7 +129,7 @@ export default async function CallLogDetailPage({
 
         {/* Call Recording Card */}
         {call.recording_url && (
-          <div className="bg-card shadow-sm rounded-lg border border p-6 mb-6">
+          <div className="bg-card shadow-sm rounded-lg border border-border p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Mic className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Call Recording</h2>
@@ -165,7 +165,7 @@ export default async function CallLogDetailPage({
 
         {/* Notes Card */}
         {call.notes && (
-          <div className="bg-card shadow-sm rounded-lg border border p-6">
+          <div className="bg-card shadow-sm rounded-lg border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold text-foreground">Notes</h2>

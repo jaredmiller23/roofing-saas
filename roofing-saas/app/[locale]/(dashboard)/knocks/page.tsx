@@ -208,7 +208,7 @@ export default function KnocksPage() {
             {knocks.map((knock) => (
               <div
                 key={knock.id}
-                className="border border rounded-lg p-4 hover:bg-background transition-colors"
+                className="border border-border rounded-lg p-4 hover:bg-background transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

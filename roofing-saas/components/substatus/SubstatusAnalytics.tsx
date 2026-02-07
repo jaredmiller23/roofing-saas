@@ -85,7 +85,7 @@ export function SubstatusAnalytics({
 
   if (loading) {
     return (
-      <div className={`bg-card rounded-lg border border p-6 ${className}`}>
+      <div className={`bg-card rounded-lg border border-border p-6 ${className}`}>
         <div className="flex items-center justify-center h-48">
           <Loader2 className="h-8 w-8 text-primary animate-spin" />
         </div>
@@ -95,7 +95,7 @@ export function SubstatusAnalytics({
 
   if (error) {
     return (
-      <div className={`bg-card rounded-lg border border p-6 ${className}`}>
+      <div className={`bg-card rounded-lg border border-border p-6 ${className}`}>
         <div className="flex items-center justify-center h-48 text-red-600">
           <p>{error}</p>
         </div>
@@ -113,7 +113,7 @@ export function SubstatusAnalytics({
   const maxCount = Math.max(...sortedDistribution.map(item => item.count), 1)
 
   return (
-    <div className={`bg-card rounded-lg border border ${className}`}>
+    <div className={`bg-card rounded-lg border border-border ${className}`}>
       {/* Header */}
       <div className="px-6 py-4 border-b border">
         <div className="flex items-center justify-between">

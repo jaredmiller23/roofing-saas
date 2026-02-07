@@ -144,7 +144,7 @@ export default function TerritoryDetailPage() {
         </div>
 
         {/* Territory Details Card */}
-        <div className="bg-card rounded-lg shadow-sm border border p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Details</h2>
 
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
