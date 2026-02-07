@@ -16,7 +16,7 @@
  */
 
 import { chromium, Browser, Page } from 'playwright'
-import { testAccount, getBaseUrl, parseEnvironment, type Environment } from './config'
+import { testAccount, getBaseUrl, parseEnvironment, tenants, type Environment } from './config'
 
 interface CheckResult {
   name: string
@@ -145,6 +145,38 @@ async function verify(env: Environment) {
         return { passed: false, message: `Unexpected redirect to ${url}` }
       }
     })
+
+    // ==========================================================================
+    // SAFETY CHECK: Verify test user resolves to sandbox tenant
+    // ==========================================================================
+    await runCheck('Test user is in sandbox tenant (not production)', async () => {
+      const response = await page!.request.get(`${baseUrl}/api/auth/permissions`, {
+        timeout: 30000,
+      })
+      if (response.status() !== 200) {
+        return { passed: false, message: `Permissions API returned HTTP ${response.status()}` }
+      }
+      const body = await response.json()
+      const tenantId = body?.tenant_id || body?.data?.tenant_id
+      if (tenantId === tenants.production.id) {
+        return {
+          passed: false,
+          message: `ABORT: Test user is resolving to PRODUCTION tenant (${tenants.production.id}). ` +
+            `This means E2E tests would contaminate real data. ` +
+            `Remove test user from production: DELETE FROM tenant_users WHERE user_id='${testAccount.userId}' AND tenant_id='${tenants.production.id}'`,
+        }
+      }
+      if (tenantId === tenants.development.id) {
+        return { passed: true, message: `Sandbox tenant (${tenantId})` }
+      }
+      return { passed: false, message: `Unknown tenant: ${tenantId}` }
+    })
+
+    // If tenant check failed, abort — do not proceed with tests that write to wrong tenant
+    if (results.some(r => r.name.includes('sandbox tenant') && !r.passed)) {
+      console.log('\n⛔ ABORTING: Test user is in the wrong tenant. Fix before continuing.')
+      return false
+    }
 
     // ==========================================================================
     // CHECK 3: Critical Pages

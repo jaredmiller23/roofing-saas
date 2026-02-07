@@ -110,7 +110,7 @@ For automated testing and verification:
 |-------|-------|
 | Email | `claude-test@roofingsaas.com` |
 | Password | In `.env.test` (`TEST_USER_PASSWORD`) |
-| User ID | `5dc43384-1509-4da8-a795-71060988140a` |
+| User ID | `cfdc67b0-73de-4e68-bb4e-284a1356e94d` |
 | Tenant | Clarity AI Development (sandbox) |
 
 ### Verification Commands
@@ -282,13 +282,16 @@ This is a **multi-tenant SaaS application**. Data is isolated per tenant. Unders
 | fahredin@goappsr.com | owner | Business owner - Fahredin Nushi |
 | ted@goappsr.com | manager | Operations manager |
 | austin@goappsr.com | admin | Admin staff |
-| jaredmiller23@yahoo.com | admin | Jared Miller (has access to BOTH tenants) |
+| jaredbmiller78@gmail.com | owner | Jared Miller - primary dev account |
 
 **Clarity AI Development (Sandbox):**
 | Email | Role | Notes |
 |-------|------|-------|
-| jaredmiller23@yahoo.com | owner | Primary dev account |
 | claude-test@roofingsaas.com | admin | Automated testing (password: `ClaudeTest2025!Secure`) |
+
+> **CRITICAL**: `claude-test@roofingsaas.com` must ONLY be in the sandbox tenant.
+> If an agent adds it to production, all E2E tests will contaminate real data.
+> After multi-agent sessions, verify: `SELECT tenant_id FROM tenant_users WHERE user_id = 'cfdc67b0-73de-4e68-bb4e-284a1356e94d'` returns ONLY `478d279b-...`
 
 ### How Multi-Tenancy Works
 
@@ -309,7 +312,7 @@ This is a **multi-tenant SaaS application**. Data is isolated per tenant. Unders
 ### Testing Strategy
 
 1. **Use claude-test@roofingsaas.com** for automated testing (Clarity AI Development tenant)
-2. **Use jaredmiller23@yahoo.com** for manual testing (has access to both tenants)
+2. **Use jaredbmiller78@gmail.com** for manual testing (owner in Appalachian Storm)
 3. **NEVER test destructive operations in Appalachian Storm tenant** - that's production data
 
 ### Common Mistakes to Avoid

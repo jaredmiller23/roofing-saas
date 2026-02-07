@@ -28,6 +28,7 @@ export const GET = withAuth(async (_request: NextRequest, { user, tenantId }) =>
       permissions,
       role,
       user_id: user.id,
+      tenant_id: tenantId,
     })
   } catch (error) {
     logger.error('Error fetching permissions:', { error })
