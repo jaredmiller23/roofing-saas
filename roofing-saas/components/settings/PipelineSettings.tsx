@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api/client'
+import { getContrastColor } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -156,10 +157,11 @@ export function PipelineSettings() {
           {stages.map((stage, index) => (
             <div key={stage.id} className="flex items-center">
               <div
-                className="relative group min-w-[180px] p-4 rounded-lg border-2 text-white cursor-pointer"
+                className="relative group min-w-[180px] p-4 rounded-lg border-2 cursor-pointer"
                 style={{
                   backgroundColor: stage.color,
-                  borderColor: stage.color
+                  borderColor: stage.color,
+                  color: getContrastColor(stage.color)
                 }}
                 onClick={() => handleEdit(stage)}
               >

@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { apiFetch } from '@/lib/api/client'
+import { getContrastColor } from '@/lib/utils'
 
 interface BrandingSettingsData {
   company_name: string | null
@@ -119,7 +120,7 @@ export function BrandingSettings() {
         {/* Settings Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Logo Upload */}
-          <div className="bg-card rounded-lg border border p-6">
+          <div className="bg-card rounded-lg border border-border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Logo</h3>
             <div className="space-y-4">
               <div>
@@ -164,7 +165,7 @@ export function BrandingSettings() {
           </div>
 
           {/* Brand Colors */}
-          <div className="bg-card rounded-lg border border p-6">
+          <div className="bg-card rounded-lg border border-border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Brand Colors</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -230,7 +231,7 @@ export function BrandingSettings() {
           </div>
 
           {/* Email Branding */}
-          <div className="bg-card rounded-lg border border p-6">
+          <div className="bg-card rounded-lg border border-border p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Email Branding</h3>
             <div className="space-y-4">
               <div>
@@ -262,7 +263,7 @@ export function BrandingSettings() {
 
         {/* Live Preview */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-lg border border p-6 sticky top-8">
+          <div className="bg-card rounded-lg border border-border p-6 sticky top-8">
             <h3 className="text-lg font-semibold text-foreground mb-4">Preview</h3>
 
             {/* Button Previews */}
@@ -270,8 +271,8 @@ export function BrandingSettings() {
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Primary Button</p>
                 <button
-                  style={{ backgroundColor: settings.primary_color }}
-                  className="px-4 py-2 text-white rounded-md font-medium w-full"
+                  style={{ backgroundColor: settings.primary_color, color: getContrastColor(settings.primary_color) }}
+                  className="px-4 py-2 rounded-md font-medium w-full"
                 >
                   Primary Action
                 </button>
@@ -280,8 +281,8 @@ export function BrandingSettings() {
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Secondary Button</p>
                 <button
-                  style={{ backgroundColor: settings.secondary_color }}
-                  className="px-4 py-2 text-white rounded-md font-medium w-full"
+                  style={{ backgroundColor: settings.secondary_color, color: getContrastColor(settings.secondary_color) }}
+                  className="px-4 py-2 rounded-md font-medium w-full"
                 >
                   Secondary Action
                 </button>
@@ -290,8 +291,8 @@ export function BrandingSettings() {
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Accent Button</p>
                 <button
-                  style={{ backgroundColor: settings.accent_color }}
-                  className="px-4 py-2 text-white rounded-md font-medium w-full"
+                  style={{ backgroundColor: settings.accent_color, color: getContrastColor(settings.accent_color) }}
+                  className="px-4 py-2 rounded-md font-medium w-full"
                 >
                   Accent Action
                 </button>

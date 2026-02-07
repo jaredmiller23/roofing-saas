@@ -1,7 +1,7 @@
 'use client'
 
 import { QuickBooksIntegration } from './QuickBooksIntegration'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { useFeatureAccess } from '@/lib/billing/hooks'
 import { FeatureGate } from '@/components/billing/FeatureGate'
 
@@ -34,31 +34,7 @@ export function IntegrationsSettings() {
         </FeatureGate>
       )}
 
-      {/* Future integrations can be added here */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">More Integrations Coming Soon</CardTitle>
-          <CardDescription>
-            Additional integrations will be available in future updates
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border rounded-lg opacity-50">
-              <div className="font-medium text-muted-foreground">Stripe</div>
-              <div className="text-sm text-muted-foreground mt-1">Payment processing</div>
-            </div>
-            <div className="p-4 border border rounded-lg opacity-50">
-              <div className="font-medium text-muted-foreground">Zapier</div>
-              <div className="text-sm text-muted-foreground mt-1">Workflow automation</div>
-            </div>
-            <div className="p-4 border border rounded-lg opacity-50">
-              <div className="font-medium text-muted-foreground">Google Calendar</div>
-              <div className="text-sm text-muted-foreground mt-1">Schedule management</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Note: Stripe billing is managed in Settings > Billing. Google Calendar is in Settings > Calendar. */}
     </div>
   )
 }
