@@ -143,7 +143,7 @@ export const DELETE = withAuthParams(async (
   { params }
 ) => {
   try {
-    const canDelete = await checkPermission(userId, 'tasks', 'delete')
+    const canDelete = await checkPermission(userId, 'tasks', 'delete', tenantId)
     if (!canDelete) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete tasks', 403))
     }

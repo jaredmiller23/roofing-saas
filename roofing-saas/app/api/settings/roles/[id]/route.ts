@@ -15,7 +15,7 @@ export const PATCH = withAuthParams(async (
   { params }
 ) => {
   try {
-    const canEdit = await checkPermission(userId, 'settings', 'edit')
+    const canEdit = await checkPermission(userId, 'settings', 'edit', tenantId)
     if (!canEdit) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to edit roles', 403))
     }
@@ -73,7 +73,7 @@ export const DELETE = withAuthParams(async (
   { params }
 ) => {
   try {
-    const canDelete = await checkPermission(userId, 'settings', 'delete')
+    const canDelete = await checkPermission(userId, 'settings', 'delete', tenantId)
     if (!canDelete) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete roles', 403))
     }

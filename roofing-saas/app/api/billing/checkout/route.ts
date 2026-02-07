@@ -25,7 +25,7 @@ import { logger } from '@/lib/logger';
 export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     // Require billing:edit permission for checkout
-    const canEdit = await checkPermission(userId, 'billing', 'edit');
+    const canEdit = await checkPermission(userId, 'billing', 'edit', tenantId);
     if (!canEdit) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to manage billing', 403));
     }

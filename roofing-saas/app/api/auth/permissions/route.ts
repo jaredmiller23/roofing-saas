@@ -17,10 +17,10 @@ import { logger } from '@/lib/logger'
  * GET /api/auth/permissions
  * Get the current user's permissions
  */
-export const GET = withAuth(async (_request: NextRequest, { user }) => {
+export const GET = withAuth(async (_request: NextRequest, { user, tenantId }) => {
   try {
     const [permissions, role] = await Promise.all([
-      getUserPermissions(user.id),
+      getUserPermissions(user.id, tenantId),
       getUserRole(user.id),
     ])
 

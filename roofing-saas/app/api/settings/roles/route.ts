@@ -36,7 +36,7 @@ export const GET = withAuth(async (_request, { tenantId }) => {
  */
 export const POST = withAuth(async (request, { user, userId, tenantId }) => {
   try {
-    const canEdit = await checkPermission(userId, 'settings', 'edit')
+    const canEdit = await checkPermission(userId, 'settings', 'edit', tenantId)
     if (!canEdit) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to manage roles', 403))
     }

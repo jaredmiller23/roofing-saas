@@ -42,23 +42,50 @@ import type {
 
 /**
  * Get user's permissions from their role
+ *
+ * @param userId - The user's ID
+ * @param tenantId - Optional tenant ID to scope the lookup. When provided,
+ *   permissions are resolved for that specific tenant. When omitted, falls
+ *   back to the most recently joined active tenant (same heuristic as
+ *   getUserTenantId in session.ts).
  */
-export async function getUserPermissions(userId: string): Promise<Permissions> {
+export async function getUserPermissions(userId: string, tenantId?: string): Promise<Permissions> {
   const supabase = await createClient()
 
-  // First get user's tenant and role
-  const { data: tenantUser, error: userError } = await supabase
-    .from('tenant_users')
-    .select('role, tenant_id')
-    .eq('user_id', userId)
-    .single()
+  let tenantUser: { role: string | null; tenant_id: string } | null = null
 
-  if (userError || !tenantUser) {
-    return NO_PERMISSIONS
+  if (tenantId) {
+    // Scoped lookup — exact tenant
+    const { data, error } = await supabase
+      .from('tenant_users')
+      .select('role, tenant_id')
+      .eq('user_id', userId)
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .single()
+
+    if (error || !data) {
+      return NO_PERMISSIONS
+    }
+    tenantUser = data
+  } else {
+    // Fallback — most recently joined active tenant (matches getUserTenantId pattern)
+    const { data, error } = await supabase
+      .from('tenant_users')
+      .select('role, tenant_id')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: false })
+      .limit(1)
+
+    if (error || !data || data.length === 0) {
+      return NO_PERMISSIONS
+    }
+    tenantUser = data[0]
   }
 
   const role = tenantUser.role
-  const tenantId = tenantUser.tenant_id
+  const resolvedTenantId = tenantUser.tenant_id
 
   // Owner and admin have predefined permissions
   if (role === 'owner') {
@@ -74,7 +101,7 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
     .from('user_role_assignments')
     .select('role_id')
     .eq('user_id', userId)
-    .eq('tenant_id', tenantId)
+    .eq('tenant_id', resolvedTenantId)
     .single()
 
   if (!assignmentError && roleAssignment) {
@@ -98,7 +125,7 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
   const { data: roleByName, error: roleNameError } = await supabase
     .from('user_roles')
     .select('permissions')
-    .eq('tenant_id', tenantId)
+    .eq('tenant_id', resolvedTenantId)
     .eq('name', role ?? '')
     .single()
 
@@ -123,9 +150,10 @@ export async function getUserPermissions(userId: string): Promise<Permissions> {
 export async function hasPermission(
   userId: string,
   module: PermissionModule,
-  action: PermissionAction
+  action: PermissionAction,
+  tenantId?: string
 ): Promise<boolean> {
-  const permissions = await getUserPermissions(userId)
+  const permissions = await getUserPermissions(userId, tenantId)
   return permissions[module]?.[action] ?? false
 }
 

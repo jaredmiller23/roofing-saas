@@ -30,12 +30,14 @@ import type { PermissionModule, PermissionAction } from './permissions'
  * @param userId - The authenticated user's ID (from withAuth context)
  * @param module - The permission module to check (e.g., 'contacts', 'billing')
  * @param action - The permission action to check (e.g., 'view', 'create', 'edit', 'delete')
+ * @param tenantId - Optional tenant ID to scope the permission check
  * @returns true if the user has the required permission, false otherwise
  */
 export async function checkPermission(
   userId: string,
   module: PermissionModule,
-  action: PermissionAction
+  action: PermissionAction,
+  tenantId?: string
 ): Promise<boolean> {
-  return hasPermission(userId, module, action)
+  return hasPermission(userId, module, action, tenantId)
 }

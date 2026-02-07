@@ -349,7 +349,7 @@ export const DELETE = withAuthParams(async (
   { params }
 ) => {
   try {
-    const canDelete = await checkPermission(userId, 'projects', 'delete')
+    const canDelete = await checkPermission(userId, 'projects', 'delete', tenantId)
     if (!canDelete) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete projects', 403))
     }

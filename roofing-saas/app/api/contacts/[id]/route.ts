@@ -160,7 +160,7 @@ export const DELETE = withAuthParams(async (
   { params }
 ) => {
   try {
-    const canDelete = await checkPermission(userId, 'contacts', 'delete')
+    const canDelete = await checkPermission(userId, 'contacts', 'delete', tenantId)
     if (!canDelete) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to delete contacts', 403))
     }

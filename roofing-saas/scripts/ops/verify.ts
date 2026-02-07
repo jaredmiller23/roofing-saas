@@ -160,6 +160,10 @@ async function verify(env: Environment) {
       { path: '/en/contacts', name: 'Contacts' },
       { path: '/en/signatures', name: 'Signatures' },
       { path: '/en/projects', name: 'Projects' },
+      { path: '/en/settings', name: 'Settings' },
+      { path: '/en/settings/team', name: 'Team Management' },
+      { path: '/en/settings/security', name: 'Security/MFA' },
+      { path: '/en/settings/profile', name: 'Profile' },
     ]
 
     for (const { path, name } of criticalPages) {
@@ -205,6 +209,16 @@ async function verify(env: Environment) {
       { path: '/api/contacts?limit=1', name: 'Contacts API' },
       { path: '/api/signature-templates', name: 'Signature Templates API' },
       { path: '/api/projects?limit=1', name: 'Projects API' },
+      { path: '/api/admin/team', name: 'Team Management API' },
+      { path: '/api/auth/mfa/status', name: 'MFA Status API' },
+      { path: '/api/billing/plans', name: 'Billing Plans API' },
+      { path: '/api/billing/subscription', name: 'Billing Subscription API' },
+      { path: '/api/onboarding/checklist', name: 'Onboarding Checklist API' },
+      { path: '/api/profile', name: 'Profile API' },
+      { path: '/api/settings/pipeline-stages', name: 'Pipeline Stages API' },
+      { path: '/api/settings/roles', name: 'Roles API' },
+      { path: '/api/warranties', name: 'Warranties API' },
+      { path: '/api/health', name: 'Health Check' },
     ]
 
     for (const { path, name } of apiEndpoints) {

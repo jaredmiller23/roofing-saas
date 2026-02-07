@@ -89,7 +89,7 @@ export const POST = withAuth(async (request, { userId, tenantId }) => {
       throw AuthorizationError('Campaigns requires Professional plan or higher')
     }
 
-    const canCreate = await checkPermission(userId, 'campaigns', 'create')
+    const canCreate = await checkPermission(userId, 'campaigns', 'create', tenantId)
     if (!canCreate) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to create campaigns', 403))
     }

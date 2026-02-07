@@ -113,7 +113,7 @@ export const PATCH = withAuthParams(async (
     }
 
     // Authorization: check if user can edit this document
-    const canEditSignatures = await hasPermission(user.id, 'signatures', 'edit')
+    const canEditSignatures = await hasPermission(user.id, 'signatures', 'edit', tenantId)
     const isCreator = existing.created_by === user.id
 
     if (existing.status === 'draft') {
@@ -213,7 +213,7 @@ export const DELETE = withAuthParams(async (
     }
 
     // Authorization: check if user can delete this document
-    const canDeleteSignatures = await hasPermission(user.id, 'signatures', 'delete')
+    const canDeleteSignatures = await hasPermission(user.id, 'signatures', 'delete', tenantId)
     const isCreator = existing.created_by === user.id
 
     if (existing.status === 'draft') {

@@ -24,7 +24,7 @@ import { logger } from '@/lib/logger';
 export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     // Require billing:view permission for portal access
-    const canView = await checkPermission(userId, 'billing', 'view');
+    const canView = await checkPermission(userId, 'billing', 'view', tenantId);
     if (!canView) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to access billing', 403));
     }

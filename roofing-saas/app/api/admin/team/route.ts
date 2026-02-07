@@ -26,7 +26,7 @@ interface TeamMember {
  */
 export const GET = withAuth(async (_request: NextRequest, { userId, tenantId }) => {
   try {
-    const canView = await checkPermission(userId, 'users', 'view')
+    const canView = await checkPermission(userId, 'users', 'view', tenantId)
     if (!canView) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to view team members', 403))
     }
@@ -115,7 +115,7 @@ const inviteSchema = z.object({
  */
 export const POST = withAuth(async (request: NextRequest, { user, tenantId }) => {
   try {
-    const canEdit = await checkPermission(user.id, 'users', 'edit')
+    const canEdit = await checkPermission(user.id, 'users', 'edit', tenantId)
     if (!canEdit) {
       return errorResponse(new ApiError(ErrorCode.INSUFFICIENT_PERMISSIONS, 'You do not have permission to invite team members', 403))
     }
