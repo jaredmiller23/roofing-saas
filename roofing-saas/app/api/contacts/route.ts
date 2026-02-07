@@ -127,7 +127,7 @@ export const GET = withAuth(async (request: NextRequest, { userId, tenantId }: A
     )
 
     if (error) {
-      throw mapSupabaseError(error)
+      throw mapSupabaseError(error as { code?: string; message: string })
     }
 
     // When include=projects, batch-fetch projects for all returned contacts
@@ -219,7 +219,7 @@ export const POST = withAuth(async (request: NextRequest, { user, userId, tenant
           if (error.code === '23505') {
             throw ConflictError('A contact with this email already exists', { email: validatedData.data.email })
           }
-          throw mapSupabaseError(error)
+          throw mapSupabaseError(error as { code?: string; message: string })
         }
 
         return data

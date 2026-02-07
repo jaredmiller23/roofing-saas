@@ -21,12 +21,23 @@ export interface ApiResponse<T = unknown> {
     total: number
     hasMore: boolean
   }
+  cursor?: {
+    nextCursor: string | null
+    prevCursor: string | null
+    hasMore: boolean
+  }
 }
 
 export interface PaginationParams {
   page: number
   limit: number
   total: number
+}
+
+export interface CursorPaginationParams {
+  nextCursor: string | null
+  prevCursor: string | null
+  hasMore: boolean
 }
 
 /**
@@ -68,6 +79,24 @@ export function paginatedResponse<T>(
         total,
         hasMore: page * limit < total,
       },
+    },
+    { status }
+  )
+}
+
+/**
+ * Cursor-based paginated response
+ */
+export function cursorPaginatedResponse<T>(
+  data: T,
+  cursor: CursorPaginationParams,
+  status = 200
+): NextResponse<ApiResponse<T>> {
+  return NextResponse.json(
+    {
+      success: true,
+      data,
+      cursor,
     },
     { status }
   )
