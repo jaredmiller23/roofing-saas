@@ -3,29 +3,17 @@
  * Search roofing knowledge using vector similarity
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { generateEmbedding } from '@/lib/embeddings'
 import { incrementAiUsage, calculateEmbeddingCostCents } from '@/lib/billing/ai-usage'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check auth
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
 
     const body = await request.json()
     const { query, category, threshold = 0.7, limit = 5 } = body
@@ -70,7 +58,7 @@ export async function POST(request: NextRequest) {
     const searchResults = results as { id: string; similarity: number }[] | null
     await supabase.from('knowledge_search_queries').insert({
       tenant_id: tenantId,
-      user_id: user.id,
+      user_id: userId,
       query_text: query,
       query_embedding: JSON.stringify(embeddingResult.embedding),
       results_count: searchResults?.length ?? 0,
@@ -88,4 +76,4 @@ export async function POST(request: NextRequest) {
     logger.error('Knowledge search API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

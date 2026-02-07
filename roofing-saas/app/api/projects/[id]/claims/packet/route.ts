@@ -5,34 +5,19 @@
  * GET /api/projects/[id]/claims/packet - Get latest packet for project
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { generatePacket } from '@/lib/packet'
 import type { PacketGenerationInput } from '@/lib/packet/types'
 
-interface RouteParams {
-  params: Promise<{
-    id: string
-  }>
-}
-
 /**
  * POST - Generate a new claims packet
  */
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export const POST = withAuthParams(async (request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id: projectId } = await params
     const supabase = await createClient()
 
@@ -121,21 +106,13 @@ export async function POST(
     logger.error('Error generating claims packet:', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to generate packet'))
   }
-}
+})
 
 /**
  * GET - Retrieve the latest packet for a project
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: RouteParams
-) {
+export const GET = withAuthParams(async (_request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id: projectId } = await params
     const supabase = await createClient()
 
@@ -181,4 +158,4 @@ export async function GET(
     logger.error('Error fetching claims packet:', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to fetch packet'))
   }
-}
+})

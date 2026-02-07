@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getCurrentUserFromRequest, getUserTenantId, getUserTenantIdAdmin } from '@/lib/auth/session'
+import { getCurrentUserFromRequest, getUserTenantIdAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapZodError,
 } from '@/lib/api/errors'
@@ -41,27 +40,25 @@ interface SMSResult {
  *
  * Single: { to: "+1234567890", body: "Hello" }
  * Bulk: { to: ["+1234567890", "+0987654321"], body: "Hello" }
+ *
+ * Supports both Bearer token (programmatic) and cookie (browser) auth.
+ * Bearer token auth uses admin tenant lookup (RLS bypass).
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user: cookieUser, userId: cookieUserId, tenantId: cookieTenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Support both Bearer token (programmatic) and cookie (browser) auth
+    // Support Bearer token auth (programmatic) — overrides cookie auth if present
     const bearerUser = await getCurrentUserFromRequest(request)
-    const user = bearerUser ?? await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
+    const user = bearerUser ?? cookieUser
+    const userId = bearerUser ? bearerUser.id : cookieUserId
 
     // Use admin lookup for Bearer auth (RLS bypass), regular for cookie auth
     const tenantId = bearerUser
-      ? await getUserTenantIdAdmin(user.id)
-      : await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
+      ? await getUserTenantIdAdmin(user.id) ?? cookieTenantId
+      : cookieTenantId
 
-    logger.apiRequest('POST', '/api/sms/send', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/sms/send', { tenantId, userId })
 
     const body = await request.json()
 
@@ -153,7 +150,7 @@ export async function POST(request: NextRequest) {
         const { error: activityError } = await supabase.from('activities').insert({
           tenant_id: tenantId,
           contact_id: contactId || contact?.id || null,
-          created_by: user.id,
+          created_by: userId,
           type: 'sms',
           direction: 'outbound',
           content: finalBody,
@@ -229,4 +226,4 @@ export async function POST(request: NextRequest) {
     logger.error('SMS send error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

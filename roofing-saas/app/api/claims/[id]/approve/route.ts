@@ -1,31 +1,17 @@
-import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/claims/[id]/approve
  * Approve a claim and optionally add approval notes
  */
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request, { user, userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const { id: claimId } = await context.params
+    const { id: claimId } = await params
     const body = await request.json()
     const { notes } = body
 
@@ -77,7 +63,7 @@ export async function POST(
     const activityData = {
       tenant_id: tenantId,
       type: 'claim_approved',
-      created_by: user.id,
+      created_by: userId,
       content: `Claim approved${notes ? `: ${notes}` : ''}`,
       outcome_details: {
         previous_status: claim.status,
@@ -100,7 +86,7 @@ export async function POST(
 
     logger.info('Claim approved successfully', {
       claimId,
-      userId: user.id,
+      userId,
       tenantId,
       approvedAmount: updateData.approved_amount || claim.approved_amount,
     })
@@ -113,4 +99,4 @@ export async function POST(
     logger.error('Error in POST /api/claims/[id]/approve:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

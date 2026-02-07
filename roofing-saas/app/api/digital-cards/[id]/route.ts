@@ -9,9 +9,10 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, isAdmin } from '@/lib/auth/session'
+import { isAdmin } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   DigitalBusinessCard,
@@ -25,37 +26,22 @@ import type {
 // =============================================
 // Get a specific digital card by ID
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
 
     // Fetch card
     const { data, error } = await supabase
       .from('digital_business_cards')
       .select('*')
       .eq('id', id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (error) {
@@ -75,7 +61,7 @@ export async function GET(
     logger.error('Unexpected error in GET /api/digital-cards/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // =============================================
 // PATCH /api/digital-cards/:id
@@ -83,37 +69,22 @@ export async function GET(
 // Update a digital card
 // Users can update their own card, admins can update any card
 
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { userId, tenantId },
+  { params }
+) => {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
 
     // Check if card exists and user has permission
     const { data: existingCard, error: fetchError } = await supabase
       .from('digital_business_cards')
       .select('*')
       .eq('id', id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (fetchError || !existingCard) {
@@ -121,8 +92,8 @@ export async function PATCH(
     }
 
     // Check permissions: own card or admin (includes owner role)
-    const isOwnCard = existingCard.user_id === user.id
-    const userIsAdmin = await isAdmin(user.id)
+    const isOwnCard = existingCard.user_id === userId
+    const userIsAdmin = await isAdmin(userId)
 
     if (!isOwnCard && !userIsAdmin) {
       throw AuthorizationError('You can only update your own card')
@@ -190,50 +161,35 @@ export async function PATCH(
     logger.error('Unexpected error in PATCH /api/digital-cards/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // =============================================
 // DELETE /api/digital-cards/:id
 // =============================================
 // Delete a digital card (admin only)
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request: NextRequest,
+  { userId, tenantId },
+  { params }
+) => {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
 
     // Check if user is admin (includes owner role)
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
 
     const supabase = await createClient()
 
-    // Get user's tenant for scoped deletion
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Delete the card
     const { error } = await supabase
       .from('digital_business_cards')
       .delete()
       .eq('id', id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
 
     if (error) {
       logger.error('Error deleting card:', { error })
@@ -245,4 +201,4 @@ export async function DELETE(
     logger.error('Unexpected error in DELETE /api/digital-cards/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

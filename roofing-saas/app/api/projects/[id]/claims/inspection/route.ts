@@ -1,9 +1,8 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { createdResponse, errorResponse } from '@/lib/api/response'
 import type { InspectionState } from '@/lib/claims/inspection-state'
 
@@ -11,32 +10,12 @@ import type { InspectionState } from '@/lib/claims/inspection-state'
  * POST /api/projects/[id]/claims/inspection
  * Submit a completed inspection and create/update claim
  */
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const { id: projectId } = await context.params
+    const { id: projectId } = await params
     const inspectionState: InspectionState = await request.json()
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      logger.error('Tenant lookup failed:', { error: tenantError })
-      throw AuthorizationError('User not associated with any tenant')
-    }
 
     // Get project (no embedded select — projects has two FKs to contacts
     // which causes PostgREST ambiguity)
@@ -44,7 +23,7 @@ export async function POST(
       .from('projects')
       .select('id, name, contact_id')
       .eq('id', projectId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (projectError || !project) {
@@ -74,12 +53,12 @@ export async function POST(
 
     // Build claim data using only columns that exist in the claims table
     const claimData = {
-      tenant_id: tenantUser.tenant_id,
+      tenant_id: tenantId,
       project_id: projectId,
       contact_id: contactId,
       status: 'new',
       date_of_loss: new Date().toISOString().split('T')[0],
-      created_by: user.id,
+      created_by: userId,
       inspection_completed_at: new Date().toISOString(),
       // Store inspection data and address in custom_fields JSONB
       custom_fields: ({
@@ -114,18 +93,18 @@ export async function POST(
       .from('projects')
       .update({ claim_id: claim.id })
       .eq('id', projectId)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
 
     // Create activity log
     const selectedCount = inspectionState.damageAreas.filter(a => a.selected).length
     await supabase.from('activities').insert({
-      tenant_id: tenantUser.tenant_id,
+      tenant_id: tenantId,
       project_id: projectId,
       contact_id: contactId,
       type: 'claim_inspection',
       subject: 'Property Inspection Completed',
       content: `Inspection completed with ${selectedCount} areas documented`,
-      created_by: user.id,
+      created_by: userId,
     })
 
     return createdResponse({
@@ -136,4 +115,4 @@ export async function POST(
     logger.error('Error in POST /api/projects/[id]/claims/inspection:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

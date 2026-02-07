@@ -3,26 +3,15 @@
  * Check if QuickBooks is connected for the current tenant
  */
 
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     await requireFeature(tenantId, 'quickbooksIntegration')
 
     const supabase = await createClient()
@@ -68,4 +57,4 @@ export async function GET(_request: NextRequest) {
     logger.error('QuickBooks status error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to check QuickBooks status'))
   }
-}
+})

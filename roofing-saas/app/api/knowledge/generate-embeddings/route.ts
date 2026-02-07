@@ -3,33 +3,22 @@
  * One-time operation to generate embeddings for all knowledge entries
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { generateKnowledgeEmbedding, calculateEmbeddingCost } from '@/lib/embeddings'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(_request: NextRequest) {
+export const POST = withAuth(async (_request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
 
-    // Check auth - only admins can generate embeddings
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .in('user_roles.name', ['owner', 'admin'])
       .single()
@@ -108,4 +97,4 @@ export async function POST(_request: NextRequest) {
     logger.error('Generate embeddings API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,23 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, getUserRole } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
+import { getUserRole } from '@/lib/auth/session'
 import { type QuerySuggestion } from '@/lib/ai/query-types'
-import { AuthorizationError } from '@/lib/api/errors'
-import { successResponse, errorResponse } from '@/lib/api/response'
+import { successResponse } from '@/lib/api/response'
 
-export async function GET() {
+export const GET = withAuth(async (_request, { userId, tenantId }) => {
   try {
-    // Server-side authentication
-    const user = await getCurrentUser()
-    if (!user) {
-      return errorResponse(AuthorizationError('Authentication required'))
-    }
-
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      return errorResponse(AuthorizationError('No tenant access'))
-    }
-
     const role = await getUserRole(userId) || 'user'
 
     const supabase = await createClient()
@@ -351,4 +339,4 @@ export async function GET() {
       role: 'user'
     })
   }
-}
+})

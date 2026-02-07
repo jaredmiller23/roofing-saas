@@ -1,31 +1,17 @@
-import { NextRequest } from 'next/server'
 import { getOAuthClient } from '@/lib/quickbooks/oauth-client'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * Refresh QuickBooks OAuth tokens
  * POST /api/quickbooks/refresh
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (_request, { tenantId }) => {
   try {
-    // Verify user is authenticated
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    // Get user's tenant
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Get current connection from database (use quickbooks_connections)
@@ -122,19 +108,17 @@ export async function POST(request: NextRequest) {
 
     // If refresh fails with auth error, soft-disable the connection (reauth required)
     if (error.authResponse?.status === 401) {
-      const user = await getCurrentUser()
-      if (user) {
-        const tenantId = await getUserTenantId(user.id)
-        if (tenantId) {
-          const supabase = await createClient()
-          await supabase
-            .from('quickbooks_connections')
-            .update({
-              is_active: false,
-              sync_error: 'Authentication failed - please reconnect',
-            })
-            .eq('tenant_id', tenantId)
-        }
+      try {
+        const supabase = await createClient()
+        await supabase
+          .from('quickbooks_connections')
+          .update({
+            is_active: false,
+            sync_error: 'Authentication failed - please reconnect',
+          })
+          .eq('tenant_id', tenantId)
+      } catch (disableError) {
+        logger.error('Failed to disable QB connection after auth failure', { disableError })
       }
 
       throw AuthenticationError('Please reconnect your QuickBooks account')
@@ -142,4 +126,4 @@ export async function POST(request: NextRequest) {
 
     return errorResponse(error instanceof Error ? error : InternalError('Failed to refresh token'))
   }
-}
+})

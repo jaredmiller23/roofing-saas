@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, isAdmin, getUserTenantId } from '@/lib/auth/session'
+import { isAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   SubstatusConfig,
@@ -20,13 +20,8 @@ import type {
  * - status_value: string (optional - filter by parent status)
  * - include_inactive: boolean (default: false)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, _auth) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const searchParams = request.nextUrl.searchParams
     const entity_type = searchParams.get('entity_type')
     const status_value = searchParams.get('status_value')
@@ -73,7 +68,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/substatus/configs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/substatus/configs
@@ -81,22 +76,12 @@ export async function GET(request: NextRequest) {
  *
  * Body: CreateSubstatusConfigRequest
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin (includes owner role)
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -143,7 +128,7 @@ export async function POST(request: NextRequest) {
         is_terminal: body.is_terminal ?? false,
         auto_transition_to: body.auto_transition_to || null,
         auto_transition_delay_hours: body.auto_transition_delay_hours || null,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -166,4 +151,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/substatus/configs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

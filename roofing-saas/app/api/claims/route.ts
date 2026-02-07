@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
   AuthorizationError,
   ValidationError,
   InternalError,
@@ -21,18 +19,8 @@ import { requireFeature } from '@/lib/billing/feature-gates'
  * - project_id: Filter by project (optional)
  * - status: Filter by status (optional)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Check feature access
     try {
       await requireFeature(tenantId, 'claimsTracking')
@@ -107,24 +95,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/claims', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/claims
  * Create a new claim with optional adjuster linking
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Check feature access
     try {
       await requireFeature(tenantId, 'claimsTracking')
@@ -186,7 +164,7 @@ export async function POST(request: NextRequest) {
         deductible: body.deductible || null,
         notes: body.notes || null,
         status: 'new',
-        created_by: user.id,
+        created_by: userId,
       })
       .select(`
         *,
@@ -209,7 +187,7 @@ export async function POST(request: NextRequest) {
       claimId: newClaim.id,
       projectId: body.project_id,
       adjusterId: body.adjuster_id,
-      userId: user.id,
+      userId,
     })
 
     // Transform response
@@ -232,4 +210,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/claims', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

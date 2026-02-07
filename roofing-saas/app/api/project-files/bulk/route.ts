@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapSupabaseError,
 } from '@/lib/api/errors'
@@ -15,21 +13,11 @@ import { BulkFileActionData } from '@/lib/types/file'
  * POST /api/project-files/bulk
  * Perform bulk operations on multiple files
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/project-files/bulk', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/project-files/bulk', { tenantId, userId })
 
     const body = await request.json()
     const actionData: BulkFileActionData = body
@@ -120,7 +108,7 @@ export async function POST(request: NextRequest) {
     logger.error('Bulk file operation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 // Helper function to move files to folder
 async function handleMoveToFolder(

@@ -1,6 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId, getUserRole } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
+import { getUserRole } from '@/lib/auth/session'
 import { queryInterpreter } from '@/lib/ai/query-interpreter'
 import { sqlGenerator } from '@/lib/ai/sql-generator'
 import {
@@ -9,28 +9,16 @@ import {
   type QueryResult,
   type ResultColumn
 } from '@/lib/ai/query-types'
-import { ValidationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const body = await request.json()
     const { query } = body
 
     if (!query) {
       return errorResponse(ValidationError('Missing required field: query'))
-    }
-
-    // Server-side authentication — never trust client-provided identity
-    const user = await getCurrentUser()
-    if (!user) {
-      return errorResponse(AuthorizationError('Authentication required'))
-    }
-
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      return errorResponse(AuthorizationError('No tenant access'))
     }
 
     const userRole = await getUserRole(userId) || 'viewer'
@@ -114,33 +102,33 @@ export async function POST(request: NextRequest) {
           selectColumns = 'id, name, status, source, created_at'
         }
 
-        let query = supabase.from('contacts').select(selectColumns, countMode ? { count: 'exact' } : undefined)
+        let dbQuery = supabase.from('contacts').select(selectColumns, countMode ? { count: 'exact' } : undefined)
 
         // Apply tenant filter
-        query = query.eq('tenant_id', context.tenantId)
+        dbQuery = dbQuery.eq('tenant_id', context.tenantId)
 
         // Apply time filters if present
         if (interpretation.timeframe?.relative === 'this month') {
           const startOfMonth = new Date()
           startOfMonth.setDate(1)
           startOfMonth.setHours(0, 0, 0, 0)
-          query = query.gte('created_at', startOfMonth.toISOString())
+          dbQuery = dbQuery.gte('created_at', startOfMonth.toISOString())
         } else if (interpretation.timeframe?.relative === 'last month') {
           const now = new Date()
           const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
           const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-          query = query.gte('created_at', startOfLastMonth.toISOString())
+          dbQuery = dbQuery.gte('created_at', startOfLastMonth.toISOString())
             .lte('created_at', endOfLastMonth.toISOString())
         }
 
         // Apply status filters
         const statusFilter = interpretation.filters.find(f => f.column === 'status')
         if (statusFilter) {
-          query = query.eq('status', String(statusFilter.value))
+          dbQuery = dbQuery.eq('status', String(statusFilter.value))
         }
 
-        query = query.limit(1000)
-        const result = await query
+        dbQuery = dbQuery.limit(1000)
+        const result = await dbQuery
 
         if (result.error) {
           queryError = result.error
@@ -166,23 +154,23 @@ export async function POST(request: NextRequest) {
           selectColumns = 'id, name, status, created_at'
         }
 
-        let query = supabase.from('projects').select(selectColumns, countMode ? { count: 'exact' } : undefined)
+        let dbQuery = supabase.from('projects').select(selectColumns, countMode ? { count: 'exact' } : undefined)
 
         // Apply tenant filter
-        query = query.eq('tenant_id', context.tenantId)
+        dbQuery = dbQuery.eq('tenant_id', context.tenantId)
 
         // Apply status filters
         const statusFilter = interpretation.filters.find(f => f.column === 'status')
         if (statusFilter) {
-          query = query.eq('status', String(statusFilter.value))
+          dbQuery = dbQuery.eq('status', String(statusFilter.value))
         } else if (intent.subject.includes('active') || nlQuery.query.includes('active')) {
-          query = query.eq('status', 'active')
+          dbQuery = dbQuery.eq('status', 'active')
         } else if (intent.subject.includes('overdue')) {
-          query = query.lt('estimated_close_date', new Date().toISOString()).neq('pipeline_stage', 'complete')
+          dbQuery = dbQuery.lt('estimated_close_date', new Date().toISOString()).neq('pipeline_stage', 'complete')
         }
 
-        query = query.limit(1000)
-        const result = await query
+        dbQuery = dbQuery.limit(1000)
+        const result = await dbQuery
 
         if (result.error) {
           queryError = result.error
@@ -211,21 +199,21 @@ export async function POST(request: NextRequest) {
           selectColumns = 'revenue, gross_profit, profit_margin_percent'
         }
 
-        let query = supabase.from('project_profit_loss').select(selectColumns)
+        let dbQuery = supabase.from('project_profit_loss').select(selectColumns)
 
         // Apply tenant filter
-        query = query.eq('tenant_id', context.tenantId)
+        dbQuery = dbQuery.eq('tenant_id', context.tenantId)
 
         // Apply time filters
         if (interpretation.timeframe?.relative === 'this month') {
           const startOfMonth = new Date()
           startOfMonth.setDate(1)
           startOfMonth.setHours(0, 0, 0, 0)
-          query = query.gte('created_at', startOfMonth.toISOString())
+          dbQuery = dbQuery.gte('created_at', startOfMonth.toISOString())
         }
 
-        query = query.limit(1000)
-        const result = await query
+        dbQuery = dbQuery.limit(1000)
+        const result = await dbQuery
 
         if (result.error) {
           queryError = result.error
@@ -371,5 +359,4 @@ export async function POST(request: NextRequest) {
     console.error('Query processing failed:', error)
     return errorResponse(InternalError('An unexpected error occurred while processing your query. Please try again.'))
   }
-}
-
+})

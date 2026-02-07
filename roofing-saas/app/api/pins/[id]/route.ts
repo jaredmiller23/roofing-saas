@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
@@ -11,23 +11,18 @@ export const dynamic = 'force-dynamic'
  * PUT /api/pins/[id]
  * Update a pin's details
  */
-export async function PUT(
+export const PUT = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  _authContext,
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const { disposition, notes, contact_data, create_contact } = body
 
     // Await params Promise to get the id
-    const resolvedParams = await params
-    const id = resolvedParams.id
+    const { id } = await params
 
     logger.debug('[API] PUT /api/pins/[id] - ID:', { id, type: typeof id })
 
@@ -95,4 +90,4 @@ export async function PUT(
     logger.error('[API] Error in PUT /api/pins/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

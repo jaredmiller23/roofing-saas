@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapZodError,
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -22,21 +19,11 @@ const createTemplateSchema = z.object({
  * GET /api/templates
  * List templates with filtering
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/templates', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/templates', { tenantId, userId })
 
     const searchParams = request.nextUrl.searchParams
     const type = searchParams.get('type') // 'sms' or 'email'
@@ -79,27 +66,17 @@ export async function GET(request: NextRequest) {
     logger.error('Templates API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/templates
  * Create a new template
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/templates', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/templates', { tenantId, userId })
 
     const body = await request.json()
 
@@ -117,7 +94,7 @@ export async function POST(request: NextRequest) {
       .insert({
         ...validatedData.data,
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -136,4 +113,4 @@ export async function POST(request: NextRequest) {
     logger.error('Create template error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

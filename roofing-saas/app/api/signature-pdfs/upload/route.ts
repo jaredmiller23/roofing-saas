@@ -1,19 +1,11 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { uploadSignaturePdfFromServer } from '@/lib/storage/signature-pdfs-server'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    // Verify user is authenticated
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
     // Get the file from form data
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -38,7 +30,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Upload using server-side function (uses service role, bypasses RLS)
-    const result = await uploadSignaturePdfFromServer(buffer, user.id, file.name)
+    const result = await uploadSignaturePdfFromServer(buffer, userId, file.name)
 
     if (!result.success) {
       throw InternalError(result.error || 'Failed to upload PDF')
@@ -49,4 +41,4 @@ export async function POST(request: NextRequest) {
     console.error('PDF upload API error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

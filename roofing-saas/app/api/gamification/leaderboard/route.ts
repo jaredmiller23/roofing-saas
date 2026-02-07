@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface LeaderboardEntry {
@@ -64,18 +64,8 @@ async function getUserInfoMap(
   return userMap
 }
 
-export async function GET(request: Request) {
+export const GET = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthenticationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Get query parameters
@@ -118,10 +108,10 @@ export async function GET(request: Request) {
       })
 
       // Get current user's rank efficiently
-      const userEntry = knockData.find((row) => row.user_id === user.id)
+      const userEntry = knockData.find((row) => row.user_id === userId)
       if (userEntry) {
         _userCount = Number(userEntry.knock_count)
-        userRank = knockData.findIndex((row) => row.user_id === user.id) + 1
+        userRank = knockData.findIndex((row) => row.user_id === userId) + 1
       }
     } else if (type === 'sales') {
       // Use RPC for efficient database-side aggregation
@@ -150,10 +140,10 @@ export async function GET(request: Request) {
       })
 
       // Get current user's rank efficiently
-      const userEntry = salesData.find((row) => row.user_id === user.id)
+      const userEntry = salesData.find((row) => row.user_id === userId)
       if (userEntry) {
         _userCount = Number(userEntry.sales_count)
-        userRank = salesData.findIndex((row) => row.user_id === user.id) + 1
+        userRank = salesData.findIndex((row) => row.user_id === userId) + 1
       }
     } else {
       // Default: Get leaderboard from gamification_scores (points)
@@ -179,24 +169,22 @@ export async function GET(request: Request) {
         }
       })
 
-      // Get user's rank if authenticated
-      if (user) {
-        const { data: userStats } = await supabase
+      // Get user's rank
+      const { data: userStats } = await supabase
+        .from('gamification_scores')
+        .select('total_points')
+        .eq('tenant_id', tenantId)
+        .eq('user_id', userId)
+        .single()
+
+      if (userStats) {
+        const { count } = await supabase
           .from('gamification_scores')
-          .select('total_points')
+          .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
-          .eq('user_id', user.id)
-          .single()
+          .gt('total_points', userStats.total_points)
 
-        if (userStats) {
-          const { count } = await supabase
-            .from('gamification_scores')
-            .select('*', { count: 'exact', head: true })
-            .eq('tenant_id', tenantId)
-            .gt('total_points', userStats.total_points)
-
-          userRank = (count || 0) + 1
-        }
+        userRank = (count || 0) + 1
       }
     }
 
@@ -214,7 +202,7 @@ export async function GET(request: Request) {
         role: null,
         points: count,
         level: Math.floor(count / 100) + 1,
-        isCurrentUser: entry.user_id === user.id
+        isCurrentUser: entry.user_id === userId
       }
     }) || []
 
@@ -230,4 +218,4 @@ export async function GET(request: Request) {
     logger.error('Leaderboard API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

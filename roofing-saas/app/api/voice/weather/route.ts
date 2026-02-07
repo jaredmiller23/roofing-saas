@@ -1,8 +1,5 @@
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   InternalError
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -15,20 +12,10 @@ import { logger } from '@/lib/logger'
  * Body: { location?: string, days?: number }
  * Returns: { current: {...}, forecast: [...] }
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const body = await request.json().catch(() => ({}))
     const { location = 'Nashville,TN,US', days = 3 } = body
 
@@ -153,7 +140,7 @@ export async function POST(request: NextRequest) {
     logger.error('Weather API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 function getWindDirection(degrees: number): string {
   const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']

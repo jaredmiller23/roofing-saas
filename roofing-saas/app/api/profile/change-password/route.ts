@@ -9,7 +9,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -20,14 +20,8 @@ import { validatePasswordRequirements } from '@/lib/types/user-profile'
  * POST /api/profile/change-password
  * Change user's password
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const body: ChangePasswordInput = await request.json()
 
     // Validate request body
@@ -82,4 +76,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error changing password:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

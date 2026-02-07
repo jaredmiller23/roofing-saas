@@ -6,12 +6,11 @@
  * Increment usage counters (internal use).
  */
 
-import { NextRequest } from 'next/server';
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session';
+import { isAdmin } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { getUsageStats, checkUserLimit, checkSmsLimit, checkEmailLimit } from '@/lib/billing/feature-gates';
 import { getCurrentUsage, incrementSmsUsage, incrementEmailUsage, updateUserCount } from '@/lib/billing/usage';
 import {
-  AuthenticationError,
   AuthorizationError,
   ValidationError,
   InternalError,
@@ -23,20 +22,8 @@ import { logger } from '@/lib/logger';
  * GET /api/billing/usage
  * Get current usage statistics
  */
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    // Authenticate
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    // Get tenant
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant');
-    }
-
     // Get usage stats
     const stats = await getUsageStats(tenantId);
     const current = await getCurrentUsage(tenantId);
@@ -80,28 +67,16 @@ export async function GET(_request: NextRequest) {
     logger.error('Error fetching usage', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});
 
 /**
  * POST /api/billing/usage
  * Increment usage counters (admin only, for testing)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    // Authenticate
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    // Get tenant
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant');
-    }
-
     // Only admins can manually increment usage
-    const userIsAdmin = await isAdmin(user.id);
+    const userIsAdmin = await isAdmin(userId);
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required');
     }
@@ -142,4 +117,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error updating usage', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

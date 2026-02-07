@@ -1,9 +1,8 @@
-import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import type { AIConversation, CreateConversationRequest } from '@/lib/ai-assistant/types'
 
@@ -11,18 +10,8 @@ import type { AIConversation, CreateConversationRequest } from '@/lib/ai-assista
  * GET /api/ai/conversations
  * List user's AI conversations
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Query parameters
@@ -36,7 +25,7 @@ export async function GET(request: NextRequest) {
       .from('ai_conversations')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(limit)
 
@@ -61,24 +50,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/ai/conversations:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/ai/conversations
  * Create a new AI conversation
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body: CreateConversationRequest = await request.json()
     const { title, metadata = {} } = body
 
@@ -88,7 +67,7 @@ export async function POST(request: NextRequest) {
       .from('ai_conversations')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         title: title || null,
         metadata: metadata as Json,
         is_active: true,
@@ -106,4 +85,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/ai/conversations:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

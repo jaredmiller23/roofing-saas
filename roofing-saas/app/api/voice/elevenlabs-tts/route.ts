@@ -1,6 +1,4 @@
-import { getCurrentUser } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
-import { AuthenticationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 
 /**
@@ -10,15 +8,10 @@ import { logger } from '@/lib/logger'
  * Body: { text: string, voice_id?: string }
  * Returns: Audio stream (mp3)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
     const body = await request.json().catch(() => ({}))
     const { text, voice_id = 'EXAVITQu4vr4xnSDxMaL' } = body // Default: Bella voice
 
@@ -94,4 +87,4 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' }
     })
   }
-}
+})

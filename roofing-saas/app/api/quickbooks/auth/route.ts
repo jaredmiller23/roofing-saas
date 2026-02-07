@@ -6,30 +6,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthorizationUrl } from '@/lib/quickbooks/client'
 import { signState } from '@/lib/quickbooks/state'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Generate HMAC-signed state token for CSRF protection
     const state = signState({
       tenant_id: tenantId,
-      user_id: user.id,
+      user_id: userId,
       timestamp: Date.now(),
     })
 
@@ -40,7 +30,7 @@ export async function GET(request: NextRequest) {
     const authUrl = getAuthorizationUrl(redirectUri, state)
 
     logger.info('Redirecting to QuickBooks OAuth', {
-      userId: user.id,
+      userId,
       tenantId,
     })
 
@@ -50,4 +40,4 @@ export async function GET(request: NextRequest) {
     logger.error('QuickBooks auth error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to initiate QuickBooks authorization'))
   }
-}
+})

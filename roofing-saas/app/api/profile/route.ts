@@ -9,9 +9,9 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { UpdateProfileInput, UserProfile } from '@/lib/types/user-profile'
 
@@ -19,14 +19,8 @@ import type { UpdateProfileInput, UserProfile } from '@/lib/types/user-profile'
  * GET /api/profile
  * Get current user's profile
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Build profile from user data and metadata
     const profile: UserProfile = {
       id: user.id,
@@ -52,20 +46,14 @@ export async function GET() {
     logger.error('Error fetching profile:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/profile
  * Update user profile
  */
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request: NextRequest, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const body: UpdateProfileInput = await request.json()
 
     // Validate input
@@ -130,4 +118,4 @@ export async function PATCH(request: NextRequest) {
     logger.error('Error updating profile:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

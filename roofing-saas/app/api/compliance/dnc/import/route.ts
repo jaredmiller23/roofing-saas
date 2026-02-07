@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapZodError,
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -26,23 +24,13 @@ const importSchema = z.object({
  * Import phone numbers into DNC registry
  * Body: { source: 'federal' | 'state_tn' | 'internal', numbers: string[], reason?: string }
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     logger.apiRequest('POST', '/api/compliance/dnc/import', {
       tenantId,
-      userId: user.id,
+      userId,
     })
 
     const body = await request.json()
@@ -158,7 +146,7 @@ export async function POST(request: NextRequest) {
       records_total: results.total,
       records_imported: results.new,
       records_failed: results.invalid + results.errors.length,
-      imported_by: user.id,
+      imported_by: userId,
     })
 
     if (importLogError) {
@@ -183,4 +171,4 @@ export async function POST(request: NextRequest) {
     logger.error('DNC import error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

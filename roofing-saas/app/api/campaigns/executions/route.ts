@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -14,19 +13,9 @@ import { logger } from '@/lib/logger'
  * - status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped' (optional)
  * - campaign_id: string (optional)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = new URL(request.url).searchParams
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
     const status = searchParams.get('status')
     const campaignId = searchParams.get('campaign_id')
@@ -149,4 +138,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/campaigns/executions', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

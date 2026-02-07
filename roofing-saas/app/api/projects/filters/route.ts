@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -9,18 +9,8 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  * GET /api/projects/filters - Get available filter options
  */
 
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Fetch all projects to extract unique filter values
@@ -69,4 +59,4 @@ export async function GET() {
     logger.error('Filters API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

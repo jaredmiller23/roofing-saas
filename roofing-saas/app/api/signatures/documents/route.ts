@@ -1,9 +1,4 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
-import {
-  AuthenticationError,
-  AuthorizationError
-} from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -11,26 +6,16 @@ import { logger } from '@/lib/logger'
  * GET /api/signatures/documents
  * List signature documents with filtering - redirects to main endpoint
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     logger.apiRequest('GET', '/api/signatures/documents', { tenantId })
 
     // Redirect to the main signature-documents endpoint
     const searchParams = request.nextUrl.searchParams
     const mainEndpoint = `/api/signature-documents?${searchParams.toString()}`
-    
+
     const response = await fetch(new URL(mainEndpoint, request.url))
     const data = await response.json()
 
@@ -47,4 +32,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error fetching signature documents', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

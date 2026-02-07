@@ -1,30 +1,16 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * DELETE /api/claims/documents/[id]
  * Delete a claim document (soft delete in metadata, optionally remove from storage)
  */
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (_request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const { id: documentId } = await context.params
+    const { id: documentId } = await params
     const supabase = await createClient()
 
     // Get document to verify ownership and get file_url
@@ -69,7 +55,7 @@ export async function DELETE(
     logger.info('Document deleted successfully', {
       documentId,
       claimId: document.entity_id,
-      userId: user.id,
+      userId,
     })
 
     return successResponse(null)
@@ -77,4 +63,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/claims/documents/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

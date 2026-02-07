@@ -1,30 +1,21 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { triggerWorkflow } from '@/lib/automation/engine'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/jobs/[id]
  * Get a single job by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -50,28 +41,19 @@ export async function GET(
     logger.error('Error in GET /api/jobs/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/jobs/[id]
  * Update a job
- * Workflow: When job status → "completed", project moves to "complete" stage
+ * Workflow: When job status -> "completed", project moves to "complete" stage
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { userId, tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const body = await request.json()
     const supabase = await createClient()
@@ -139,7 +121,7 @@ export async function PATCH(
         // Don't fail the job update, just log the error
       } else {
         projectUpdated = true
-        logger.debug(`[Workflow] Job ${id} completed → Project ${existingJob.project_id} moved to "complete" stage`)
+        logger.debug(`[Workflow] Job ${id} completed -> Project ${existingJob.project_id} moved to "complete" stage`)
       }
 
       // Trigger job_completed workflow for automations (surveys, follow-ups, etc.)
@@ -148,7 +130,7 @@ export async function PATCH(
         job_number: data.job_number,
         project_id: existingJob.project_id,
         completion_date: data.completion_date,
-        completed_by: user.id,
+        completed_by: userId,
       }).catch((error) => {
         logger.error('[API] Workflow trigger (job_completed) failed:', { error })
       })
@@ -164,27 +146,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/jobs/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/jobs/[id]
  * Soft delete a job
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request: NextRequest,
+  { tenantId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -214,4 +187,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/jobs/[id]:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

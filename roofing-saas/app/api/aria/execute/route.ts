@@ -8,13 +8,10 @@
  * - Any client that needs to execute ARIA functions
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -37,25 +34,15 @@ interface ExecuteRequest {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Apply rate limiting by user ID
     const rateLimitResult = await applyRateLimit(
       request,
       ariaRateLimit,
-      getClientIdentifier(request, user.id)
+      getClientIdentifier(request, userId)
     )
 
     if (rateLimitResult instanceof Response) {
@@ -72,7 +59,7 @@ export async function POST(request: NextRequest) {
     logger.info('ARIA function execution request', {
       function: function_name,
       tenantId,
-      userId: user.id,
+      userId,
       channel: context?.channel || 'api',
     })
 
@@ -81,7 +68,7 @@ export async function POST(request: NextRequest) {
     // Build ARIA context with enrichment
     const ariaContext: ARIAContext = await buildARIAContext({
       tenantId,
-      userId: user.id,
+      userId,
       supabase,
       channel: context?.channel || 'chat',
       language: context?.language,
@@ -127,24 +114,19 @@ export async function POST(request: NextRequest) {
     logger.error('ARIA function execution error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * GET /api/aria/execute
  * Returns available ARIA functions (for client discovery)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { userId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
     // Apply rate limiting by user ID
     const rateLimitResult = await applyRateLimit(
       request,
       ariaRateLimit,
-      getClientIdentifier(request, user.id)
+      getClientIdentifier(request, userId)
     )
 
     if (rateLimitResult instanceof Response) {
@@ -175,4 +157,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error getting ARIA functions', { error })
     return errorResponse(error as Error)
   }
-}
+})

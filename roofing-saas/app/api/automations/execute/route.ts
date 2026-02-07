@@ -1,22 +1,11 @@
-import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { executeWorkflowById } from '@/lib/automation/engine'
-import { AuthenticationError, ValidationError, NotFoundError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthenticationError('User not associated with a tenant')
-    }
-
     const body = await request.json()
     const { workflow_id, trigger_data } = body
 
@@ -27,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Merge user context into trigger data
     const enrichedTriggerData = {
       ...trigger_data,
-      user: { id: user.id, ...trigger_data.user },
+      user: { id: userId, ...trigger_data.user },
     }
 
     // Execute workflow using server-side persistent scheduler
@@ -45,7 +34,7 @@ export async function POST(request: NextRequest) {
     logger.info('Workflow execution started via API', {
       executionId,
       workflowId: workflow_id,
-      userId: user.id,
+      userId,
     })
 
     return successResponse({
@@ -59,21 +48,11 @@ export async function POST(request: NextRequest) {
     })
     return errorResponse(error as Error)
   }
-}
+})
 
 // Endpoint for manually triggering workflows
-export async function PUT(request: NextRequest) {
+export const PUT = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthenticationError('User not associated with a tenant')
-    }
-
     const body = await request.json()
     const { workflow_id, manual_data } = body
 
@@ -84,7 +63,7 @@ export async function PUT(request: NextRequest) {
     // Merge user context into manual data
     const enrichedData = {
       ...(manual_data || {}),
-      user: { id: user.id },
+      user: { id: userId },
       triggered_manually: true,
       triggered_at: new Date().toISOString(),
     }
@@ -103,7 +82,7 @@ export async function PUT(request: NextRequest) {
     logger.info('Manual workflow execution started', {
       executionId,
       workflowId: workflow_id,
-      userId: user.id,
+      userId,
     })
 
     return successResponse({
@@ -116,4 +95,4 @@ export async function PUT(request: NextRequest) {
     })
     return errorResponse(error as Error)
   }
-}
+})

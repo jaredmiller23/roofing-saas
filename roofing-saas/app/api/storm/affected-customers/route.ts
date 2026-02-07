@@ -6,28 +6,17 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { findAffectedCustomers } from '@/lib/storm/storm-intelligence'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { Contact } from '@/lib/types/contact'
 import type { StormEvent } from '@/lib/storm/storm-types'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -67,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Filter by priority if specified
     if (priority && priority.length > 0) {
-      affectedCustomers = affectedCustomers.filter(c => 
+      affectedCustomers = affectedCustomers.filter(c =>
         priority.includes(c.priority)
       )
     }
@@ -85,4 +74,4 @@ export async function POST(request: NextRequest) {
     console.error('Affected customers error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

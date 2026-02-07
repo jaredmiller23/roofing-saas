@@ -5,20 +5,14 @@
  * Generate a professional PDF weather causation report for insurance claims
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { PDFDocument, rgb, StandardFonts } from '@pdfme/pdf-lib'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 import { generateClaimExportPackage } from '@/lib/claims/sync-service'
-
-interface RouteParams {
-  params: Promise<{
-    id: string
-  }>
-}
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   hail: 'Hail Storm',
@@ -28,16 +22,8 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   other: 'Severe Weather',
 }
 
-export async function GET(
-  _request: NextRequest,
-  { params }: RouteParams
-) {
+export const GET = withAuthParams(async (_request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id: projectId } = await params
     const supabase = await createClient()
 
@@ -466,4 +452,4 @@ export async function GET(
     logger.error('Error generating weather report PDF:', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to generate weather report'))
   }
-}
+})

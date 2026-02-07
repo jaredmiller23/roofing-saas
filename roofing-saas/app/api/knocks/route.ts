@@ -1,22 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: Request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const body = await request.json()
     const {
@@ -47,7 +37,7 @@ export async function POST(request: Request) {
       .from('knocks')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         latitude,
         longitude,
         address,
@@ -78,7 +68,7 @@ export async function POST(request: Request) {
       .from('activities')
       .insert({
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
         type: 'door_knock',
         subject: `Door knock at ${address || `${latitude}, ${longitude}`}`,
         content: disposition ? `Disposition: ${disposition}` : null,
@@ -99,25 +89,15 @@ export async function POST(request: Request) {
     logger.error('Knock API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function GET(request: Request) {
+export const GET = withAuth(async (request: Request, { tenantId }) => {
   try {
     const supabase = await createClient()
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
-    const userId = searchParams.get('user_id')
+    const filterUserId = searchParams.get('user_id')
 
     let query = supabase
       .from('knocks')
@@ -127,8 +107,8 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .limit(limit)
 
-    if (userId) {
-      query = query.eq('user_id', userId)
+    if (filterUserId) {
+      query = query.eq('user_id', filterUserId)
     }
 
     const { data: knocks, error } = await query
@@ -146,4 +126,4 @@ export async function GET(request: Request) {
     logger.error('Knock API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

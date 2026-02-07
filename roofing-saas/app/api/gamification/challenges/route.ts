@@ -4,24 +4,14 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { challengeConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
-export async function GET() {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -40,20 +30,10 @@ export async function GET() {
     logger.error('Challenges GET error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const validationResult = challengeConfigSchema.safeParse(body)
 
@@ -79,7 +59,7 @@ export async function POST(request: Request) {
         reward_points: validated.reward_points,
         reward_description: validated.reward_description || null,
         is_active: validated.is_active,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -96,4 +76,4 @@ export async function POST(request: Request) {
     logger.error('Challenges POST error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

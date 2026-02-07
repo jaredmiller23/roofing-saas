@@ -1,24 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/dashboard/weekly-challenge
  * Returns weekly challenge data based on real door knock activities
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Use rolling 7-day window (same as dashboard door knocks metric)
@@ -34,7 +23,7 @@ export async function GET() {
     // Use RPC for efficient database-side aggregation (single query instead of 2 unbounded queries)
     const { data: stats, error: statsError } = await supabase.rpc('get_weekly_challenge_stats', {
       p_tenant_id: tenantId,
-      p_user_id: user.id,
+      p_user_id: userId,
       p_since: weekStart.toISOString()
     })
 
@@ -75,4 +64,4 @@ export async function GET() {
     console.error('Weekly challenge API error:', error)
     return errorResponse(error as Error)
   }
-}
+})

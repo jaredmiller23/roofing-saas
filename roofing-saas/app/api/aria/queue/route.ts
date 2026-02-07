@@ -5,8 +5,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import { getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
@@ -39,19 +39,9 @@ interface _QueueItem {
  * GET /api/aria/queue
  * List pending approval items
  */
-export async function GET(request: Request) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('Tenant not found')
-    }
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'pending'
@@ -139,25 +129,15 @@ export async function GET(request: Request) {
     logger.error('Approval queue GET error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/aria/queue
  * Approve, modify, or reject an item
  */
-export async function PATCH(request: Request) {
+export const PATCH = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('Tenant not found')
-    }
 
     const body = await request.json()
     const { id, action, finalResponse, rejectionReason } = body
@@ -209,7 +189,7 @@ export async function PATCH(request: Request) {
       .from('sms_approval_queue')
       .update({
         status: newStatus,
-        reviewed_by: user.id,
+        reviewed_by: userId,
         reviewed_at: new Date().toISOString(),
         final_response: responseToSend,
         metadata: {
@@ -263,7 +243,7 @@ export async function PATCH(request: Request) {
           ? `Draft rejected: ${rejectionReason || 'No reason provided'}`
           : responseToSend,
         direction: action === 'reject' ? undefined : 'outbound',
-        created_by: user.id,
+        created_by: userId,
         metadata: {
           aria_generated: true,
           original_inbound: item.inbound_message,
@@ -282,4 +262,4 @@ export async function PATCH(request: Request) {
     logger.error('Approval queue PATCH error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

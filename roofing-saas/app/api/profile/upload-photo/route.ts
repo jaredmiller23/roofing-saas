@@ -9,23 +9,17 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/profile/upload-photo
  * Upload profile photo to Supabase Storage and update user metadata
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, userId }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const formData = await request.formData()
     const file = formData.get('file') as File
 
@@ -49,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    const fileName = `${userId}-${Date.now()}.${fileExt}`
     const filePath = `avatars/${fileName}`
 
     // Delete old avatar if exists
@@ -107,20 +101,14 @@ export async function POST(request: NextRequest) {
     logger.error('Error uploading profile photo:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/profile/upload-photo
  * Delete user's profile photo
  */
-export async function DELETE() {
+export const DELETE = withAuth(async (_request, { user }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const avatarUrl = user.user_metadata?.avatar_url
 
     if (!avatarUrl) {
@@ -163,4 +151,4 @@ export async function DELETE() {
     logger.error('Error deleting profile photo:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

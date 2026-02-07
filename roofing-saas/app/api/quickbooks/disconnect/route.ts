@@ -3,26 +3,15 @@
  * Removes QuickBooks integration for tenant
  */
 
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(_request: NextRequest) {
+export const POST = withAuth(async (_request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     await requireFeature(tenantId, 'quickbooksIntegration')
 
     const supabase = await createClient()
@@ -40,7 +29,7 @@ export async function POST(_request: NextRequest) {
 
     logger.info('QuickBooks disconnected successfully', {
       tenantId,
-      userId: user.id,
+      userId,
     })
 
     return successResponse(null)
@@ -48,4 +37,4 @@ export async function POST(_request: NextRequest) {
     logger.error('QuickBooks disconnect error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to disconnect QuickBooks'))
   }
-}
+})

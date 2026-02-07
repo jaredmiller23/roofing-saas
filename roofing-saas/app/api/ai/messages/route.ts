@@ -1,9 +1,8 @@
-import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { AIMessage, SendMessageRequest } from '@/lib/ai-assistant/types'
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
@@ -17,18 +16,8 @@ import { getOpenAIClient, createChatCompletion, getOpenAIModel } from '@/lib/ai/
  * POST /api/ai/messages
  * Send a message and get AI response using OpenAI Chat Completions API
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body: SendMessageRequest = await request.json()
     const { conversation_id, content, role, metadata = {}, context } = body
 
@@ -48,7 +37,7 @@ export async function POST(request: NextRequest) {
         .select('id')
         .eq('id', conversationId)
         .eq('tenant_id', tenantId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
       if (!conversation) {
@@ -62,7 +51,7 @@ export async function POST(request: NextRequest) {
         .from('ai_conversations')
         .insert({
           tenant_id: tenantId,
-          user_id: user.id,
+          user_id: userId,
           title,
           metadata: { last_context: context } as Json,
         })
@@ -108,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Build ARIA context for enhanced capabilities
     const ariaContext: ARIAContext = await buildARIAContext({
       tenantId,
-      userId: user.id,
+      userId,
       supabase,
       channel: 'chat',
       page: context?.page,
@@ -230,7 +219,7 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/ai/messages:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // NOTE: System prompt, function tools, and function execution are now provided by ARIA
 // See lib/aria/ for the unified orchestrator implementation

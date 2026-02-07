@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface SearchResult {
@@ -19,18 +19,8 @@ interface SearchResult {
  * GET /api/search
  * Global search across all entities
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
@@ -209,4 +199,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/search:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

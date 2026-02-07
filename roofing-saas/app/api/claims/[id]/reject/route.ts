@@ -1,31 +1,17 @@
-import { NextRequest } from 'next/server'
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * POST /api/claims/[id]/reject
  * Reject a claim with a required reason
  */
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request, { user, userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
-    const { id: claimId } = await context.params
+    const { id: claimId } = await params
     const body = await request.json()
     const { reason } = body
 
@@ -78,7 +64,7 @@ export async function POST(
     const activityData = {
       tenant_id: tenantId,
       type: 'claim_rejected',
-      created_by: user.id,
+      created_by: userId,
       content: `Claim rejected: ${reason.trim()}`,
       outcome_details: {
         previous_status: claim.status,
@@ -100,7 +86,7 @@ export async function POST(
 
     logger.info('Claim rejected successfully', {
       claimId,
-      userId: user.id,
+      userId,
       tenantId,
       reason: reason.trim(),
     })
@@ -113,4 +99,4 @@ export async function POST(
     logger.error('Error in POST /api/claims/[id]/reject:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

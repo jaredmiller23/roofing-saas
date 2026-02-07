@@ -8,13 +8,13 @@
  * - Get enrichment job status
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { requireFeature } from '@/lib/billing/feature-gates';
 import { createEnrichmentQueue } from '@/lib/enrichment/enrichment-queue';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   BatchEnrichmentRequest,
@@ -27,24 +27,9 @@ import type {
 // POST - Start Enrichment Job
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      throw AuthenticationError();
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant');
-    }
 
     await requireFeature(tenantId, 'stormData');
 
@@ -138,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     const result = await enrichmentQueue.startEnrichmentJob(
       enrichmentRequest,
-      user.id,
+      userId,
       targetingAreaId
     );
 
@@ -159,25 +144,15 @@ export async function POST(request: NextRequest) {
 
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});
 
 // =====================================================
 // GET - Get Job Status
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, _auth) => {
   try {
     const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      throw AuthenticationError();
-    }
 
     // Get job ID from query params
     const searchParams = request.nextUrl.searchParams;
@@ -232,7 +207,7 @@ export async function GET(request: NextRequest) {
     logger.error('Enrichment status API error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});
 
 // =====================================================
 // OPTIONS - CORS

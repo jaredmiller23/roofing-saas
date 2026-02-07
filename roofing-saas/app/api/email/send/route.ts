@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapZodError,
 } from '@/lib/api/errors'
@@ -35,21 +33,11 @@ const sendEmailSchema = z.object({
  * POST /api/email/send
  * Send an email message
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/email/send', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/email/send', { tenantId, userId })
 
     const body = await request.json()
 
@@ -136,7 +124,7 @@ export async function POST(request: NextRequest) {
       bcc,
       tags: [
         { name: 'tenant_id', value: tenantId },
-        { name: 'user_id', value: user.id },
+        { name: 'user_id', value: userId },
       ],
     })
 
@@ -155,7 +143,7 @@ export async function POST(request: NextRequest) {
       const { error: activityError } = await supabase.from('activities').insert({
         tenant_id: tenantId,
         contact_id: contactId || contact?.id || null,
-        user_id: user.id,
+        user_id: userId,
         type: 'email',
         direction: 'outbound',
         content: finalText || (finalHtml ? 'HTML email' : ''),
@@ -192,4 +180,4 @@ export async function POST(request: NextRequest) {
     logger.error('Email send error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

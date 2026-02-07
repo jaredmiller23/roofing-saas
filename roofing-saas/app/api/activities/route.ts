@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
@@ -11,18 +11,8 @@ export const dynamic = 'force-dynamic'
  * GET /api/activities
  * Fetch activities with optional filters
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -74,7 +64,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/activities', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 const ALLOWED_TYPES = [
   'call', 'email', 'sms', 'note', 'meeting', 'door_knock', 'photo', 'task',
@@ -84,18 +74,8 @@ const ALLOWED_TYPES = [
  * POST /api/activities
  * Create a new activity (note, call log, etc.)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const body = await request.json()
     const { type, subject, content, contact_id, project_id } = body
 
@@ -122,8 +102,8 @@ export async function POST(request: NextRequest) {
         contact_id: contact_id || null,
         project_id: project_id || null,
         tenant_id: tenantId,
-        created_by: user.id,
-        performed_by: user.id,
+        created_by: userId,
+        performed_by: userId,
       })
       .select('id, type, subject, content, created_at, created_by, project_id, contact_id')
       .single()
@@ -141,4 +121,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/activities', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

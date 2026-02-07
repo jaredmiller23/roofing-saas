@@ -13,30 +13,16 @@
  * Returns: { event: GoogleCalendarEvent }
  */
 
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { getGoogleCalendarClient, GoogleCalendarEvent } from '@/lib/google/calendar-client'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
+import { ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import { NextRequest } from 'next/server'
 
-export async function GET(request: NextRequest) {
-  let userId: string | null = null
-  let tenantId: string | null = null
-
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-    userId = user.id
-
-    tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     // Get query params
     const searchParams = request.nextUrl.searchParams
     const timeMin = searchParams.get('timeMin')
@@ -50,7 +36,7 @@ export async function GET(request: NextRequest) {
     const defaultTimeMax = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
 
     // Get Google Calendar client
-    const client = await getGoogleCalendarClient(user.id, tenantId)
+    const client = await getGoogleCalendarClient(userId, tenantId)
     if (!client) {
       return successResponse({
         connected: false,
@@ -71,7 +57,7 @@ export async function GET(request: NextRequest) {
     const events: GoogleCalendarEvent[] = result.items || []
 
     logger.info('Fetched Google Calendar events', {
-      userId: user.id,
+      userId,
       tenantId,
       eventCount: events.length,
     })
@@ -87,18 +73,16 @@ export async function GET(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events'
     if (errorMessage.includes('401') || errorMessage.includes('invalid_grant')) {
       // Clean up the stale token so user can reconnect cleanly
-      if (userId && tenantId) {
-        try {
-          const supabase = await createClient()
-          await supabase
-            .from('google_calendar_tokens')
-            .delete()
-            .eq('user_id', userId)
-            .eq('tenant_id', tenantId)
-          logger.info('Deleted revoked Google Calendar token', { userId, tenantId })
-        } catch (cleanupError) {
-          logger.warn('Failed to clean up revoked token', { cleanupError })
-        }
+      try {
+        const supabase = await createClient()
+        await supabase
+          .from('google_calendar_tokens')
+          .delete()
+          .eq('user_id', userId)
+          .eq('tenant_id', tenantId)
+        logger.info('Deleted revoked Google Calendar token', { userId, tenantId })
+      } catch (cleanupError) {
+        logger.warn('Failed to clean up revoked token', { cleanupError })
       }
 
       return successResponse({
@@ -110,24 +94,14 @@ export async function GET(request: NextRequest) {
 
     return errorResponse(error instanceof Error ? error : new Error('Failed to fetch events'))
   }
-}
+})
 
 /**
  * POST /api/calendar/google/events
  * Create a new event in Google Calendar
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
 
     // Validate required fields
@@ -142,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Google Calendar client
-    const client = await getGoogleCalendarClient(user.id, tenantId)
+    const client = await getGoogleCalendarClient(userId, tenantId)
     if (!client) {
       return errorResponse(new Error('Google Calendar not connected. Please connect your Google Calendar first.'))
     }
@@ -189,7 +163,7 @@ export async function POST(request: NextRequest) {
     const createdEvent = await client.createEvent('primary', event)
 
     logger.info('Created Google Calendar event', {
-      userId: user.id,
+      userId,
       tenantId,
       eventId: createdEvent.id,
       summary: createdEvent.summary,
@@ -207,4 +181,4 @@ export async function POST(request: NextRequest) {
 
     return errorResponse(error instanceof Error ? error : new Error('Failed to create event'))
   }
-}
+})

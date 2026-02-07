@@ -1,20 +1,12 @@
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 const DEFAULT_TERMS =
   'This estimate is valid for 30 days from the date of issue. All work includes a manufacturer warranty on materials and a workmanship warranty. Payment terms: 50% deposit upon acceptance, balance due upon completion. Any changes to the scope of work may result in additional charges. Permits and inspections are included where required by local code.'
 
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) throw AuthenticationError()
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) throw AuthorizationError('No tenant found')
-
     const supabase = await createClient()
 
     const { data: settings } = await supabase
@@ -30,16 +22,10 @@ export async function GET() {
   } catch (error) {
     return errorResponse(error as Error)
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) throw AuthenticationError()
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) throw AuthorizationError('No tenant found')
-
     const body = await request.json()
     const { terms } = body
 
@@ -77,4 +63,4 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     return errorResponse(error as Error)
   }
-}
+})

@@ -1,9 +1,5 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
-import {
-  AuthenticationError,
-  AuthorizationError,
-} from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { getComplianceStats, getDNCStats } from '@/lib/compliance'
@@ -12,21 +8,11 @@ import { getComplianceStats, getDNCStats } from '@/lib/compliance'
  * GET /api/compliance/stats?days=30
  * Get compliance statistics for tenant
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/compliance/stats', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/compliance/stats', { tenantId, userId })
 
     // Get optional days parameter
     const { searchParams } = new URL(request.url)
@@ -105,4 +91,4 @@ export async function GET(request: NextRequest) {
     logger.error('Compliance stats error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

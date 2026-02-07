@@ -1,9 +1,6 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
-import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   InternalError
 } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
@@ -30,20 +27,10 @@ interface KnowledgeSearchResult {
  * Body: { query: string, threshold?: number, limit?: number }
  * Returns: { results: [...], summary: string }
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     await requireFeature(tenantId, 'aiKnowledgeBase')
 
     const body = await request.json().catch(() => ({}))
@@ -122,7 +109,7 @@ export async function POST(request: NextRequest) {
     // Log search for analytics
     await supabase.from('knowledge_search_queries').insert({
       tenant_id: tenantId,
-      user_id: user.id,
+      user_id: userId,
       query_text: query,
       query_embedding: JSON.stringify(embeddingResult.embedding),
       results_count: formattedResults.length,
@@ -138,4 +125,4 @@ export async function POST(request: NextRequest) {
     logger.error('RAG search error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

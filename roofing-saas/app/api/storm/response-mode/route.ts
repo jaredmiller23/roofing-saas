@@ -8,26 +8,15 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import type { StormResponseConfig, ResponseMode } from '@/lib/storm/storm-types'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -35,7 +24,7 @@ export async function GET(_request: NextRequest) {
     const { data: config, error: fetchError } = await supabase
       .from('storm_response_mode')
       .select('*')
-      .eq('tenant_id', user.id)
+      .eq('tenant_id', userId)
       .maybeSingle()
 
     if (fetchError) {
@@ -82,22 +71,11 @@ export async function GET(_request: NextRequest) {
     console.error('Get response mode error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -116,14 +94,14 @@ export async function POST(request: NextRequest) {
     const { data: existingConfig } = await supabase
       .from('storm_response_mode')
       .select('id')
-      .eq('tenant_id', user.id)
+      .eq('tenant_id', userId)
       .maybeSingle()
 
     const configData = {
-      tenant_id: user.id,
+      tenant_id: userId,
       mode: responseMode,
       activated_at: new Date().toISOString(),
-      activated_by: user.id,
+      activated_by: userId,
       storm_event_id: stormEventId || null,
       settings: settings || {
         autoNotifications: false,
@@ -141,7 +119,7 @@ export async function POST(request: NextRequest) {
       result = await supabase
         .from('storm_response_mode')
         .update(configData)
-        .eq('tenant_id', user.id)
+        .eq('tenant_id', userId)
         .select()
         .single()
     } else {
@@ -181,22 +159,11 @@ export async function POST(request: NextRequest) {
     console.error('Activate response mode error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function DELETE(_request: NextRequest) {
+export const DELETE = withAuth(async (_request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -217,7 +184,7 @@ export async function DELETE(_request: NextRequest) {
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('tenant_id', user.id)
+      .eq('tenant_id', userId)
 
     if (updateError) {
       console.error('Error deactivating response mode:', updateError)
@@ -229,4 +196,4 @@ export async function DELETE(_request: NextRequest) {
     console.error('Deactivate response mode error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

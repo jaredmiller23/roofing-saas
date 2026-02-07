@@ -1,10 +1,7 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   NotFoundError,
   InternalError,
@@ -17,26 +14,12 @@ import type {
 
 export const dynamic = 'force-dynamic'
 
-interface RouteParams {
-  params: Promise<{ id: string }>
-}
-
 /**
  * GET /api/claims/[id]/outcomes
  * Get all outcomes for a claim
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const { id: claimId } = await params
     if (!claimId) {
       throw ValidationError('Claim ID is required')
@@ -103,24 +86,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     logger.error('[API] Error in GET /api/claims/[id]/outcomes:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/claims/[id]/outcomes
  * Record a new outcome for a claim
  */
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const { id: claimId } = await params
     if (!claimId) {
       throw ValidationError('Claim ID is required')
@@ -212,7 +185,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       claimId,
       outcome: body.outcome,
       adjusterId,
-      userId: user.id,
+      userId,
     })
 
     return successResponse(newOutcome as ClaimOutcome)
@@ -220,7 +193,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     logger.error('[API] Error in POST /api/claims/[id]/outcomes:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * Update adjuster statistics based on claim outcomes

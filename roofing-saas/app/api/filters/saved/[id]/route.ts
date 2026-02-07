@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   SavedFilter,
@@ -16,16 +16,12 @@ import type {
  *
  * Body: UpdateSavedFilterRequest
  */
-export async function PATCH(
+export const PATCH = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { userId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id } = await params
     const supabase = await createClient()
     const body: UpdateSavedFilterRequest = await request.json()
@@ -42,7 +38,7 @@ export async function PATCH(
     }
 
     // Check ownership (RLS policy also enforces this)
-    if (existing.created_by !== user.id) {
+    if (existing.created_by !== userId) {
       throw AuthorizationError('You can only update your own filters')
     }
 
@@ -68,7 +64,7 @@ export async function PATCH(
           .update({ is_default: false })
           .eq('tenant_id', existing.tenant_id)
           .eq('entity_type', existing.entity_type)
-          .eq('created_by', user.id)
+          .eq('created_by', userId)
           .neq('id', id)
       }
       updates.is_default = body.is_default
@@ -103,22 +99,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/filters/saved/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/filters/saved/:id
  * Delete saved filter (owner only, except system filters)
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (
+  _request: NextRequest,
+  { userId },
+  { params }
+) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -134,7 +126,7 @@ export async function DELETE(
     }
 
     // Check ownership
-    if (existing.created_by !== user.id) {
+    if (existing.created_by !== userId) {
       throw AuthorizationError('You can only delete your own filters')
     }
 
@@ -155,4 +147,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/filters/saved/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

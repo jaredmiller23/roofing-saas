@@ -1,24 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(request: Request) {
+export const GET = withAuth(async (_request, { userId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
 
     // Get user points and level
     const { data: points, error } = await supabase
       .from('gamification_scores')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = not found
@@ -29,7 +23,7 @@ export async function GET(request: Request) {
     // Return points or default values for new users
     return successResponse(
       points || {
-        user_id: user.id,
+        user_id: userId,
         total_points: 0,
         current_level: 1,
         daily_points: 0,
@@ -48,15 +42,10 @@ export async function GET(request: Request) {
     logger.error('Points API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { userId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const { points, reason, activity_id } = body
@@ -68,7 +57,7 @@ export async function POST(request: Request) {
     // Award points using database function
     const { error } = await supabase
       .rpc('award_points', {
-        p_user_id: user.id,
+        p_user_id: userId,
         p_points: points,
         p_reason: reason,
         p_activity_id: activity_id || null
@@ -81,7 +70,7 @@ export async function POST(request: Request) {
 
     // Check for new achievements
     const { data: achievements } = await supabase
-      .rpc('check_achievements', { p_user_id: user.id })
+      .rpc('check_achievements', { p_user_id: userId })
 
     return successResponse({
       points_awarded: points,
@@ -91,4 +80,4 @@ export async function POST(request: Request) {
     logger.error('Award points API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

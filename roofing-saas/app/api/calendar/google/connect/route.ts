@@ -6,23 +6,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac } from 'crypto'
 import { getAuthorizationUrl } from '@/lib/google/calendar-client'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError, ApiError, ErrorCode } from '@/lib/api/errors'
+import { ApiError, ErrorCode, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     // Check if Google OAuth is configured
     const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
     if (!clientId) {
@@ -54,7 +44,7 @@ export async function GET(request: NextRequest) {
     // State data is base64-encoded JSON; HMAC prevents tampering with tenant_id/return_to
     const statePayload = JSON.stringify({
       tenant_id: tenantId,
-      user_id: user.id,
+      user_id: userId,
       timestamp: Date.now(),
       return_to: returnTo,
     })
@@ -71,7 +61,7 @@ export async function GET(request: NextRequest) {
     const authUrl = getAuthorizationUrl(redirectUri, state)
 
     logger.info('Redirecting to Google OAuth', {
-      userId: user.id,
+      userId,
       tenantId,
     })
 
@@ -81,9 +71,9 @@ export async function GET(request: NextRequest) {
     logger.error('Google Calendar auth error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to initiate Google authorization'))
   }
-}
+})
 
 // Also support POST for compatibility with existing UI
-export async function POST(request: NextRequest) {
-  return GET(request)
-}
+export const POST = withAuth(async (request: NextRequest, _auth) => {
+  return (GET as (req: NextRequest) => Promise<Response>)(request)
+})

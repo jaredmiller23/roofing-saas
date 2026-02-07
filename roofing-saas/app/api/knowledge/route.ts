@@ -3,27 +3,17 @@
  * Manage roofing knowledge entries
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { generateKnowledgeEmbedding } from '@/lib/embeddings'
 import { incrementAiUsage, calculateEmbeddingCostCents } from '@/lib/billing/ai-usage'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request) => {
   try {
     const supabase = await createClient()
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
 
     const searchParams = request.nextUrl.searchParams
     const category = searchParams.get('category')
@@ -60,26 +50,17 @@ export async function GET(request: NextRequest) {
     logger.error('Knowledge API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
 
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .in('user_roles.name', ['owner', 'admin'])
       .single()
@@ -135,7 +116,7 @@ export async function POST(request: NextRequest) {
         is_global,
         tenant_id: is_global ? null : tenantId,
         embedding,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -150,26 +131,17 @@ export async function POST(request: NextRequest) {
     logger.error('Knowledge creation API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
 
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .in('user_roles.name', ['owner', 'admin'])
       .single()
@@ -229,26 +201,17 @@ export async function PATCH(request: NextRequest) {
     logger.error('Knowledge update API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
 
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
     const { data: roleAssignment } = await supabase
       .from('user_role_assignments')
       .select('role_id, user_roles!inner(name)')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .in('user_roles.name', ['owner', 'admin'])
       .single()
@@ -280,4 +243,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('Knowledge deletion API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,10 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
-import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
   InternalError
 } from '@/lib/api/errors'
@@ -21,34 +18,24 @@ import { ariaRateLimit, applyRateLimit, getClientIdentifier } from '@/lib/rate-l
  * 2. Creates a voice_sessions record in database
  * 3. Returns session_id and ephemeral_token for WebRTC connection
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     await requireFeature(tenantId, 'aiVoiceAssistant')
 
     // Apply rate limiting by user ID
     const rateLimitResult = await applyRateLimit(
       request,
       ariaRateLimit,
-      getClientIdentifier(request, user.id)
+      getClientIdentifier(request, userId)
     )
 
     if (rateLimitResult instanceof Response) {
       return rateLimitResult // Rate limit exceeded
     }
 
-    logger.apiRequest('POST', '/api/voice/session', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/voice/session', { tenantId, userId })
 
     // Parse optional request body (contact context, project context)
     const body = await request.json().catch(() => ({}))
@@ -104,7 +91,7 @@ export async function POST(request: NextRequest) {
       .from('voice_sessions')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         session_id: openai_session_id,
         status: 'active',
         contact_id: contact_id || null,
@@ -164,4 +151,4 @@ export async function POST(request: NextRequest) {
     logger.error('Voice session creation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

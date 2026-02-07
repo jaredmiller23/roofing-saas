@@ -1,11 +1,9 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { generateRevenueForecast } from '@/lib/analytics/forecasting'
 import { createDefaultFilters } from '@/lib/analytics/pipeline-analytics'
 import { AnalyticsFilters } from '@/lib/analytics/analytics-types'
 import { PipelineStage, Project } from '@/lib/types/api'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -17,7 +15,7 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  * - Historical trend analysis
  * - Expected closures by period
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
     const { searchParams } = new URL(request.url)
 
@@ -50,17 +48,6 @@ export async function GET(request: NextRequest) {
 
     // Initialize Supabase client
     const supabase = await createClient()
-
-    // Get current user and tenant
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
 
     // Fetch projects data including historical data for forecasting
     // We need a longer lookback period for historical analysis
@@ -112,4 +99,4 @@ export async function GET(request: NextRequest) {
     console.error('Error generating revenue forecast:', error)
     return errorResponse(error as Error)
   }
-}
+})

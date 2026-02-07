@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import { transcribeAndSummarize } from '@/lib/transcription/whisper'
-import { AuthenticationError, AuthorizationError, NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -15,21 +15,8 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  * - Re-transcribing with updated AI model
  * - Older recordings imported without transcription
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuthParams(async (request: NextRequest, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -57,7 +44,7 @@ export async function POST(
       throw ValidationError('Transcription already exists. Use force=true to re-transcribe.')
     }
 
-    logger.info('Starting manual transcription', { callId: id, userId: user.id })
+    logger.info('Starting manual transcription', { callId: id, userId })
 
     // Remove .mp3 extension if present (Whisper service adds it)
     const recordingUrl = call.recording_url.replace(/\.mp3$/, '')
@@ -104,4 +91,4 @@ export async function POST(
     logger.error('Manual transcription error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Transcription failed'))
   }
-}
+})

@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -31,18 +31,8 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  *   }
  * }
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
 
     const body = await request.json()
@@ -91,7 +81,7 @@ export async function POST(request: NextRequest) {
       .from('knocks')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         latitude,
         longitude,
         address,
@@ -157,4 +147,4 @@ export async function POST(request: NextRequest) {
     logger.error('Pin creation error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

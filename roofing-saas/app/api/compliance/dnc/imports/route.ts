@@ -1,10 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
-import {
-  AuthenticationError,
-  AuthorizationError,
-} from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 
@@ -12,21 +8,11 @@ import { logger } from '@/lib/logger'
  * GET /api/compliance/dnc/imports?limit=5
  * Get recent DNC import history for tenant
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/compliance/dnc/imports', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/compliance/dnc/imports', { tenantId, userId })
 
     // Get optional limit parameter
     const { searchParams } = new URL(request.url)
@@ -98,4 +84,4 @@ export async function GET(request: NextRequest) {
     logger.error('DNC imports fetch error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

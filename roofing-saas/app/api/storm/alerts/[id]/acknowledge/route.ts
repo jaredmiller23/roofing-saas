@@ -4,36 +4,16 @@
  * POST: Acknowledge a storm alert (add current user to acknowledgedBy list)
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
-
-export async function POST(
-  _request: NextRequest,
-  context: RouteContext
-) {
+export const POST = withAuthParams(async (_request, { userId, tenantId }, { params }) => {
   try {
     const supabase = await createClient()
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    // Get tenant for multi-tenant isolation
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    const { id } = await context.params
+    const { id } = await params
 
     // Fetch current alert (scoped to tenant)
     const { data: alert, error: fetchError } = await supabase
@@ -49,8 +29,8 @@ export async function POST(
 
     // Add user to acknowledgedBy array if not already present
     const acknowledgedBy = alert.acknowledged_by || []
-    if (!acknowledgedBy.includes(user.id)) {
-      acknowledgedBy.push(user.id)
+    if (!acknowledgedBy.includes(userId)) {
+      acknowledgedBy.push(userId)
     }
 
     // Update alert (scoped to tenant)
@@ -73,4 +53,4 @@ export async function POST(
     console.error('Acknowledge alert error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

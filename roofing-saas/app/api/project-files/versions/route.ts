@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   NotFoundError,
   mapSupabaseError,
@@ -16,20 +14,10 @@ import { FileVersion, VersionChangeType } from '@/lib/types/file'
  * GET /api/project-files/versions
  * Get version history for a file
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     const searchParams = request.nextUrl.searchParams
     const fileId = searchParams.get('file_id')
 
@@ -37,7 +25,7 @@ export async function GET(request: NextRequest) {
       throw ValidationError('file_id parameter is required')
     }
 
-    logger.apiRequest('GET', '/api/project-files/versions', { tenantId, userId: user.id, fileId })
+    logger.apiRequest('GET', '/api/project-files/versions', { tenantId, userId, fileId })
 
     const supabase = await createClient()
 
@@ -130,27 +118,17 @@ export async function GET(request: NextRequest) {
     logger.error('File versions API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/project-files/versions
  * Create a new version of a file
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/project-files/versions', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/project-files/versions', { tenantId, userId })
 
     const body = await request.json()
     const {
@@ -212,7 +190,7 @@ export async function POST(request: NextRequest) {
       folder_path: originalFile.folder_path,
       description: change_description,
       tenant_id: tenantId,
-      uploaded_by: user.id,
+      uploaded_by: userId,
       status: 'active' as const,
       version: nextVersion,
       parent_file_id: rootFileId,
@@ -254,7 +232,7 @@ export async function POST(request: NextRequest) {
         file_size,
         change_type,
         change_description,
-        created_by: user.id,
+        created_by: userId,
         created_at: newVersion.created_at,
         metadata: {}
       }
@@ -264,27 +242,17 @@ export async function POST(request: NextRequest) {
     logger.error('Create file version error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * PUT /api/project-files/versions/restore
  * Restore a specific version as the current version
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('PUT', '/api/project-files/versions/restore', { tenantId, userId: user.id })
+    logger.apiRequest('PUT', '/api/project-files/versions/restore', { tenantId, userId })
 
     const body = await request.json()
     const { version_id, change_description } = body
@@ -353,7 +321,7 @@ export async function PUT(request: NextRequest) {
       folder_path: rootFile.folder_path,
       description: change_description || `Restored from version ${versionToRestore.version}`,
       tenant_id: tenantId,
-      uploaded_by: user.id,
+      uploaded_by: userId,
       status: 'active' as const,
       version: nextVersion,
       parent_file_id: rootFile.id,
@@ -404,4 +372,4 @@ export async function PUT(request: NextRequest) {
     logger.error('Restore file version error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

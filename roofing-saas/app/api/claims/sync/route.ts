@@ -6,21 +6,15 @@
  * Creates or updates a claim based on project data.
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import { syncProjectToClaims, gatherProjectSyncData } from '@/lib/claims/sync-service'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, _auth) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
 
     // Parse request body
@@ -65,19 +59,14 @@ export async function POST(request: NextRequest) {
     logger.error('Claims sync API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * GET /api/claims/sync?project_id={id}
  * Preview sync data without actually syncing
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, _auth) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const projectId = request.nextUrl.searchParams.get('project_id')
 
@@ -100,4 +89,4 @@ export async function GET(request: NextRequest) {
     logger.error('Claims sync preview API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

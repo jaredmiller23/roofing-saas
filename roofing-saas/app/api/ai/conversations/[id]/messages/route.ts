@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type { AIMessage } from '@/lib/ai-assistant/types'
 
@@ -10,22 +9,9 @@ import type { AIMessage } from '@/lib/ai-assistant/types'
  * GET /api/ai/conversations/[id]/messages
  * Get messages for a specific conversation
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
     const { id } = await params
-
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
 
     const supabase = await createClient()
 
@@ -35,7 +21,7 @@ export async function GET(
       .select('id')
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (!conversation) {
@@ -71,4 +57,4 @@ export async function GET(
     logger.error('Error in GET /api/ai/conversations/[id]/messages:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

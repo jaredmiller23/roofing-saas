@@ -1,9 +1,9 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, NotFoundError, ConflictError, InternalError } from '@/lib/api/errors'
+import { ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   SavedFilter,
@@ -20,13 +20,8 @@ import type {
  * - entity_type: 'contacts' | 'projects' | 'pipeline' | 'activities'
  * - include_shared: boolean (default: true)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const searchParams = request.nextUrl.searchParams
     const entity_type = searchParams.get('entity_type')
     const include_shared = searchParams.get('include_shared') !== 'false'
@@ -53,7 +48,7 @@ export async function GET(request: NextRequest) {
     // Filter based on include_shared param (RLS policy already filters by tenant + (created_by OR is_shared))
     let filters = (data || []) as unknown as SavedFilter[]
     if (!include_shared) {
-      filters = filters.filter((f) => f.created_by === user.id)
+      filters = filters.filter((f) => f.created_by === userId)
     }
 
     const response: GetSavedFiltersResponse = {
@@ -66,7 +61,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/filters/saved:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/filters/saved
@@ -74,13 +69,8 @@ export async function GET(request: NextRequest) {
  *
  * Body: CreateSavedFilterRequest
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const body: CreateSavedFilterRequest = await request.json()
 
@@ -94,39 +84,28 @@ export async function POST(request: NextRequest) {
       throw ValidationError('Missing required fields (entity_type, name, filter_criteria)')
     }
 
-    // Get tenant_id
-    const { data: tenant } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!tenant) {
-      throw NotFoundError('Tenant not found')
-    }
-
     // If setting as default, unset other defaults for this entity type
     if (body.is_default) {
       await supabase
         .from('saved_filters')
         .update({ is_default: false })
-        .eq('tenant_id', tenant.tenant_id)
+        .eq('tenant_id', tenantId)
         .eq('entity_type', body.entity_type)
-        .eq('created_by', user.id)
+        .eq('created_by', userId)
     }
 
     // Insert saved filter
     const { data, error } = await supabase
       .from('saved_filters')
       .insert({
-        tenant_id: tenant.tenant_id,
+        tenant_id: tenantId,
         entity_type: body.entity_type,
         name: body.name,
         description: body.description || null,
         filter_criteria: body.filter_criteria as unknown as Json,
         is_shared: body.is_shared ?? false,
         is_default: body.is_default ?? false,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -149,4 +128,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/filters/saved:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

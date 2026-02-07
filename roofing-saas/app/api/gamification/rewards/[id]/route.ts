@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { NotFoundError, InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, noContentResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { rewardConfigSchema } from '@/lib/gamification/types'
@@ -10,21 +9,8 @@ import { rewardConfigSchema } from '@/lib/gamification/types'
  * GET /api/gamification/rewards/[id]
  * Get a single reward config by ID
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -48,27 +34,14 @@ export async function GET(
     logger.error('Error in GET /api/gamification/rewards/[id]', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/gamification/rewards/[id]
  * Update a reward config
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PATCH = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const body = await request.json()
     const validation = rewardConfigSchema.partial().safeParse(body)
@@ -112,27 +85,14 @@ export async function PATCH(
     logger.error('Error in PATCH /api/gamification/rewards/[id]', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/gamification/rewards/[id]
  * Delete a reward config
  */
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id } = await params
     const supabase = await createClient()
 
@@ -152,4 +112,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/gamification/rewards/[id]', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

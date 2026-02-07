@@ -9,9 +9,9 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   GetCardAnalyticsResponse,
@@ -30,40 +30,25 @@ import type {
 // Query params:
 //   - days: Number of days to analyze (default: 30)
 
-export async function GET(
+export const GET = withAuthParams(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { tenantId },
+  { params }
+) => {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
 
     const searchParams = request.nextUrl.searchParams
     const days = parseInt(searchParams.get('days') || '30')
 
     const supabase = await createClient()
 
-    // Get user's tenant
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     // Fetch card and verify access
     const { data: card, error: cardError } = await supabase
       .from('digital_business_cards')
       .select('*')
       .eq('id', id)
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .single()
 
     if (cardError || !card) {
@@ -268,4 +253,4 @@ export async function GET(
     logger.error('Unexpected error in GET /api/digital-cards/:id/analytics:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

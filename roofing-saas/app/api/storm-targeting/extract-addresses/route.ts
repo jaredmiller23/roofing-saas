@@ -6,14 +6,14 @@
  * Main entry point for bulk address extraction
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { requireFeature } from '@/lib/billing/feature-gates';
 import { googlePlacesClient } from '@/lib/address-extraction/google-places-client';
 import { geocodingClient } from '@/lib/address-extraction/geocoder';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors';
+import { ValidationError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 import type {
   ExtractAddressesRequest,
@@ -57,7 +57,7 @@ function calculateAreaSquareMiles(polygonWKT: string): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const EARTH_RADIUS_MILES = 3958.8;
 
-  // Spherical polygon area via the shoelace formula on a sphere
+  // Spherical polygon area via the shoelface formula on a sphere
   let area = 0;
   for (let i = 0; i < coords.length; i++) {
     const j = (i + 1) % coords.length;
@@ -73,21 +73,10 @@ function calculateAreaSquareMiles(polygonWKT: string): number {
 // API HANDLER
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     // Initialize Supabase client
     const supabase = await createClient();
-
-    // Get authenticated user
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant');
-    }
 
     await requireFeature(tenantId, 'stormData');
 
@@ -154,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('[1/4] Found residential addresses', { count: extractionResult.stats.residentialCount });
 
-    // STEP 2: Geocode addresses (lat/lng → full address)
+    // STEP 2: Geocode addresses (lat/lng -> full address)
     logger.info('[2/4] Geocoding addresses with Google Maps');
     const enrichedAddresses = await geocodingClient.enrichAddressesWithGeocoding(
       extractionResult.addresses
@@ -180,7 +169,7 @@ export async function POST(request: NextRequest) {
         address_count: enrichedAddresses.length,
         estimated_properties: Math.round(areaSquareMiles * 75),
         status: 'extracted',
-        created_by: user.id,
+        created_by: userId,
       })
       .select('id')
       .single();
@@ -246,7 +235,7 @@ export async function POST(request: NextRequest) {
     logger.error('Address extraction error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});
 
 // =====================================================
 // OPTIONS - CORS Support

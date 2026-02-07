@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextRequest } from 'next/server'
-import { getCurrentUser, isAdmin } from '@/lib/auth/session'
+import { isAdmin } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   SubstatusConfig,
@@ -16,20 +16,12 @@ import type {
  *
  * Body: UpdateSubstatusConfigRequest
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PATCH = withAuthParams(async (request, { userId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id } = await params
 
     // Check if user is admin (includes owner role)
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -106,26 +98,18 @@ export async function PATCH(
     logger.error('Error in PATCH /api/substatus/configs/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/substatus/configs/:id
  * Delete substatus configuration (admin only)
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (_request, { userId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { id } = await params
 
     // Check if user is admin (includes owner role)
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
     }
@@ -146,4 +130,4 @@ export async function DELETE(
     logger.error('Error in DELETE /api/substatus/configs/:id:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

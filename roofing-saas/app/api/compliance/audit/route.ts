@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
 } from '@/lib/api/errors'
 import { paginatedResponse, errorResponse } from '@/lib/api/response'
@@ -24,21 +22,11 @@ const querySchema = z.object({
  * GET /api/compliance/audit?page=1&limit=50&result=blocked&checkType=dnc_check
  * Get compliance audit log entries
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/compliance/audit', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/compliance/audit', { tenantId, userId })
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -130,4 +118,4 @@ export async function GET(request: NextRequest) {
     logger.error('Compliance audit error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

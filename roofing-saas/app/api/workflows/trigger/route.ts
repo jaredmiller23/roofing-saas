@@ -1,8 +1,5 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapZodError,
 } from '@/lib/api/errors'
@@ -21,21 +18,11 @@ const triggerWorkflowSchema = z.object({
  * POST /api/workflows/trigger
  * Manually trigger workflows for testing
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/workflows/trigger', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/workflows/trigger', { tenantId, userId })
 
     const body = await request.json()
 
@@ -73,4 +60,4 @@ export async function POST(request: NextRequest) {
     logger.error('Trigger workflow error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

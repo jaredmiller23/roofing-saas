@@ -1,6 +1,4 @@
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import {
@@ -19,21 +17,11 @@ import {
  * - type: 'summary' | 'call_volume' (default: 'summary')
  * - days: number of days for call_volume type (default: 30)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/analytics', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/analytics', { tenantId, userId })
 
     const searchParams = request.nextUrl.searchParams
     const period = (searchParams.get('period') || 'month') as AnalyticsPeriod
@@ -59,4 +47,4 @@ export async function GET(request: NextRequest) {
     logger.error('Analytics API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

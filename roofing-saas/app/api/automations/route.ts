@@ -1,12 +1,11 @@
-import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import type {
   Workflow,
   CreateWorkflowInput,
   WorkflowFilters,
   WorkflowListResponse
 } from '@/lib/automation/workflow-types'
-import { AuthenticationError, ValidationError } from '@/lib/api/errors'
+import { ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
@@ -85,13 +84,8 @@ const mockWorkflows: Workflow[] = [
   }
 ]
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, _auth) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
     const { searchParams } = new URL(request.url)
     const filters: WorkflowFilters = {
       status: searchParams.get('status')?.split(',') as WorkflowFilters['status'],
@@ -158,15 +152,10 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching workflows:', error)
     return errorResponse(error as Error)
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { user }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
     const body: CreateWorkflowInput = await request.json()
 
     // Validate required fields
@@ -177,7 +166,7 @@ export async function POST(request: NextRequest) {
     // Create new workflow
     const newWorkflow: Workflow = {
       id: `workflow_${Date.now()}`,
-      tenant_id: (user as { tenant_id?: string }).tenant_id || 'default',
+      tenant_id: (user as unknown as { tenant_id?: string }).tenant_id || 'default',
       name: body.name,
       description: body.description,
       status: body.status || 'draft',
@@ -206,4 +195,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating workflow:', error)
     return errorResponse(error as Error)
   }
-}
+})

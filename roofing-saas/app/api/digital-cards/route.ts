@@ -9,9 +9,9 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 import type {
   DigitalBusinessCard,
@@ -28,41 +28,25 @@ import type {
 //   - user_id: Filter by specific user
 //   - is_active: Filter by active status
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const searchParams = request.nextUrl.searchParams
-    const userId = searchParams.get('user_id')
+    const filterUserId = searchParams.get('user_id')
     const isActive = searchParams.get('is_active')
 
     const supabase = await createClient()
-
-    // Get user's tenant
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
 
     // Build query
     let query = supabase
       .from('digital_business_cards')
       .select('*')
-      .eq('tenant_id', tenantUser.tenant_id)
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
 
     // Apply filters
-    if (userId) {
+    if (filterUserId) {
       // Handle special "current" value to mean the authenticated user
-      const targetUserId = userId === 'current' ? user.id : userId
+      const targetUserId = filterUserId === 'current' ? userId : filterUserId
       query = query.eq('user_id', targetUserId)
     }
 
@@ -87,7 +71,7 @@ export async function GET(request: NextRequest) {
     logger.error('Unexpected error in GET /api/digital-cards:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 // =============================================
 // POST /api/digital-cards
@@ -95,25 +79,9 @@ export async function GET(request: NextRequest) {
 // Create a new digital business card
 // Admin-only or users can create their own card
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { user, userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
-
-    // Get user's tenant and role
-    const { data: tenantUser, error: tenantError } = await supabase
-      .from('tenant_users')
-      .select('role, tenant_id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (tenantError || !tenantUser) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
 
     const body: CreateDigitalCardRequest = await request.json()
 
@@ -126,8 +94,8 @@ export async function POST(request: NextRequest) {
     const { data: existingCard } = await supabase
       .from('digital_business_cards')
       .select('id')
-      .eq('tenant_id', tenantUser.tenant_id)
-      .eq('user_id', user.id)
+      .eq('tenant_id', tenantId)
+      .eq('user_id', userId)
       .single()
 
     if (existingCard) {
@@ -138,8 +106,8 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('digital_business_cards')
       .insert({
-        tenant_id: tenantUser.tenant_id,
-        user_id: user.id,
+        tenant_id: tenantId,
+        user_id: userId,
         full_name: body.full_name,
         job_title: body.job_title || null,
         phone: body.phone || null,
@@ -161,7 +129,7 @@ export async function POST(request: NextRequest) {
         services: body.services || null,
 
         brand_color: body.brand_color || '#3b82f6',
-        slug: body.slug || `card-${user.id.slice(0, 8)}-${Date.now()}`, // Generate if not provided
+        slug: body.slug || `card-${userId.slice(0, 8)}-${Date.now()}`, // Generate if not provided
         enable_contact_form: body.enable_contact_form ?? true,
         enable_appointment_booking: body.enable_appointment_booking ?? false,
         is_active: true,
@@ -188,4 +156,4 @@ export async function POST(request: NextRequest) {
     logger.error('Unexpected error in POST /api/digital-cards:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

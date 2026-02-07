@@ -6,35 +6,17 @@
  * Returns all relevant data including photos, documents, and storm causation.
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import { generateClaimExportPackage } from '@/lib/claims/sync-service'
-import { AuthenticationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-interface RouteParams {
-  params: Promise<{
-    id: string
-  }>
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export const GET = withAuthParams(async (request, _auth, { params }) => {
   try {
-    const supabase = await createClient()
     const { id: projectId } = await params
-
-    // Verify authentication
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
+    const supabase = await createClient()
 
     // Validate projectId
     if (!projectId) {
@@ -84,4 +66,4 @@ export async function GET(
     logger.error('Claims export API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

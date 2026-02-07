@@ -1,28 +1,11 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthParams(async (_request, { userId, tenantId }, { params }) => {
   try {
-    const resolvedParams = await params
-    const queryId = resolvedParams.id
-
-    // Server-side authentication
-    const user = await getCurrentUser()
-    if (!user) {
-      return errorResponse(AuthorizationError('Authentication required'))
-    }
-
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      return errorResponse(AuthorizationError('No tenant access'))
-    }
+    const { id: queryId } = await params
 
     const supabase = await createClient()
 
@@ -45,4 +28,4 @@ export async function DELETE(
     console.error('Query history deletion failed:', error)
     return errorResponse(InternalError('An unexpected error occurred'))
   }
-}
+})

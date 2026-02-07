@@ -3,12 +3,11 @@
  * Handles server-side synchronization for offline data
  */
 
-import { NextRequest } from 'next/server';
+import { withAuth } from '@/lib/auth/with-auth';
 import { createClient } from '@/lib/supabase/server';
-import { getUserTenantId } from '@/lib/auth/session';
 import { logger } from '@/lib/logger';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors';
+import { ValidationError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
 export interface SyncRequest {
@@ -54,20 +53,9 @@ export interface ConflictData {
 /**
  * POST /api/sync - Synchronize offline operations
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient();
-    
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw AuthenticationError('Unauthorized');
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('No tenant access');
-    }
 
     // Parse request body
     const body: SyncRequest = await request.json();
@@ -79,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info('Sync request received', {
-      userId: user.id,
+      userId,
       tenantId,
       operationCount: operations.length,
       clientTimestamp: client_timestamp
@@ -98,9 +86,9 @@ export async function POST(request: NextRequest) {
           operation,
           conflict_resolution
         );
-        
+
         results.push(result);
-        
+
         // If there's a conflict, add to conflicts array
         if (result.conflict && operation.operation === 'UPDATE') {
           conflicts.push({
@@ -112,13 +100,13 @@ export async function POST(request: NextRequest) {
             server_timestamp: serverTimestamp,
           });
         }
-        
+
       } catch (error) {
         logger.error('Operation failed', {
           operationId: operation.id,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
-        
+
         results.push({
           operation_id: operation.id,
           success: false,
@@ -131,7 +119,7 @@ export async function POST(request: NextRequest) {
     const failureCount = results.filter(r => !r.success).length;
 
     logger.info('Sync completed', {
-      userId: user.id,
+      userId,
       success: successCount,
       failed: failureCount,
       conflicts: conflicts.length
@@ -147,7 +135,7 @@ export async function POST(request: NextRequest) {
     logger.error('Sync request failed', { error });
     return errorResponse(error as Error);
   }
-}
+});
 
 /**
  * Process a single sync operation
@@ -192,7 +180,7 @@ async function processOperation(
 
     case 'DELETE':
       return await handleDelete(supabase, table, data.id as string, tenantId, id);
-      
+
     default:
       throw new Error(`Unknown operation: ${op}`);
   }
@@ -209,7 +197,7 @@ async function handleCreate(
 ): Promise<SyncResult> {
   // Remove client-generated ID if present and generate server ID
   const { id: _clientId, ...dataWithoutId } = data;
-  
+
   const { data: result, error } = await supabase
     .from(table)
     .insert({
@@ -243,7 +231,7 @@ async function handleUpdate(
   operationId: string
 ): Promise<SyncResult> {
   const recordId = data.id;
-  
+
   if (!recordId) {
     throw new Error('Record ID is required for update operations');
   }
@@ -273,7 +261,7 @@ async function handleUpdate(
       case 'local_wins':
         // Continue with update using local data
         break;
-        
+
       case 'server_wins':
         // Return server data without updating
         return {
@@ -282,7 +270,7 @@ async function handleUpdate(
           server_data: serverRecord,
           conflict: true,
         };
-        
+
       case 'merge':
         // Perform field-level merge
         data = performMerge(data, serverRecord);
@@ -350,13 +338,13 @@ async function handleDelete(
  */
 function performMerge(localData: Record<string, unknown>, serverData: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...serverData };
-  
+
   // Field priority rules for merging
   const highPriorityFields = [
     'first_name', 'last_name', 'phone', 'email', 'address',
     'notes', 'description', 'status'
   ];
-  
+
   const systemFields = [
     'id', 'created_at', 'tenant_id'
   ];
@@ -367,7 +355,7 @@ function performMerge(localData: Record<string, unknown>, serverData: Record<str
       // Keep server values for system fields
       return;
     }
-    
+
     if (highPriorityFields.includes(field)) {
       // Prefer local values for high-priority fields
       merged[field] = localData[field];
@@ -375,7 +363,7 @@ function performMerge(localData: Record<string, unknown>, serverData: Record<str
       // For other fields, use local if it's more recent or not empty
       const localValue = localData[field];
       const serverValue = serverData[field];
-      
+
       if (localValue && (!serverValue || localValue !== serverValue)) {
         merged[field] = localValue;
       }
@@ -388,15 +376,9 @@ function performMerge(localData: Record<string, unknown>, serverData: Record<str
 /**
  * GET /api/sync - Get sync metadata and status
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
     const supabase = await createClient();
-    
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw AuthenticationError('Unauthorized');
-    }
 
     const { searchParams } = new URL(request.url);
     const tables = searchParams.get('tables')?.split(',') || [];
@@ -422,7 +404,7 @@ export async function GET(request: NextRequest) {
         let query = supabase
           .from(table as 'contacts')
           .select('id, updated_at')
-          .eq('tenant_id', user.id)
+          .eq('tenant_id', tenantId)
           .order('updated_at', { ascending: false })
           .limit(1000);
 
@@ -457,4 +439,4 @@ export async function GET(request: NextRequest) {
     logger.error('Sync metadata request failed', { error });
     return errorResponse(error as Error);
   }
-}
+});

@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { NextRequest } from 'next/server'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapSupabaseError,
 } from '@/lib/api/errors'
@@ -15,21 +13,11 @@ import { FileSearchFilters, RoofingFileCategory, FileType } from '@/lib/types/fi
  * GET /api/project-files/search
  * Advanced search for project files with filtering
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/project-files/search', { tenantId, userId: user.id })
+    logger.apiRequest('GET', '/api/project-files/search', { tenantId, userId })
 
     const searchParams = request.nextUrl.searchParams
 
@@ -199,27 +187,17 @@ export async function GET(request: NextRequest) {
     logger.error('Project files search API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/project-files/search
  * Advanced search with complex filter objects
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/project-files/search', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/project-files/search', { tenantId, userId })
 
     const body = await request.json()
     const {
@@ -356,4 +334,4 @@ export async function POST(request: NextRequest) {
     logger.error('Project files search POST API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

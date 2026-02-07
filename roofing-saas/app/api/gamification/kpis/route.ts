@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { kpiDefinitionSchema } from '@/lib/gamification/types'
@@ -14,18 +13,8 @@ import { kpiDefinitionSchema } from '@/lib/gamification/types'
  *   active - filter to active KPIs only (default: all)
  *   frequency - filter by frequency (daily, weekly, monthly)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const activeOnly = searchParams.get('active') === 'true'
@@ -57,24 +46,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/gamification/kpis', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/gamification/kpis
  * Create a new KPI definition
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const validation = kpiDefinitionSchema.safeParse(body)
 
@@ -97,7 +76,7 @@ export async function POST(request: NextRequest) {
         frequency: validation.data.frequency,
         is_active: validation.data.is_active,
         is_system: false,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -112,4 +91,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/gamification/kpis', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

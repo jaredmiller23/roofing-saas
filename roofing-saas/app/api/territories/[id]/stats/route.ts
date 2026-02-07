@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/api/errors'
+import { NotFoundError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -18,22 +17,10 @@ import { createClient } from '@/lib/supabase/server'
  * - Activities in territory
  * - Recent activity
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const { id } = await params
     const supabase = await createClient()
     const territoryId = id
@@ -140,4 +127,4 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     logger.error('Territory stats error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

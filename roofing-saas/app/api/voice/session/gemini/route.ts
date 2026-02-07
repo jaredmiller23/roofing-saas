@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
   InternalError
 } from '@/lib/api/errors'
@@ -21,21 +18,11 @@ import { logger } from '@/lib/logger'
  *
  * Cost: $0.05/minute (83% cheaper than OpenAI)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/voice/session/gemini', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/voice/session/gemini', { tenantId, userId })
 
     // Parse optional request body (contact context, project context)
     const body = await request.json().catch(() => ({}))
@@ -60,7 +47,7 @@ export async function POST(request: NextRequest) {
       .from('voice_sessions')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         session_id: geminiSessionId,
         provider: 'gemini',
         status: 'active',
@@ -103,4 +90,4 @@ export async function POST(request: NextRequest) {
     logger.error('Gemini voice session creation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

@@ -1,6 +1,5 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions'
 import { logger } from '@/lib/logger'
 // ARIA - AI Roofing Intelligent Assistant
@@ -15,18 +14,8 @@ import { getOpenAIClient, createStreamingChatCompletion, getOpenAIModel } from '
  * POST /api/ai/chat/stream
  * Streaming chat endpoint using Server-Sent Events with function calling
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      return new Response('No tenant found', { status: 403 })
-    }
-
     const { conversation_id, content, context } = await request.json()
 
     if (!content || !content.trim()) {
@@ -45,7 +34,7 @@ export async function POST(request: NextRequest) {
         .select('id')
         .eq('id', conversationId)
         .eq('tenant_id', tenantId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
       if (!conversation) {
@@ -59,7 +48,7 @@ export async function POST(request: NextRequest) {
         .from('ai_conversations')
         .insert({
           tenant_id: tenantId,
-          user_id: user.id,
+          user_id: userId,
           title,
           metadata: { last_context: context },
         })
@@ -100,7 +89,7 @@ export async function POST(request: NextRequest) {
     // Build ARIA context for consistent persona across all channels
     const ariaContext: ARIAContext = await buildARIAContext({
       tenantId,
-      userId: user.id,
+      userId,
       supabase,
       channel: 'chat',
       page: context?.page,
@@ -223,7 +212,7 @@ export async function POST(request: NextRequest) {
 
                 // Log tool call
                 logger.ariaToolCall(toolCall.name, args, {
-                  userId: user.id,
+                  userId,
                   tenantId,
                   conversationId,
                 })
@@ -333,4 +322,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/ai/chat/stream:', { error })
     return new Response('Internal server error', { status: 500 })
   }
-}
+})

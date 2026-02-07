@@ -3,25 +3,14 @@
  * Knowledge base search analytics
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
-
     const supabase = await createClient()
 
     const { searchParams } = new URL(request.url)
@@ -123,4 +112,4 @@ export async function GET(request: NextRequest) {
     logger.error('Knowledge analytics error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

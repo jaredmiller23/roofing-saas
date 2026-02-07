@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { AuthenticationError, AuthorizationError, InternalError, ValidationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { InternalError, ValidationError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import { logger } from '@/lib/logger'
 import { rewardConfigSchema } from '@/lib/gamification/types'
@@ -13,18 +12,8 @@ import { rewardConfigSchema } from '@/lib/gamification/types'
  * Query params:
  *   active - filter to active rewards only (default: all)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const activeOnly = searchParams.get('active') === 'true'
@@ -51,24 +40,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/gamification/rewards', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/gamification/rewards
  * Create a new reward config
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const validation = rewardConfigSchema.safeParse(body)
 
@@ -90,7 +69,7 @@ export async function POST(request: NextRequest) {
         quantity_available: validation.data.quantity_available || null,
         quantity_claimed: 0,
         is_active: validation.data.is_active,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -105,4 +84,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/gamification/rewards', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

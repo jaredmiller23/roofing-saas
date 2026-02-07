@@ -1,10 +1,7 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   NotFoundError,
   InternalError,
@@ -17,26 +14,12 @@ import type {
 
 export const dynamic = 'force-dynamic'
 
-interface RouteParams {
-  params: Promise<{ id: string }>
-}
-
 /**
  * GET /api/claims/[id]/interactions
  * Get all interactions (communications) for a claim
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export const GET = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const { id: claimId } = await params
     if (!claimId) {
       throw ValidationError('Claim ID is required')
@@ -95,24 +78,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     logger.error('[API] Error in GET /api/claims/[id]/interactions:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/claims/[id]/interactions
  * Log a new interaction for a claim
  */
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withAuthParams(async (request, { userId, tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const { id: claimId } = await params
     if (!claimId) {
       throw ValidationError('Claim ID is required')
@@ -153,7 +126,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         sent_at: new Date().toISOString(),
         response_due_at: body.response_due_at || null,
         response_overdue: false,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -179,7 +152,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       claimId,
       type: body.type,
       direction: body.direction,
-      userId: user.id,
+      userId,
     })
 
     return successResponse(newInteraction as ClaimCommunication)
@@ -187,25 +160,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     logger.error('[API] Error in POST /api/claims/[id]/interactions:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PATCH /api/claims/[id]/interactions
  * Update an interaction (e.g., mark as responded)
  * Requires interaction_id in query params
  */
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export const PATCH = withAuthParams(async (request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const { id: claimId } = await params
     const interactionId = request.nextUrl.searchParams.get('interaction_id')
 
@@ -260,4 +223,4 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

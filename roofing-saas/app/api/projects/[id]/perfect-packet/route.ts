@@ -10,43 +10,23 @@
  * 4. Job submission form
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import {
   validatePerfectPacket,
   PERFECT_PACKET_REQUIREMENTS,
 } from '@/lib/pipeline/validation'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
 
-interface RouteParams {
-  params: Promise<{
-    id: string
-  }>
-}
-
 /**
  * GET - Check Perfect Packet completion status for a project
  */
-export async function GET(
-  _request: NextRequest,
-  { params }: RouteParams
-) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { id: projectId } = await params
     const supabase = await createClient()
 
@@ -98,4 +78,4 @@ export async function GET(
     logger.error('[API] Perfect Packet status error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

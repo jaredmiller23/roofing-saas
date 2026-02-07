@@ -7,27 +7,16 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { requireFeature } from '@/lib/billing/feature-gates';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     // Initialize Supabase client
     const supabase = await createClient();
-
-    // Get authenticated user
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant');
-    }
 
     await requireFeature(tenantId, 'stormData');
 
@@ -76,7 +65,7 @@ export async function POST(request: NextRequest) {
       type: 'lead' as const,
       source: 'storm_targeting',
       notes: `Address-only lead from storm targeting. Extracted: ${new Date().toLocaleDateString()}. Property type: ${addr.osm_property_type || 'residential'}. NEEDS ENRICHMENT: Add owner name, phone, email.`,
-      created_by: user.id,
+      created_by: userId,
       tags: ['storm-lead', 'needs-enrichment'],
     }));
 
@@ -112,4 +101,4 @@ export async function POST(request: NextRequest) {
     logger.error('Bulk import error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

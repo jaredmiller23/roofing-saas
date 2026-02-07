@@ -5,28 +5,14 @@
  */
 
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import type { AffectedCustomer, NotificationResponse } from '@/lib/storm/storm-types'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     await requireFeature(tenantId, 'stormData')
 
     // Parse request body
@@ -117,26 +103,13 @@ export async function POST(request: NextRequest) {
     console.error('Notification error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * Get notification templates
  */
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
-    const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     await requireFeature(tenantId, 'stormData')
 
     // Default storm notification templates
@@ -184,4 +157,4 @@ Schedule your free inspection: {{schedulingLink}}
     console.error('Get templates error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

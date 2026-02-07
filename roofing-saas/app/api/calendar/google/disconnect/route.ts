@@ -5,32 +5,22 @@
  * Revokes the Google OAuth token and removes the connection
  */
 
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { createClient } from '@/lib/supabase/server'
 import { revokeToken } from '@/lib/google/calendar-client'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/api/errors'
+import { NotFoundError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST() {
+export const POST = withAuth(async (_request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const supabase = await createClient()
 
     // Get existing token to revoke it
     const { data: token, error: fetchError } = await supabase
       .from('google_calendar_tokens')
       .select('access_token, refresh_token')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .single()
 
@@ -55,7 +45,7 @@ export async function POST() {
     const { error: deleteError } = await supabase
       .from('google_calendar_tokens')
       .delete()
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
 
     if (deleteError) {
@@ -64,7 +54,7 @@ export async function POST() {
     }
 
     logger.info('Google Calendar disconnected', {
-      userId: user.id,
+      userId,
       tenantId,
     })
 
@@ -76,4 +66,4 @@ export async function POST() {
     logger.error('Error disconnecting Google Calendar:', { error })
     return errorResponse(error instanceof Error ? error : new Error('Failed to disconnect'))
   }
-}
+})

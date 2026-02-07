@@ -1,28 +1,15 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { ValidationError, NotFoundError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const body = await request.json()
     const { queryId } = body
 
     if (!queryId) {
       return errorResponse(ValidationError('Missing required field: queryId'))
-    }
-
-    // Server-side authentication
-    const user = await getCurrentUser()
-    if (!user) {
-      return errorResponse(AuthorizationError('Authentication required'))
-    }
-
-    const userId = user.id
-    const tenantId = await getUserTenantId(userId)
-    if (!tenantId) {
-      return errorResponse(AuthorizationError('No tenant access'))
     }
 
     const supabase = await createClient()
@@ -61,4 +48,4 @@ export async function POST(request: NextRequest) {
     console.error('Favorite toggle failed:', error)
     return errorResponse(InternalError('An unexpected error occurred'))
   }
-}
+})

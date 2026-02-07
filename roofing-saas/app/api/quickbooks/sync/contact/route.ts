@@ -6,24 +6,14 @@
 import { NextRequest } from 'next/server'
 import { getQuickBooksClient } from '@/lib/quickbooks/client'
 import { syncContactToCustomer, bulkSyncContacts } from '@/lib/quickbooks/sync'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     await requireFeature(tenantId, 'quickbooksIntegration')
 
     // Get QB client
@@ -72,4 +62,4 @@ export async function POST(request: NextRequest) {
     logger.error('QuickBooks contact sync error', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to sync contact'))
   }
-}
+})

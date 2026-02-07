@@ -6,9 +6,9 @@
  */
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type { CreateDecisionInput, Decision, DecisionWithTask, DecisionStatus } from '@/lib/types/decision'
 
@@ -24,18 +24,8 @@ export const dynamic = 'force-dynamic'
  * - to_date: ISO date string (YYYY-MM-DD)
  * - tags: comma-separated list of tags
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -123,7 +113,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/dev/decisions', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/dev/decisions
@@ -136,18 +126,8 @@ export async function GET(request: NextRequest) {
  * - tags?: string[]
  * - related_task_id?: string (UUID)
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const body: CreateDecisionInput = await request.json()
     const { meeting_date, decision_text, context, tags, related_task_id } = body
 
@@ -187,8 +167,8 @@ export async function POST(request: NextRequest) {
         context: context?.trim() || null,
         tags: tags || [],
         related_task_id: related_task_id || null,
-        created_by: user.id,
-        decided_by: [user.id], // Default to current user as decision maker
+        created_by: userId,
+        decided_by: [userId], // Default to current user as decision maker
       })
       .select(`
         id,
@@ -216,4 +196,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/dev/decisions', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

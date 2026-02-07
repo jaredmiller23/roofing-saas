@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { canMakeCall } from '@/lib/compliance/call-compliance'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 /**
@@ -26,20 +26,8 @@ import { successResponse, errorResponse } from '@/lib/api/response'
  *   }
  * }
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    // Get authenticated user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    // Get tenant ID from database
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
-
     // Get query params
     const searchParams = request.nextUrl.searchParams
     const phoneNumber = searchParams.get('phone')
@@ -54,7 +42,7 @@ export async function GET(request: NextRequest) {
       phoneNumber,
       contactId: contactId || undefined,
       tenantId,
-      userId: user.id,
+      userId,
     })
 
     logger.info('Compliance check completed', {
@@ -69,4 +57,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error in compliance check API', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

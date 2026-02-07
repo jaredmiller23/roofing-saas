@@ -12,41 +12,27 @@
  * Returns: { success: true }
  */
 
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { getGoogleCalendarClient, GoogleCalendarEvent } from '@/lib/google/calendar-client'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError } from '@/lib/api/errors'
+import { ValidationError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import { NextRequest } from 'next/server'
-
-interface RouteContext {
-  params: Promise<{ eventId: string }>
-}
 
 /**
  * GET /api/calendar/google/events/[eventId]
  * Get a single event from Google Calendar
  */
-export async function GET(request: NextRequest, context: RouteContext) {
+export const GET = withAuthParams(async (request: NextRequest, { userId, tenantId }, { params }) => {
   try {
-    const { eventId } = await context.params
-
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
+    const { eventId } = await params
 
     if (!eventId) {
       throw ValidationError('Event ID is required')
     }
 
     // Get Google Calendar client
-    const client = await getGoogleCalendarClient(user.id, tenantId)
+    const client = await getGoogleCalendarClient(userId, tenantId)
     if (!client) {
       return errorResponse(new Error('Google Calendar not connected'))
     }
@@ -58,25 +44,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
     logger.error('Error fetching Google Calendar event:', { error })
     return errorResponse(error instanceof Error ? error : new Error('Failed to fetch event'))
   }
-}
+})
 
 /**
  * PATCH /api/calendar/google/events/[eventId]
  * Update an event in Google Calendar
  */
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export const PATCH = withAuthParams(async (request: NextRequest, { userId, tenantId }, { params }) => {
   try {
-    const { eventId } = await context.params
-
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
+    const { eventId } = await params
 
     if (!eventId) {
       throw ValidationError('Event ID is required')
@@ -85,7 +61,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const body = await request.json()
 
     // Get Google Calendar client
-    const client = await getGoogleCalendarClient(user.id, tenantId)
+    const client = await getGoogleCalendarClient(userId, tenantId)
     if (!client) {
       return errorResponse(new Error('Google Calendar not connected'))
     }
@@ -122,7 +98,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const event = await client.updateEvent('primary', eventId, updatedEvent)
 
     logger.info('Updated Google Calendar event', {
-      userId: user.id,
+      userId,
       tenantId,
       eventId,
     })
@@ -138,32 +114,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return errorResponse(error instanceof Error ? error : new Error('Failed to update event'))
   }
-}
+})
 
 /**
  * DELETE /api/calendar/google/events/[eventId]
  * Delete an event from Google Calendar
  */
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export const DELETE = withAuthParams(async (request: NextRequest, { userId, tenantId }, { params }) => {
   try {
-    const { eventId } = await context.params
-
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
+    const { eventId } = await params
 
     if (!eventId) {
       throw ValidationError('Event ID is required')
     }
 
     // Get Google Calendar client
-    const client = await getGoogleCalendarClient(user.id, tenantId)
+    const client = await getGoogleCalendarClient(userId, tenantId)
     if (!client) {
       return errorResponse(new Error('Google Calendar not connected'))
     }
@@ -172,7 +138,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     await client.deleteEvent('primary', eventId)
 
     logger.info('Deleted Google Calendar event', {
-      userId: user.id,
+      userId,
       tenantId,
       eventId,
     })
@@ -188,4 +154,4 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     return errorResponse(error instanceof Error ? error : new Error('Failed to delete event'))
   }
-}
+})

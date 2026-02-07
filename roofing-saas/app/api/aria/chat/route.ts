@@ -10,13 +10,10 @@
  * Persists conversations and messages to ai_conversations / ai_messages tables.
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
 } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
@@ -45,29 +42,19 @@ interface ChatRequest {
   errorContext?: ARIAErrorContext
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
     // Check AI feature access (allow if no subscription — treat as trial/setup mode)
     const aiAccess = await canUseFeature(tenantId, 'aiChat')
     if (!aiAccess.allowed && aiAccess.reason !== 'No active subscription') {
-      throw AuthorizationError(aiAccess.reason || 'AI chat requires a plan upgrade')
+      throw ValidationError(aiAccess.reason || 'AI chat requires a plan upgrade')
     }
 
     // Apply rate limiting
     const rateLimitResult = await applyRateLimit(
       request,
       ariaRateLimit,
-      getClientIdentifier(request, user.id)
+      getClientIdentifier(request, userId)
     )
     if (rateLimitResult instanceof Response) {
       return rateLimitResult
@@ -84,7 +71,7 @@ export async function POST(request: NextRequest) {
     const providerConfig = getProviderForTask('aria_chat')
 
     logger.info('ARIA chat request', {
-      userId: user.id,
+      userId,
       tenantId,
       messageLength: message.length,
       historyLength: history?.length || 0,
@@ -98,7 +85,7 @@ export async function POST(request: NextRequest) {
     let isNewConversation = false
 
     if (!conversationId) {
-      conversationId = await createConversation(tenantId, user.id)
+      conversationId = await createConversation(tenantId, userId)
       isNewConversation = true
     }
 
@@ -113,7 +100,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const ariaContext = await buildARIAContext({
       tenantId,
-      userId: user.id,
+      userId,
       supabase,
       channel: 'chat',
       entityType: context?.contact_id ? 'contact' : context?.project_id ? 'project' : undefined,
@@ -227,7 +214,7 @@ export async function POST(request: NextRequest) {
     logger.error('ARIA chat error', { error })
     return errorResponse(error as Error)
   }
-}
+})
 
 // =============================================================================
 // Anthropic (Claude) Streaming

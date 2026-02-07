@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapZodError,
 } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
@@ -32,23 +29,13 @@ const createWorkflowSchema = z.object({
  * GET /api/workflows
  * List workflows with filtering
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
+    logger.apiRequest('GET', '/api/workflows', { tenantId, userId })
 
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('GET', '/api/workflows', { tenantId, userId: user.id })
-
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = new URL(request.url).searchParams
     const triggerType = searchParams.get('trigger_type')
     const isActive = searchParams.get('is_active')
     const page = parseInt(searchParams.get('page') || '1')
@@ -94,27 +81,17 @@ export async function GET(request: NextRequest) {
     logger.error('Workflows API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/workflows
  * Create a new workflow
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/workflows', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/workflows', { tenantId, userId })
 
     const body = await request.json()
 
@@ -133,7 +110,7 @@ export async function POST(request: NextRequest) {
       .insert({
         ...workflowData,
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -177,4 +154,4 @@ export async function POST(request: NextRequest) {
     })
     return errorResponse(error as Error)
   }
-}
+})

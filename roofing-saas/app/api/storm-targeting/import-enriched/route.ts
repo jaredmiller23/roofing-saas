@@ -7,25 +7,15 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { requireFeature } from '@/lib/billing/feature-gates';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
     const supabase = await createClient();
-
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant');
-    }
 
     await requireFeature(tenantId, 'stormData');
 
@@ -76,7 +66,7 @@ export async function POST(request: NextRequest) {
         type: 'lead' as const,
         source: 'storm_targeting',
         notes: `Storm targeting lead. Extracted: ${new Date(addr.created_at ?? '').toLocaleDateString()}. Enriched: ${new Date(addr.enriched_at ?? '').toLocaleDateString()}. Source: ${addr.enrichment_source}`,
-        created_by: user.id,
+        created_by: userId,
         tags: ['storm-lead', 'enriched'],
       }
     });
@@ -121,4 +111,4 @@ export async function POST(request: NextRequest) {
     logger.error('Import enriched error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

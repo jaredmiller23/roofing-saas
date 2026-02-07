@@ -8,13 +8,12 @@
  * - Trial-to-paid conversions
  */
 
-import { NextRequest } from 'next/server';
-import { getCurrentUser, getUserTenantId, isAdmin } from '@/lib/auth/session';
+import { isAdmin } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { createCheckoutSession } from '@/lib/billing/checkout';
 import { PLANS } from '@/lib/billing/plans';
 import type { PlanTier, BillingInterval } from '@/lib/billing/types';
 import {
-  AuthenticationError,
   AuthorizationError,
   ValidationError,
   InternalError,
@@ -22,22 +21,10 @@ import {
 import { successResponse, errorResponse } from '@/lib/api/response';
 import { logger } from '@/lib/logger';
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    // Authenticate
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    // Get tenant
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant');
-    }
-
     // Only admins/owners can change subscription
-    const userIsAdmin = await isAdmin(user.id);
+    const userIsAdmin = await isAdmin(userId);
     if (!userIsAdmin) {
       throw AuthorizationError('Only administrators can manage billing');
     }
@@ -66,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Create checkout session
     const session = await createCheckoutSession({
       tenantId,
-      userId: user.id,
+      userId,
       planTier: planTier as PlanTier,
       billingInterval: billingInterval as BillingInterval,
       successUrl,
@@ -75,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Created checkout session', {
       tenantId,
-      userId: user.id,
+      userId,
       planTier,
       billingInterval,
       sessionId: session.sessionId,
@@ -89,4 +76,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error creating checkout session', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

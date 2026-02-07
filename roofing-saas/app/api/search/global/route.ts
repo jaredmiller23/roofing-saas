@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 interface GlobalSearchResult {
@@ -18,20 +18,10 @@ interface GlobalSearchResult {
  * Global search for command palette
  * Optimized for fast search across key entities
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')?.trim()
 
@@ -39,7 +29,7 @@ export async function GET(request: NextRequest) {
       return successResponse({ results: [] })
     }
 
-    logger.apiRequest('GET', '/api/search/global', { tenantId, userId: user.id, query })
+    logger.apiRequest('GET', '/api/search/global', { tenantId, userId, query })
 
     const supabase = await createClient()
     const results: GlobalSearchResult[] = []
@@ -186,4 +176,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/search/global:', { error, duration })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   ValidationError,
   mapZodError,
 } from '@/lib/api/errors'
@@ -24,21 +21,11 @@ const makeCallSchema = z.object({
  * POST /api/voice/call
  * Initiate an outbound call
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/voice/call', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/voice/call', { tenantId, userId })
 
     const body = await request.json()
 
@@ -61,7 +48,7 @@ export async function POST(request: NextRequest) {
       phoneNumber: formattedPhone,
       contactId,
       tenantId,
-      userId: user.id,
+      userId,
     })
 
     if (!complianceCheck.canCall) {
@@ -95,7 +82,7 @@ export async function POST(request: NextRequest) {
     const { error: activityError } = await supabase.from('activities').insert({
       tenant_id: tenantId,
       contact_id: contactId || null,
-      created_by: user.id,
+      created_by: userId,
       type: 'call',
       direction: 'outbound',
       content: message || 'Outbound call',
@@ -128,4 +115,4 @@ export async function POST(request: NextRequest) {
     logger.error('Call initiation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

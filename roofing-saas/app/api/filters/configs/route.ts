@@ -1,9 +1,10 @@
 import type { Json } from '@/lib/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { getCurrentUser, isAdmin, getUserTenantId } from '@/lib/auth/session'
+import { isAdmin } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, createdResponse, errorResponse } from '@/lib/api/response'
 import type {
   FilterConfig,
@@ -20,13 +21,8 @@ import type {
  * - entity_type: 'contacts' | 'projects' | 'pipeline' | 'activities'
  * - include_inactive: boolean (default: false)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const searchParams = request.nextUrl.searchParams
     const entity_type = searchParams.get('entity_type')
     const include_inactive = searchParams.get('include_inactive') === 'true'
@@ -66,7 +62,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/filters/configs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/filters/configs
@@ -74,22 +70,12 @@ export async function GET(request: NextRequest) {
  *
  * Body: CreateFilterConfigRequest
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     // Check if user is admin (includes owner role)
-    const userIsAdmin = await isAdmin(user.id)
+    const userIsAdmin = await isAdmin(userId)
     if (!userIsAdmin) {
       throw AuthorizationError('Admin access required')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
     }
 
     const supabase = await createClient()
@@ -120,7 +106,7 @@ export async function POST(request: NextRequest) {
         is_quick_filter: body.is_quick_filter ?? false,
         is_advanced_filter: body.is_advanced_filter ?? true,
         display_order: body.display_order ?? 99,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -139,4 +125,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/filters/configs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { PDFDocument, rgb, StandardFonts } from '@pdfme/pdf-lib'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import type { ClaimData } from '@/lib/claims/types'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { errorResponse } from '@/lib/api/response'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -22,13 +22,8 @@ const STATUS_LABELS: Record<string, string> = {
  * POST /api/claims/export/pdf
  * Generate a PDF export of claims data
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, _auth) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const { claims } = await request.json() as { claims: ClaimData[] }
 
     if (!claims || claims.length === 0) {
@@ -201,7 +196,7 @@ export async function POST(request: NextRequest) {
     logger.error('Error generating PDF export:', { error })
     return errorResponse(error instanceof Error ? error : InternalError('Failed to generate PDF export'))
   }
-}
+})
 
 // Helper function to truncate text
 function truncateText(text: string, maxLength: number): string {

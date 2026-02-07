@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError, NotFoundError } from '@/lib/api/errors'
+import { NotFoundError } from '@/lib/api/errors'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
@@ -23,22 +22,10 @@ const updateTerritorySchema = z.object({
  * GET /api/territories/[id]
  * Get a single territory by ID
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuthParams(async (_request, { tenantId }, { params }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const { id } = await params
     const supabase = await createClient()
     const territoryId = id
@@ -68,28 +55,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     logger.error('Territory get error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * PATCH /api/territories/[id]
  * Update a territory
  */
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withAuthParams(async (request, { tenantId }, { params }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const { id } = await params
     const territoryId = id
 
@@ -175,28 +150,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     logger.error('Territory update error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * DELETE /api/territories/[id]
  * Soft delete a territory
  */
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const DELETE = withAuthParams(async (_request, { tenantId }, { params }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const { id } = await params
     const supabase = await createClient()
     const territoryId = id
@@ -240,4 +203,4 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     logger.error('Territory delete error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

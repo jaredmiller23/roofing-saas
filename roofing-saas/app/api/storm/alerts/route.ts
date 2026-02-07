@@ -4,29 +4,16 @@
  * Fetch active storm alerts for the current tenant
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import type { StormAlert } from '@/lib/storm/storm-types'
 
-export async function GET(_request: NextRequest) {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    // Get tenant for multi-tenant isolation
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -114,4 +101,4 @@ export async function GET(_request: NextRequest) {
     console.error('Get alerts error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

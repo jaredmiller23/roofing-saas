@@ -1,8 +1,6 @@
-import { NextRequest } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { AuthenticationError, AuthorizationError } from '@/lib/api/errors'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { awardPointsSafe, POINT_VALUES } from '@/lib/gamification/award-points'
@@ -29,22 +27,10 @@ const createTerritorySchema = z.object({
  * - limit: Max results (default 100)
  * - offset: Pagination offset (default 0)
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
@@ -88,28 +74,16 @@ export async function GET(request: NextRequest) {
     logger.error('Territories API error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})
 
 /**
  * POST /api/territories
  * Create a new territory
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    // Authenticate user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    // Get tenant ID
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found for user')
-    }
-
     // Parse and validate request body
     const body = await request.json()
     const validatedData = createTerritorySchema.safeParse(body)
@@ -157,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // Award points for creating a territory (non-blocking)
     awardPointsSafe(
-      user.id,
+      userId,
       POINT_VALUES.TERRITORY_CREATED,
       'Created new territory',
       data.id
@@ -178,4 +152,4 @@ export async function POST(request: NextRequest) {
     logger.error('Territory create error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

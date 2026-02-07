@@ -4,30 +4,19 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { pointRuleConfigSchema } from '@/lib/gamification/types'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
+import { ValidationError, ConflictError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse, createdResponse } from '@/lib/api/response'
 
 /**
  * GET /api/gamification/point-rules
  * Fetch all point rules for the organization
  */
-export async function GET() {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Get authenticated user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
 
     // Fetch point rules
     const { data, error } = await supabase
@@ -48,26 +37,15 @@ export async function GET() {
     logger.error('Point rules GET error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/gamification/point-rules
  * Create a new point rule
  */
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Get authenticated user
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with tenant')
-    }
 
     // Parse and validate request body
     const body = await request.json()
@@ -85,7 +63,7 @@ export async function POST(request: Request) {
       .insert({
         ...validated,
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -113,4 +91,4 @@ export async function POST(request: Request) {
     logger.error('Point rules POST error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

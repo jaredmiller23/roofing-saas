@@ -6,25 +6,15 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session';
+import { withAuth } from '@/lib/auth/with-auth';
 import { requireFeature } from '@/lib/billing/feature-gates';
 import { logger } from '@/lib/logger';
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors';
+import { InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
-export async function GET() {
+export const GET = withAuth(async (_request, { tenantId }) => {
   try {
     const supabase = await createClient();
-
-    const user = await getCurrentUser();
-    if (!user) {
-      throw AuthenticationError();
-    }
-
-    const tenantId = await getUserTenantId(user.id);
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant');
-    }
 
     await requireFeature(tenantId, 'stormData');
 
@@ -47,4 +37,4 @@ export async function GET() {
     logger.error('Areas API error:', { error });
     return errorResponse(error instanceof Error ? error : InternalError());
   }
-}
+});

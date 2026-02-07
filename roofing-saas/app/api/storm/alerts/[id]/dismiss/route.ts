@@ -4,36 +4,16 @@
  * POST: Dismiss a storm alert (mark as dismissed)
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
-
-export async function POST(
-  _request: NextRequest,
-  context: RouteContext
-) {
+export const POST = withAuthParams(async (_request, { tenantId }, { params }) => {
   try {
     const supabase = await createClient()
 
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      throw AuthenticationError()
-    }
-
-    // Get tenant for multi-tenant isolation
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    const { id } = await context.params
+    const { id } = await params
 
     // Update alert to dismissed (scoped to tenant)
     const { error: updateError } = await supabase
@@ -55,4 +35,4 @@ export async function POST(
     console.error('Dismiss alert error:', error)
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

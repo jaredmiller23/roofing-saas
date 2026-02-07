@@ -1,26 +1,16 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { paginatedResponse, createdResponse, errorResponse } from '@/lib/api/response'
 
 /**
  * GET /api/call-logs
  * List all call logs with filtering and pagination
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest, { tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -29,7 +19,7 @@ export async function GET(request: NextRequest) {
     const disposition = searchParams.get('disposition')
     const contactId = searchParams.get('contact_id')
     const projectId = searchParams.get('project_id')
-    const userId = searchParams.get('user_id')
+    const filterUserId = searchParams.get('user_id')
     const search = searchParams.get('search')
 
     const supabase = await createClient()
@@ -44,7 +34,7 @@ export async function GET(request: NextRequest) {
     if (disposition) query = query.eq('disposition', disposition)
     if (contactId) query = query.eq('contact_id', contactId)
     if (projectId) query = query.eq('project_id', projectId)
-    if (userId) query = query.eq('user_id', userId)
+    if (filterUserId) query = query.eq('user_id', filterUserId)
     if (search) {
       // Escape special PostgREST filter characters and SQL wildcards
       const sanitized = search
@@ -70,24 +60,14 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/call-logs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/call-logs
  * Create a new call log
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('No tenant found')
-    }
-
     const body = await request.json()
     const supabase = await createClient()
 
@@ -96,7 +76,7 @@ export async function POST(request: NextRequest) {
       .insert({
         ...body,
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
       })
       .select()
       .single()
@@ -111,4 +91,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/call-logs:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
+import { ValidationError, NotFoundError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 export const dynamic = 'force-dynamic'
@@ -11,13 +11,8 @@ export const dynamic = 'force-dynamic'
  * GET /api/pins
  * Fetch pins for a territory
  */
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
 
     // Get query parameters
@@ -77,24 +72,14 @@ export async function GET(request: NextRequest) {
     logger.error('[API] Error in GET /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * POST /api/pins
  * Create a new pin
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const {
@@ -143,7 +128,7 @@ export async function POST(request: NextRequest) {
         disposition: disposition || 'not_home',
         notes,
         pin_type: pin_type || 'knock',
-        user_id: user.id,
+        user_id: userId,
         tenant_id: tenantId,
         is_deleted: false
       })
@@ -218,7 +203,7 @@ export async function POST(request: NextRequest) {
               pipeline_stage: 'prospect',
               type: 'residential',
               lead_source: 'door_knock',
-              created_by: user.id,
+              created_by: userId,
               description: notes || `Lead from door knock at ${address_street || address || 'unknown address'}`,
               custom_fields: {
                 proline_pipeline: 'SALES',
@@ -262,7 +247,7 @@ export async function POST(request: NextRequest) {
       .from('activities')
       .insert({
         tenant_id: tenantId,
-        created_by: user.id,
+        created_by: userId,
         type: 'door_knock',
         subject: activitySubject,
         content: activityContent.join('\n') || null,
@@ -292,19 +277,14 @@ export async function POST(request: NextRequest) {
     logger.error('[API] Error in POST /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PUT /api/pins/[id]
  * Update a pin's details
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const body = await request.json()
     const { id, disposition, notes, contact_data, create_contact } = body
@@ -364,19 +344,14 @@ export async function PUT(request: NextRequest) {
     logger.error('[API] Error in PUT /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * DELETE /api/pins/[id]
  * Delete a pin (soft delete)
  */
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAuth(async (request: NextRequest) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
     const { searchParams } = request.nextUrl
     const id = searchParams.get('id')
@@ -418,4 +393,4 @@ export async function DELETE(request: NextRequest) {
     logger.error('[API] Error in DELETE /api/pins:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

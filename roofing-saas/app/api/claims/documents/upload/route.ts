@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -11,18 +10,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
  * POST /api/claims/documents/upload
  * Upload a document for a claim
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User not associated with any tenant')
-    }
-
     const formData = await request.formData()
     const file = formData.get('file') as File
     const claimId = formData.get('claimId') as string
@@ -92,7 +81,7 @@ export async function POST(request: NextRequest) {
         file_size: file.size,
         mime_type: file.type,
         type: documentType || 'other',
-        created_by: user.id,
+        created_by: userId,
       })
       .select()
       .single()
@@ -108,7 +97,7 @@ export async function POST(request: NextRequest) {
       documentId: document.id,
       claimId,
       fileName: file.name,
-      userId: user.id,
+      userId,
     })
 
     return successResponse({ document })
@@ -116,4 +105,4 @@ export async function POST(request: NextRequest) {
     logger.error('Error in POST /api/claims/documents/upload:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

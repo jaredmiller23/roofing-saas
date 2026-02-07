@@ -1,17 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, InternalError } from '@/lib/api/errors'
+import { InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(request: Request) {
+export const GET = withAuth(async (_request, { userId }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError()
-    }
-
     const supabase = await createClient()
 
     // Get all possible achievements
@@ -29,7 +23,7 @@ export async function GET(request: Request) {
     const { data: userAchievements, error: userError } = await supabase
       .from('user_achievements')
       .select('achievement_id, earned_at')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     if (userError) {
       logger.error('Error fetching user achievements:', { error: userError })
@@ -53,4 +47,4 @@ export async function GET(request: Request) {
     logger.error('Achievements API error:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

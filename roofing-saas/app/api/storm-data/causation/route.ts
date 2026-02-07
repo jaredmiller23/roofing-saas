@@ -10,12 +10,11 @@
  * and evidence score for claim documentation.
  */
 
-import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { requireFeature } from '@/lib/billing/feature-gates'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, AuthorizationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import {
   type StormEventData,
@@ -29,23 +28,9 @@ import {
 // Conversion: 1 mile = 1609.34 meters
 const METERS_PER_MILE = 1609.34
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { tenantId }) => {
   try {
     const supabase = await createClient()
-
-    // Verify authentication
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
 
     await requireFeature(tenantId, 'stormData')
 
@@ -182,7 +167,7 @@ export async function GET(request: NextRequest) {
     logger.error('Storm data causation API error', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * Build the causation response from storm events

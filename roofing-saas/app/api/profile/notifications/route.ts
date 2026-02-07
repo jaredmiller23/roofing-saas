@@ -9,10 +9,9 @@
 
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth/session'
-import { getUserTenantId } from '@/lib/auth/session'
+import { withAuth } from '@/lib/auth/with-auth'
 import { logger } from '@/lib/logger'
-import { AuthenticationError, ValidationError, InternalError } from '@/lib/api/errors'
+import { ValidationError, InternalError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 import type {
   NotificationPreferences,
@@ -24,27 +23,15 @@ import { DEFAULT_NOTIFICATION_PREFERENCES } from '@/lib/types/notification-prefe
  * GET /api/profile/notifications
  * Get current user's notification preferences
  */
-export async function GET() {
+export const GET = withAuth(async (_request, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-
-    if (!tenantId) {
-      throw AuthenticationError('User not associated with a tenant')
-    }
-
     const supabase = await createClient()
 
     // Try to get existing preferences
     const { data, error } = await supabase
       .from('user_notification_preferences')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('tenant_id', tenantId)
       .single()
 
@@ -58,7 +45,7 @@ export async function GET() {
     if (!data) {
       const defaultPrefs: Partial<NotificationPreferences> = {
         ...DEFAULT_NOTIFICATION_PREFERENCES,
-        user_id: user.id,
+        user_id: userId,
         tenant_id: tenantId,
       }
       return successResponse(defaultPrefs)
@@ -69,26 +56,14 @@ export async function GET() {
     logger.error('Error in GET /api/profile/notifications:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})
 
 /**
  * PUT /api/profile/notifications
  * Update user notification preferences (upsert)
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withAuth(async (request: NextRequest, { userId, tenantId }) => {
   try {
-    const user = await getCurrentUser()
-
-    if (!user) {
-      throw AuthenticationError()
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-
-    if (!tenantId) {
-      throw AuthenticationError('User not associated with a tenant')
-    }
-
     const body: UpdateNotificationPreferencesInput = await request.json()
 
     // Validate input
@@ -101,7 +76,7 @@ export async function PUT(request: NextRequest) {
     // Build the upsert data
     const prefsData = {
       tenant_id: tenantId,
-      user_id: user.id,
+      user_id: userId,
       ...body,
       updated_at: new Date().toISOString(),
     }
@@ -125,4 +100,4 @@ export async function PUT(request: NextRequest) {
     logger.error('Error in PUT /api/profile/notifications:', { error })
     return errorResponse(error instanceof Error ? error : InternalError())
   }
-}
+})

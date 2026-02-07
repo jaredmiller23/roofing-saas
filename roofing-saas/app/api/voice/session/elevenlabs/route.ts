@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, getUserTenantId } from '@/lib/auth/session'
-import { NextRequest } from 'next/server'
+import { withAuth } from '@/lib/auth/with-auth'
 import {
-  AuthenticationError,
-  AuthorizationError,
   mapSupabaseError,
   InternalError
 } from '@/lib/api/errors'
@@ -19,21 +16,11 @@ import { logger } from '@/lib/logger'
  * 2. Creates a voice_sessions record in database with provider='elevenlabs'
  * 3. Returns session_id and conversation_token for WebRTC connection
  */
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { userId, tenantId }) => {
   const startTime = Date.now()
 
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('User not authenticated')
-    }
-
-    const tenantId = await getUserTenantId(user.id)
-    if (!tenantId) {
-      throw AuthorizationError('User is not associated with a tenant')
-    }
-
-    logger.apiRequest('POST', '/api/voice/session/elevenlabs', { tenantId, userId: user.id })
+    logger.apiRequest('POST', '/api/voice/session/elevenlabs', { tenantId, userId })
 
     // Parse request body
     const body = await request.json().catch(() => ({}))
@@ -91,7 +78,7 @@ export async function POST(request: NextRequest) {
       .from('voice_sessions')
       .insert({
         tenant_id: tenantId,
-        user_id: user.id,
+        user_id: userId,
         provider: 'elevenlabs',
         session_id: conversation_id || `el_${Date.now()}`,
         status: 'active',
@@ -133,4 +120,4 @@ export async function POST(request: NextRequest) {
     logger.error('ElevenLabs session creation error', { error, duration })
     return errorResponse(error as Error)
   }
-}
+})

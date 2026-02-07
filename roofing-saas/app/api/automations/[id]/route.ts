@@ -1,7 +1,6 @@
-import { NextRequest } from 'next/server'
-import { getCurrentUser } from '@/lib/auth/session'
+import { withAuthParams } from '@/lib/auth/with-auth'
 import type { Workflow, UpdateWorkflowInput } from '@/lib/automation/workflow-types'
-import { AuthenticationError, NotFoundError } from '@/lib/api/errors'
+import { NotFoundError } from '@/lib/api/errors'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
 // Mock data - in a real app this would connect to your database
@@ -44,20 +43,8 @@ const mockWorkflows: Workflow[] = [
   }
 ]
 
-interface RouteParams {
-  params: Promise<{ id: string }>
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export const GET = withAuthParams(async (_request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
     const { id } = await params
     const workflow = mockWorkflows.find(w => w.id === id)
 
@@ -70,18 +57,10 @@ export async function GET(
     console.error('Error fetching workflow:', error)
     return errorResponse(error as Error)
   }
-}
+})
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export const PATCH = withAuthParams(async (request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
     const { id } = await params
     const body: UpdateWorkflowInput = await request.json()
 
@@ -117,18 +96,10 @@ export async function PATCH(
     console.error('Error updating workflow:', error)
     return errorResponse(error as Error)
   }
-}
+})
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export const DELETE = withAuthParams(async (_request, _auth, { params }) => {
   try {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw AuthenticationError('Unauthorized')
-    }
-
     const { id } = await params
     const workflowIndex = mockWorkflows.findIndex(w => w.id === id)
 
@@ -144,4 +115,4 @@ export async function DELETE(
     console.error('Error deleting workflow:', error)
     return errorResponse(error as Error)
   }
-}
+})
