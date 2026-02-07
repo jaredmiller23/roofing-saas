@@ -147,7 +147,7 @@ export function PipelineSettings() {
       )}
 
       {/* Pipeline Preview */}
-      <div className="bg-card rounded-lg border border p-6">
+      <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">Sales Pipeline Stages</h3>
         </div>
@@ -201,7 +201,7 @@ export function PipelineSettings() {
 
       {/* Edit Form */}
       {editingStage && (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             Edit Stage: {editingStage.name}
           </h3>
@@ -327,7 +327,7 @@ export function PipelineSettings() {
 
       {/* Stage List (Table View) — shown when not editing */}
       {stages.length > 0 && !editingStage && (
-        <div className="bg-card rounded-lg border border overflow-hidden">
+        <div className="bg-card rounded-lg border border-border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-muted">
               <tr>

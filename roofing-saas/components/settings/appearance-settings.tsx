@@ -361,25 +361,25 @@ export function AppearanceSettings() {
             <h4 className="text-sm font-medium mb-3">Current Mode Features</h4>
             <div className="grid gap-2 text-xs">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${config.isMobileOptimized ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${config.isMobileOptimized ? 'bg-green-500' : 'bg-muted'}`}></div>
                 <span className={config.isMobileOptimized ? 'text-foreground' : 'text-muted-foreground'}>
                   Mobile optimized
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${config.hasFullFeatures ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${config.hasFullFeatures ? 'bg-green-500' : 'bg-muted'}`}></div>
                 <span className={config.hasFullFeatures ? 'text-foreground' : 'text-muted-foreground'}>
                   Full feature set
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${config.hasAnalytics ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${config.hasAnalytics ? 'bg-green-500' : 'bg-muted'}`}></div>
                 <span className={config.hasAnalytics ? 'text-foreground' : 'text-muted-foreground'}>
                   Analytics & reporting
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${config.supportsComplexLayouts ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${config.supportsComplexLayouts ? 'bg-green-500' : 'bg-muted'}`}></div>
                 <span className={config.supportsComplexLayouts ? 'text-foreground' : 'text-muted-foreground'}>
                   Complex layouts
                 </span>

@@ -207,7 +207,7 @@ export function RoleSettings() {
       )}
 
       {/* Role List */}
-      <div className="bg-card rounded-lg border border p-6">
+      <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">User Roles</h3>
           <Button
@@ -226,7 +226,7 @@ export function RoleSettings() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {roles.map((role) => (
-              <div key={role.id} className="border border rounded-lg p-4 hover:border-primary/50 transition-colors">
+              <div key={role.id} className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
@@ -282,7 +282,7 @@ export function RoleSettings() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingRole ? `Edit Role: ${editingRole.name}` : 'Add New Role'}
           </h3>
@@ -320,7 +320,7 @@ export function RoleSettings() {
             {/* Permission Matrix */}
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Permissions</h4>
-              <div className="border border rounded-lg overflow-hidden">
+              <div className="border border-border rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-border">
                   <thead className="bg-muted">
                     <tr>

@@ -245,7 +245,7 @@ export function FilterSettings() {
       )}
 
       {/* Filters */}
-      <div className="bg-card rounded-lg border border p-6">
+      <div className="bg-card rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Filter Configuration</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1">
@@ -279,7 +279,7 @@ export function FilterSettings() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             {editingConfig ? 'Edit Filter' : 'Add New Filter'}
           </h3>
@@ -490,7 +490,7 @@ export function FilterSettings() {
 
       {/* Quick Filters Section */}
       {quickFilters.length > 0 && (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Zap className="h-5 w-5 text-yellow-500" />
             Quick Filters
@@ -517,7 +517,7 @@ export function FilterSettings() {
 
       {/* Advanced Filters Section */}
       {advancedFilters.length > 0 && (
-        <div className="bg-card rounded-lg border border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-muted-foreground" />
             Advanced Filters
@@ -544,7 +544,7 @@ export function FilterSettings() {
 
       {/* Empty State */}
       {configs.length === 0 && (
-        <div className="bg-card rounded-lg border border p-12 text-center">
+        <div className="bg-card rounded-lg border border-border p-12 text-center">
           <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">
             No filters configured
@@ -624,21 +624,21 @@ function FilterConfigCard({
       <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
         <button
           onClick={onToggleActive}
-          className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
+          className="p-1.5 bg-card border border-border hover:bg-accent rounded shadow-sm"
           title={config.is_active ? 'Deactivate' : 'Activate'}
         >
           <CheckCircle className={`h-3 w-3 ${config.is_active ? 'text-green-600' : 'text-muted-foreground'}`} />
         </button>
         <button
           onClick={onEdit}
-          className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
+          className="p-1.5 bg-card border border-border hover:bg-accent rounded shadow-sm"
           title="Edit"
         >
           <Pencil className="h-3 w-3 text-muted-foreground" />
         </button>
         <button
           onClick={onDelete}
-          className="p-1.5 bg-card border border hover:bg-accent rounded shadow-sm"
+          className="p-1.5 bg-card border border-border hover:bg-accent rounded shadow-sm"
           title="Delete"
         >
           <Trash2 className="h-3 w-3 text-red-600" />
