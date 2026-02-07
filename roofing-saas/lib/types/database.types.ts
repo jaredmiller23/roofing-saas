@@ -1415,6 +1415,7 @@ export type Database = {
           delay_value: number | null
           false_path_step_id: string | null
           id: string
+          is_deleted: boolean
           parent_step_id: string | null
           step_config: Json
           step_order: number
@@ -1433,6 +1434,7 @@ export type Database = {
           delay_value?: number | null
           false_path_step_id?: string | null
           id?: string
+          is_deleted?: boolean
           parent_step_id?: string | null
           step_config: Json
           step_order: number
@@ -1451,6 +1453,7 @@ export type Database = {
           delay_value?: number | null
           false_path_step_id?: string | null
           id?: string
+          is_deleted?: boolean
           parent_step_id?: string | null
           step_config?: Json
           step_order?: number
@@ -1696,6 +1699,7 @@ export type Database = {
           goal_value: number
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           reward_description: string | null
           reward_points: number | null
           reward_type: string | null
@@ -1714,6 +1718,7 @@ export type Database = {
           goal_value: number
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           reward_description?: string | null
           reward_points?: number | null
           reward_type?: string | null
@@ -1732,6 +1737,7 @@ export type Database = {
           goal_value?: number
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           reward_description?: string | null
           reward_points?: number | null
           reward_type?: string | null
@@ -3076,6 +3082,7 @@ export type Database = {
           id: string
           instagram_url: string | null
           is_active: boolean | null
+          is_deleted: boolean
           job_title: string | null
           last_viewed_at: string | null
           linkedin_url: string | null
@@ -3115,6 +3122,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_deleted?: boolean
           job_title?: string | null
           last_viewed_at?: string | null
           linkedin_url?: string | null
@@ -3154,6 +3162,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_deleted?: boolean
           job_title?: string | null
           last_viewed_at?: string | null
           linkedin_url?: string | null
@@ -3455,6 +3464,7 @@ export type Database = {
           file_size: number | null
           file_url: string
           id: string
+          is_deleted: boolean
           mime_type: string | null
           name: string
           previous_version_id: string | null
@@ -3474,6 +3484,7 @@ export type Database = {
           file_size?: number | null
           file_url: string
           id?: string
+          is_deleted?: boolean
           mime_type?: string | null
           name: string
           previous_version_id?: string | null
@@ -3493,6 +3504,7 @@ export type Database = {
           file_size?: number | null
           file_url?: string
           id?: string
+          is_deleted?: boolean
           mime_type?: string | null
           name?: string
           previous_version_id?: string | null
@@ -3601,6 +3613,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          is_deleted: boolean
           name: string
           subject: string
           tenant_id: string
@@ -3616,6 +3629,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           name: string
           subject: string
           tenant_id: string
@@ -3631,6 +3645,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           name?: string
           subject?: string
           tenant_id?: string
@@ -3875,6 +3890,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_advanced_filter: boolean | null
+          is_deleted: boolean
           is_quick_filter: boolean | null
           tenant_id: string
           updated_at: string
@@ -3893,6 +3909,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_advanced_filter?: boolean | null
+          is_deleted?: boolean
           is_quick_filter?: boolean | null
           tenant_id: string
           updated_at?: string
@@ -3911,6 +3928,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_advanced_filter?: boolean | null
+          is_deleted?: boolean
           is_quick_filter?: boolean | null
           tenant_id?: string
           updated_at?: string
@@ -5077,6 +5095,7 @@ export type Database = {
           frequency: string | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           is_system: boolean | null
           name: string
           target_value: number | null
@@ -5093,6 +5112,7 @@ export type Database = {
           frequency?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           is_system?: boolean | null
           name: string
           target_value?: number | null
@@ -5109,6 +5129,7 @@ export type Database = {
           frequency?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           is_system?: boolean | null
           name?: string
           target_value?: number | null
@@ -5820,6 +5841,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           points_value: number
           tenant_id: string | null
           updated_at: string | null
@@ -5830,6 +5852,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           points_value: number
           tenant_id?: string | null
           updated_at?: string | null
@@ -5840,6 +5863,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           points_value?: number
           tenant_id?: string | null
           updated_at?: string | null
@@ -6370,6 +6394,7 @@ export type Database = {
           created_at: string | null
           execution_time_ms: number | null
           id: string
+          is_deleted: boolean
           is_favorite: boolean | null
           query_text: string
           query_type: string | null
@@ -6381,6 +6406,7 @@ export type Database = {
           created_at?: string | null
           execution_time_ms?: number | null
           id?: string
+          is_deleted?: boolean
           is_favorite?: boolean | null
           query_text: string
           query_type?: string | null
@@ -6392,6 +6418,7 @@ export type Database = {
           created_at?: string | null
           execution_time_ms?: number | null
           id?: string
+          is_deleted?: boolean
           is_favorite?: boolean | null
           query_text?: string
           query_type?: string | null
@@ -6927,6 +6954,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean | null
+          is_deleted: boolean
           name: string
           points_required: number
           quantity_available: number | null
@@ -6942,6 +6970,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           name: string
           points_required: number
           quantity_available?: number | null
@@ -6957,6 +6986,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
+          is_deleted?: boolean
           name?: string
           points_required?: number
           quantity_available?: number | null
@@ -7037,6 +7067,7 @@ export type Database = {
           filter_criteria: Json
           id: string
           is_default: boolean | null
+          is_deleted: boolean
           is_shared: boolean | null
           is_system: boolean | null
           last_used_at: string | null
@@ -7053,6 +7084,7 @@ export type Database = {
           filter_criteria: Json
           id?: string
           is_default?: boolean | null
+          is_deleted?: boolean
           is_shared?: boolean | null
           is_system?: boolean | null
           last_used_at?: string | null
@@ -7069,6 +7101,7 @@ export type Database = {
           filter_criteria?: Json
           id?: string
           is_default?: boolean | null
+          is_deleted?: boolean
           is_shared?: boolean | null
           is_system?: boolean | null
           last_used_at?: string | null
@@ -7350,6 +7383,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          is_deleted: boolean
           message: string
           name: string
           tenant_id: string
@@ -7364,6 +7398,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           message: string
           name: string
           tenant_id: string
@@ -7378,6 +7413,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           message?: string
           name?: string
           tenant_id?: string
@@ -7398,6 +7434,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_default: boolean | null
+          is_deleted: boolean
           is_terminal: boolean | null
           status_field_name: string
           status_value: string
@@ -7419,6 +7456,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           is_terminal?: boolean | null
           status_field_name: string
           status_value: string
@@ -7440,6 +7478,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_default?: boolean | null
+          is_deleted?: boolean
           is_terminal?: boolean | null
           status_field_name?: string
           status_value?: string
@@ -8809,6 +8848,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          is_deleted: boolean
           is_system: boolean | null
           name: string
           permissions: Json | null
@@ -8820,6 +8860,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          is_deleted?: boolean
           is_system?: boolean | null
           name: string
           permissions?: Json | null
@@ -8831,6 +8872,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          is_deleted?: boolean
           is_system?: boolean | null
           name?: string
           permissions?: Json | null
