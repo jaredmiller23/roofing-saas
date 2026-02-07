@@ -9,6 +9,7 @@ import { NextRequest } from 'next/server';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { createTrialSubscription } from '@/lib/billing/subscription';
 import { sendTrialWelcomeEmail } from '@/lib/trial-nurture/engine';
+import { seedDefaultTenantData } from '@/lib/tenant/seed-defaults';
 import { logger } from '@/lib/logger';
 import { AuthenticationError, InternalError } from '@/lib/api/errors';
 import { successResponse, errorResponse } from '@/lib/api/response';
@@ -123,6 +124,17 @@ export async function POST(_request: NextRequest) {
       tenantId: newTenant.id,
       subscriptionId: subscription.id,
     });
+
+    // Seed default data (pipeline stages, templates, etc.)
+    try {
+      await seedDefaultTenantData(adminClient, newTenant.id);
+    } catch (seedError) {
+      logger.error('Failed to seed default tenant data', {
+        tenantId: newTenant.id,
+        error: seedError,
+      });
+      // Don't fail signup if seeding fails
+    }
 
     // Send welcome email (fire-and-forget, don't block signup)
     sendTrialWelcomeEmail(newTenant.id).catch((err) =>

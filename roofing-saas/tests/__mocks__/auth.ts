@@ -44,6 +44,7 @@ vi.mock('@/lib/rate-limit', () => ({
       'X-RateLimit-Reset': '60',
     },
   }),
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   getClientIdentifier: vi.fn().mockReturnValue('test-client'),
 }))
 

@@ -369,6 +369,7 @@ describe('/api/aria/execute', () => {
             error: 'Rate limit exceeded',
           }),
         }),
+        checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
         getClientIdentifier: vi.fn().mockReturnValue('test-client'),
         ariaRateLimit: { max: 100, window: '1m' },
       }))
@@ -439,6 +440,7 @@ describe('/api/aria/execute', () => {
 
       vi.doMock('@/lib/rate-limit', () => ({
         applyRateLimit: vi.fn().mockResolvedValue(mockRateLimitResult),
+        checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
         getClientIdentifier: vi.fn().mockReturnValue('test-client'),
         ariaRateLimit: { max: 100, window: '1m' },
       }))

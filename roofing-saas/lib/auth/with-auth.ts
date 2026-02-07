@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRequestCache } from './request-context'
 import { getCurrentUser, getUserTenantId } from './session'
+import { checkRateLimit } from '@/lib/rate-limit'
 import type { User } from '@supabase/supabase-js'
 
 export interface AuthContext {
@@ -79,6 +80,14 @@ export function withAuth(handler: AuthHandler) {
         )
       }
 
+      const { success: withinLimit } = await checkRateLimit(user.id)
+      if (!withinLimit) {
+        return NextResponse.json(
+          { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.' } },
+          { status: 429 }
+        )
+      }
+
       return handler(request, { user, userId: user.id, tenantId })
     })
   }
@@ -113,6 +122,14 @@ export function withAuthParams(handler: AuthHandlerWithParams) {
         return NextResponse.json(
           { success: false, error: { code: 'FORBIDDEN', message: 'User is not associated with a tenant' } },
           { status: 403 }
+        )
+      }
+
+      const { success: withinLimit } = await checkRateLimit(user.id)
+      if (!withinLimit) {
+        return NextResponse.json(
+          { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.' } },
+          { status: 429 }
         )
       }
 
