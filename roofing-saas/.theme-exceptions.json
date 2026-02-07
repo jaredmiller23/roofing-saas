@@ -257,7 +257,8 @@
     "components/admin/api-docs.tsx:*:bg-red-600",
     "components/admin/api-docs.tsx:*:text-white",
     "components/admin/api-docs.tsx:*:text-orange-500",
-    "components/admin/api-docs.tsx:*:text-green-500"
+    "components/admin/api-docs.tsx:*:text-green-500",
+    "components/signatures/SignatureCapture.tsx:*:bg-white"
   ],
   "rationale": {
     "status-indicators": "Status colors (green/red/orange/yellow) have universal semantic meaning and should remain consistent regardless of theme.",

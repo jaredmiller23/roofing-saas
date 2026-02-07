@@ -78,8 +78,10 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     // Draw typed signature with responsive font size
+    // Use the loaded Pacifico font from CSS variable, fall back to cursive
     const fontSize = Math.min(48, canvasSize.width * 0.08)
-    ctx.font = `${fontSize}px "Dancing Script", cursive, serif`
+    const pacificoFont = getComputedStyle(document.documentElement).getPropertyValue('--font-pacifico').trim()
+    ctx.font = `${fontSize}px ${pacificoFont || 'cursive'}, cursive`
     ctx.fillStyle = '#000000'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -215,7 +217,7 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
           <div className="relative">
             <canvas
               ref={canvasRef}
-              className="border-2 border-border rounded-lg w-full cursor-crosshair bg-card touch-none"
+              className="border-2 border-border rounded-lg w-full cursor-crosshair bg-white touch-none"
               style={{
                 height: canvasSize.height,
                 touchAction: 'none' // Prevent all touch gestures except drawing
@@ -260,9 +262,9 @@ export function SignatureCapture({ onSignatureCapture, onCancel }: SignatureCapt
             />
           </div>
           {typedSignature && (
-            <div className="border-2 border-border rounded-lg bg-card p-2 md:p-4">
-              <canvas 
-                ref={typeCanvasRef} 
+            <div className="border-2 border-border rounded-lg bg-white p-2 md:p-4">
+              <canvas
+                ref={typeCanvasRef}
                 className="w-full"
                 style={{ height: canvasSize.height }}
               />

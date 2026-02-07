@@ -1196,8 +1196,8 @@ export default function SignDocumentPage() {
           </div>
         )}
 
-        {/* Action Buttons - Sticky on mobile */}
-        <div className="bg-card rounded-lg shadow-sm border border-border p-4 md:p-6 sticky bottom-0 md:static">
+        {/* Action Buttons - Always sticky at bottom */}
+        <div className="bg-card rounded-lg shadow-sm border border-border p-4 md:p-6 sticky bottom-0 z-10">
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
