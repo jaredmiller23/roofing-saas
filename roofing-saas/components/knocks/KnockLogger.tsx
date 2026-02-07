@@ -20,7 +20,6 @@ interface KnockLoggerProps {
 
 export function KnockLogger({ onSuccess }: KnockLoggerProps) {
   const router = useRouter()
-  // const [loading, setLoading] = useState(false) // TODO: Use for general loading state
   const [gettingLocation, setGettingLocation] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 

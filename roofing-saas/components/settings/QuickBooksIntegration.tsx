@@ -27,6 +27,19 @@ interface SyncStatus {
   progress?: string
 }
 
+interface SyncLogEntry {
+  id: string
+  entity_type: string
+  entity_id: string
+  qb_id: string | null
+  action: string
+  direction: string
+  status: string
+  error_message: string | null
+  synced_at: string | null
+  created_at: string
+}
+
 export function QuickBooksIntegration() {
   const [status, setStatus] = useState<QuickBooksStatus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -34,6 +47,8 @@ export function QuickBooksIntegration() {
   const [error, setError] = useState<string | null>(null)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ syncing: false })
   const [syncSuccess, setSyncSuccess] = useState<string | null>(null)
+  const [syncLogs, setSyncLogs] = useState<SyncLogEntry[]>([])
+  const [logsLoading, setLogsLoading] = useState(false)
 
   const fetchStatus = async () => {
     try {
@@ -47,6 +62,18 @@ export function QuickBooksIntegration() {
       setError(err instanceof Error ? err.message : 'Failed to load QuickBooks status')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSyncLogs = async () => {
+    try {
+      setLogsLoading(true)
+      const data = await apiFetch<{ logs: SyncLogEntry[] }>('/api/quickbooks/sync-logs?limit=10')
+      setSyncLogs(data.logs || [])
+    } catch {
+      // Non-critical — don't show error for logs
+    } finally {
+      setLogsLoading(false)
     }
   }
 
@@ -71,6 +98,12 @@ export function QuickBooksIntegration() {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
+
+  useEffect(() => {
+    if (status?.connected) {
+      fetchSyncLogs()
+    }
+  }, [status?.connected])
 
   const handleConnect = () => {
     setActionLoading(true)
@@ -119,6 +152,7 @@ export function QuickBooksIntegration() {
       setError(err instanceof Error ? err.message : 'Failed to sync contacts')
     } finally {
       setSyncStatus({ syncing: false })
+      fetchSyncLogs()
     }
   }
 
@@ -136,6 +170,7 @@ export function QuickBooksIntegration() {
       setError(err instanceof Error ? err.message : 'Failed to sync projects')
     } finally {
       setSyncStatus({ syncing: false })
+      fetchSyncLogs()
     }
   }
 
@@ -362,6 +397,49 @@ export function QuickBooksIntegration() {
 
             <div className="mt-3 text-xs text-muted-foreground">
               <strong>Note:</strong> Contacts must be synced before their projects can be synced as invoices.
+            </div>
+          </div>
+        )}
+
+        {/* Sync History */}
+        {status?.connected && syncLogs.length > 0 && (
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-foreground">Recent Sync Activity</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={fetchSyncLogs}
+                disabled={logsLoading}
+                className="h-7 px-2"
+              >
+                <RefreshCw className={`h-3 w-3 ${logsLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {syncLogs.map((log) => (
+                <div key={log.id} className="flex items-center justify-between p-2 bg-muted rounded text-xs">
+                  <div className="flex items-center gap-2">
+                    {log.status === 'success' ? (
+                      <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
+                    ) : log.status === 'error' ? (
+                      <XCircle className="h-3 w-3 text-red-500 shrink-0" />
+                    ) : (
+                      <RefreshCw className="h-3 w-3 text-muted-foreground shrink-0" />
+                    )}
+                    <span className="text-foreground capitalize">{log.action}</span>
+                    <span className="text-muted-foreground">{log.entity_type}</span>
+                    {log.error_message && (
+                      <span className="text-red-400 truncate max-w-[200px]" title={log.error_message}>
+                        {log.error_message}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-muted-foreground shrink-0">
+                    {new Date(log.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
