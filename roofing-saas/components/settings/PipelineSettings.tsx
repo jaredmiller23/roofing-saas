@@ -6,7 +6,9 @@ import { getContrastColor } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Pencil, GripVertical, Info } from 'lucide-react'
+import { Pencil, GripVertical, Info, GitBranch } from 'lucide-react'
+import { toast } from 'sonner'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface PipelineStage {
   id: string
@@ -25,8 +27,6 @@ interface PipelineStage {
 export function PipelineSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [stages, setStages] = useState<PipelineStage[]>([])
   const [editingStage, setEditingStage] = useState<PipelineStage | null>(null)
 
@@ -50,7 +50,7 @@ export function PipelineSettings() {
       setStages(data || [])
     } catch (err) {
       console.error('Error loading pipeline stages:', err)
-      setError('Failed to load pipeline stages')
+      toast.error('Failed to load pipeline stages')
     } finally {
       setLoading(false)
     }
@@ -61,7 +61,6 @@ export function PipelineSettings() {
 
     try {
       setSaving(true)
-      setError(null)
 
       await apiFetch<PipelineStage>(`/api/settings/pipeline-stages/${editingStage.id}`, {
         method: 'PATCH',
@@ -75,13 +74,11 @@ export function PipelineSettings() {
         }
       })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
+      toast.success('Pipeline stage updated successfully')
       setEditingStage(null)
       loadStages()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save stage')
+      toast.error(err instanceof Error ? err.message : 'Failed to save stage')
     } finally {
       setSaving(false)
     }
@@ -128,23 +125,6 @@ export function PipelineSettings() {
           Pipeline stages are linked to your project workflow. You can customize display names, colors, and win probabilities for each stage.
         </AlertDescription>
       </Alert>
-
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Pipeline stage updated successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
 
       {/* Pipeline Preview */}
       <div className="bg-card rounded-lg border border-border p-6">
@@ -322,6 +302,17 @@ export function PipelineSettings() {
               {saving ? 'Saving...' : 'Update Stage'}
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {stages.length === 0 && !editingStage && (
+        <div className="bg-card rounded-lg border border-border">
+          <EmptyState
+            icon={GitBranch}
+            title="No pipeline stages configured"
+            description="Pipeline stages define the journey a project takes from lead to close. Add stages to get started."
+          />
         </div>
       )}
 

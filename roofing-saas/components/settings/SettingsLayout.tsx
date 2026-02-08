@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { SettingsSidebar, settingsGroups } from './SettingsSidebar'
 import { SettingsMobileHeader } from './SettingsMobileHeader'
 import { GeneralSettings } from './GeneralSettings'
@@ -45,12 +46,22 @@ function getSectionTitle(sectionId: string): string {
   return 'Settings'
 }
 
-interface SettingsLayoutProps {
-  initialSection?: string
-}
-
-export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutProps) {
+export function SettingsLayout() {
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Build set of valid section IDs (exclude items with href — they navigate away)
+  const validSections = useMemo(
+    () => new Set(settingsGroups.flatMap(g => g.items.filter(i => !('href' in i)).map(i => i.id))),
+    []
+  )
+
+  // Read ?tab= param, validate, fall back to 'general'
+  const tabParam = searchParams.get('tab')
+  const resolvedSection = tabParam && validSections.has(tabParam) ? tabParam : 'general'
+
   // On mobile, start with null to show the list. On desktop, show the initial section.
   // Initialize to null - we'll set it properly after we know the viewport
   const [activeSection, setActiveSection] = useState<string | null>(null)
@@ -59,12 +70,13 @@ export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutPro
   // Initialize activeSection based on viewport after mount
   useEffect(() => {
     if (!initialized && isMobile !== undefined) {
-      // On mobile, start with null to show list
-      // On desktop, show the initial section
-      setActiveSection(isMobile ? null : initialSection)
+      // On mobile with no ?tab= param, show section list
+      // On mobile with ?tab= param, navigate directly to that section
+      // On desktop, always show the resolved section
+      setActiveSection(isMobile && !tabParam ? null : resolvedSection)
       setInitialized(true)
     }
-  }, [isMobile, initialized, initialSection])
+  }, [isMobile, initialized, resolvedSection, tabParam])
 
   // When switching from mobile to desktop, ensure we have a section (default to 'general')
   useEffect(() => {
@@ -75,6 +87,10 @@ export function SettingsLayout({ initialSection = 'general' }: SettingsLayoutPro
 
   const handleSelect = (section: string) => {
     setActiveSection(section)
+    // Sync URL with selected section
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', section)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
   const handleBack = () => {

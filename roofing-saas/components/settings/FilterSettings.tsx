@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, Plus, Pencil, Trash2, Filter, Zap, Settings2, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api/client'
 import type {
   FilterConfig,
@@ -50,8 +50,6 @@ const OPERATORS: { value: FilterOperator; label: string }[] = [
 export function FilterSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [configs, setConfigs] = useState<FilterConfig[]>([])
   const [editingConfig, setEditingConfig] = useState<FilterConfig | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -87,7 +85,7 @@ export function FilterSettings() {
       setConfigs(data.configs || [])
     } catch (err) {
       console.error('Error loading filter configs:', err)
-      setError('Failed to load filter configurations')
+      toast.error('Failed to load filter configurations')
     } finally {
       setLoading(false)
     }
@@ -100,11 +98,10 @@ export function FilterSettings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      setError(null)
 
       // Validation
       if (!formData.field_name || !formData.field_label) {
-        setError('Field name and label are required')
+        toast.error('Field name and label are required')
         setSaving(false)
         return
       }
@@ -117,14 +114,11 @@ export function FilterSettings() {
 
       await apiFetch(url, { method, body: formData })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
-      // Reset form and reload
+      toast.success('Filter configuration saved successfully')
       resetForm()
       loadConfigs()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save filter configuration')
+      toast.error(err instanceof Error ? err.message : 'Failed to save filter configuration')
     } finally {
       setSaving(false)
     }
@@ -153,11 +147,10 @@ export function FilterSettings() {
     try {
       await apiFetch(`/api/filters/configs/${id}`, { method: 'DELETE' })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Filter deleted successfully')
       loadConfigs()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete filter configuration')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete filter configuration')
     }
   }
 
@@ -170,7 +163,7 @@ export function FilterSettings() {
 
       loadConfigs()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update filter')
+      toast.error(err instanceof Error ? err.message : 'Failed to update filter')
     }
   }
 
@@ -227,23 +220,6 @@ export function FilterSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert variant="success">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>
-            Filter configuration saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Filters */}
       <div className="bg-card rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Filter Configuration</h3>

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Plus, Pencil, Trash2, Shield, Lock } from 'lucide-react'
+import { Plus, Pencil, Trash2, Shield, Lock } from 'lucide-react'
+import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api/client'
 
 interface UserRole {
@@ -48,8 +48,6 @@ const DEFAULT_PERMISSIONS = {
 export function RoleSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [roles, setRoles] = useState<UserRole[]>([])
   const [editingRole, setEditingRole] = useState<UserRole | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -71,7 +69,7 @@ export function RoleSettings() {
       setRoles(data || [])
     } catch (err) {
       console.error('Error loading roles:', err)
-      setError('Failed to load roles')
+      toast.error('Failed to load roles')
     } finally {
       setLoading(false)
     }
@@ -80,7 +78,6 @@ export function RoleSettings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      setError(null)
 
       const url = editingRole
         ? `/api/settings/roles/${editingRole.id}`
@@ -90,13 +87,11 @@ export function RoleSettings() {
 
       await apiFetch(url, { method, body: formData })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
+      toast.success('Role saved successfully')
       resetForm()
       loadRoles()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save role')
+      toast.error(err instanceof Error ? err.message : 'Failed to save role')
     } finally {
       setSaving(false)
     }
@@ -118,11 +113,10 @@ export function RoleSettings() {
     try {
       await apiFetch(`/api/settings/roles/${id}`, { method: 'DELETE' })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Role deleted successfully')
       loadRoles()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete role')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete role')
     }
   }
 
@@ -189,23 +183,6 @@ export function RoleSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Role saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Role List */}
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-4">

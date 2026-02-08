@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Plus, Pencil, Trash2, Mail, MessageSquare } from 'lucide-react'
+import { Plus, Pencil, Trash2, Mail, MessageSquare } from 'lucide-react'
+import { toast } from 'sonner'
+import { EmptyState } from '@/components/ui/empty-state'
 import { apiFetch } from '@/lib/api/client'
 
 interface EmailTemplate {
@@ -31,8 +32,6 @@ type TemplateType = 'email' | 'sms'
 export function TemplateSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const [activeType, setActiveType] = useState<TemplateType>('email')
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([])
@@ -69,7 +68,7 @@ export function TemplateSettings() {
       }
     } catch (err) {
       console.error('Error loading templates:', err)
-      setError('Failed to load templates')
+      toast.error('Failed to load templates')
     } finally {
       setLoading(false)
     }
@@ -82,7 +81,6 @@ export function TemplateSettings() {
   const handleSaveEmail = async () => {
     try {
       setSaving(true)
-      setError(null)
 
       const url = editingTemplate
         ? `/api/settings/email-templates/${editingTemplate.id}`
@@ -92,13 +90,11 @@ export function TemplateSettings() {
 
       await apiFetch(url, { method, body: emailFormData })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
+      toast.success('Email template saved successfully')
       resetForms()
       loadTemplates()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save template')
+      toast.error(err instanceof Error ? err.message : 'Failed to save template')
     } finally {
       setSaving(false)
     }
@@ -107,7 +103,6 @@ export function TemplateSettings() {
   const handleSaveSMS = async () => {
     try {
       setSaving(true)
-      setError(null)
 
       // Validate SMS length
       if (smsFormData.message.length > 1600) {
@@ -122,13 +117,11 @@ export function TemplateSettings() {
 
       await apiFetch(url, { method, body: smsFormData })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
+      toast.success('SMS template saved successfully')
       resetForms()
       loadTemplates()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save template')
+      toast.error(err instanceof Error ? err.message : 'Failed to save template')
     } finally {
       setSaving(false)
     }
@@ -164,11 +157,10 @@ export function TemplateSettings() {
       const endpoint = activeType === 'email' ? 'email-templates' : 'sms-templates'
       await apiFetch(`/api/settings/${endpoint}/${id}`, { method: 'DELETE' })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Template deleted successfully')
       loadTemplates()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete template')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete template')
     }
   }
 
@@ -191,23 +183,6 @@ export function TemplateSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Template saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Template Type Selector */}
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-4">
@@ -238,9 +213,15 @@ export function TemplateSettings() {
 
         {/* Template List */}
         {templates.length === 0 ? (
-          <div className="text-muted-foreground text-sm py-8 text-center">
-            No {activeType} templates configured. Add your first template to get started.
-          </div>
+          <EmptyState
+            icon={activeType === 'email' ? Mail : MessageSquare}
+            title={`No ${activeType} templates yet`}
+            description={`Create your first ${activeType} template to streamline your communications.`}
+            action={{
+              label: 'Add Template',
+              onClick: () => setShowAddForm(true),
+            }}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {templates.map((template) => (

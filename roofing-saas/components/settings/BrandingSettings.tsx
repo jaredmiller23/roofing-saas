@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Image as ImageIcon } from 'lucide-react'
+import { Image as ImageIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import { apiFetch } from '@/lib/api/client'
 import { getContrastColor } from '@/lib/utils'
@@ -24,8 +24,6 @@ interface BrandingSettingsData {
 export function BrandingSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const [settings, setSettings] = useState<BrandingSettingsData>({
     company_name: '',
@@ -63,7 +61,7 @@ export function BrandingSettings() {
       }
     } catch (err) {
       console.error('Error loading settings:', err)
-      setError('Failed to load settings')
+      toast.error('Failed to load settings')
     } finally {
       setLoading(false)
     }
@@ -72,18 +70,15 @@ export function BrandingSettings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      setError(null)
-      setSuccess(false)
 
       await apiFetch('/api/settings', {
         method: 'PUT',
         body: settings,
       })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Branding settings saved successfully')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save settings')
+      toast.error(err instanceof Error ? err.message : 'Failed to save settings')
     } finally {
       setSaving(false)
     }
@@ -99,23 +94,6 @@ export function BrandingSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Branding settings saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Settings Form */}
         <div className="lg:col-span-2 space-y-6">

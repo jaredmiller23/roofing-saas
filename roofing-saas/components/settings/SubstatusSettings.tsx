@@ -3,16 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, Plus, Pencil, Trash2, Tag, Star } from 'lucide-react'
+import { Plus, Pencil, Trash2, Tag, Star } from 'lucide-react'
+import { toast } from 'sonner'
+import { EmptyState } from '@/components/ui/empty-state'
 import { apiFetch } from '@/lib/api/client'
 import type { SubstatusConfig } from '@/lib/substatus/types'
 
 export function SubstatusSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [substatuses, setSubstatuses] = useState<SubstatusConfig[]>([])
   const [editingSubstatus, setEditingSubstatus] = useState<SubstatusConfig | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -51,7 +50,7 @@ export function SubstatusSettings() {
       setSubstatuses(data.configs || [])
     } catch (err) {
       console.error('Error loading substatuses:', err)
-      setError('Failed to load substatuses')
+      toast.error('Failed to load substatuses')
     } finally {
       setLoading(false)
     }
@@ -64,11 +63,10 @@ export function SubstatusSettings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      setError(null)
 
       // Validation
       if (!formData.status_value || !formData.substatus_value || !formData.substatus_label) {
-        setError('Status value, substatus value, and label are required')
+        toast.error('Status value, substatus value, and label are required')
         setSaving(false)
         return
       }
@@ -81,14 +79,11 @@ export function SubstatusSettings() {
 
       await apiFetch(url, { method, body: formData })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-
-      // Reset form and reload
+      toast.success('Substatus saved successfully')
       resetForm()
       loadSubstatuses()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save substatus')
+      toast.error(err instanceof Error ? err.message : 'Failed to save substatus')
     } finally {
       setSaving(false)
     }
@@ -121,11 +116,10 @@ export function SubstatusSettings() {
     try {
       await apiFetch(`/api/substatus/configs/${id}`, { method: 'DELETE' })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Substatus deleted successfully')
       loadSubstatuses()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete substatus')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete substatus')
     }
   }
 
@@ -170,23 +164,6 @@ export function SubstatusSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Substatus saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Filters */}
       <div className="bg-card rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Substatus Configuration</h3>
@@ -521,21 +498,16 @@ export function SubstatusSettings() {
           ))}
         </div>
       ) : (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
-          <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            No substatuses configured
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            Add your first substatus to enhance your {entityTypeFilter} status tracking
-          </p>
-          <Button
-            onClick={() => setShowAddForm(true)}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Substatus
-          </Button>
+        <div className="bg-card rounded-lg border border-border">
+          <EmptyState
+            icon={Tag}
+            title="No substatuses configured"
+            description={`Add your first substatus to enhance your ${entityTypeFilter} status tracking.`}
+            action={{
+              label: 'Add Substatus',
+              onClick: () => setShowAddForm(true),
+            }}
+          />
         </div>
       )}
     </div>

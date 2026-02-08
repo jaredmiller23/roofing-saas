@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface GeneralSettingsData {
   company_name: string | null
@@ -36,8 +35,6 @@ const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
 export function GeneralSettings() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const [settings, setSettings] = useState<GeneralSettingsData>({
     company_name: '',
@@ -72,7 +69,7 @@ export function GeneralSettings() {
       setSettings(data)
     } catch (err) {
       console.error('Error loading settings:', err)
-      setError('Failed to load settings')
+      toast.error('Failed to load settings')
     } finally {
       setLoading(false)
     }
@@ -81,18 +78,15 @@ export function GeneralSettings() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      setError(null)
-      setSuccess(false)
 
       await apiFetch<GeneralSettingsData>('/api/settings', {
         method: 'PUT',
         body: settings
       })
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      toast.success('Settings saved successfully')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save settings')
+      toast.error(err instanceof Error ? err.message : 'Failed to save settings')
     } finally {
       setSaving(false)
     }
@@ -108,23 +102,6 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Success Message */}
-      {success && (
-        <Alert className="bg-chart-2/10 border-chart-2/30">
-          <CheckCircle className="h-4 w-4 text-chart-2" />
-          <AlertDescription className="text-foreground">
-            Settings saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <Alert className="bg-destructive/10 border-destructive/30">
-          <AlertDescription className="text-foreground">{error}</AlertDescription>
-        </Alert>
-      )}
-
       {/* Company Information */}
       <div className="bg-card rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Company Information</h3>
