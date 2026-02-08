@@ -12,10 +12,12 @@ export function Footer() {
     Company: [
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
+      { label: 'Schedule a Demo', href: '/demo' },
     ],
     Legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
+      { label: 'Data Processing', href: '/dpa' },
     ],
   };
 
@@ -40,9 +42,16 @@ export function Footer() {
               </div>
               <span className="text-xl font-bold">Job Clarity</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               The complete CRM platform for roofing contractors.
             </p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>121 Gilliam Cir</p>
+              <p>Fall Branch, TN 37656</p>
+              <a href="mailto:info@jobclarity.io" className="text-primary hover:underline block">
+                info@jobclarity.io
+              </a>
+            </div>
           </div>
 
           {/* Links */}
@@ -68,7 +77,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground text-center">
-            &copy; {currentYear} Job Clarity CRM. All rights reserved.
+            &copy; {currentYear} Clarity AI LLC. All rights reserved.
           </p>
         </div>
       </div>

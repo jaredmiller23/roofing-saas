@@ -330,8 +330,8 @@ export default function DpaPage() {
               <p className="text-muted-foreground">
                 For questions about this Data Processing Agreement or to exercise data protection
                 rights, contact us at:{' '}
-                <a href="mailto:jared@claimclarityai.com" className="text-primary hover:underline">
-                  jared@claimclarityai.com
+                <a href="mailto:info@jobclarity.io" className="text-primary hover:underline">
+                  info@jobclarity.io
                 </a>
               </p>
             </section>

@@ -32,10 +32,10 @@ export default function ContactPage() {
                 </div>
               </div>
               <a
-                href="mailto:jared@claimclarityai.com"
+                href="mailto:info@jobclarity.io"
                 className="text-lg text-primary hover:underline"
               >
-                jared@claimclarityai.com
+                info@jobclarity.io
               </a>
             </div>
 
@@ -49,9 +49,10 @@ export default function ContactPage() {
                   <p className="text-muted-foreground">Where we operate</p>
                 </div>
               </div>
-              <p className="text-foreground">
-                Tennessee, United States
-              </p>
+              <div className="text-foreground">
+                <p>121 Gilliam Cir</p>
+                <p>Fall Branch, TN 37656</p>
+              </div>
             </div>
           </div>
 
@@ -62,7 +63,7 @@ export default function ContactPage() {
               tailored to your roofing business.
             </p>
             <a
-              href="mailto:jared@claimclarityai.com?subject=Job Clarity Demo Request"
+              href="mailto:info@jobclarity.io?subject=Job Clarity Demo Request"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
             >
               Request a Demo

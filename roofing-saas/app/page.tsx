@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,9 +10,31 @@ import {
   Mic,
   CheckCircle2,
   ArrowRight,
+  CloudLightning,
+  WifiOff,
+  Receipt,
+  ShieldCheck,
 } from 'lucide-react';
 import { Navbar } from '@/components/marketing/Navbar';
 import { Footer } from '@/components/marketing/Footer';
+
+export const metadata: Metadata = {
+  title: 'Job Clarity | CRM for Roofing Contractors',
+  description: 'The complete CRM platform for roofing contractors. Manage leads, estimates, projects, and crew from one platform. Built for storm restoration.',
+  metadataBase: new URL('https://jobclarity.io'),
+  openGraph: {
+    title: 'Job Clarity | CRM for Roofing Contractors',
+    description: 'Manage leads, estimates, projects, and crew from one platform. Built for storm restoration.',
+    url: 'https://jobclarity.io',
+    siteName: 'Job Clarity',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Job Clarity | CRM for Roofing Contractors',
+    description: 'The complete CRM platform for roofing contractors.',
+  },
+};
 
 export default function LandingPage() {
   return (
@@ -92,13 +115,18 @@ export default function LandingPage() {
       {/* Differentiators Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Built Different</h2>
+            <p className="text-xl text-muted-foreground">Not a generic CRM with roofing features bolted on.</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {differentiators.map((item) => (
-              <div key={item.label} className="text-center">
-                <div className="text-4xl sm:text-5xl font-bold text-gradient-purple mb-2">
-                  {item.value}
+              <div key={item.label} className="text-center p-6 rounded-2xl bg-card border border-border">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="w-6 h-6 text-primary" />
                 </div>
-                <div className="text-muted-foreground">{item.label}</div>
+                <div className="font-semibold mb-1">{item.label}</div>
+                <div className="text-sm text-muted-foreground">{item.description}</div>
               </div>
             ))}
           </div>
@@ -267,10 +295,10 @@ const features = [
 ];
 
 const differentiators = [
-  { value: 'Storm', label: 'Restoration Focus' },
-  { value: 'Offline', label: 'Capable PWA' },
-  { value: 'QuickBooks', label: 'Integrated' },
-  { value: 'Claims', label: 'Tracking Built-In' },
+  { icon: CloudLightning, label: 'Storm Restoration', description: 'Insurance claims tracking, storm data, and workflows designed for restoration contractors.' },
+  { icon: WifiOff, label: 'Works Offline', description: 'Log door knocks, take photos, and update deals from your phone — even without cell service.' },
+  { icon: Receipt, label: 'QuickBooks Sync', description: 'Two-way sync with QuickBooks Online. Contacts, invoices, and payments stay in sync.' },
+  { icon: ShieldCheck, label: 'Claims Tracking', description: 'Track insurance claims from inspection through supplement to final payment.' },
 ];
 
 const howItWorksSteps = [

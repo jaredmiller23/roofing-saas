@@ -64,14 +64,26 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">5. Payment Terms</h2>
               <p className="text-muted-foreground">
-                Paid subscriptions are billed monthly in advance. You authorize us to charge your
-                payment method for all fees incurred. Subscription fees are non-refundable except
-                as required by law. We reserve the right to change pricing with 30 days notice.
+                Paid subscriptions are billed monthly or annually in advance. You authorize us to charge your
+                payment method for all fees incurred. We reserve the right to change pricing with 30 days notice.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">6. Data Ownership</h2>
+              <h2 className="text-2xl font-semibold mb-4">6. Cancellation &amp; Refund Policy</h2>
+              <p className="text-muted-foreground mb-4">
+                We want you to be satisfied with Job Clarity. Our cancellation and refund policies are straightforward:
+              </p>
+              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+                <li><strong>Free Trial:</strong> You may cancel at any time during your trial period at no cost. No credit card is required to start a trial.</li>
+                <li><strong>Paid Subscriptions:</strong> You may cancel your subscription at any time. Upon cancellation, you will retain access to the Service through the end of your current billing period. No prorated refunds are issued for partial billing periods.</li>
+                <li><strong>Annual Plans:</strong> If you cancel an annual subscription, you retain access through the end of the annual term. Refunds for unused months on annual plans are not provided.</li>
+                <li><strong>How to Cancel:</strong> You can cancel your subscription from the Billing section in your account settings, or by contacting us at info@jobclarity.io.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">7. Data Ownership</h2>
               <p className="text-muted-foreground">
                 You retain ownership of all data you submit to the Service. You grant us a limited
                 license to use this data solely to provide the Service to you. We will not sell
@@ -80,7 +92,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">7. Service Availability</h2>
+              <h2 className="text-2xl font-semibold mb-4">8. Service Availability</h2>
               <p className="text-muted-foreground">
                 We strive to maintain high availability but do not guarantee uninterrupted service.
                 We may perform maintenance that temporarily affects availability. We are not liable
@@ -89,7 +101,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">8. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold mb-4">9. Limitation of Liability</h2>
               <p className="text-muted-foreground">
                 To the maximum extent permitted by law, Job Clarity and its affiliates shall not be
                 liable for any indirect, incidental, special, consequential, or punitive damages,
@@ -99,7 +111,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">9. Termination</h2>
+              <h2 className="text-2xl font-semibold mb-4">10. Termination</h2>
               <p className="text-muted-foreground">
                 You may cancel your subscription at any time. We may suspend or terminate your
                 account if you violate these terms. Upon termination, your right to use the
@@ -108,7 +120,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">10. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold mb-4">11. Changes to Terms</h2>
               <p className="text-muted-foreground">
                 We may modify these terms at any time. We will notify you of material changes via
                 email or through the Service. Continued use after changes constitutes acceptance
@@ -117,7 +129,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">11. Governing Law</h2>
+              <h2 className="text-2xl font-semibold mb-4">12. Governing Law</h2>
               <p className="text-muted-foreground">
                 These terms are governed by the laws of the State of Tennessee, without regard to
                 conflict of law principles.
@@ -125,11 +137,11 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">12. Contact</h2>
+              <h2 className="text-2xl font-semibold mb-4">13. Contact</h2>
               <p className="text-muted-foreground">
                 For questions about these Terms of Service, contact us at:{' '}
-                <a href="mailto:jared@claimclarityai.com" className="text-primary hover:underline">
-                  jared@claimclarityai.com
+                <a href="mailto:info@jobclarity.io" className="text-primary hover:underline">
+                  info@jobclarity.io
                 </a>
               </p>
             </section>

@@ -96,8 +96,8 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-semibold mb-4">7. Contact Us</h2>
               <p className="text-muted-foreground">
                 If you have questions about this Privacy Policy, please contact us at:{' '}
-                <a href="mailto:jared@claimclarityai.com" className="text-primary hover:underline">
-                  jared@claimclarityai.com
+                <a href="mailto:info@jobclarity.io" className="text-primary hover:underline">
+                  info@jobclarity.io
                 </a>
               </p>
             </section>
